@@ -27,36 +27,56 @@ const STATUS_LABELS = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const PAGE_SIZE = 20;
   const [documents, setDocuments] = useState([]);
+  const [totalDocs, setTotalDocs] = useState(0);
   const [offeneTodos, setOffeneTodos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
   const [kategorie, setKategorie] = useState('');
   const [dismissingIds, setDismissingIds] = useState(new Set());
 
-  const fetchDocs = async () => {
-    setLoading(true);
+  const fetchDocs = async (append = false) => {
+    if (!append) setLoading(true);
+    else setLoadingMore(true);
     try {
       const params = {};
-      if (search) params.search = search;
+      if (search) {
+        params.search = search;
+      } else {
+        params.limit = PAGE_SIZE;
+        params.offset = append ? documents.length : 0;
+      }
       if (kategorie) params.kategorie = kategorie;
       const data = await getDocuments(params);
-      setDocuments(data);
+      const docs = data.documents || data;
+      const total = data.total ?? docs.length;
+      if (append) {
+        setDocuments(prev => [...prev, ...docs]);
+      } else {
+        setDocuments(docs);
+      }
+      setTotalDocs(total);
     } catch (err) {
       console.error('Fehler beim Laden:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   const fetchTodos = async () => {
     try {
       const data = await getDocuments({ handlung_offen: true });
-      setOffeneTodos(data);
+      const docs = data.documents || data;
+      setOffeneTodos(docs);
     } catch (err) {
       console.error('Fehler beim Laden der Todos:', err);
     }
   };
+
+  const hasMore = !search && documents.length < totalDocs;
 
   useEffect(() => {
     fetchDocs();
@@ -89,8 +109,8 @@ export default function Dashboard() {
   };
 
   // Statistiken
-  const total = documents.length;
-  const offen = documents.filter(d => d.handlung_erforderlich && !d.handlung_erledigt).length;
+  const total = totalDocs;
+  const offen = offeneTodos.length;
   const rechnungen = documents.filter(d => d.kategorie === 'rechnung').length;
   const briefe = documents.filter(d => d.kategorie === 'brief').length;
 
@@ -254,11 +274,25 @@ export default function Dashboard() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {documents.map(doc => (
-            <DocumentCard key={doc.id} doc={doc} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {documents.map(doc => (
+              <DocumentCard key={doc.id} doc={doc} />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => fetchDocs(true)}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-indigo-200 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {loadingMore ? t('common.loading') : t('dashboard.loadMore')}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -279,6 +313,7 @@ function StatCard({ icon, label, value, color }) {
 }
 
 function DocumentCard({ doc }) {
+  const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   return (

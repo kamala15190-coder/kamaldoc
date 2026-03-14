@@ -2,6 +2,9 @@
   "nav": {
     "dashboard": "Dashboard",
     "upload": "Upload",
+    "expenses": "Expenses",
+    "behoerde": "Authority",
+    "befund": "Medical",
     "archive": "Archive",
     "profile": "Profile",
     "logout": "Sign Out"
@@ -56,7 +59,8 @@
     "done": "Done",
     "overdue": "overdue",
     "analysisRunning": "Analyzing…",
-    "error": "Error"
+    "error": "Error",
+    "loadMore": "Load more"
   },
   "upload": {
     "title": "Upload Document",
@@ -120,7 +124,12 @@
     "copied": "Copied!",
     "copy": "Copy",
     "replyLanguage": "Language:",
-    "actionDone": "Action completed"
+    "actionDone": "Action completed",
+    "deadline": "Deadline / Reminder",
+    "saveDeadline": "Save deadline",
+    "removeDeadline": "Remove",
+    "deadlineSoon": "Deadline in less than 3 days!",
+    "deadlineOverdue": "Deadline overdue!"
   },
   "archive": {
     "title": "Archive",
@@ -178,5 +187,65 @@
     "loading": "Loading...",
     "appName": "KamalDoc",
     "appDesc": "Document Management System"
+  },
+  "expenses": {
+    "title": "Expenses Dashboard",
+    "subtitle": "Overview of your invoices and expenses",
+    "totalExpenses": "Total Expenses",
+    "invoiceCount": "invoices",
+    "byCategory": "By Category",
+    "byMonth": "By Month",
+    "invoiceList": "Invoices",
+    "allMonths": "All Months",
+    "allCategories": "All Categories",
+    "noData": "No expense data available"
+  },
+  "behoerde": {
+    "title": "Authority Assistant",
+    "subtitle": "Official letters explained in simple language (AT/DE/CH)",
+    "uploadTitle": "Upload official letter",
+    "chooseFile": "Choose file (JPG, PNG, PDF)",
+    "uploading": "Uploading\u2026",
+    "uploadButton": "Upload & analyze",
+    "explainButton": "Explain in simple language",
+    "explaining": "Explaining\u2026",
+    "previousDocs": "Previous official letters",
+    "noDocs": "No official letters uploaded yet"
+  },
+  "befund": {
+    "title": "Medical Report Assistant",
+    "subtitle": "Medical reports and lab results made understandable",
+    "uploadTitle": "Upload medical report",
+    "chooseFile": "Choose file (JPG, PNG, PDF)",
+    "uploading": "Uploading\u2026",
+    "uploadButton": "Upload & analyze",
+    "step1Title": "Simplify medical language",
+    "step1Desc": "Medical terminology is translated into plain language.",
+    "simplifyButton": "Simplify",
+    "simplifying": "Simplifying\u2026",
+    "step2Title": "Translate to target language",
+    "step2Desc": "Translate the simplified text into another language.",
+    "translateButton": "Translate",
+    "translating": "Translating\u2026",
+    "previousDocs": "Previous reports",
+    "noDocs": "No medical reports uploaded yet"
+  },
+  "expenseCategories": {
+    "versicherung": "Insurance",
+    "miete": "Rent",
+    "strom": "Energy / Electricity",
+    "internet": "Internet",
+    "telefon": "Phone",
+    "lebensmittel": "Groceries",
+    "transport": "Transport",
+    "gesundheit": "Health",
+    "bildung": "Education",
+    "unterhaltung": "Entertainment",
+    "kleidung": "Clothing",
+    "haushalt": "Household",
+    "steuern": "Taxes",
+    "gebuehren": "Fees",
+    "abonnement": "Subscription",
+    "sonstiges": "Other"
   }
 }

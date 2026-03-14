@@ -2,6 +2,9 @@
   "nav": {
     "dashboard": "Dashboard",
     "upload": "Hochladen",
+    "expenses": "Ausgaben",
+    "behoerde": "Beh\u00f6rde",
+    "befund": "Befund",
     "archive": "Archiv",
     "profile": "Profil",
     "logout": "Abmelden"
@@ -56,7 +59,8 @@
     "done": "Erledigt",
     "overdue": "überfällig",
     "analysisRunning": "Analyse…",
-    "error": "Fehler"
+    "error": "Fehler",
+    "loadMore": "Mehr laden"
   },
   "upload": {
     "title": "Dokument hochladen",
@@ -120,7 +124,12 @@
     "copied": "Kopiert!",
     "copy": "Kopieren",
     "replyLanguage": "Sprache:",
-    "actionDone": "Handlung erledigt"
+    "actionDone": "Handlung erledigt",
+    "deadline": "Deadline / Erinnerung",
+    "saveDeadline": "Deadline speichern",
+    "removeDeadline": "Entfernen",
+    "deadlineSoon": "Deadline in weniger als 3 Tagen!",
+    "deadlineOverdue": "Deadline \u00fcberschritten!"
   },
   "archive": {
     "title": "Archiv",
@@ -178,5 +187,65 @@
     "loading": "Lädt...",
     "appName": "KamalDoc",
     "appDesc": "Dokumenten-Management-System"
+  },
+  "expenses": {
+    "title": "Ausgaben-Dashboard",
+    "subtitle": "\u00dcbersicht deiner Rechnungen und Ausgaben",
+    "totalExpenses": "Gesamtausgaben",
+    "invoiceCount": "Rechnungen",
+    "byCategory": "Nach Kategorie",
+    "byMonth": "Nach Monat",
+    "invoiceList": "Rechnungen",
+    "allMonths": "Alle Monate",
+    "allCategories": "Alle Kategorien",
+    "noData": "Keine Ausgaben-Daten vorhanden"
+  },
+  "behoerde": {
+    "title": "Beh\u00f6rden-Assistent",
+    "subtitle": "Beh\u00f6rdenschreiben einfach erkl\u00e4rt (AT/DE/CH)",
+    "uploadTitle": "Beh\u00f6rdenschreiben hochladen",
+    "chooseFile": "Datei ausw\u00e4hlen (JPG, PNG, PDF)",
+    "uploading": "Wird hochgeladen…",
+    "uploadButton": "Hochladen & analysieren",
+    "explainButton": "In einfacher Sprache erkl\u00e4ren",
+    "explaining": "Wird erkl\u00e4rt…",
+    "previousDocs": "Bisherige Beh\u00f6rdenschreiben",
+    "noDocs": "Noch keine Beh\u00f6rdenschreiben hochgeladen"
+  },
+  "befund": {
+    "title": "Befund-Assistent",
+    "subtitle": "Arztbefunde und Laborberichte verst\u00e4ndlich gemacht",
+    "uploadTitle": "Befund hochladen",
+    "chooseFile": "Datei ausw\u00e4hlen (JPG, PNG, PDF)",
+    "uploading": "Wird hochgeladen…",
+    "uploadButton": "Hochladen & analysieren",
+    "step1Title": "Fachsprache vereinfachen",
+    "step1Desc": "Medizinische Fachbegriffe werden in verst\u00e4ndliche Sprache \u00fcbersetzt.",
+    "simplifyButton": "Vereinfachen",
+    "simplifying": "Wird vereinfacht…",
+    "step2Title": "In Zielsprache \u00fcbersetzen",
+    "step2Desc": "Den vereinfachten Text in eine andere Sprache \u00fcbersetzen.",
+    "translateButton": "\u00dcbersetzen",
+    "translating": "Wird \u00fcbersetzt…",
+    "previousDocs": "Bisherige Befunde",
+    "noDocs": "Noch keine Befunde hochgeladen"
+  },
+  "expenseCategories": {
+    "versicherung": "Versicherung",
+    "miete": "Miete",
+    "strom": "Strom / Energie",
+    "internet": "Internet",
+    "telefon": "Telefon",
+    "lebensmittel": "Lebensmittel",
+    "transport": "Transport",
+    "gesundheit": "Gesundheit",
+    "bildung": "Bildung",
+    "unterhaltung": "Unterhaltung",
+    "kleidung": "Kleidung",
+    "haushalt": "Haushalt",
+    "steuern": "Steuern",
+    "gebuehren": "Geb\u00fchren",
+    "abonnement": "Abonnement",
+    "sonstiges": "Sonstiges"
   }
 }

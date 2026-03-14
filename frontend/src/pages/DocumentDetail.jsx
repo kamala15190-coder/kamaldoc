@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
-  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe
+  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -38,6 +38,8 @@ export default function DocumentDetail() {
   const [markingDone, setMarkingDone] = useState(false);
   const [justMarkedDone, setJustMarkedDone] = useState(false);
   const [replyLanguage, setReplyLanguage] = useState('de');
+  const [deadline, setDeadline] = useState('');
+  const [savingDeadline, setSavingDeadline] = useState(false);
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -45,6 +47,7 @@ export default function DocumentDetail() {
       setDoc(data);
       setNotizen(data.notizen || '');
       setTags(data.tags || '');
+      setDeadline(data.deadline || '');
       return data;
     } catch (err) {
       console.error(err);
@@ -303,6 +306,63 @@ export default function DocumentDetail() {
               <Field label={t('document.due')} value={doc.faelligkeitsdatum ? new Date(doc.faelligkeitsdatum).toLocaleDateString() : null} />
               <Field label={t('document.filename')} value={doc.dateiname} />
               <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
+            </div>
+
+            {/* Deadline-Wächter */}
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="w-4 h-4 text-amber-500" />
+                <p className="text-xs font-medium text-slate-500">{t('document.deadline')}</p>
+              </div>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={e => setDeadline(e.target.value)}
+                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  onClick={async () => {
+                    setSavingDeadline(true);
+                    try {
+                      const updated = await updateDocument(id, { deadline: deadline || '' });
+                      setDoc(updated);
+                    } catch (err) { console.error(err); }
+                    finally { setSavingDeadline(false); }
+                  }}
+                  disabled={savingDeadline}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium hover:bg-amber-200 transition-colors cursor-pointer border-none disabled:opacity-50"
+                >
+                  {savingDeadline ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                  {t('document.saveDeadline')}
+                </button>
+                {deadline && (
+                  <button
+                    onClick={async () => {
+                      setDeadline('');
+                      setSavingDeadline(true);
+                      try {
+                        const updated = await updateDocument(id, { deadline: '' });
+                        setDoc(updated);
+                      } catch (err) { console.error(err); }
+                      finally { setSavingDeadline(false); }
+                    }}
+                    className="text-xs text-red-500 hover:text-red-700 cursor-pointer bg-transparent border-none"
+                  >
+                    {t('document.removeDeadline')}
+                  </button>
+                )}
+              </div>
+              {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
+                <p className="text-xs text-amber-600 font-medium mt-1.5">
+                  ⚠️ {t('document.deadlineSoon')}
+                </p>
+              )}
+              {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
+                <p className="text-xs text-red-600 font-medium mt-1.5">
+                  ⚠️ {t('document.deadlineOverdue')}
+                </p>
+              )}
             </div>
 
             {doc.zusammenfassung && (

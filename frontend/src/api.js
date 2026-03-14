@@ -15,15 +15,40 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-export async function uploadDocument(file) {
+export async function uploadDocument(file, docType = 'standard') {
   const formData = new FormData();
   formData.append('file', file);
-  const { data } = await api.post('/upload', formData);
+  const { data } = await api.post('/upload', formData, { params: { doc_type: docType } });
   return data;
 }
 
 export async function getDocuments(params = {}) {
   const { data } = await api.get('/documents', { params });
+  return data;
+}
+
+export async function getExpenses(params = {}) {
+  const { data } = await api.get('/expenses', { params });
+  return data;
+}
+
+export async function explainDocument(id, targetLanguage = 'de') {
+  const { data } = await api.post(`/documents/${id}/explain`, null, { params: { target_language: targetLanguage } });
+  return data;
+}
+
+export async function simplifyDocument(id) {
+  const { data } = await api.post(`/documents/${id}/simplify`);
+  return data;
+}
+
+export async function translateDocument(id, targetLanguage) {
+  const { data } = await api.post(`/documents/${id}/translate`, null, { params: { target_language: targetLanguage } });
+  return data;
+}
+
+export async function registerPushToken(token, platform = 'android') {
+  const { data } = await api.post('/push-token', { token, platform });
   return data;
 }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut } from 'lucide-react';
+import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { isRtl } from './languages';
@@ -11,10 +11,16 @@ import Archiv from './pages/Archiv';
 import ProfilPage from './pages/ProfilPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import ExpensesPage from './pages/ExpensesPage';
+import BehoerdeAssistent from './pages/BehoerdeAssistent';
+import BefundAssistent from './pages/BefundAssistent';
 
 const NAV_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
   { path: '/upload', labelKey: 'nav.upload', icon: Upload },
+  { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
+  { path: '/behoerde', labelKey: 'nav.behoerde', icon: Landmark },
+  { path: '/befund', labelKey: 'nav.befund', icon: Stethoscope },
   { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
   { path: '/profil', labelKey: 'nav.profile', icon: User },
 ];
@@ -71,16 +77,16 @@ function NavBar() {
             </Link>
 
             {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-1">
+            <div className="hidden lg:flex items-center gap-0.5">
               {NAV_ITEMS.map(({ path, labelKey, icon: Icon }) => (
                 <Link
                   key={path}
                   to={path}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium no-underline transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium no-underline transition-colors whitespace-nowrap ${
                     isActive(path) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-3.5 h-3.5" />
                   {t(labelKey)}
                 </Link>
               ))}
@@ -96,7 +102,7 @@ function NavBar() {
             {/* Mobile Hamburger */}
             <button
               onClick={() => setDrawerOpen(true)}
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
               style={{ minHeight: '44px', minWidth: '44px' }}
             >
               <Menu className="w-6 h-6" />
@@ -108,14 +114,14 @@ function NavBar() {
       {/* Mobile Drawer Overlay */}
       {drawerOpen && (
         <div
-          className="md:hidden fixed inset-0 z-60 bg-black/40 transition-opacity duration-300"
+          className="lg:hidden fixed inset-0 z-60 bg-black/40 transition-opacity duration-300"
           onClick={() => setDrawerOpen(false)}
         />
       )}
 
       {/* Mobile Drawer */}
       <div
-        className={`md:hidden fixed top-0 left-0 bottom-0 z-70 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
+        className={`lg:hidden fixed top-0 left-0 bottom-0 z-70 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -177,6 +183,9 @@ function AppContent() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
+          <Route path="/ausgaben" element={<PrivateRoute><ExpensesPage /></PrivateRoute>} />
+          <Route path="/behoerde" element={<PrivateRoute><BehoerdeAssistent /></PrivateRoute>} />
+          <Route path="/befund" element={<PrivateRoute><BefundAssistent /></PrivateRoute>} />
           <Route path="/archiv" element={<PrivateRoute><Archiv /></PrivateRoute>} />
           <Route path="/profil" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
           <Route path="/documents/:id" element={<PrivateRoute><DocumentDetail /></PrivateRoute>} />

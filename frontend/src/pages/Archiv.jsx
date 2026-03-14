@@ -28,7 +28,7 @@ export default function Archiv() {
     setLoading(true);
     try {
       const data = await getDocuments({ archiv: true });
-      setDocs(data);
+      setDocs(data.documents || data);
     } catch (err) {
       console.error('Fehler beim Laden des Archivs:', err);
     } finally {
