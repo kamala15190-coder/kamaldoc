@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
-import { isRtl } from './languages';
+import { LANGUAGES, isRtl } from './languages';
+import { supabase } from './supabaseClient';
 import Dashboard from './pages/Dashboard';
 import DocumentDetail from './pages/DocumentDetail';
 import UploadPage from './pages/UploadPage';
@@ -93,6 +94,7 @@ function NavBar() {
                 </Link>
               ))}
               <UpgradeButton />
+              <LanguageSwitcher />
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 px-3 py-1.5 ml-2 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none"
@@ -102,14 +104,17 @@ function NavBar() {
               </button>
             </div>
 
-            {/* Mobile Hamburger */}
-            <button
-              onClick={() => setDrawerOpen(true)}
-              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
-              style={{ minHeight: '44px', minWidth: '44px' }}
-            >
-              <Menu className="w-6 h-6" />
-            </button>
+            {/* Mobile: Language + Hamburger */}
+            <div className="lg:hidden flex items-center gap-1">
+              <LanguageSwitcher />
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
+                style={{ minHeight: '44px', minWidth: '44px' }}
+              >
+                <Menu className="w-6 h-6" />
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -175,6 +180,83 @@ function NavBar() {
         </nav>
       </div>
     </>
+  );
+}
+
+function LanguageSwitcher() {
+  const { i18n } = useTranslation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  const currentLang = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
+
+  const handleChange = async (langCode) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('kamaldoc_language', langCode);
+    setOpen(false);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          app_language: langCode,
+          updated_at: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.error('Failed to save language to profile:', err);
+    }
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer bg-transparent border-none text-lg"
+        title={currentLang.label}
+        style={{ minHeight: '36px', minWidth: '36px' }}
+      >
+        {currentLang.flag}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-[100] max-h-72 overflow-y-auto w-52">
+          {LANGUAGES.slice(0, 2).map(lang => (
+            <button
+              key={lang.code}
+              onClick={() => handleChange(lang.code)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors cursor-pointer bg-transparent border-none ${
+                lang.code === i18n.language ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'
+              }`}
+            >
+              <span className="text-base">{lang.flag}</span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+          <div className="border-t border-slate-100 my-1" />
+          {LANGUAGES.slice(2).map(lang => (
+            <button
+              key={lang.code}
+              onClick={() => handleChange(lang.code)}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors cursor-pointer bg-transparent border-none ${
+                lang.code === i18n.language ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'
+              }`}
+            >
+              <span className="text-base">{lang.flag}</span>
+              <span>{lang.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

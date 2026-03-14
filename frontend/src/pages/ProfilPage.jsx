@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Globe, Zap, Rocket, CreditCard, XCircle } from 'lucide-react';
+import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getEinstellungen, saveEinstellungen, cancelSubscription } from '../api';
 import { supabase } from '../supabaseClient';
-import { LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
 
 export default function ProfilPage() {
@@ -21,9 +20,6 @@ export default function ProfilPage() {
   const [pwSaving, setPwSaving] = useState(false);
   const [pwSuccess, setPwSuccess] = useState(false);
   const [pwError, setPwError] = useState(null);
-
-  // Language state
-  const [selectedLang, setSelectedLang] = useState(i18n.language);
 
   useEffect(() => {
     (async () => {
@@ -80,25 +76,6 @@ export default function ProfilPage() {
       setPwError(err.message || t('profile.passwordChangeFailed'));
     } finally {
       setPwSaving(false);
-    }
-  };
-
-  const handleLanguageChange = async (langCode) => {
-    setSelectedLang(langCode);
-    i18n.changeLanguage(langCode);
-    localStorage.setItem('kamaldoc_language', langCode);
-    // Save to Supabase profile
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await supabase.from('profiles').upsert({
-          id: user.id,
-          app_language: langCode,
-          updated_at: new Date().toISOString(),
-        });
-      }
-    } catch (err) {
-      console.error('Failed to save language to profile:', err);
     }
   };
 
@@ -350,33 +327,6 @@ export default function ProfilPage() {
         </button>
       </div>
 
-      {/* Section 3: App-Sprache */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Globe className="w-5 h-5 text-slate-600" />
-          <h2 className="text-lg font-semibold text-slate-900">{t('profile.appLanguage')}</h2>
-        </div>
-        <p className="text-sm text-slate-500 mb-4">{t('profile.appLanguageDesc')}</p>
-
-        <select
-          value={selectedLang}
-          onChange={e => handleLanguageChange(e.target.value)}
-          className="w-full md:w-80 px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-          style={{ minHeight: '44px' }}
-        >
-          {LANGUAGES.slice(0, 2).map(lang => (
-            <option key={lang.code} value={lang.code}>
-              {lang.flag} {lang.label}
-            </option>
-          ))}
-          <option disabled>──────────</option>
-          {LANGUAGES.slice(2).map(lang => (
-            <option key={lang.code} value={lang.code}>
-              {lang.flag} {lang.label}
-            </option>
-          ))}
-        </select>
-      </div>
     </div>
   );
 }
