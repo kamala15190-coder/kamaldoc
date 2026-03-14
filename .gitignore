@@ -1,13 +1,24 @@
 node_modules/
 dist/
-.env
 *.log
+__pycache__/
+*.pyc
+
+# Sensitive / secrets
+.env
+*.env
+backend/.env
+API.txt
+data/
+data/*.db
 Dokumente/
+
+# Scripts (local only)
+*.bat
+server-setup.sh
 check_thumbs.sh
 test_*.sh
 test_*.py
-__pycache__/
-*.pyc
 
 # Android build artifacts
 frontend/android/.gradle/
