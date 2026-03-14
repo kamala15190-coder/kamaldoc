@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, X, Zap, Rocket, Lock, Loader2 } from 'lucide-react';
+import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
-import { createCheckout } from '../api';
+import { createCheckout, downgradeSubscription } from '../api';
+
+const PLAN_ORDER = { free: 0, basic: 1, pro: 2 };
 
 const PLANS = [
   {
@@ -52,25 +54,41 @@ const PLANS = [
 export default function PricingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { plan: currentPlan, refresh } = useSubscription();
+  const { plan: currentPlan, subscription, refresh } = useSubscription();
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  const isDowngrade = (planId) => PLAN_ORDER[planId] < PLAN_ORDER[currentPlan];
+  const isUpgrade = (planId) => PLAN_ORDER[planId] > PLAN_ORDER[currentPlan];
 
   const handleSelect = async (planId) => {
-    if (planId === 'free' || planId === currentPlan) return;
+    if (planId === currentPlan) return;
 
     setLoadingPlan(planId);
     setError(null);
+    setSuccess(null);
+
     try {
-      const { checkout_url } = await createCheckout(planId);
-      if (checkout_url) {
-        window.location.href = checkout_url;
+      if (isDowngrade(planId)) {
+        if (!confirm(t('pricing.downgradeConfirm', { plan: t(`pricing.${planId}`) }))) {
+          setLoadingPlan(null);
+          return;
+        }
+        await downgradeSubscription(planId);
+        setSuccess(t('pricing.downgradeSuccess'));
+        refresh();
       } else {
-        setError(t('pricing.stripeNotReady'));
+        const { checkout_url } = await createCheckout(planId);
+        if (checkout_url) {
+          window.location.href = checkout_url;
+        } else {
+          setError(t('pricing.stripeNotReady'));
+        }
       }
     } catch (err) {
       const detail = err.response?.data?.detail;
-      setError(typeof detail === 'string' ? detail : t('pricing.error'));
+      setError(typeof detail === 'string' ? detail : isDowngrade(planId) ? t('pricing.downgradeFailed') : t('pricing.error'));
     } finally {
       setLoadingPlan(null);
     }
@@ -78,10 +96,18 @@ export default function PricingPage() {
 
   const getButtonText = (planId) => {
     if (planId === currentPlan) return t('pricing.currentPlan');
-    if (planId === 'free') return t('pricing.freePlan');
-    if (currentPlan === 'pro' && planId === 'basic') return t('pricing.downgrade');
+    if (isDowngrade(planId)) return t('pricing.downgrade');
     return t('pricing.upgrade');
   };
+
+  const getButtonStyle = (planId, isPopular, isCurrent) => {
+    if (isCurrent) return 'bg-green-50 text-green-700 border border-green-200';
+    if (isDowngrade(planId)) return 'bg-slate-100 text-slate-700 hover:bg-slate-200';
+    if (isPopular) return 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50';
+    return 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50';
+  };
+
+  const pendingPlan = subscription?.pending_plan;
 
   return (
     <div className="max-w-5xl mx-auto py-4">
@@ -96,23 +122,42 @@ export default function PricingPage() {
         </div>
       )}
 
+      {success && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm text-center flex items-center justify-center gap-2">
+          <CheckCircle className="w-4 h-4" />
+          {success}
+        </div>
+      )}
+
+      {pendingPlan && (
+        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm text-center">
+          {t('profile.pendingDowngrade', {
+            date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—',
+            plan: t(`pricing.${pendingPlan}`),
+          })}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {PLANS.map((plan) => {
           const isCurrent = plan.id === currentPlan;
           const isPopular = plan.popular;
+          const isPending = pendingPlan === plan.id;
 
           return (
             <div
               key={plan.id}
               className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col transition-all ${
-                isPopular
+                isPopular && !isCurrent
                   ? 'border-indigo-500 shadow-lg shadow-indigo-100 scale-[1.02]'
                   : isCurrent
                   ? 'border-green-400 shadow-sm'
+                  : isPending
+                  ? 'border-amber-400 shadow-sm'
                   : 'border-slate-200 shadow-sm hover:border-slate-300'
               }`}
             >
-              {isPopular && (
+              {isPopular && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-4 py-1 rounded-full">
                   {t('pricing.recommended')}
                 </div>
@@ -154,15 +199,9 @@ export default function PricingPage() {
 
               <button
                 onClick={() => handleSelect(plan.id)}
-                disabled={isCurrent || plan.id === 'free' || loadingPlan === plan.id}
+                disabled={isCurrent || loadingPlan === plan.id}
                 className={`w-full py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer border-none disabled:cursor-default ${
-                  isPopular && !isCurrent
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50'
-                    : isCurrent
-                    ? 'bg-green-50 text-green-700 border border-green-200'
-                    : plan.id === 'free'
-                    ? 'bg-slate-100 text-slate-500'
-                    : 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50'
+                  getButtonStyle(plan.id, isPopular, isCurrent)
                 }`}
                 style={{ minHeight: '48px' }}
               >

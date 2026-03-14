@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getEinstellungen, saveEinstellungen, cancelSubscription } from '../api';
+import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubscription } from '../api';
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 
@@ -84,6 +84,9 @@ export default function ProfilPage() {
   const [cancelling, setCancelling] = useState(false);
   const [cancelSuccess, setCancelSuccess] = useState(false);
   const [cancelError, setCancelError] = useState(null);
+  const [reactivating, setReactivating] = useState(false);
+  const [reactivateSuccess, setReactivateSuccess] = useState(false);
+  const [reactivateError, setReactivateError] = useState(null);
   const [searchParams] = useSearchParams();
 
   // Refresh subscription after checkout success
@@ -106,6 +109,21 @@ export default function ProfilPage() {
       setCancelError(err.response?.data?.detail || t('profile.cancelFailed'));
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleReactivate = async () => {
+    setReactivating(true);
+    setReactivateError(null);
+    try {
+      await reactivateSubscription();
+      setReactivateSuccess(true);
+      refreshSub();
+      setTimeout(() => setReactivateSuccess(false), 5000);
+    } catch (err) {
+      setReactivateError(err.response?.data?.detail || t('profile.reactivateFailed'));
+    } finally {
+      setReactivating(false);
     }
   };
 
@@ -171,6 +189,19 @@ export default function ProfilPage() {
           </div>
         )}
 
+        {/* Pending Downgrade Info */}
+        {subscription?.pending_plan && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-700">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span className="text-sm">
+              {t('profile.pendingDowngrade', {
+                date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—',
+                plan: subscription.pending_plan.charAt(0).toUpperCase() + subscription.pending_plan.slice(1),
+              })}
+            </span>
+          </div>
+        )}
+
         {cancelSuccess && (
           <div className="mb-4 flex items-center gap-2 text-green-600">
             <CheckCircle className="w-4 h-4" />
@@ -181,6 +212,18 @@ export default function ProfilPage() {
           <div className="mb-4 flex items-center gap-2 text-red-600">
             <AlertCircle className="w-4 h-4" />
             <span className="text-sm">{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span>
+          </div>
+        )}
+        {reactivateSuccess && (
+          <div className="mb-4 flex items-center gap-2 text-green-600">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">{t('profile.reactivateSuccess')}</span>
+          </div>
+        )}
+        {reactivateError && (
+          <div className="mb-4 flex items-center gap-2 text-red-600">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span>
           </div>
         )}
 
@@ -195,11 +238,23 @@ export default function ProfilPage() {
               <Rocket className="w-4 h-4" /> {t('pricing.upgradePro')}
             </Link>
           )}
+          {isPro && (
+            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-all no-underline" style={{ minHeight: '44px' }}>
+              <Rocket className="w-4 h-4" /> {t('pricing.managePlan')}
+            </Link>
+          )}
           {!isFree && !subscription?.cancelled_at && (
             <button onClick={handleCancel} disabled={cancelling}
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50" style={{ minHeight: '44px' }}>
               {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
               {t('profile.cancelPlan')}
+            </button>
+          )}
+          {!isFree && subscription?.cancelled_at && (
+            <button onClick={handleReactivate} disabled={reactivating}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all cursor-pointer border-none disabled:opacity-50" style={{ minHeight: '44px' }}>
+              {reactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              {t('profile.reactivate')}
             </button>
           )}
         </div>

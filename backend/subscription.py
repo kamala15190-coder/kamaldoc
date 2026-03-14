@@ -103,7 +103,7 @@ async def get_user_plan(user_id: str) -> str:
     db = await get_db()
     try:
         cursor = await db.execute(
-            "SELECT plan, expires_at, cancelled_at FROM subscriptions WHERE user_id = ?",
+            "SELECT plan, expires_at, cancelled_at, pending_plan FROM subscriptions WHERE user_id = ?",
             (user_id,),
         )
         row = await cursor.fetchone()
@@ -118,14 +118,16 @@ async def get_user_plan(user_id: str) -> str:
             try:
                 exp_date = datetime.fromisoformat(expires_at)
                 if exp_date < datetime.now():
-                    # Downgrade to free
+                    # Check for pending downgrade
+                    pending = row["pending_plan"] if "pending_plan" in row.keys() else None
+                    new_plan = pending or "free"
                     await db.execute(
-                        "UPDATE subscriptions SET plan = 'free', updated_at = ? WHERE user_id = ?",
-                        (datetime.now().isoformat(), user_id),
+                        "UPDATE subscriptions SET plan = ?, pending_plan = NULL, updated_at = ? WHERE user_id = ?",
+                        (new_plan, datetime.now().isoformat(), user_id),
                     )
                     await db.commit()
-                    logger.info(f"User {user_id} downgraded to free (expired {expires_at})")
-                    return "free"
+                    logger.info(f"User {user_id} downgraded to {new_plan} (expired {expires_at})")
+                    return new_plan
             except (ValueError, TypeError):
                 pass
 
@@ -338,6 +340,7 @@ async def get_subscription_status(user_id: str) -> dict:
         "plan": plan,
         "expires_at": sub.get("expires_at"),
         "cancelled_at": sub.get("cancelled_at"),
+        "pending_plan": sub.get("pending_plan"),
         "started_at": sub.get("started_at"),
         "stripe_subscription_id": sub.get("stripe_subscription_id"),
         "limits": {
@@ -356,6 +359,98 @@ async def get_subscription_status(user_id: str) -> dict:
             "befund_used": usage["befund_month"],
         },
     }
+
+
+# --- Downgrade ---
+
+async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
+    """Schedule a downgrade to a lower plan at end of current period."""
+    PLAN_ORDER = {"free": 0, "basic": 1, "pro": 2}
+    current = await get_user_plan(user_id)
+
+    if target_plan not in PLAN_ORDER:
+        raise HTTPException(400, "Ungültiger Plan.")
+    if PLAN_ORDER[target_plan] >= PLAN_ORDER[current]:
+        raise HTTPException(400, "Downgrade ist nur auf einen niedrigeren Plan möglich.")
+
+    db = await get_db()
+    try:
+        if target_plan == "free":
+            # For downgrade to free: cancel Stripe subscription at period end
+            cursor = await db.execute(
+                "SELECT stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
+                (user_id,),
+            )
+            row = await cursor.fetchone()
+            stripe_sub_id = row["stripe_subscription_id"] if row else None
+            if stripe_sub_id and STRIPE_SECRET_KEY:
+                try:
+                    stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True)
+                except Exception as e:
+                    logger.error(f"Stripe cancel for downgrade error: {e}")
+
+        now = datetime.now().isoformat()
+        await db.execute(
+            "UPDATE subscriptions SET pending_plan = ?, updated_at = ? WHERE user_id = ?",
+            (target_plan, now, user_id),
+        )
+        await db.commit()
+
+        cursor = await db.execute(
+            "SELECT expires_at FROM subscriptions WHERE user_id = ?", (user_id,)
+        )
+        row = await cursor.fetchone()
+        expires_at = row["expires_at"] if row else None
+
+        logger.info(f"Downgrade scheduled: user={user_id}, from={current}, to={target_plan}")
+        return {
+            "message": f"Downgrade auf {target_plan} geplant.",
+            "pending_plan": target_plan,
+            "expires_at": expires_at,
+        }
+    finally:
+        await db.close()
+
+
+# --- Reactivate ---
+
+async def reactivate_subscription(user_id: str) -> dict:
+    """Reactivate a cancelled subscription."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT plan, cancelled_at, stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        if not row or row["plan"] == "free":
+            raise HTTPException(400, "Kein aktives Abo vorhanden.")
+        if not row["cancelled_at"]:
+            raise HTTPException(400, "Abo ist nicht gekündigt.")
+
+        stripe_sub_id = row["stripe_subscription_id"]
+        # Reactivate in Stripe (undo cancel_at_period_end)
+        if stripe_sub_id and STRIPE_SECRET_KEY:
+            try:
+                stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=False)
+            except Exception as e:
+                logger.error(f"Stripe reactivate error: {e}")
+
+        now = datetime.now().isoformat()
+        await db.execute(
+            "UPDATE subscriptions SET cancelled_at = NULL, pending_plan = NULL, updated_at = ? WHERE user_id = ?",
+            (now, user_id),
+        )
+        await db.commit()
+
+        logger.info(f"Subscription reactivated: user={user_id}, plan={row['plan']}")
+        return {
+            "message": "Abo reaktiviert.",
+            "plan": row["plan"],
+            "expires_at": row["expires_at"],
+        }
+    finally:
+        await db.close()
 
 
 # --- Stripe Checkout ---

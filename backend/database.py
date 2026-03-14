@@ -135,6 +135,7 @@ async def init_db():
             "ALTER TABLE documents ADD COLUMN vereinfacht TEXT",
             "ALTER TABLE documents ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE documents ADD COLUMN reminder_days INTEGER DEFAULT 3",
+            "ALTER TABLE subscriptions ADD COLUMN pending_plan TEXT",
         ]
         for migration in migrations:
             try:

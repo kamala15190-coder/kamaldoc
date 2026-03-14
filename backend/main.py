@@ -27,6 +27,7 @@ from subscription import (
     check_upload_limit, check_analysis_limit, check_behoerden_limit,
     check_befund_limit, check_expenses_access, increment_usage,
     get_subscription_status, create_checkout_session, cancel_subscription,
+    downgrade_subscription, reactivate_subscription,
     handle_webhook, get_user_plan, get_usage, PLAN_LIMITS,
 )
 
@@ -804,6 +805,19 @@ async def subscription_create_checkout(data: dict, user_id: str = Depends(get_cu
 async def subscription_cancel(user_id: str = Depends(get_current_user)):
     """Cancel subscription."""
     return await cancel_subscription(user_id)
+
+
+@app.post("/api/subscription/downgrade")
+async def subscription_downgrade(data: dict, user_id: str = Depends(get_current_user)):
+    """Schedule a downgrade to a lower plan."""
+    target_plan = data.get("target_plan")
+    return await downgrade_subscription(user_id, target_plan)
+
+
+@app.post("/api/subscription/reactivate")
+async def subscription_reactivate(user_id: str = Depends(get_current_user)):
+    """Reactivate a cancelled subscription."""
+    return await reactivate_subscription(user_id)
 
 
 @app.get("/api/subscription/usage")

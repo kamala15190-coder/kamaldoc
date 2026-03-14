@@ -110,6 +110,16 @@ export async function cancelSubscription() {
   return data;
 }
 
+export async function downgradeSubscription(targetPlan) {
+  const { data } = await api.post('/subscription/downgrade', { target_plan: targetPlan });
+  return data;
+}
+
+export async function reactivateSubscription() {
+  const { data } = await api.post('/subscription/reactivate');
+  return data;
+}
+
 export async function getSubscriptionUsage() {
   const { data } = await api.get('/subscription/usage');
   return data;

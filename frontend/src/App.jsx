@@ -265,10 +265,19 @@ function UpgradeButton({ mobile = false }) {
   const { t } = useTranslation();
 
   if (isPro) {
-    return mobile ? null : (
-      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 ml-1">
-        <Crown className="w-3 h-3" /> Pro
-      </span>
+    return (
+      <Link
+        to="/pricing"
+        className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
+          mobile
+            ? 'w-full px-4 py-3 rounded-xl text-base bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+            : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+        }`}
+        style={mobile ? { minHeight: '48px' } : {}}
+      >
+        <Crown className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+        {t('pricing.managePlan')}
+      </Link>
     );
   }
 
