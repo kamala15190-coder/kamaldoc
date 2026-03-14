@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope } from 'lucide-react';
+import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
+import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
 import { isRtl } from './languages';
 import Dashboard from './pages/Dashboard';
 import DocumentDetail from './pages/DocumentDetail';
@@ -14,6 +15,7 @@ import RegisterPage from './pages/RegisterPage';
 import ExpensesPage from './pages/ExpensesPage';
 import BehoerdeAssistent from './pages/BehoerdeAssistent';
 import BefundAssistent from './pages/BefundAssistent';
+import PricingPage from './pages/PricingPage';
 
 const NAV_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -90,6 +92,7 @@ function NavBar() {
                   {t(labelKey)}
                 </Link>
               ))}
+              <UpgradeButton />
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 px-3 py-1.5 ml-2 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none"
@@ -155,6 +158,11 @@ function NavBar() {
             </Link>
           ))}
           
+          {/* Upgrade Button (Mobile) */}
+          <div className="px-3 pt-2">
+            <UpgradeButton mobile />
+          </div>
+
           {/* Logout Button */}
           <button
             onClick={handleLogout}
@@ -167,6 +175,52 @@ function NavBar() {
         </nav>
       </div>
     </>
+  );
+}
+
+function UpgradeButton({ mobile = false }) {
+  const { isFree, isBasic, isPro } = useSubscription();
+  const { t } = useTranslation();
+
+  if (isPro) {
+    return mobile ? null : (
+      <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 ml-1">
+        <Crown className="w-3 h-3" /> Pro
+      </span>
+    );
+  }
+
+  if (isBasic) {
+    return (
+      <Link
+        to="/pricing"
+        className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
+          mobile
+            ? 'w-full px-4 py-3 rounded-xl text-base bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+            : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+        }`}
+        style={mobile ? { minHeight: '48px' } : {}}
+      >
+        <Rocket className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+        {t('pricing.upgradePro')}
+      </Link>
+    );
+  }
+
+  // Free
+  return (
+    <Link
+      to="/pricing"
+      className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
+        mobile
+          ? 'w-full px-4 py-3 rounded-xl text-base bg-amber-50 text-amber-700 hover:bg-amber-100'
+          : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-amber-50 text-amber-700 hover:bg-amber-100'
+      }`}
+      style={mobile ? { minHeight: '48px' } : {}}
+    >
+      <Zap className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+      {t('pricing.upgrade')}
+    </Link>
   );
 }
 
@@ -188,6 +242,7 @@ function AppContent() {
           <Route path="/befund" element={<PrivateRoute><BefundAssistent /></PrivateRoute>} />
           <Route path="/archiv" element={<PrivateRoute><Archiv /></PrivateRoute>} />
           <Route path="/profil" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
+          <Route path="/pricing" element={<PrivateRoute><PricingPage /></PrivateRoute>} />
           <Route path="/documents/:id" element={<PrivateRoute><DocumentDetail /></PrivateRoute>} />
         </Routes>
       </main>
@@ -211,9 +266,11 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <RtlWrapper>
-          <AppContent />
-        </RtlWrapper>
+        <SubscriptionProvider>
+          <RtlWrapper>
+            <AppContent />
+          </RtlWrapper>
+        </SubscriptionProvider>
       </AuthProvider>
     </BrowserRouter>
   );

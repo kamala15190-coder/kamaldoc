@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getExpenses } from '../api';
+import { useSubscription } from '../hooks/useSubscription';
+import UpgradePrompt from '../components/UpgradePrompt';
 
 const EXPENSE_COLORS = {
   versicherung: '#6366f1',
@@ -28,6 +30,21 @@ const EXPENSE_COLORS = {
 
 export default function ExpensesPage() {
   const { t } = useTranslation();
+  const { isFree } = useSubscription();
+
+  if (isFree) {
+    return (
+      <div className="max-w-4xl mx-auto">
+        <div className="flex items-center gap-3 mb-6">
+          <DollarSign className="w-6 h-6 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-slate-900">{t('expenses.title')}</h1>
+        </div>
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <UpgradePrompt messageKey="pricing.expensesLocked" minPlan="basic" />
+        </div>
+      </div>
+    );
+  }
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

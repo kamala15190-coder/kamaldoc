@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Globe } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Globe, Zap, Rocket, CreditCard, XCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getEinstellungen, saveEinstellungen } from '../api';
+import { getEinstellungen, saveEinstellungen, cancelSubscription } from '../api';
 import { supabase } from '../supabaseClient';
 import { LANGUAGES } from '../languages';
+import { useSubscription } from '../hooks/useSubscription';
 
 export default function ProfilPage() {
   const { t, i18n } = useTranslation();
@@ -100,6 +102,44 @@ export default function ProfilPage() {
     }
   };
 
+  // Subscription
+  const { plan, limits, usage, isPro, isBasic, isFree, subscription, refresh: refreshSub } = useSubscription();
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
+  const [cancelError, setCancelError] = useState(null);
+  const [searchParams] = useSearchParams();
+
+  // Refresh subscription after checkout success
+  useEffect(() => {
+    if (searchParams.get('checkout') === 'success') {
+      refreshSub();
+    }
+  }, [searchParams, refreshSub]);
+
+  const handleCancel = async () => {
+    if (!confirm(t('profile.confirmCancel'))) return;
+    setCancelling(true);
+    setCancelError(null);
+    try {
+      await cancelSubscription();
+      setCancelSuccess(true);
+      refreshSub();
+      setTimeout(() => setCancelSuccess(false), 5000);
+    } catch (err) {
+      setCancelError(err.response?.data?.detail || t('profile.cancelFailed'));
+    } finally {
+      setCancelling(false);
+    }
+  };
+
+  const planBadge = {
+    free: { label: 'Free', className: 'bg-slate-100 text-slate-600', icon: Lock },
+    basic: { label: 'Basic', className: 'bg-amber-100 text-amber-700', icon: Zap },
+    pro: { label: 'Pro', className: 'bg-indigo-100 text-indigo-700', icon: Rocket },
+  };
+  const badge = planBadge[plan] || planBadge.free;
+  const BadgeIcon = badge.icon;
+
   if (loading) {
     return (
       <div className="flex justify-center py-20">
@@ -113,6 +153,79 @@ export default function ProfilPage() {
       <div className="flex items-center gap-3 mb-6">
         <User className="w-6 h-6 text-indigo-600" />
         <h1 className="text-2xl font-bold text-slate-900">{t('profile.title')}</h1>
+      </div>
+
+      {/* Checkout Success Banner */}
+      {searchParams.get('checkout') === 'success' && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-700">
+          <CheckCircle className="w-5 h-5" />
+          <span className="text-sm font-medium">{t('profile.checkoutSuccess')}</span>
+        </div>
+      )}
+
+      {/* Section: Subscription */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <CreditCard className="w-5 h-5 text-slate-600" />
+          <h2 className="text-lg font-semibold text-slate-900">{t('profile.subscription')}</h2>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${badge.className}`}>
+            <BadgeIcon className="w-4 h-4" />
+            {badge.label}
+          </span>
+          {subscription?.expires_at && (
+            <span className="text-sm text-slate-500">
+              {subscription.cancelled_at
+                ? t('profile.cancelledUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })
+                : t('profile.activeUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })}
+            </span>
+          )}
+        </div>
+
+        {/* Usage Stats */}
+        {usage && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} />
+            <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_total || 0} max={limits.ki_analyses_total} />
+            <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} />
+            <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} />
+          </div>
+        )}
+
+        {cancelSuccess && (
+          <div className="mb-4 flex items-center gap-2 text-green-600">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-sm font-medium">{t('profile.cancelledSuccess')}</span>
+          </div>
+        )}
+        {cancelError && (
+          <div className="mb-4 flex items-center gap-2 text-red-600">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm">{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          {isFree && (
+            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-semibold hover:from-amber-600 hover:to-orange-600 transition-all no-underline" style={{ minHeight: '44px' }}>
+              <Zap className="w-4 h-4" /> {t('pricing.upgradeNow')}
+            </Link>
+          )}
+          {isBasic && (
+            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all no-underline" style={{ minHeight: '44px' }}>
+              <Rocket className="w-4 h-4" /> {t('pricing.upgradePro')}
+            </Link>
+          )}
+          {!isFree && !subscription?.cancelled_at && (
+            <button onClick={handleCancel} disabled={cancelling}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50" style={{ minHeight: '44px' }}>
+              {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+              {t('profile.cancelPlan')}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Section 1: Absenderdaten */}
@@ -264,6 +377,31 @@ export default function ProfilPage() {
           ))}
         </select>
       </div>
+    </div>
+  );
+}
+
+function UsageStat({ label, used, max }) {
+  const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
+  const isUnlimited = max === null || max === undefined;
+  const isHigh = !isUnlimited && pct >= 80;
+
+  return (
+    <div className="bg-slate-50 rounded-lg p-3">
+      <div className="text-xs text-slate-500 mb-1">{label}</div>
+      <div className={`text-lg font-bold ${isHigh ? 'text-red-600' : 'text-slate-900'}`}>
+        {used}{isUnlimited ? '' : `/${max}`}
+      </div>
+      {isUnlimited ? (
+        <div className="text-xs text-green-600 font-medium mt-0.5">Unbegrenzt</div>
+      ) : (
+        <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5">
+          <div
+            className={`h-1.5 rounded-full transition-all ${isHigh ? 'bg-red-500' : 'bg-indigo-500'}`}
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }

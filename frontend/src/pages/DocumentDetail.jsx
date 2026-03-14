@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
-  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock
+  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,6 +11,7 @@ import {
 } from '../api';
 import AuthImage from '../components/AuthImage';
 import { REPLY_LANGUAGES } from '../languages';
+import { useSubscription } from '../hooks/useSubscription';
 
 const KATEGORIE_COLORS = {
   brief: 'bg-blue-100 text-blue-700',
@@ -362,6 +363,9 @@ export default function DocumentDetail() {
                   ⚠️ {t('document.deadlineOverdue')}
                 </p>
               )}
+
+              {/* Push-Notification Reminder per Document */}
+              {deadline && <ReminderSettings docId={id} currentDays={doc.reminder_days} onUpdate={(updated) => setDoc(updated)} />}
             </div>
 
             {doc.zusammenfassung && (
@@ -500,6 +504,78 @@ function Field({ label, value, small }) {
     <div>
       <p className={`font-medium text-slate-500 ${small ? 'text-xs' : 'text-xs'}`}>{label}</p>
       <div className={`text-slate-800 ${small ? 'text-xs' : 'text-sm'}`}>{value}</div>
+    </div>
+  );
+}
+
+function ReminderSettings({ docId, currentDays, onUpdate }) {
+  const { t } = useTranslation();
+  const { plan, isFree, isBasic, isPro } = useSubscription();
+  const [saving, setSaving] = useState(false);
+  const [selected, setSelected] = useState(currentDays ?? 3);
+
+  const options = [
+    { value: 7, labelKey: 'document.reminder7', minPlan: 'pro' },
+    { value: 3, labelKey: 'document.reminder3', minPlan: 'basic' },
+    { value: 1, labelKey: 'document.reminder1', minPlan: 'pro' },
+    { value: null, labelKey: 'document.reminderNone', minPlan: 'free' },
+  ];
+
+  const canSelect = (opt) => {
+    if (isPro) return true;
+    if (isBasic) return opt.minPlan === 'basic' || opt.minPlan === 'free';
+    return opt.minPlan === 'free';
+  };
+
+  const handleChange = async (val) => {
+    setSelected(val);
+    setSaving(true);
+    try {
+      const updated = await updateDocument(docId, { reminder_days: val === null ? 0 : val });
+      if (onUpdate) onUpdate(updated);
+    } catch (err) { console.error(err); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-100">
+      <p className="text-xs font-medium text-slate-500 mb-2">{t('document.reminderTitle')}</p>
+      {isFree && (
+        <p className="text-xs text-amber-600 mb-2 flex items-center gap-1">
+          <Lock className="w-3 h-3" /> {t('document.reminderFreeLocked')}
+        </p>
+      )}
+      <div className="space-y-1.5">
+        {options.map((opt) => {
+          const enabled = canSelect(opt);
+          return (
+            <label
+              key={String(opt.value)}
+              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
+                enabled ? 'hover:bg-slate-50' : 'opacity-50 cursor-not-allowed'
+              } ${selected === opt.value ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'}`}
+            >
+              <input
+                type="radio"
+                name="reminder_days"
+                value={String(opt.value)}
+                checked={selected === opt.value}
+                disabled={!enabled || saving}
+                onChange={() => enabled && handleChange(opt.value)}
+                className="accent-indigo-600"
+              />
+              <span>{t(opt.labelKey)}</span>
+              {!enabled && (
+                <span className="ml-auto text-xs text-slate-400 flex items-center gap-1">
+                  <Lock className="w-3 h-3" />
+                  {opt.minPlan === 'pro' ? 'Pro' : 'Basic'}
+                </span>
+              )}
+            </label>
+          );
+        })}
+      </div>
+      {saving && <Loader2 className="w-4 h-4 animate-spin text-indigo-500 mt-2" />}
     </div>
   );
 }

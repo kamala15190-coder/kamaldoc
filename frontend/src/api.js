@@ -93,6 +93,28 @@ export async function saveEinstellungen(settings) {
   return data;
 }
 
+// --- Subscription ---
+
+export async function getSubscriptionStatus() {
+  const { data } = await api.get('/subscription/status');
+  return data;
+}
+
+export async function createCheckout(plan) {
+  const { data } = await api.post('/subscription/create-checkout', { plan });
+  return data;
+}
+
+export async function cancelSubscription() {
+  const { data } = await api.post('/subscription/cancel');
+  return data;
+}
+
+export async function getSubscriptionUsage() {
+  const { data } = await api.get('/subscription/usage');
+  return data;
+}
+
 export function getThumbnailUrl(id) {
   return `${API_BASE_URL}/api/documents/${id}/thumbnail`;
 }

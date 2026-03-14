@@ -23,6 +23,12 @@ from llm_service import (
     explain_authority_document, simplify_medical_report, translate_simplified_report
 )
 from auth import get_current_user
+from subscription import (
+    check_upload_limit, check_analysis_limit, check_behoerden_limit,
+    check_befund_limit, check_expenses_access, increment_usage,
+    get_subscription_status, create_checkout_session, cancel_subscription,
+    handle_webhook, get_user_plan, get_usage, PLAN_LIMITS,
+)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -205,6 +211,18 @@ class DocumentUpdate(BaseModel):
     handlung_erledigt: Optional[bool] = None
     tags: Optional[str] = None
     deadline: Optional[str] = None
+    reminder_days: Optional[int] = None
+
+
+async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
+    """Wrapper: check analysis limit, then run analysis and increment counter."""
+    try:
+        await check_analysis_limit(user_id)
+        await run_analysis(doc_id, image_path)
+        await increment_usage(user_id, "ki_analyses_total")
+    except HTTPException:
+        # Limit reached — still run analysis for free tier (already uploaded)
+        await run_analysis(doc_id, image_path)
 
 
 # --- Routen ---
@@ -215,6 +233,9 @@ async def upload_document(
     doc_type: str = Query("standard"),
     user_id: str = Depends(get_current_user)
 ):
+    # Plan enforcement: Upload-Limit prüfen
+    await check_upload_limit(user_id)
+
     ext = Path(file.filename).suffix.lower()
     if ext not in (".jpg", ".jpeg", ".png", ".pdf"):
         raise HTTPException(400, "Nur JPG, PNG und PDF erlaubt")
@@ -251,8 +272,11 @@ async def upload_document(
     finally:
         await db.close()
 
-    # Analyse im Hintergrund starten
-    asyncio.create_task(run_analysis(doc_id, str(image_path)))
+    # Usage counter erhöhen
+    await increment_usage(user_id, "documents_total")
+
+    # Analyse im Hintergrund starten (mit Limit-Check)
+    asyncio.create_task(run_analysis_with_limit(doc_id, str(image_path), user_id))
 
     return {"id": doc_id, "status": "analyse_laeuft", "dateiname": file.filename}
 
@@ -420,6 +444,9 @@ async def update_document(doc_id: int, update: DocumentUpdate, user_id: str = De
         if update.deadline is not None:
             fields.append("deadline = ?")
             params.append(update.deadline if update.deadline else None)
+        if update.reminder_days is not None:
+            fields.append("reminder_days = ?")
+            params.append(update.reminder_days if update.reminder_days in (1, 3, 7) else None)
 
         if not fields:
             raise HTTPException(400, "Keine Felder zum Aktualisieren")
@@ -574,6 +601,9 @@ async def get_expenses(
     expense_category: Optional[str] = None,
 ):
     """Ausgaben-Aggregation für Rechnungen."""
+    # Plan enforcement: Expenses nur für Basic/Pro
+    await check_expenses_access(user_id)
+
     query = """SELECT id, absender, betrag, datum, expense_category, zusammenfassung
                FROM documents WHERE user_id = ? AND kategorie = 'rechnung' AND betrag IS NOT NULL AND betrag > 0"""
     params = [user_id]
@@ -626,6 +656,9 @@ async def explain_document(
     user_id: str = Depends(get_current_user),
 ):
     """Behördenschreiben in einfacher Sprache erklären."""
+    # Plan enforcement: Behörden-Assistent Limit
+    await check_behoerden_limit(user_id)
+
     db = await get_db()
     try:
         cursor = await db.execute("SELECT volltext, erklaerung FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -646,6 +679,9 @@ async def explain_document(
         await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
         await db.commit()
 
+        # Usage counter
+        await increment_usage(user_id, "behoerden_month")
+
         return {"erklaerung": erklaerung, "document_id": doc_id}
     finally:
         await db.close()
@@ -659,6 +695,9 @@ async def simplify_document(
     user_id: str = Depends(get_current_user),
 ):
     """Medizinischen Befund vereinfachen (Instanz 1)."""
+    # Plan enforcement: Befund-Assistent Limit
+    await check_befund_limit(user_id)
+
     db = await get_db()
     try:
         cursor = await db.execute("SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -677,6 +716,9 @@ async def simplify_document(
 
         await db.execute("UPDATE documents SET vereinfacht = ? WHERE id = ? AND user_id = ?", (vereinfacht, doc_id, user_id))
         await db.commit()
+
+        # Usage counter
+        await increment_usage(user_id, "befund_month")
 
         return {"vereinfacht": vereinfacht, "document_id": doc_id}
     finally:
@@ -743,6 +785,39 @@ async def register_push_token(
         await db.close()
 
 
+# --- Subscription API ---
+
+@app.get("/api/subscription/status")
+async def subscription_status(user_id: str = Depends(get_current_user)):
+    """Get subscription status, limits, and usage."""
+    return await get_subscription_status(user_id)
+
+
+@app.post("/api/subscription/create-checkout")
+async def subscription_create_checkout(data: dict, user_id: str = Depends(get_current_user)):
+    """Create Stripe checkout session."""
+    plan = data.get("plan")
+    return await create_checkout_session(user_id, plan)
+
+
+@app.post("/api/subscription/cancel")
+async def subscription_cancel(user_id: str = Depends(get_current_user)):
+    """Cancel subscription."""
+    return await cancel_subscription(user_id)
+
+
+@app.get("/api/subscription/usage")
+async def subscription_usage(user_id: str = Depends(get_current_user)):
+    """Get current usage counters."""
+    return await get_usage(user_id)
+
+
+@app.post("/api/subscription/webhook")
+async def subscription_webhook(request: Request):
+    """Stripe webhook (no auth — verified via Stripe signature)."""
+    return await handle_webhook(request)
+
+
 # --- Deadline-Checker Background Job ---
 
 async def deadline_checker_loop():
@@ -757,32 +832,51 @@ async def deadline_checker_loop():
 
 
 async def check_deadlines():
-    """Prüfe alle Dokumente mit Deadline 3 Tage vor Fälligkeit."""
+    """Prüfe Dokumente mit Deadline basierend auf reminder_days pro Dokument."""
     from datetime import timedelta
     today = datetime.now().date()
-    warning_date = (today + timedelta(days=3)).strftime("%Y-%m-%d")
 
     db = await get_db()
     try:
+        # Hole alle Dokumente mit Deadline die noch nicht benachrichtigt wurden
         cursor = await db.execute(
-            """SELECT d.id, d.user_id, d.absender, d.zusammenfassung, d.deadline, d.handlung_beschreibung
+            """SELECT d.id, d.user_id, d.absender, d.zusammenfassung, d.deadline,
+                      d.handlung_beschreibung, d.reminder_days
                FROM documents d
                WHERE d.deadline IS NOT NULL
-                 AND d.deadline <= ?
-                 AND d.deadline >= ?
+                 AND d.reminder_days IS NOT NULL
                  AND d.deadline_notified = 0
                  AND d.handlung_erledigt = 0""",
-            (warning_date, today.strftime("%Y-%m-%d")),
         )
         rows = await cursor.fetchall()
 
         for row in rows:
             doc = row_to_dict(row)
+            reminder_days = doc.get("reminder_days") or 3
+
+            # Prüfe ob User Push-Notifications haben darf
+            user_id = doc.get("user_id")
+            try:
+                plan = await get_user_plan(user_id)
+                if not PLAN_LIMITS.get(plan, {}).get("push_notifications", False):
+                    continue  # Free user — keine Push
+            except Exception:
+                continue
+
+            # Prüfe ob Deadline innerhalb des reminder_days Fensters liegt
+            try:
+                deadline_date = datetime.strptime(doc["deadline"][:10], "%Y-%m-%d").date()
+                warning_date = today + timedelta(days=reminder_days)
+                if deadline_date > warning_date or deadline_date < today:
+                    continue
+            except (ValueError, TypeError):
+                continue
+
             logger.info(f"[Deadline-Checker] Deadline-Warnung für Dokument {doc['id']}: "
-                       f"{doc['absender']} - Deadline: {doc['deadline']}")
+                       f"{doc['absender']} - Deadline: {doc['deadline']} (reminder: {reminder_days}d)")
 
             # Token für Push-Notifications des Dokument-Besitzers holen
-            token_cursor = await db.execute("SELECT token, platform FROM push_tokens WHERE user_id = ?", (doc.get("user_id"),))
+            token_cursor = await db.execute("SELECT token, platform FROM push_tokens WHERE user_id = ?", (user_id,))
             tokens = await token_cursor.fetchall()
 
             for t in tokens:

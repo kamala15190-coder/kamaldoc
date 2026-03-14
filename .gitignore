@@ -8,3 +8,20 @@ test_*.sh
 test_*.py
 __pycache__/
 *.pyc
+
+# Android build artifacts
+frontend/android/.gradle/
+frontend/android/build/
+frontend/android/app/build/
+frontend/android/capacitor-cordova-android-plugins/build/
+frontend/android/local.properties
+*.apk
+*.keystore
+*.jks
+
+# iOS
+frontend/ios/App/Pods/
+frontend/ios/DerivedData/
+
+# Capacitor
+frontend/android/app/src/main/assets/public/

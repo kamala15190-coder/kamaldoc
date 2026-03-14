@@ -100,6 +100,27 @@ async def init_db():
                 created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
+
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                user_id TEXT PRIMARY KEY,
+                plan TEXT DEFAULT 'free',
+                stripe_customer_id TEXT,
+                stripe_subscription_id TEXT,
+                started_at TEXT,
+                expires_at TEXT,
+                cancelled_at TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS usage_counters (
+                user_id TEXT PRIMARY KEY,
+                documents_total INTEGER DEFAULT 0,
+                ki_analyses_total INTEGER DEFAULT 0,
+                behoerden_month INTEGER DEFAULT 0,
+                befund_month INTEGER DEFAULT 0,
+                last_reset TEXT
+            );
         """)
         await db.commit()
 
@@ -113,6 +134,7 @@ async def init_db():
             "ALTER TABLE documents ADD COLUMN erklaerung TEXT",
             "ALTER TABLE documents ADD COLUMN vereinfacht TEXT",
             "ALTER TABLE documents ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
+            "ALTER TABLE documents ADD COLUMN reminder_days INTEGER DEFAULT 3",
         ]
         for migration in migrations:
             try:
