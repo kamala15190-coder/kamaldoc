@@ -5,7 +5,7 @@ import {
   ChevronRight, AlertCircle, Globe, ArrowRight
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateDocument, getThumbnailUrl } from '../api';
+import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateDocument } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
 
 export default function BefundAssistent() {

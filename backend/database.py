@@ -1,6 +1,9 @@
 import aiosqlite
 import os
+import logging
 from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 DB_PATH = DATA_DIR / "documents.db"
@@ -21,12 +24,15 @@ async def init_db():
         await db.executescript("""
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL DEFAULT '',
                 dateiname TEXT NOT NULL,
                 originalpfad TEXT NOT NULL,
                 thumbnailpfad TEXT,
                 dateityp TEXT NOT NULL,
                 hochgeladen_am TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 status TEXT NOT NULL DEFAULT 'analyse_laeuft',
+                -- Dokument-Typ: standard, behoerde, befund
+                doc_type TEXT NOT NULL DEFAULT 'standard',
                 -- LLM-extrahierte Felder
                 kategorie TEXT,
                 absender TEXT,
@@ -44,6 +50,14 @@ async def init_db():
                 kontakt_adresse TEXT,
                 kontakt_email TEXT,
                 kontakt_telefon TEXT,
+                -- Deadline-Wächter
+                deadline TEXT,
+                deadline_notified INTEGER DEFAULT 0,
+                -- Ausgaben-Kategorie (für Rechnungen)
+                expense_category TEXT,
+                -- Behörden-/Befund-Assistent
+                erklaerung TEXT,
+                vereinfacht TEXT,
                 -- Benutzer-Felder
                 notizen TEXT,
                 tags TEXT,
@@ -62,14 +76,50 @@ async def init_db():
                 key TEXT PRIMARY KEY,
                 value TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS user_einstellungen (
+                user_id TEXT NOT NULL,
+                key TEXT NOT NULL,
+                value TEXT,
+                PRIMARY KEY (user_id, key)
+            );
+
+            CREATE TABLE IF NOT EXISTS push_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                token TEXT NOT NULL UNIQUE,
+                platform TEXT DEFAULT 'android',
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS befund_translations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER NOT NULL,
+                target_language TEXT NOT NULL,
+                translated_text TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+            );
         """)
         await db.commit()
 
-        # Migration: erledigt_am Spalte hinzufügen falls noch nicht vorhanden
-        try:
-            await db.execute("ALTER TABLE documents ADD COLUMN erledigt_am TEXT")
-            await db.commit()
-        except Exception:
-            pass  # Spalte existiert bereits
+        # Migrations: Spalten hinzufügen falls noch nicht vorhanden
+        migrations = [
+            "ALTER TABLE documents ADD COLUMN erledigt_am TEXT",
+            "ALTER TABLE documents ADD COLUMN doc_type TEXT NOT NULL DEFAULT 'standard'",
+            "ALTER TABLE documents ADD COLUMN deadline TEXT",
+            "ALTER TABLE documents ADD COLUMN deadline_notified INTEGER DEFAULT 0",
+            "ALTER TABLE documents ADD COLUMN expense_category TEXT",
+            "ALTER TABLE documents ADD COLUMN erklaerung TEXT",
+            "ALTER TABLE documents ADD COLUMN vereinfacht TEXT",
+            "ALTER TABLE documents ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
+        ]
+        for migration in migrations:
+            try:
+                await db.execute(migration)
+                await db.commit()
+                logger.info(f"Migration erfolgreich: {migration[:60]}")
+            except Exception:
+                pass  # Spalte existiert bereits
     finally:
         await db.close()

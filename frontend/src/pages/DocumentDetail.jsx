@@ -7,8 +7,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import {
   getDocument, updateDocument, deleteDocument,
-  generateReply, getReplies, getFileUrl, getThumbnailUrl
+  generateReply, getReplies, downloadFile
 } from '../api';
+import AuthImage from '../components/AuthImage';
 import { REPLY_LANGUAGES } from '../languages';
 
 const KATEGORIE_COLORS = {
@@ -173,15 +174,13 @@ export default function DocumentDetail() {
           <ArrowLeft className="w-4 h-4" /> {t('document.back')}
         </button>
         <div className="flex items-center gap-2">
-          <a
-            href={getFileUrl(doc.id)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 no-underline"
+          <button
+            onClick={() => downloadFile(doc.id, doc.dateiname)}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 cursor-pointer"
             style={{ minHeight: '44px' }}
           >
             <ExternalLink className="w-4 h-4" /> <span className="hidden md:inline">{t('document.original')}</span>
-          </a>
+          </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
@@ -195,8 +194,8 @@ export default function DocumentDetail() {
 
       {/* Mobile: Bild oben full-width */}
       <div className="md:hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-4">
-        <img
-          src={doc.dateityp === 'pdf' ? getThumbnailUrl(doc.id) : getFileUrl(doc.id)}
+        <AuthImage
+          src={doc.dateityp === 'pdf' ? `/documents/${doc.id}/thumbnail` : `/documents/${doc.id}/file`}
           alt={doc.dateiname}
           className="w-full h-auto"
         />
@@ -205,8 +204,8 @@ export default function DocumentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {/* Linke Spalte: Bild (Desktop) */}
         <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <img
-            src={doc.dateityp === 'pdf' ? getThumbnailUrl(doc.id) : getFileUrl(doc.id)}
+          <AuthImage
+            src={doc.dateityp === 'pdf' ? `/documents/${doc.id}/thumbnail` : `/documents/${doc.id}/file`}
             alt={doc.dateiname}
             className="w-full h-auto"
           />

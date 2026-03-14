@@ -5,7 +5,8 @@ import {
   ChevronRight, Loader2, Filter, CheckCircle, ClipboardList
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDocuments, updateDocument, getThumbnailUrl } from '../api';
+import { getDocuments, updateDocument } from '../api';
+import AuthImage from '../components/AuthImage';
 
 
 const KATEGORIE_COLORS = {
@@ -324,8 +325,8 @@ function DocumentCard({ doc }) {
       {/* Thumbnail */}
       <div className="aspect-4/3 bg-slate-100 overflow-hidden">
         {!imgError ? (
-          <img
-            src={getThumbnailUrl(doc.id)}
+          <AuthImage
+            src={`/documents/${doc.id}/thumbnail`}
             alt={doc.dateiname}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform"
             onError={() => setImgError(true)}

@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+*.log
+Dokumente/
+check_thumbs.sh
+test_*.sh
+test_*.py
+__pycache__/
+*.pyc

@@ -101,4 +101,16 @@ export function getFileUrl(id) {
   return `${API_BASE_URL}/api/documents/${id}/file`;
 }
 
+export async function downloadFile(id, filename) {
+  const { data } = await api.get(`/documents/${id}/file`, { responseType: 'blob' });
+  const url = URL.createObjectURL(data);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || 'document';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 export default api;

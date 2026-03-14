@@ -36,7 +36,8 @@ Antworte AUSSCHLIESSLICH mit einem JSON-Objekt im folgenden Format (keine Erklä
   "kontakt_adresse": "Adresse oder null",
   "kontakt_email": "E-Mail oder null",
   "kontakt_telefon": "Telefonnummer oder null",
-  "dokument_sprache": "ISO 639-1 Sprachcode des Dokuments (z.B. de, en, fr, tr, ar)"
+  "dokument_sprache": "ISO 639-1 Sprachcode des Dokuments (z.B. de, en, fr, tr, ar)",
+  "expense_category": "versicherung | miete | strom | internet | telefon | lebensmittel | transport | gesundheit | bildung | unterhaltung | kleidung | haushalt | steuern | gebuehren | abonnement | sonstiges | null"
 }
 
 STRIKTE KATEGORISIERUNGS-REGELN (in dieser Priorität prüfen!):
@@ -63,6 +64,22 @@ Setze "handlung_erforderlich" auf true wenn EINER dieser Fälle zutrifft:
 Setze "handlung_erforderlich" auf false NUR wenn das Dokument rein informativ ist (z.B. Kontoauszug, Gehaltsabrechnung ohne Nachforderung, reine Info-Post).
 
 Im Zweifelsfall: Setze "handlung_erforderlich" auf true — es ist besser eine Aufgabe zu viel anzuzeigen als eine zu übersehen.
+
+AUSGABEN-KATEGORISIERUNG für "expense_category":
+- Nur setzen wenn kategorie="rechnung" ist, sonst null
+- "versicherung" — Krankenversicherung, KFZ-Versicherung, Haftpflicht, Lebensversicherung
+- "miete" — Miete, Nebenkosten, Betriebskosten, Hausverwaltung
+- "strom" — Strom, Gas, Energie, Heizung
+- "internet" — Internet, Breitband, WLAN
+- "telefon" — Mobilfunk, Festnetz, Telefonrechnung
+- "gesundheit" — Arzt, Apotheke, Krankenhaus, Medikamente
+- "transport" — Öffentlicher Verkehr, Tanken, KFZ-Steuer, Werkstatt
+- "steuern" — Einkommensteuer, Lohnsteuer, Vorschreibung Finanzamt
+- "gebuehren" — Behördengebühren, Kontoführung, Bankgebühren
+- "abonnement" — Streaming, Zeitschriften, Software-Abos
+- "haushalt" — Möbel, Reparaturen, Reinigung
+- "bildung" — Schule, Universität, Kurse, Lehrmaterial
+- "sonstiges" — Alles andere was eine Rechnung ist aber in keine Kategorie passt
 
 Weitere Regeln:
 - Setze "betrag" auf null wenn kein Betrag erkennbar ist
@@ -278,6 +295,156 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.7,
         "max_tokens": 2048,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return data["choices"][0]["message"]["content"]
+
+
+# --- Behörden-Assistent ---
+
+BEHOERDE_PROMPT = """Du bist ein Experte für österreichische, deutsche und Schweizer Behördenschreiben.
+
+Der Benutzer hat ein Behördenschreiben hochgeladen. Hier ist der vollständige Text:
+
+---
+{volltext}
+---
+
+Deine Aufgabe:
+1. Erkläre den Inhalt des Schreibens in einfacher, verständlicher Sprache.
+2. Verwende kurze Sätze und vermeide Fachbegriffe – oder erkläre sie in Klammern.
+3. Erkläre was das Schreiben bedeutet, was der Empfänger tun muss, und bis wann.
+4. Wenn Fristen, Beträge oder Aktenzeichen vorkommen, hebe diese hervor.
+5. Strukturiere deine Erklärung mit klaren Absätzen.
+6. Antworte auf {target_language_name}.
+
+Schreibe NUR die Erklärung, keine Einleitung wie "Hier ist die Erklärung"."""
+
+
+async def explain_authority_document(volltext: str, target_language: str = "de") -> str:
+    """Behördenschreiben in einfacher Sprache erklären."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
+    prompt = BEHOERDE_PROMPT.format(volltext=volltext, target_language_name=target_language_name)
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3,
+        "max_tokens": 3000,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return data["choices"][0]["message"]["content"]
+
+
+# --- Befund-Assistent ---
+
+BEFUND_SIMPLIFY_PROMPT = """Du bist ein medizinischer Übersetzer, der Arztbefunde und Laborberichte für Laien verständlich macht.
+
+Hier ist der medizinische Text:
+
+---
+{volltext}
+---
+
+Deine Aufgabe:
+1. Übersetze JEDEN medizinischen Fachbegriff in einfache Sprache.
+   Beispiele:
+   - "Abdomen" → "Bauch und Bauchbereich"
+   - "Thorax" → "Brustkorb"
+   - "Hepatomegalie" → "vergrößerte Leber"
+   - "Hypertonie" → "Bluthochdruck"
+   - "Anämie" → "Blutarmut (zu wenig rote Blutkörperchen)"
+   - "Cholezystektomie" → "operative Entfernung der Gallenblase"
+2. Behalte die Struktur des Originals bei.
+3. Erkläre Laborwerte: was sie messen und ob die Werte normal, erhöht oder niedrig sind.
+4. Verwende kurze, klare Sätze.
+5. Schreibe auf Deutsch.
+
+Schreibe NUR den vereinfachten Text, keine Einleitung."""
+
+BEFUND_TRANSLATE_PROMPT = """Übersetze den folgenden vereinfachten medizinischen Text vollständig in {target_language_name}.
+Behalte die Struktur und Formatierung bei. Übersetze ALLES, auch Erklärungen in Klammern.
+
+Text:
+---
+{text}
+---
+
+Schreibe NUR die Übersetzung, nichts anderes."""
+
+
+async def simplify_medical_report(volltext: str) -> str:
+    """Medizinischen Befund in einfache Sprache übersetzen (Instanz 1)."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    prompt = BEFUND_SIMPLIFY_PROMPT.format(volltext=volltext)
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "max_tokens": 4000,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return data["choices"][0]["message"]["content"]
+
+
+async def translate_simplified_report(text: str, target_language: str = "de") -> str:
+    """Vereinfachten Befund in Zielsprache übersetzen (Instanz 2)."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    if target_language == "de":
+        return text  # Bereits auf Deutsch
+
+    target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
+    prompt = BEFUND_TRANSLATE_PROMPT.format(text=text, target_language_name=target_language_name)
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3,
+        "max_tokens": 4000,
     }
 
     async with httpx.AsyncClient(timeout=120.0) as client:

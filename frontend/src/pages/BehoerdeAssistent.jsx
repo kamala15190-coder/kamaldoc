@@ -5,7 +5,7 @@ import {
   ChevronRight, AlertCircle, Globe
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { uploadDocument, getDocuments, getDocument, explainDocument, getThumbnailUrl } from '../api';
+import { uploadDocument, getDocuments, getDocument, explainDocument } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
 
 export default function BehoerdeAssistent() {
