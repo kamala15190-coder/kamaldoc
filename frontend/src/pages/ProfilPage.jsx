@@ -332,6 +332,7 @@ export default function ProfilPage() {
 }
 
 function UsageStat({ label, used, max }) {
+  const { t } = useTranslation();
   const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
   const isUnlimited = max === null || max === undefined;
   const isHigh = !isUnlimited && pct >= 80;
@@ -343,7 +344,7 @@ function UsageStat({ label, used, max }) {
         {used}{isUnlimited ? '' : `/${max}`}
       </div>
       {isUnlimited ? (
-        <div className="text-xs text-green-600 font-medium mt-0.5">Unbegrenzt</div>
+        <div className="text-xs text-green-600 font-medium mt-0.5">{t('profile.unlimited')}</div>
       ) : (
         <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5">
           <div

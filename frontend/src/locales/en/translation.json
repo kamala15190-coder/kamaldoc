@@ -185,7 +185,8 @@
     "usageDocs": "Documents",
     "usageKI": "AI Analyses",
     "usageBehoerde": "Authority Ass.",
-    "usageBefund": "Medical Ass."
+    "usageBefund": "Medical Ass.",
+    "unlimited": "Unlimited"
   },
   "categories": {
     "brief": "Letter",
