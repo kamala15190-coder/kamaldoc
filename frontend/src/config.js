@@ -1,3 +1,5 @@
 const isNative = !!window.Capacitor?.isNativePlatform();
 
-export const API_BASE_URL = isNative ? 'http://100.77.198.89:8000' : '';
+export const API_BASE_URL = isNative 
+  ? 'http://100.77.198.89:8000' 
+  : 'http://46.225.191.223:8000';
