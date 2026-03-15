@@ -1,16 +1,15 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, Filter, CheckCircle, ClipboardList,
-  Minus, Plus, X as XIcon, Zap,
-  Wallet
+  Minus
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
 import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
-import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -33,7 +32,16 @@ const STATUS_LABELS = {
 
 const STORAGE_KEY = 'kamaldoc_dashboard_layout';
 
-const ALL_SECTION_IDS = ['todos', 'stats', 'search', 'documents', 'ausgaben'];
+const ALL_SECTORS = [
+  { id: 'todos', label: 'Offene Aufgaben', icon: '📋' },
+  { id: 'stats', label: 'Statistik-Karten', icon: '📊' },
+  { id: 'search', label: 'Suche & Filter', icon: '🔍' },
+  { id: 'documents', label: 'Dokumente', icon: '📄' },
+  { id: 'ausgaben', label: 'Ausgaben-Dashboard', icon: '💰', requiresPlan: 'basic' },
+  { id: 'archiv', label: 'Archiv', icon: '🗃️' },
+];
+
+const ALL_SECTION_IDS = ALL_SECTORS.map(s => s.id);
 
 const DEFAULT_SECTIONS = [
   { id: 'todos', visible: true },
@@ -41,23 +49,10 @@ const DEFAULT_SECTIONS = [
   { id: 'search', visible: true },
   { id: 'documents', visible: true },
   { id: 'ausgaben', visible: false },
+  { id: 'archiv', visible: false },
 ];
 
-const SECTION_LABELS = {
-  todos: 'Offene Aufgaben',
-  stats: 'Statistik-Karten',
-  search: 'Suche & Filter',
-  documents: 'Dokumente',
-  ausgaben: 'Ausgaben-Dashboard',
-};
-
-const SECTION_ICONS = {
-  todos: ClipboardList,
-  stats: Receipt,
-  search: Search,
-  documents: FileText,
-  ausgaben: Wallet,
-};
+const SECTION_LABELS = Object.fromEntries(ALL_SECTORS.map(s => [s.id, s.label]));
 
 function loadLayout() {
   try {
@@ -96,6 +91,12 @@ export default function Dashboard() {
   const [confirmHide, setConfirmHide] = useState(null);
   const { isPaid } = useSubscription();
 
+  // Touch drag state
+  const [touchDragging, setTouchDragging] = useState(null);
+  const [touchOffsetY, setTouchOffsetY] = useState(0);
+  const touchStartY = useRef(0);
+  const sectionRefs = useRef({});
+
   // Broadcast editMode state & listen for toggle from header
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('dashboard-edit-mode', { detail: editMode }));
@@ -107,9 +108,9 @@ export default function Dashboard() {
     return () => window.removeEventListener('toggle-dashboard-edit', handler);
   }, []);
 
+  // Desktop drag (mouse only)
   const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } })
   );
 
   const handleDragEnd = (event) => {
@@ -124,6 +125,51 @@ export default function Dashboard() {
       });
     }
   };
+
+  // Manual touch drag handlers
+  const handleTouchStart = useCallback((e, sectorId) => {
+    if (!editMode) return;
+    setTouchDragging(sectorId);
+    touchStartY.current = e.touches[0].clientY;
+    setTouchOffsetY(0);
+  }, [editMode]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!touchDragging) return;
+    e.preventDefault();
+    const deltaY = e.touches[0].clientY - touchStartY.current;
+    setTouchOffsetY(deltaY);
+  }, [touchDragging]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!touchDragging) return;
+    const vis = sections.filter(s => s.visible);
+    const dragIdx = vis.findIndex(s => s.id === touchDragging);
+    if (dragIdx === -1) { setTouchDragging(null); setTouchOffsetY(0); return; }
+
+    // Determine target index based on offset direction
+    let targetIdx = dragIdx;
+    const threshold = 40;
+    if (touchOffsetY < -threshold && dragIdx > 0) {
+      targetIdx = dragIdx - 1;
+    } else if (touchOffsetY > threshold && dragIdx < vis.length - 1) {
+      targetIdx = dragIdx + 1;
+    }
+
+    if (targetIdx !== dragIdx) {
+      setSections(prev => {
+        const visIds = prev.filter(s => s.visible).map(s => s.id);
+        const reordered = arrayMove(visIds, dragIdx, targetIdx);
+        const hidden = prev.filter(s => !s.visible);
+        const updated = [...reordered.map(id => ({ id, visible: true })), ...hidden];
+        saveLayout(updated);
+        return updated;
+      });
+    }
+
+    setTouchDragging(null);
+    setTouchOffsetY(0);
+  }, [touchDragging, touchOffsetY, sections]);
 
   const hideSection = (id) => {
     setSections(prev => {
@@ -414,81 +460,124 @@ export default function Dashboard() {
     ),
   };
 
+  // Build list of available (hidden) sectors for the modal
+  const availableSectors = ALL_SECTORS
+    .filter(s => !visibleSections.some(v => v.id === s.id))
+    .map(s => ({
+      ...s,
+      locked: s.requiresPlan && !isPaid,
+    }));
+
   return (
     <div>
-      {/* Toolbar — only in edit mode */}
+      {/* Toolbar — sticky, full width, subtle */}
       {editMode && (
-        <div className="flex items-center gap-2 justify-end mb-3">
+        <div style={{
+          position: 'sticky', top: 56, zIndex: 40,
+          backgroundColor: 'white', borderBottom: '1px solid #e5e7eb',
+          padding: '8px 16px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginLeft: '-16px', marginRight: '-16px', marginBottom: '12px',
+        }}>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-1 px-3 h-8 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '4px',
+              fontSize: '13px', color: '#374151',
+              background: 'none', border: '1px solid #d1d5db',
+              borderRadius: '8px', padding: '5px 10px', cursor: 'pointer',
+            }}
           >
-            <Plus className="w-3.5 h-3.5" /> Sektor hinzufügen
+            + Sektor
           </button>
-          <button
-            onClick={resetLayout}
-            className="h-8 px-3 text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-none"
-          >
-            Zurücksetzen
-          </button>
-          <button
-            onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
-            className="h-8 px-4 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer border-none"
-          >
-            ✓ Fertig
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={resetLayout}
+              style={{
+                fontSize: '13px', color: '#6b7280',
+                background: 'none', border: 'none', cursor: 'pointer',
+              }}
+            >
+              Zurücksetzen
+            </button>
+            <button
+              onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
+              style={{
+                fontSize: '13px', color: 'white',
+                background: '#2563eb', border: 'none',
+                borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
+              }}
+            >
+              ✓ Fertig
+            </button>
+          </div>
         </div>
       )}
 
       {/* Add Sector Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowAddModal(false)}>
-          <div className="bg-white rounded-2xl p-5 w-80 shadow-xl mx-4" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-800">Sektor hinzufügen</h3>
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={() => setShowAddModal(false)}
+        >
+          <div
+            style={{
+              backgroundColor: 'white', borderRadius: '16px',
+              padding: '20px', width: '100%', maxWidth: '320px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>Sektor hinzufügen</span>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer bg-transparent border-none"
+                style={{ background: 'none', border: 'none', fontSize: '18px', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
               >
-                <XIcon className="w-4 h-4" />
+                ✕
               </button>
             </div>
-            <div className="space-y-2">
-              {hiddenSections.length === 0 ? (
-                <p className="text-sm text-gray-500 text-center py-4">Alle Sektoren sind bereits sichtbar.</p>
-              ) : (
-                hiddenSections.map(s => {
-                  const Icon = SECTION_ICONS[s.id] || FileText;
-                  const isAusgabenLocked = s.id === 'ausgaben' && !isPaid;
-                  return (
-                    <button
-                      key={s.id}
-                      onClick={() => {
-                        if (isAusgabenLocked) {
-                          navigate('/pricing');
-                          setShowAddModal(false);
-                          return;
-                        }
-                        showSection(s.id);
-                      }}
-                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors cursor-pointer border-none ${
-                        isAusgabenLocked
-                          ? 'bg-gray-50 text-gray-400'
-                          : 'bg-gray-50 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5 shrink-0" />
-                      <span className="flex-1 text-sm font-medium">{SECTION_LABELS[s.id]}</span>
-                      {isAusgabenLocked && (
-                        <span className="flex items-center gap-1 text-xs text-amber-600">
-                          <Zap className="w-3.5 h-3.5" /> Ab Basic
-                        </span>
-                      )}
-                    </button>
-                  );
-                })
-              )}
-            </div>
+            {availableSectors.length === 0 ? (
+              <p style={{ fontSize: '14px', color: '#6b7280', textAlign: 'center', padding: '16px 0' }}>
+                Alle Sektoren sind bereits sichtbar.
+              </p>
+            ) : (
+              availableSectors.map(sector => (
+                <div
+                  key={sector.id}
+                  onClick={() => {
+                    if (sector.locked) {
+                      navigate('/pricing');
+                      setShowAddModal(false);
+                      return;
+                    }
+                    showSection(sector.id);
+                  }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px', marginBottom: '8px', borderRadius: '10px',
+                    backgroundColor: sector.locked ? '#f9fafb' : '#f0f7ff',
+                    opacity: sector.locked ? 0.5 : 1,
+                    cursor: sector.locked ? 'not-allowed' : 'pointer',
+                    border: '1px solid',
+                    borderColor: sector.locked ? '#e5e7eb' : '#bfdbfe',
+                    transition: 'background-color 0.15s',
+                  }}
+                >
+                  <span style={{ fontSize: '14px', color: sector.locked ? '#9ca3af' : '#374151' }}>
+                    {sector.icon} {sector.label}
+                  </span>
+                  {sector.locked && (
+                    <span style={{ fontSize: '12px', color: '#f59e0b' }}>⚡ Upgrade</span>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
@@ -528,6 +617,11 @@ export default function Dashboard() {
               id={s.id}
               editMode={editMode}
               onRemove={() => setConfirmHide(s.id)}
+              isTouchDragging={touchDragging === s.id}
+              touchOffsetY={touchDragging === s.id ? touchOffsetY : 0}
+              onTouchStart={(e) => handleTouchStart(e, s.id)}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               {sectionContent[s.id]}
             </SortableSection>
@@ -556,15 +650,20 @@ function StatCard({ icon, label, value, color, onClick }) {
   );
 }
 
-function SortableSection({ id, editMode, onRemove, children }) {
+function SortableSection({ id, editMode, onRemove, children, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
+  const isBeingDragged = isDragging || isTouchDragging;
+
   const style = editMode ? {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    zIndex: isDragging ? 50 : 'auto',
-    filter: isDragging ? 'blur(1px)' : 'none',
-    opacity: isDragging ? 0.8 : 1,
+    transform: isTouchDragging
+      ? `translateY(${touchOffsetY}px)`
+      : CSS.Transform.toString(transform),
+    transition: isTouchDragging ? 'none' : transition,
+    zIndex: isBeingDragged ? 50 : 'auto',
+    filter: isBeingDragged ? 'blur(2px)' : 'none',
+    opacity: isBeingDragged ? 0.7 : 1,
+    touchAction: 'none',
   } : {};
 
   return (
@@ -572,9 +671,12 @@ function SortableSection({ id, editMode, onRemove, children }) {
       ref={setNodeRef}
       style={style}
       {...(editMode ? { ...attributes, ...listeners } : {})}
+      onTouchStart={editMode ? onTouchStart : undefined}
+      onTouchMove={editMode ? onTouchMove : undefined}
+      onTouchEnd={editMode ? onTouchEnd : undefined}
       className={`relative ${
         editMode
-          ? `rounded-xl border-2 border-blue-500 mb-4 p-1 cursor-grab active:cursor-grabbing touch-none`
+          ? 'rounded-xl border-2 border-blue-500 mb-4 p-1 cursor-grab active:cursor-grabbing'
           : ''
       }`}
     >
@@ -582,6 +684,7 @@ function SortableSection({ id, editMode, onRemove, children }) {
         <button
           onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
           onPointerDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
           className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
         >
           <Minus className="w-3.5 h-3.5" />

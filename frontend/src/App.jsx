@@ -109,22 +109,9 @@ function NavBar() {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
-            <div className="flex items-center gap-2">
-              <Link to="/" className="flex items-center gap-2 no-underline">
-                <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-9 object-contain" />
-              </Link>
-              {isDashboard && (
-                <button
-                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
-                    dashboardEditMode ? 'text-blue-600 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                  }`}
-                  title={dashboardEditMode ? 'Bearbeitung beenden' : 'Dashboard bearbeiten'}
-                >
-                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
-                </button>
-              )}
-            </div>
+            <Link to="/" className="flex items-center gap-2 no-underline">
+              <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-9 object-contain" />
+            </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-0.5">
@@ -152,6 +139,17 @@ function NavBar() {
                 </Link>
               )}
               <UpgradeButton />
+              {isDashboard && (
+                <button
+                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
+                    dashboardEditMode ? 'text-blue-600 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  }`}
+                  title={dashboardEditMode ? 'Bearbeitung beenden' : 'Dashboard bearbeiten'}
+                >
+                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </button>
+              )}
               <LanguageSwitcher />
               <button
                 onClick={handleLogout}
