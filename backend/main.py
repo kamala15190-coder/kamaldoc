@@ -972,16 +972,17 @@ async def admin_add(data: dict, user_id: str = Depends(get_current_user)):
     if not email:
         raise HTTPException(400, "E-Mail erforderlich.")
 
-    from auth import SUPABASE_URL, SUPABASE_KEY
+    from auth import SUPABASE_URL
     import httpx
+    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
     # Search user in Supabase by email
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"{SUPABASE_URL}/auth/v1/admin/users",
             headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+                "apikey": service_key,
+                "Authorization": f"Bearer {service_key}",
             },
             params={"page": 1, "per_page": 1000},
         )
@@ -1062,15 +1063,16 @@ async def admin_search_user(email: str = Query(...), user_id: str = Depends(get_
     """Search user by email and return their plan."""
     await _require_admin(user_id)
 
-    from auth import SUPABASE_URL, SUPABASE_KEY
+    from auth import SUPABASE_URL
     import httpx
+    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"{SUPABASE_URL}/auth/v1/admin/users",
             headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+                "apikey": service_key,
+                "Authorization": f"Bearer {service_key}",
             },
             params={"page": 1, "per_page": 1000},
         )
@@ -1100,15 +1102,16 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     if not email:
         raise HTTPException(400, "E-Mail erforderlich.")
 
-    from auth import SUPABASE_URL, SUPABASE_KEY
+    from auth import SUPABASE_URL
     import httpx
+    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
             f"{SUPABASE_URL}/auth/v1/admin/users",
             headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+                "apikey": service_key,
+                "Authorization": f"Bearer {service_key}",
             },
             params={"page": 1, "per_page": 1000},
         )

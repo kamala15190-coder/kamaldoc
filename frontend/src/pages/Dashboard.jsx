@@ -1,9 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, Filter, CheckCircle, ClipboardList,
-  Pencil, GripVertical, Eye, EyeOff, X as XIcon
+  Pencil, GripVertical, Minus, Plus, RotateCcw, Check,
+  LayoutDashboard
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
@@ -79,8 +80,11 @@ export default function Dashboard() {
   const [dismissingIds, setDismissingIds] = useState(new Set());
   const [editMode, setEditMode] = useState(false);
   const [sections, setSections] = useState(loadLayout);
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [confirmHide, setConfirmHide] = useState(null);
+  const addBtnRef = useRef(null);
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -95,12 +99,22 @@ export default function Dashboard() {
     }
   };
 
-  const toggleVisibility = (id) => {
+  const hideSection = (id) => {
     setSections(prev => {
-      const updated = prev.map(s => s.id === id ? { ...s, visible: !s.visible } : s);
+      const updated = prev.map(s => s.id === id ? { ...s, visible: false } : s);
       saveLayout(updated);
       return updated;
     });
+    setConfirmHide(null);
+  };
+
+  const showSection = (id) => {
+    setSections(prev => {
+      const updated = prev.map(s => s.id === id ? { ...s, visible: true } : s);
+      saveLayout(updated);
+      return updated;
+    });
+    setShowAddPopup(false);
   };
 
   const resetLayout = () => {
@@ -108,6 +122,9 @@ export default function Dashboard() {
     setSections(def);
     saveLayout(def);
   };
+
+  const hiddenSections = sections.filter(s => !s.visible);
+  const visibleSections = sections.filter(s => s.visible);
 
   const fetchDocs = async (append = false) => {
     if (!append) setLoading(true);
@@ -373,49 +390,97 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Edit Mode Toggle */}
-      <div className="flex items-center justify-end mb-4 gap-2">
-        {editMode && (
+      {/* Header with edit toggle */}
+      <div className="flex items-center justify-end mb-4">
+        {editMode ? (
+          <div className="flex items-center gap-2">
+            <div className="relative" ref={addBtnRef}>
+              <button
+                onClick={() => setShowAddPopup(!showAddPopup)}
+                disabled={hiddenSections.length === 0}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5" /> Sektor hinzufügen
+              </button>
+              {showAddPopup && hiddenSections.length > 0 && (
+                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
+                  {hiddenSections.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => showSection(s.id)}
+                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors cursor-pointer bg-transparent border-none"
+                    >
+                      {SECTION_LABELS[s.id]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              onClick={resetLayout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer border-none"
+            >
+              <RotateCcw className="w-3.5 h-3.5" /> Zurücksetzen
+            </button>
+            <button
+              onClick={() => { setEditMode(false); setShowAddPopup(false); setConfirmHide(null); }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors cursor-pointer border-none"
+            >
+              <Check className="w-3.5 h-3.5" /> Fertig
+            </button>
+          </div>
+        ) : (
           <button
-            onClick={resetLayout}
-            className="text-xs text-slate-500 hover:text-slate-700 cursor-pointer bg-transparent border-none underline"
+            onClick={() => setEditMode(true)}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer bg-transparent border-none"
+            title="Dashboard bearbeiten"
           >
-            Zurücksetzen
+            <Pencil className="w-4 h-4" />
           </button>
         )}
-        <button
-          onClick={() => setEditMode(!editMode)}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer border-none ${
-            editMode
-              ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-              : 'bg-white text-slate-600 border border-slate-200 shadow-sm hover:bg-slate-50'
-          }`}
-          style={{ border: editMode ? 'none' : '1px solid #e2e8f0' }}
-        >
-          {editMode ? <XIcon className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
-          {editMode ? 'Fertig' : 'Bearbeiten'}
-        </button>
       </div>
 
-      {editMode ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-3">
-              {sections.map(section => (
-                <SortableSectionItem
-                  key={section.id}
-                  section={section}
-                  onToggle={toggleVisibility}
-                />
-              ))}
+      {/* Confirm-hide popup */}
+      {confirmHide && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setConfirmHide(null)}>
+          <div className="bg-white rounded-xl shadow-xl p-5 max-w-xs w-full mx-4" onClick={e => e.stopPropagation()}>
+            <p className="text-sm font-medium text-slate-900 mb-1">Sektor ausblenden?</p>
+            <p className="text-xs text-slate-500 mb-4">
+              "{SECTION_LABELS[confirmHide]}" wird ausgeblendet. Du kannst ihn jederzeit wieder hinzufügen.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirmHide(null)}
+                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 cursor-pointer border-none"
+              >
+                Abbrechen
+              </button>
+              <button
+                onClick={() => hideSection(confirmHide)}
+                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer border-none"
+              >
+                Ausblenden
+              </button>
             </div>
-          </SortableContext>
-        </DndContext>
-      ) : (
-        sections
-          .filter(s => s.visible)
-          .map(s => <div key={s.id}>{sectionContent[s.id]}</div>)
+          </div>
+        </div>
       )}
+
+      {/* Sections — real dashboard always visible */}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={visibleSections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+          {visibleSections.map(s => (
+            <SortableSection
+              key={s.id}
+              id={s.id}
+              editMode={editMode}
+              onRemove={() => setConfirmHide(s.id)}
+            >
+              {sectionContent[s.id]}
+            </SortableSection>
+          ))}
+        </SortableContext>
+      </DndContext>
     </div>
   );
 }
@@ -438,44 +503,45 @@ function StatCard({ icon, label, value, color, onClick }) {
   );
 }
 
-function SortableSectionItem({ section, onToggle }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
+function SortableSection({ id, editMode, onRemove, children }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
-  const style = {
+  const style = editMode ? {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : 'auto',
-    opacity: isDragging ? 0.85 : 1,
-  };
+  } : {};
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 bg-white rounded-xl border p-4 transition-shadow ${
-        isDragging ? 'shadow-lg border-indigo-300' : 'shadow-sm border-slate-200'
-      } ${!section.visible ? 'opacity-60' : ''}`}
+      className={`relative ${
+        editMode
+          ? `rounded-xl border-2 border-blue-400 ${isDragging ? 'shadow-xl opacity-90' : 'shadow-sm'} mb-4 p-1`
+          : ''
+      }`}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-100 bg-transparent border-none text-slate-400"
-      >
-        <GripVertical className="w-5 h-5" />
-      </button>
-      <span className="flex-1 text-sm font-medium text-slate-800">
-        {SECTION_LABELS[section.id] || section.id}
-      </span>
-      <button
-        onClick={() => onToggle(section.id)}
-        className={`p-1.5 rounded-lg transition-colors cursor-pointer border-none ${
-          section.visible
-            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-            : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
-        }`}
-      >
-        {section.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-      </button>
+      {editMode && (
+        <>
+          {/* Drag handle */}
+          <div
+            {...attributes}
+            {...listeners}
+            className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 cursor-grab active:cursor-grabbing p-1 rounded-lg bg-blue-500 text-white shadow-md hover:bg-blue-600 transition-colors"
+          >
+            <GripVertical className="w-4 h-4" />
+          </div>
+          {/* Remove button */}
+          <button
+            onClick={onRemove}
+            className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+        </>
+      )}
+      {children}
     </div>
   );
 }
