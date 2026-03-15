@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
 
@@ -38,10 +39,14 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
+      const redirectTo = Capacitor.isNativePlatform()
+        ? 'at.kamaldoc.app://login-callback'
+        : window.location.origin
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo,
         },
       })
 

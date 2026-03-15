@@ -1,4 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
 import { initPushNotifications } from '../pushNotifications'
 
@@ -25,7 +26,34 @@ export const AuthProvider = ({ children }) => {
       if (session?.user) initPushNotifications()
     })
 
-    return () => subscription.unsubscribe()
+    // Deep link handling for native OAuth callback
+    let appUrlListener = null
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/app').then(({ App }) => {
+        appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
+          if (url.includes('login-callback')) {
+            // Extract tokens from the URL fragment (after #)
+            const hashPart = url.split('#')[1]
+            if (hashPart) {
+              const params = new URLSearchParams(hashPart)
+              const accessToken = params.get('access_token')
+              const refreshToken = params.get('refresh_token')
+              if (accessToken && refreshToken) {
+                await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                })
+              }
+            }
+          }
+        })
+      })
+    }
+
+    return () => {
+      subscription.unsubscribe()
+      if (appUrlListener) appUrlListener.remove()
+    }
   }, [])
 
   const value = {
