@@ -7,6 +7,7 @@
     "befund": "Medical",
     "archive": "Archive",
     "profile": "Profile",
+    "support": "Support",
     "logout": "Sign Out"
   },
   "auth": {

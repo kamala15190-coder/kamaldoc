@@ -101,6 +101,18 @@ async def init_db():
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS admins (
+                user_id TEXT PRIMARY KEY
+            );
+
+            CREATE TABLE IF NOT EXISTS settings (
+                key TEXT PRIMARY KEY,
+                value TEXT
+            );
+
+            INSERT OR IGNORE INTO admins (user_id) VALUES ('e9ce1e31-9a52-4f43-97ca-7e3a8137b40c');
+            INSERT OR IGNORE INTO settings (key, value) VALUES ('support_email', 'a.kamal.vb@gmail.com');
+
             CREATE TABLE IF NOT EXISTS subscriptions (
                 user_id TEXT PRIMARY KEY,
                 plan TEXT DEFAULT 'free',

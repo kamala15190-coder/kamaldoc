@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false)
+  const [acceptTerms, setAcceptTerms] = useState(false)
+
+  const canSubmit = acceptPrivacy && acceptTerms
 
   const handleEmailLogin = async (e) => {
     e.preventDefault()
@@ -112,9 +116,39 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Checkboxen */}
+            <div className="space-y-2">
+              <label className="flex items-start gap-2 cursor-pointer text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={acceptPrivacy}
+                  onChange={(e) => setAcceptPrivacy(e.target.checked)}
+                  className="mt-0.5 accent-indigo-600"
+                />
+                <span>
+                  Ich habe die{' '}
+                  <Link to="/datenschutz" className="text-indigo-600 hover:underline font-medium">Datenschutzerklärung</Link>
+                  {' '}gelesen und akzeptiert
+                </span>
+              </label>
+              <label className="flex items-start gap-2 cursor-pointer text-sm text-slate-600">
+                <input
+                  type="checkbox"
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
+                  className="mt-0.5 accent-indigo-600"
+                />
+                <span>
+                  Ich habe die{' '}
+                  <Link to="/nutzungsbedingungen" className="text-indigo-600 hover:underline font-medium">Nutzungsbedingungen</Link>
+                  {' '}gelesen und akzeptiert
+                </span>
+              </label>
+            </div>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !canSubmit}
               className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
@@ -139,7 +173,7 @@ export default function LoginPage() {
 
           <button
             onClick={handleGoogleLogin}
-            disabled={loading}
+            disabled={loading || !canSubmit}
             className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">

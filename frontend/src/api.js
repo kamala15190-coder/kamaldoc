@@ -125,6 +125,55 @@ export async function getSubscriptionUsage() {
   return data;
 }
 
+// --- Support ---
+
+export async function submitSupportTicket({ priority, email, message }) {
+  const { data } = await api.post('/support/ticket', { priority, email, message });
+  return data;
+}
+
+// --- Admin ---
+
+export async function checkAdmin() {
+  const { data } = await api.get('/admin/check');
+  return data;
+}
+
+export async function getAdminList() {
+  const { data } = await api.get('/admin/list');
+  return data;
+}
+
+export async function addAdmin(email) {
+  const { data } = await api.post('/admin/add', { email });
+  return data;
+}
+
+export async function removeAdmin(userId) {
+  const { data } = await api.delete('/admin/remove', { data: { user_id: userId } });
+  return data;
+}
+
+export async function getSupportEmail() {
+  const { data } = await api.get('/admin/support-email');
+  return data;
+}
+
+export async function updateSupportEmail(email) {
+  const { data } = await api.post('/admin/support-email', { email });
+  return data;
+}
+
+export async function adminSearchUser(email) {
+  const { data } = await api.get('/admin/search-user', { params: { email } });
+  return data;
+}
+
+export async function adminChangePlan(email, newPlan) {
+  const { data } = await api.post('/admin/change-plan', { email, new_plan: newPlan });
+  return data;
+}
+
 export function getThumbnailUrl(id) {
   return `${API_BASE_URL}/api/documents/${id}/thumbnail`;
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
-import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown } from 'lucide-react';
+import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
@@ -18,6 +18,12 @@ import ExpensesPage from './pages/ExpensesPage';
 import BehoerdeAssistent from './pages/BehoerdeAssistent';
 import BefundAssistent from './pages/BefundAssistent';
 import PricingPage from './pages/PricingPage';
+import DatenschutzPage from './pages/DatenschutzPage';
+import NutzungsbedingungenPage from './pages/NutzungsbedingungenPage';
+import SupportPage from './pages/SupportPage';
+import AdminPage from './pages/AdminPage';
+import SektorDetailPage from './pages/SektorDetailPage';
+import { checkAdmin } from './api';
 
 const NAV_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -26,8 +32,20 @@ const NAV_ITEMS = [
   { path: '/behoerde', labelKey: 'nav.behoerde', icon: Landmark },
   { path: '/befund', labelKey: 'nav.befund', icon: Stethoscope },
   { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
+  { path: '/support', labelKey: 'nav.support', icon: Headphones },
   { path: '/profil', labelKey: 'nav.profile', icon: User },
 ];
+
+function useIsAdmin() {
+  const { user } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    if (user) {
+      checkAdmin().then(d => setIsAdmin(d.is_admin)).catch(() => setIsAdmin(false));
+    }
+  }, [user]);
+  return isAdmin;
+}
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -53,6 +71,7 @@ function NavBar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
+  const isAdmin = useIsAdmin();
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = async () => {
@@ -94,6 +113,17 @@ function NavBar() {
                   {t(labelKey)}
                 </Link>
               ))}
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium no-underline transition-colors whitespace-nowrap ${
+                    isActive('/admin') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  Admin
+                </Link>
+              )}
               <UpgradeButton />
               <LanguageSwitcher />
               <button
@@ -164,6 +194,23 @@ function NavBar() {
             </Link>
           ))}
           
+          {/* Admin (Mobile) */}
+          {isAdmin && (
+            <Link
+              to="/admin"
+              onClick={() => setDrawerOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium no-underline transition-all ${
+                isActive('/admin')
+                  ? 'bg-indigo-50 text-indigo-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+              }`}
+              style={{ minHeight: '48px' }}
+            >
+              <Shield className="w-5 h-5" />
+              Admin
+            </Link>
+          )}
+
           {/* Upgrade Button (Mobile) */}
           <div className="px-3 pt-2">
             <UpgradeButton mobile />
@@ -357,7 +404,7 @@ function NativeStatusBar() {
 
 function AppContent() {
   const location = useLocation();
-  const isAuthPage = ['/login', '/register'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -367,6 +414,8 @@ function AppContent() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/datenschutz" element={<DatenschutzPage />} />
+          <Route path="/nutzungsbedingungen" element={<NutzungsbedingungenPage />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
           <Route path="/ausgaben" element={<PrivateRoute><ExpensesPage /></PrivateRoute>} />
@@ -376,6 +425,9 @@ function AppContent() {
           <Route path="/profil" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
           <Route path="/pricing" element={<PrivateRoute><PricingPage /></PrivateRoute>} />
           <Route path="/documents/:id" element={<PrivateRoute><DocumentDetail /></PrivateRoute>} />
+          <Route path="/support" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
+          <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
       </main>
     </div>

@@ -1,11 +1,14 @@
 import asyncio
 import logging
 import os
+import smtplib
 import shutil
 import time
 import uuid
 from collections import defaultdict
 from datetime import datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from pathlib import Path
 from typing import Optional
 
@@ -834,6 +837,304 @@ async def subscription_usage(user_id: str = Depends(get_current_user)):
 async def subscription_webhook(request: Request):
     """Stripe webhook (no auth — verified via Stripe signature)."""
     return await handle_webhook(request)
+
+
+# --- Support API ---
+
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "a.kamal.vb@gmail.com")
+
+PERMANENT_ADMIN = "e9ce1e31-9a52-4f43-97ca-7e3a8137b40c"
+
+
+async def _get_support_email():
+    """Get support email from DB settings, fallback to env."""
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT value FROM settings WHERE key = 'support_email'")
+        row = await cursor.fetchone()
+        return row["value"] if row else SUPPORT_EMAIL
+    finally:
+        await db.close()
+
+
+async def _is_admin(user_id: str) -> bool:
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        return await cursor.fetchone() is not None
+    finally:
+        await db.close()
+
+
+async def _require_admin(user_id: str):
+    if not await _is_admin(user_id):
+        raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+
+@app.post("/api/support/ticket")
+async def support_ticket(data: dict, user_id: str = Depends(get_current_user)):
+    """Create a support ticket and send email."""
+    priority = data.get("priority", "mittel")
+    email = data.get("email", "")
+    message = data.get("message", "")
+
+    if not email or "@" not in email:
+        raise HTTPException(400, "Gültige E-Mail-Adresse erforderlich.")
+    if len(message) < 20:
+        raise HTTPException(400, "Nachricht muss mindestens 20 Zeichen haben.")
+
+    priority_labels = {
+        "niedrig": "NIEDRIG",
+        "mittel": "MITTEL",
+        "hoch": "HOCH",
+        "sehr_hoch": "SEHR HOCH",
+    }
+    prio_label = priority_labels.get(priority, priority.upper())
+    target_email = await _get_support_email()
+    timestamp = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+
+    subject = f"[KamalDoc Support] [{prio_label}] Ticket von {email}"
+    body = (
+        f"Priorität: {prio_label}\n"
+        f"E-Mail: {email}\n"
+        f"User ID: {user_id}\n"
+        f"Zeitstempel: {timestamp}\n\n"
+        f"Problembeschreibung:\n{message}"
+    )
+
+    # Try SMTP if configured, otherwise just log
+    if SMTP_HOST and SMTP_USER and SMTP_PASSWORD:
+        try:
+            msg = MIMEMultipart()
+            msg["From"] = SMTP_USER
+            msg["To"] = target_email
+            msg["Subject"] = subject
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASSWORD)
+                server.sendmail(SMTP_USER, target_email, msg.as_string())
+            logger.info(f"[Support] Ticket gesendet an {target_email} von {email}")
+        except Exception as e:
+            logger.error(f"[Support] SMTP Fehler: {e}")
+            raise HTTPException(500, "E-Mail konnte nicht gesendet werden.")
+    else:
+        logger.info(f"[Support] SMTP nicht konfiguriert. Ticket:\n{subject}\n{body}")
+
+    return {"status": "ok", "message": "Ticket erstellt"}
+
+
+# --- Admin API ---
+
+@app.get("/api/admin/check")
+async def admin_check(user_id: str = Depends(get_current_user)):
+    """Check if the current user is an admin."""
+    return {"is_admin": await _is_admin(user_id)}
+
+
+@app.get("/api/admin/list")
+async def admin_list(user_id: str = Depends(get_current_user)):
+    """List all admins."""
+    await _require_admin(user_id)
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT user_id FROM admins")
+        rows = await cursor.fetchall()
+        admins = []
+        for row in rows:
+            aid = row["user_id"]
+            # Try to find email from Supabase profiles or just show ID
+            email_cursor = await db.execute(
+                "SELECT value FROM user_einstellungen WHERE user_id = ? AND key = 'email'",
+                (aid,)
+            )
+            email_row = await email_cursor.fetchone()
+            admins.append({
+                "user_id": aid,
+                "email": email_row["value"] if email_row else None,
+                "is_permanent": aid == PERMANENT_ADMIN,
+            })
+        return {"admins": admins}
+    finally:
+        await db.close()
+
+
+@app.post("/api/admin/add")
+async def admin_add(data: dict, user_id: str = Depends(get_current_user)):
+    """Add a new admin by email."""
+    await _require_admin(user_id)
+    email = data.get("email", "").strip()
+    if not email:
+        raise HTTPException(400, "E-Mail erforderlich.")
+
+    from auth import SUPABASE_URL, SUPABASE_KEY
+    import httpx
+
+    # Search user in Supabase by email
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"{SUPABASE_URL}/auth/v1/admin/users",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+            },
+            params={"page": 1, "per_page": 1000},
+        )
+        if resp.status_code != 200:
+            raise HTTPException(500, "Fehler bei der Benutzersuche.")
+        users = resp.json().get("users", [])
+
+    target = next((u for u in users if u.get("email", "").lower() == email.lower()), None)
+    if not target:
+        raise HTTPException(404, "Kein User mit dieser E-Mail gefunden.")
+
+    target_id = target["id"]
+    db = await get_db()
+    try:
+        await db.execute("INSERT OR IGNORE INTO admins (user_id) VALUES (?)", (target_id,))
+        # Store email mapping for display
+        await db.execute(
+            "INSERT OR REPLACE INTO user_einstellungen (user_id, key, value) VALUES (?, 'email', ?)",
+            (target_id, email)
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+    return {"status": "ok", "user_id": target_id, "email": email}
+
+
+@app.delete("/api/admin/remove")
+async def admin_remove(data: dict, user_id: str = Depends(get_current_user)):
+    """Remove an admin."""
+    await _require_admin(user_id)
+    target_id = data.get("user_id", "")
+    if target_id == PERMANENT_ADMIN:
+        raise HTTPException(400, "Dieser Admin kann nicht entfernt werden.")
+    if not target_id:
+        raise HTTPException(400, "User ID erforderlich.")
+
+    db = await get_db()
+    try:
+        await db.execute("DELETE FROM admins WHERE user_id = ?", (target_id,))
+        await db.commit()
+    finally:
+        await db.close()
+
+    return {"status": "ok"}
+
+
+@app.get("/api/admin/support-email")
+async def admin_get_support_email(user_id: str = Depends(get_current_user)):
+    """Get current support email."""
+    await _require_admin(user_id)
+    return {"email": await _get_support_email()}
+
+
+@app.post("/api/admin/support-email")
+async def admin_set_support_email(data: dict, user_id: str = Depends(get_current_user)):
+    """Update support email."""
+    await _require_admin(user_id)
+    email = data.get("email", "").strip()
+    if not email or "@" not in email:
+        raise HTTPException(400, "Gültige E-Mail erforderlich.")
+
+    db = await get_db()
+    try:
+        await db.execute(
+            "INSERT OR REPLACE INTO settings (key, value) VALUES ('support_email', ?)",
+            (email,)
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+    return {"status": "ok", "email": email}
+
+
+@app.get("/api/admin/search-user")
+async def admin_search_user(email: str = Query(...), user_id: str = Depends(get_current_user)):
+    """Search user by email and return their plan."""
+    await _require_admin(user_id)
+
+    from auth import SUPABASE_URL, SUPABASE_KEY
+    import httpx
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"{SUPABASE_URL}/auth/v1/admin/users",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+            },
+            params={"page": 1, "per_page": 1000},
+        )
+        if resp.status_code != 200:
+            raise HTTPException(500, "Fehler bei der Benutzersuche.")
+        users = resp.json().get("users", [])
+
+    target = next((u for u in users if u.get("email", "").lower() == email.lower()), None)
+    if not target:
+        raise HTTPException(404, "Kein User mit dieser E-Mail gefunden.")
+
+    target_id = target["id"]
+    plan = await get_user_plan(target_id)
+
+    return {"user_id": target_id, "email": target["email"], "plan": plan}
+
+
+@app.post("/api/admin/change-plan")
+async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)):
+    """Manually change a user's plan (admin only)."""
+    await _require_admin(user_id)
+    email = data.get("email", "").strip()
+    new_plan = data.get("new_plan", "").strip()
+
+    if new_plan not in ("free", "basic", "pro"):
+        raise HTTPException(400, "Plan muss free, basic oder pro sein.")
+    if not email:
+        raise HTTPException(400, "E-Mail erforderlich.")
+
+    from auth import SUPABASE_URL, SUPABASE_KEY
+    import httpx
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(
+            f"{SUPABASE_URL}/auth/v1/admin/users",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY', SUPABASE_KEY)}",
+            },
+            params={"page": 1, "per_page": 1000},
+        )
+        if resp.status_code != 200:
+            raise HTTPException(500, "Fehler bei der Benutzersuche.")
+        users = resp.json().get("users", [])
+
+    target = next((u for u in users if u.get("email", "").lower() == email.lower()), None)
+    if not target:
+        raise HTTPException(404, "Kein User mit dieser E-Mail gefunden.")
+
+    target_id = target["id"]
+    db = await get_db()
+    try:
+        await db.execute(
+            """INSERT INTO subscriptions (user_id, plan, updated_at)
+               VALUES (?, ?, datetime('now'))
+               ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL, updated_at = datetime('now')""",
+            (target_id, new_plan, new_plan)
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+    logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}")
+    return {"status": "ok", "email": email, "new_plan": new_plan}
 
 
 # --- Deadline-Checker Background Job ---
