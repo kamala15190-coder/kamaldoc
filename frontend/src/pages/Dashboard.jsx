@@ -3,13 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, Filter, CheckCircle, ClipboardList,
-  Pencil, GripVertical, Minus, Plus, RotateCcw, Check,
-  LayoutDashboard
+  Minus, Plus, X as XIcon, Zap,
+  Wallet
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
 import AuthImage from '../components/AuthImage';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { useSubscription } from '../hooks/useSubscription';
+import { DndContext, closestCenter, MouseSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -32,11 +33,14 @@ const STATUS_LABELS = {
 
 const STORAGE_KEY = 'kamaldoc_dashboard_layout';
 
+const ALL_SECTION_IDS = ['todos', 'stats', 'search', 'documents', 'ausgaben'];
+
 const DEFAULT_SECTIONS = [
   { id: 'todos', visible: true },
   { id: 'stats', visible: true },
   { id: 'search', visible: true },
   { id: 'documents', visible: true },
+  { id: 'ausgaben', visible: false },
 ];
 
 const SECTION_LABELS = {
@@ -44,6 +48,15 @@ const SECTION_LABELS = {
   stats: 'Statistik-Karten',
   search: 'Suche & Filter',
   documents: 'Dokumente',
+  ausgaben: 'Ausgaben-Dashboard',
+};
+
+const SECTION_ICONS = {
+  todos: ClipboardList,
+  stats: Receipt,
+  search: Search,
+  documents: FileText,
+  ausgaben: Wallet,
 };
 
 function loadLayout() {
@@ -51,12 +64,11 @@ function loadLayout() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Ensure all default sections exist
       const ids = parsed.map(s => s.id);
       for (const def of DEFAULT_SECTIONS) {
         if (!ids.includes(def.id)) parsed.push({ ...def });
       }
-      return parsed.filter(s => DEFAULT_SECTIONS.some(d => d.id === s.id));
+      return parsed.filter(s => ALL_SECTION_IDS.includes(s.id));
     }
   } catch {}
   return DEFAULT_SECTIONS.map(s => ({ ...s }));
@@ -80,11 +92,25 @@ export default function Dashboard() {
   const [dismissingIds, setDismissingIds] = useState(new Set());
   const [editMode, setEditMode] = useState(false);
   const [sections, setSections] = useState(loadLayout);
-  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [confirmHide, setConfirmHide] = useState(null);
-  const addBtnRef = useRef(null);
+  const { isPaid } = useSubscription();
 
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
+  // Broadcast editMode state & listen for toggle from header
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('dashboard-edit-mode', { detail: editMode }));
+  }, [editMode]);
+
+  useEffect(() => {
+    const handler = () => setEditMode(prev => !prev);
+    window.addEventListener('toggle-dashboard-edit', handler);
+    return () => window.removeEventListener('toggle-dashboard-edit', handler);
+  }, []);
+
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
+  );
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -114,7 +140,7 @@ export default function Dashboard() {
       saveLayout(updated);
       return updated;
     });
-    setShowAddPopup(false);
+    setShowAddModal(false);
   };
 
   const resetLayout = () => {
@@ -390,55 +416,82 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Header with edit toggle */}
-      <div className="flex items-center justify-end mb-4">
-        {editMode ? (
-          <div className="flex items-center gap-2">
-            <div className="relative" ref={addBtnRef}>
+      {/* Toolbar — only in edit mode */}
+      {editMode && (
+        <div className="flex items-center gap-2 justify-end mb-3">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1 px-3 h-8 text-sm border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
+            <Plus className="w-3.5 h-3.5" /> Sektor hinzufügen
+          </button>
+          <button
+            onClick={resetLayout}
+            className="h-8 px-3 text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer bg-transparent border-none"
+          >
+            Zurücksetzen
+          </button>
+          <button
+            onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
+            className="h-8 px-4 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer border-none"
+          >
+            ✓ Fertig
+          </button>
+        </div>
+      )}
+
+      {/* Add Sector Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setShowAddModal(false)}>
+          <div className="bg-white rounded-2xl p-5 w-80 shadow-xl mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800">Sektor hinzufügen</h3>
               <button
-                onClick={() => setShowAddPopup(!showAddPopup)}
-                disabled={hiddenSections.length === 0}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors cursor-pointer border-none disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={() => setShowAddModal(false)}
+                className="p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer bg-transparent border-none"
               >
-                <Plus className="w-3.5 h-3.5" /> Sektor hinzufügen
+                <XIcon className="w-4 h-4" />
               </button>
-              {showAddPopup && hiddenSections.length > 0 && (
-                <div className="absolute right-0 top-full mt-1 w-56 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
-                  {hiddenSections.map(s => (
+            </div>
+            <div className="space-y-2">
+              {hiddenSections.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">Alle Sektoren sind bereits sichtbar.</p>
+              ) : (
+                hiddenSections.map(s => {
+                  const Icon = SECTION_ICONS[s.id] || FileText;
+                  const isAusgabenLocked = s.id === 'ausgaben' && !isPaid;
+                  return (
                     <button
                       key={s.id}
-                      onClick={() => showSection(s.id)}
-                      className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors cursor-pointer bg-transparent border-none"
+                      onClick={() => {
+                        if (isAusgabenLocked) {
+                          navigate('/pricing');
+                          setShowAddModal(false);
+                          return;
+                        }
+                        showSection(s.id);
+                      }}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors cursor-pointer border-none ${
+                        isAusgabenLocked
+                          ? 'bg-gray-50 text-gray-400'
+                          : 'bg-gray-50 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700'
+                      }`}
                     >
-                      {SECTION_LABELS[s.id]}
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="flex-1 text-sm font-medium">{SECTION_LABELS[s.id]}</span>
+                      {isAusgabenLocked && (
+                        <span className="flex items-center gap-1 text-xs text-amber-600">
+                          <Zap className="w-3.5 h-3.5" /> Ab Basic
+                        </span>
+                      )}
                     </button>
-                  ))}
-                </div>
+                  );
+                })
               )}
             </div>
-            <button
-              onClick={resetLayout}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-200 text-slate-700 hover:bg-slate-300 transition-colors cursor-pointer border-none"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Zurücksetzen
-            </button>
-            <button
-              onClick={() => { setEditMode(false); setShowAddPopup(false); setConfirmHide(null); }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition-colors cursor-pointer border-none"
-            >
-              <Check className="w-3.5 h-3.5" /> Fertig
-            </button>
           </div>
-        ) : (
-          <button
-            onClick={() => setEditMode(true)}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer bg-transparent border-none"
-            title="Dashboard bearbeiten"
-          >
-            <Pencil className="w-4 h-4" />
-          </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Confirm-hide popup */}
       {confirmHide && (
@@ -510,36 +563,29 @@ function SortableSection({ id, editMode, onRemove, children }) {
     transform: CSS.Transform.toString(transform),
     transition,
     zIndex: isDragging ? 50 : 'auto',
+    filter: isDragging ? 'blur(1px)' : 'none',
+    opacity: isDragging ? 0.8 : 1,
   } : {};
 
   return (
     <div
       ref={setNodeRef}
       style={style}
+      {...(editMode ? { ...attributes, ...listeners } : {})}
       className={`relative ${
         editMode
-          ? `rounded-xl border-2 border-blue-400 ${isDragging ? 'shadow-xl opacity-90' : 'shadow-sm'} mb-4 p-1`
+          ? `rounded-xl border-2 border-blue-500 mb-4 p-1 cursor-grab active:cursor-grabbing touch-none`
           : ''
       }`}
     >
       {editMode && (
-        <>
-          {/* Drag handle */}
-          <div
-            {...attributes}
-            {...listeners}
-            className="absolute -left-1 top-1/2 -translate-y-1/2 z-10 cursor-grab active:cursor-grabbing p-1 rounded-lg bg-blue-500 text-white shadow-md hover:bg-blue-600 transition-colors"
-          >
-            <GripVertical className="w-4 h-4" />
-          </div>
-          {/* Remove button */}
-          <button
-            onClick={onRemove}
-            className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-        </>
+        <button
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
+        >
+          <Minus className="w-3.5 h-3.5" />
+        </button>
       )}
       {children}
     </div>

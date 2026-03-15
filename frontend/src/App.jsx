@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
-import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield } from 'lucide-react';
+import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Pencil, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
@@ -69,10 +69,24 @@ function PrivateRoute({ children }) {
 function NavBar() {
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [dashboardEditMode, setDashboardEditMode] = useState(false);
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const isAdmin = useIsAdmin();
   const isActive = (path) => location.pathname === path;
+  const isDashboard = location.pathname === '/';
+
+  // Sync edit mode state from Dashboard
+  useEffect(() => {
+    const handler = (e) => setDashboardEditMode(e.detail);
+    window.addEventListener('dashboard-edit-mode', handler);
+    return () => window.removeEventListener('dashboard-edit-mode', handler);
+  }, []);
+
+  // Reset edit mode when navigating away
+  useEffect(() => {
+    if (!isDashboard) setDashboardEditMode(false);
+  }, [isDashboard]);
 
   const handleLogout = async () => {
     await signOut();
@@ -95,9 +109,22 @@ function NavBar() {
       <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 md:h-16">
-            <Link to="/" className="flex items-center gap-2 no-underline">
-              <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-9 object-contain" />
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2 no-underline">
+                <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-9 object-contain" />
+              </Link>
+              {isDashboard && (
+                <button
+                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
+                  className={`p-1.5 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
+                    dashboardEditMode ? 'text-blue-600 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  }`}
+                  title={dashboardEditMode ? 'Bearbeitung beenden' : 'Dashboard bearbeiten'}
+                >
+                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
 
             {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center gap-0.5">
@@ -135,8 +162,18 @@ function NavBar() {
               </button>
             </div>
 
-            {/* Mobile: Language + Hamburger */}
+            {/* Mobile: Language + Edit + Hamburger */}
             <div className="lg:hidden flex items-center gap-1">
+              {isDashboard && (
+                <button
+                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
+                  className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
+                    dashboardEditMode ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                </button>
+              )}
               <LanguageSwitcher />
               <button
                 onClick={() => setDrawerOpen(true)}
