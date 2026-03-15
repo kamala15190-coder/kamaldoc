@@ -186,7 +186,11 @@
     "usageKI": "AI analisiak",
     "usageBehoerde": "Agint. lagunt.",
     "usageBefund": "Med. lagunt.",
-    "unlimited": "Mugagabea"
+    "unlimited": "Mugagabea",
+    "reactivate": "Harpidetza berraktibatu",
+    "reactivateSuccess": "Harpidetza berraktibatuta!",
+    "reactivateFailed": "Berraktibazioak huts egin du",
+    "pendingDowngrade": "Zure plana {{plan}} izatera aldatuko da {{date}}(e)an."
   },
   "categories": {
     "brief": "Gutuna",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 edo 7 egun)",
     "featureLocked": "Eginbidea blokeatuta",
     "upgradeDesc": "{{plan}} planetik eskuragarri.",
-    "expensesLocked": "Gastuak Basic-etik"
+    "expensesLocked": "Gastuak Basic-etik",
+    "managePlan": "Plana kudeatu",
+    "downgradeConfirm": "{{plan}} planera jaitsi nahi duzu? Zure uneko plana aktibo jarraituko du fakturazio-aldiaren amaiera arte.",
+    "downgradeSuccess": "Jaitsiera programatuta. Zure uneko plana aktibo jarraituko du iraungitzen den arte.",
+    "downgradeFailed": "Jaitsierak huts egin du"
   }
 }

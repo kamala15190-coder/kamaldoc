@@ -186,7 +186,11 @@
     "usageKI": "Analisis AI",
     "usageBehoerde": "Asist. instansi",
     "usageBefund": "Asist. medis",
-    "unlimited": "Tidak terbatas"
+    "unlimited": "Tidak terbatas",
+    "reactivate": "Aktifkan kembali langganan",
+    "reactivateSuccess": "Langganan diaktifkan kembali!",
+    "reactivateFailed": "Gagal mengaktifkan kembali",
+    "pendingDowngrade": "Paket Anda akan berubah ke {{plan}} pada {{date}}."
   },
   "categories": {
     "brief": "Surat",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 atau 7 hari)",
     "featureLocked": "Fitur terkunci",
     "upgradeDesc": "Tersedia dari paket {{plan}}.",
-    "expensesLocked": "Pengeluaran dari paket Basic"
+    "expensesLocked": "Pengeluaran dari paket Basic",
+    "managePlan": "Kelola paket",
+    "downgradeConfirm": "Apakah Anda ingin turun ke {{plan}}? Paket Anda saat ini tetap aktif hingga akhir periode penagihan.",
+    "downgradeSuccess": "Penurunan dijadwalkan. Paket Anda saat ini tetap aktif hingga kedaluwarsa.",
+    "downgradeFailed": "Penurunan gagal"
   }
 }

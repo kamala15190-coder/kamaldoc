@@ -186,7 +186,11 @@
     "usageKI": "Análises IA",
     "usageBehoerde": "Assist. autoridade",
     "usageBefund": "Assist. médico",
-    "unlimited": "Ilimitado"
+    "unlimited": "Ilimitado",
+    "reactivate": "Reativar assinatura",
+    "reactivateSuccess": "Assinatura reativada!",
+    "reactivateFailed": "Falha na reativação",
+    "pendingDowngrade": "Seu plano será alterado para {{plan}} em {{date}}."
   },
   "categories": {
     "brief": "Carta",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ou 7 dias)",
     "featureLocked": "Recurso bloqueado",
     "upgradeDesc": "Disponível a partir do plano {{plan}}.",
-    "expensesLocked": "Despesas disponíveis a partir do plano Basic"
+    "expensesLocked": "Despesas disponíveis a partir do plano Basic",
+    "managePlan": "Gerenciar plano",
+    "downgradeConfirm": "Deseja fazer downgrade para {{plan}}? Seu plano atual permanecerá ativo até o final do período de cobrança.",
+    "downgradeSuccess": "Downgrade agendado. Seu plano atual permanecerá ativo até o vencimento.",
+    "downgradeFailed": "Falha no downgrade"
   }
 }

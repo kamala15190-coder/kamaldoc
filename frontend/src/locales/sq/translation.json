@@ -186,7 +186,11 @@
     "usageKI": "Analiza AI",
     "usageBehoerde": "Asist. aut.",
     "usageBefund": "Asist. mjek.",
-    "unlimited": "Pa limit"
+    "unlimited": "Pa limit",
+    "reactivate": "Riaktivizo abonimin",
+    "reactivateSuccess": "Abonimi u riaktivizua!",
+    "reactivateFailed": "Riaktivizimi dështoi",
+    "pendingDowngrade": "Plani juaj do të ndryshohet në {{plan}} më {{date}}."
   },
   "categories": {
     "brief": "Letër",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ose 7 ditë)",
     "featureLocked": "Funksioni i bllokuar",
     "upgradeDesc": "I disponueshëm nga plani {{plan}}.",
-    "expensesLocked": "Shpenzimet nga plani Basic"
+    "expensesLocked": "Shpenzimet nga plani Basic",
+    "managePlan": "Menaxho planin",
+    "downgradeConfirm": "Dëshironi të kaloni në {{plan}}? Plani juaj aktual mbetet aktiv deri në fund të periudhës së faturimit.",
+    "downgradeSuccess": "Ulja e planifikuar. Plani juaj aktual mbetet aktiv deri në skadim.",
+    "downgradeFailed": "Ulja dështoi"
   }
 }

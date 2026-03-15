@@ -186,7 +186,11 @@
     "usageKI": "AI analize",
     "usageBehoerde": "Urad. pom.",
     "usageBefund": "Med. pom.",
-    "unlimited": "Neomejeno"
+    "unlimited": "Neomejeno",
+    "reactivate": "Ponovno aktiviraj naročnino",
+    "reactivateSuccess": "Naročnina ponovno aktivirana!",
+    "reactivateFailed": "Ponovna aktivacija ni uspela",
+    "pendingDowngrade": "Vaš načrt se bo spremenil v {{plan}} dne {{date}}."
   },
   "categories": {
     "brief": "Pismo",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ali 7 dni)",
     "featureLocked": "Funkcija zaklenjena",
     "upgradeDesc": "Na voljo od načrta {{plan}}.",
-    "expensesLocked": "Stroški na voljo od načrta Basic"
+    "expensesLocked": "Stroški na voljo od načrta Basic",
+    "managePlan": "Upravljaj načrt",
+    "downgradeConfirm": "Ali želite preiti na {{plan}}? Vaš trenutni načrt ostane aktiven do konca obračunskega obdobja.",
+    "downgradeSuccess": "Znižanje načrtovano. Vaš trenutni načrt ostane aktiven do poteka.",
+    "downgradeFailed": "Znižanje ni uspelo"
   }
 }

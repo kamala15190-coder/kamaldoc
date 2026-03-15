@@ -186,7 +186,11 @@
     "usageKI": "تحليلات الذكاء الاصطناعي",
     "usageBehoerde": "مساعد رسمي",
     "usageBefund": "مساعد طبي",
-    "unlimited": "غير محدود"
+    "unlimited": "غير محدود",
+    "reactivate": "إعادة تفعيل الاشتراك",
+    "reactivateSuccess": "تم إعادة تفعيل الاشتراك!",
+    "reactivateFailed": "فشل إعادة التفعيل",
+    "pendingDowngrade": "سيتم تغيير خطتك إلى {{plan}} في {{date}}."
   },
   "categories": {
     "brief": "رسالة",
@@ -302,6 +306,10 @@
     "pushAll": "إشعارات (1 أو 3 أو 7 أيام)",
     "featureLocked": "هذه الميزة مقفلة",
     "upgradeDesc": "متاح من خطة {{plan}}.",
-    "expensesLocked": "لوحة المصروفات متاحة من خطة Basic"
+    "expensesLocked": "لوحة المصروفات متاحة من خطة Basic",
+    "managePlan": "إدارة الخطة",
+    "downgradeConfirm": "هل تريد الرجوع إلى {{plan}}؟ ستبقى خطتك الحالية نشطة حتى نهاية فترة الفوترة.",
+    "downgradeSuccess": "تم جدولة الرجوع. ستبقى خطتك الحالية نشطة حتى انتهاء صلاحيتها.",
+    "downgradeFailed": "فشل الرجوع"
   }
 }

@@ -186,7 +186,11 @@
     "usageKI": "AI elemzések",
     "usageBehoerde": "Hiv. segéd",
     "usageBefund": "Lelet segéd",
-    "unlimited": "Korlátlan"
+    "unlimited": "Korlátlan",
+    "reactivate": "Előfizetés újraaktiválása",
+    "reactivateSuccess": "Előfizetés újraaktiválva!",
+    "reactivateFailed": "Újraaktiválás sikertelen",
+    "pendingDowngrade": "A csomagod {{date}}-án/én {{plan}} csomagra változik."
   },
   "categories": {
     "brief": "Levél",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 vagy 7 nap)",
     "featureLocked": "Funkció zárolva",
     "upgradeDesc": "Elérhető a {{plan}} csomagtól.",
-    "expensesLocked": "Kiadások Basic-tól elérhető"
+    "expensesLocked": "Kiadások Basic-tól elérhető",
+    "managePlan": "Csomag kezelése",
+    "downgradeConfirm": "Szeretnél {{plan}} csomagra váltani? A jelenlegi csomagod a számlázási időszak végéig aktív marad.",
+    "downgradeSuccess": "Visszalépés ütemezve. A jelenlegi csomagod a lejáratig aktív marad.",
+    "downgradeFailed": "Visszalépés sikertelen"
   }
 }

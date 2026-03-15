@@ -186,7 +186,11 @@
     "usageKI": "Analizy AI",
     "usageBehoerde": "Asyst. urzęd.",
     "usageBefund": "Asyst. medycz.",
-    "unlimited": "Bez limitu"
+    "unlimited": "Bez limitu",
+    "reactivate": "Reaktywuj subskrypcję",
+    "reactivateSuccess": "Subskrypcja reaktywowana!",
+    "reactivateFailed": "Reaktywacja nie powiodła się",
+    "pendingDowngrade": "Twój plan zostanie zmieniony na {{plan}} w dniu {{date}}."
   },
   "categories": {
     "brief": "List",
@@ -302,6 +306,10 @@
     "pushAll": "Powiadomienia push (1, 3 lub 7 dni)",
     "featureLocked": "Ta funkcja jest zablokowana",
     "upgradeDesc": "Dostępne od planu {{plan}}.",
-    "expensesLocked": "Panel wydatków dostępny od planu Basic"
+    "expensesLocked": "Panel wydatków dostępny od planu Basic",
+    "managePlan": "Zarządzaj planem",
+    "downgradeConfirm": "Czy chcesz przejść na {{plan}}? Twój obecny plan pozostanie aktywny do końca okresu rozliczeniowego.",
+    "downgradeSuccess": "Obniżenie zaplanowane. Twój obecny plan pozostanie aktywny do wygaśnięcia.",
+    "downgradeFailed": "Obniżenie nie powiodło się"
   }
 }

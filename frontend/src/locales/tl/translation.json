@@ -186,7 +186,11 @@
     "usageKI": "AI analysis",
     "usageBehoerde": "Asist. awtoridad",
     "usageBefund": "Med. asist.",
-    "unlimited": "Walang limitasyon"
+    "unlimited": "Walang limitasyon",
+    "reactivate": "I-reactivate ang subscription",
+    "reactivateSuccess": "Na-reactivate ang subscription!",
+    "reactivateFailed": "Nabigong i-reactivate",
+    "pendingDowngrade": "Ang iyong plan ay babaguhin sa {{plan}} sa {{date}}."
   },
   "categories": {
     "brief": "Liham",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 o 7 araw)",
     "featureLocked": "Naka-lock ang feature",
     "upgradeDesc": "Available mula sa {{plan}} plan.",
-    "expensesLocked": "Gastusin mula sa Basic plan"
+    "expensesLocked": "Gastusin mula sa Basic plan",
+    "managePlan": "Pamahalaan ang plan",
+    "downgradeConfirm": "Gusto mo bang mag-downgrade sa {{plan}}? Ang iyong kasalukuyang plan ay mananatiling aktibo hanggang sa katapusan ng billing period.",
+    "downgradeSuccess": "Naka-schedule ang downgrade. Ang iyong kasalukuyang plan ay mananatiling aktibo hanggang mag-expire.",
+    "downgradeFailed": "Nabigong mag-downgrade"
   }
 }

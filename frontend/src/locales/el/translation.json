@@ -186,7 +186,11 @@
     "usageKI": "AI αναλύσεις",
     "usageBehoerde": "Βοηθ. αρχής",
     "usageBefund": "Ιατρ. βοηθ.",
-    "unlimited": "Απεριόριστο"
+    "unlimited": "Απεριόριστο",
+    "reactivate": "Επανενεργοποίηση συνδρομής",
+    "reactivateSuccess": "Η συνδρομή επανενεργοποιήθηκε!",
+    "reactivateFailed": "Η επανενεργοποίηση απέτυχε",
+    "pendingDowngrade": "Το πλάνο σας θα αλλάξει σε {{plan}} στις {{date}}."
   },
   "categories": {
     "brief": "Επιστολή",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ή 7 ημέρες)",
     "featureLocked": "Λειτουργία κλειδωμένη",
     "upgradeDesc": "Από πλάνο {{plan}}.",
-    "expensesLocked": "Έξοδα από Basic"
+    "expensesLocked": "Έξοδα από Basic",
+    "managePlan": "Διαχείριση πλάνου",
+    "downgradeConfirm": "Θέλετε να υποβαθμίσετε σε {{plan}}; Το τρέχον πλάνο σας παραμένει ενεργό μέχρι το τέλος της περιόδου τιμολόγησης.",
+    "downgradeSuccess": "Η υποβάθμιση προγραμματίστηκε. Το τρέχον πλάνο σας παραμένει ενεργό μέχρι τη λήξη.",
+    "downgradeFailed": "Η υποβάθμιση απέτυχε"
   }
 }

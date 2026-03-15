@@ -186,7 +186,11 @@
     "usageKI": "AI analýzy",
     "usageBehoerde": "Úrad. asist.",
     "usageBefund": "Lék. asist.",
-    "unlimited": "Neobmedzene"
+    "unlimited": "Neobmedzene",
+    "reactivate": "Reaktivovať predplatné",
+    "reactivateSuccess": "Predplatné reaktivované!",
+    "reactivateFailed": "Reaktivácia zlyhala",
+    "pendingDowngrade": "Váš plán bude zmenený na {{plan}} dňa {{date}}."
   },
   "categories": {
     "brief": "List",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 alebo 7 dní)",
     "featureLocked": "Funkcia uzamknutá",
     "upgradeDesc": "Dostupné od plánu {{plan}}.",
-    "expensesLocked": "Výdavky dostupné od plánu Basic"
+    "expensesLocked": "Výdavky dostupné od plánu Basic",
+    "managePlan": "Spravovať plán",
+    "downgradeConfirm": "Chcete prejsť na {{plan}}? Váš aktuálny plán zostane aktívny do konca fakturačného obdobia.",
+    "downgradeSuccess": "Zníženie naplánované. Váš aktuálny plán zostane aktívny do vypršania.",
+    "downgradeFailed": "Zníženie zlyhalo"
   }
 }

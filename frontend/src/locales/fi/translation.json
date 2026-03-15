@@ -186,7 +186,11 @@
     "usageKI": "AI-analyysit",
     "usageBehoerde": "Vir. assist.",
     "usageBefund": "Lääk. assist.",
-    "unlimited": "Rajoittamaton"
+    "unlimited": "Rajoittamaton",
+    "reactivate": "Aktivoi tilaus uudelleen",
+    "reactivateSuccess": "Tilaus aktivoitu uudelleen!",
+    "reactivateFailed": "Uudelleenaktivointi epäonnistui",
+    "pendingDowngrade": "Suunnitelmasi muutetaan {{plan}} -suunnitelmaksi {{date}}."
   },
   "categories": {
     "brief": "Kirje",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 tai 7 pv)",
     "featureLocked": "Toiminto lukittu",
     "upgradeDesc": "Saatavilla paketista {{plan}}.",
-    "expensesLocked": "Kulut saatavilla Basic-paketista"
+    "expensesLocked": "Kulut saatavilla Basic-paketista",
+    "managePlan": "Hallinnoi suunnitelmaa",
+    "downgradeConfirm": "Haluatko vaihtaa {{plan}} -suunnitelmaan? Nykyinen suunnitelmasi pysyy aktiivisena laskutuskauden loppuun.",
+    "downgradeSuccess": "Alennus suunniteltu. Nykyinen suunnitelmasi pysyy aktiivisena vanhenemiseen asti.",
+    "downgradeFailed": "Alennus epäonnistui"
   }
 }

@@ -186,7 +186,11 @@
     "usageKI": "Analize IA",
     "usageBehoerde": "Asist. aut.",
     "usageBefund": "Asist. med.",
-    "unlimited": "Nelimitat"
+    "unlimited": "Nelimitat",
+    "reactivate": "Reactivează abonamentul",
+    "reactivateSuccess": "Abonament reactivat!",
+    "reactivateFailed": "Reactivarea a eșuat",
+    "pendingDowngrade": "Planul tău va fi schimbat în {{plan}} pe {{date}}."
   },
   "categories": {
     "brief": "Scrisoare",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 sau 7 zile)",
     "featureLocked": "Funcție blocată",
     "upgradeDesc": "Disponibil de la {{plan}}.",
-    "expensesLocked": "Cheltuieli de la Basic"
+    "expensesLocked": "Cheltuieli de la Basic",
+    "managePlan": "Gestionează planul",
+    "downgradeConfirm": "Dorești să treci la {{plan}}? Planul tău actual rămâne activ până la sfârșitul perioadei de facturare.",
+    "downgradeSuccess": "Retrogradare programată. Planul tău actual rămâne activ până la expirare.",
+    "downgradeFailed": "Retrogradarea a eșuat"
   }
 }

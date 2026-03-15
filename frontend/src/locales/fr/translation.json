@@ -186,7 +186,11 @@
     "usageKI": "Analyses IA",
     "usageBehoerde": "Assist. admin.",
     "usageBefund": "Assist. médical",
-    "unlimited": "Illimité"
+    "unlimited": "Illimité",
+    "reactivate": "Réactiver l'abonnement",
+    "reactivateSuccess": "Abonnement réactivé !",
+    "reactivateFailed": "Échec de la réactivation",
+    "pendingDowngrade": "Votre plan sera changé en {{plan}} le {{date}}."
   },
   "categories": {
     "brief": "Lettre",
@@ -302,6 +306,10 @@
     "pushAll": "Notifications push (1, 3 ou 7 jours)",
     "featureLocked": "Cette fonctionnalité est verrouillée",
     "upgradeDesc": "Disponible à partir du plan {{plan}}.",
-    "expensesLocked": "Tableau de bord des dépenses disponible à partir du plan Basic"
+    "expensesLocked": "Tableau de bord des dépenses disponible à partir du plan Basic",
+    "managePlan": "Gérer le plan",
+    "downgradeConfirm": "Voulez-vous passer au plan {{plan}} ? Votre plan actuel reste actif jusqu'à la fin de la période de facturation.",
+    "downgradeSuccess": "Rétrogradation planifiée. Votre plan actuel reste actif jusqu'à son expiration.",
+    "downgradeFailed": "Échec de la rétrogradation"
   }
 }

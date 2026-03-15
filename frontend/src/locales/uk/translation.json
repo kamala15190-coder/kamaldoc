@@ -186,7 +186,11 @@
     "usageKI": "AI-аналізи",
     "usageBehoerde": "Ас. установ",
     "usageBefund": "Мед. ас.",
-    "unlimited": "Безлімітно"
+    "unlimited": "Безлімітно",
+    "reactivate": "Поновити підписку",
+    "reactivateSuccess": "Підписку поновлено!",
+    "reactivateFailed": "Помилка поновлення",
+    "pendingDowngrade": "Ваш план буде змінено на {{plan}} {{date}}."
   },
   "categories": {
     "brief": "Лист",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 або 7 днів)",
     "featureLocked": "Функцію заблоковано",
     "upgradeDesc": "Доступно з {{plan}}.",
-    "expensesLocked": "Витрати доступні з Basic"
+    "expensesLocked": "Витрати доступні з Basic",
+    "managePlan": "Керувати планом",
+    "downgradeConfirm": "Бажаєте перейти на {{plan}}? Ваш поточний план залишиться активним до кінця розрахункового періоду.",
+    "downgradeSuccess": "Зниження заплановано. Ваш поточний план залишиться активним до закінчення терміну.",
+    "downgradeFailed": "Помилка зниження плану"
   }
 }

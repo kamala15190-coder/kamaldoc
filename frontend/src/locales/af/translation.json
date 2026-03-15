@@ -186,7 +186,11 @@
     "usageKI": "AI-ontledings",
     "usageBehoerde": "Owerh. assist.",
     "usageBefund": "Med. assist.",
-    "unlimited": "Onbeperk"
+    "unlimited": "Onbeperk",
+    "reactivate": "Heraktiveer intekening",
+    "reactivateSuccess": "Intekening heraktiveer!",
+    "reactivateFailed": "Heraktivering het misluk",
+    "pendingDowngrade": "Jou plan verander op {{date}} na {{plan}}."
   },
   "categories": {
     "brief": "Brief",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 of 7 dae)",
     "featureLocked": "Kenmerk gesluit",
     "upgradeDesc": "Beskikbaar vanaf {{plan}}.",
-    "expensesLocked": "Uitgawes vanaf Basic"
+    "expensesLocked": "Uitgawes vanaf Basic",
+    "managePlan": "Bestuur plan",
+    "downgradeConfirm": "Wil jy na {{plan}} afwaarts? Jou huidige plan bly aktief tot die einde van die faktureringstydperk.",
+    "downgradeSuccess": "Afwaartse verandering beplan. Jou huidige plan bly aktief tot dit verval.",
+    "downgradeFailed": "Afwaartse verandering het misluk"
   }
 }

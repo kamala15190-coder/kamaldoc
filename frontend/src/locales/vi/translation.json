@@ -186,7 +186,11 @@
     "usageKI": "Phân tích AI",
     "usageBehoerde": "Trợ lý cơ quan",
     "usageBefund": "Trợ lý y tế",
-    "unlimited": "Không giới hạn"
+    "unlimited": "Không giới hạn",
+    "reactivate": "Kích hoạt lại đăng ký",
+    "reactivateSuccess": "Đăng ký đã được kích hoạt lại!",
+    "reactivateFailed": "Kích hoạt lại thất bại",
+    "pendingDowngrade": "Gói của bạn sẽ được đổi thành {{plan}} vào {{date}}."
   },
   "categories": {
     "brief": "Thư",
@@ -302,6 +306,10 @@
     "pushAll": "Thông báo (1, 3 hoặc 7 ngày)",
     "featureLocked": "Tính năng bị khóa",
     "upgradeDesc": "Có từ gói {{plan}}.",
-    "expensesLocked": "Chi phí có từ gói Basic"
+    "expensesLocked": "Chi phí có từ gói Basic",
+    "managePlan": "Quản lý gói",
+    "downgradeConfirm": "Bạn có muốn hạ xuống {{plan}} không? Gói hiện tại của bạn sẽ vẫn hoạt động cho đến cuối kỳ thanh toán.",
+    "downgradeSuccess": "Đã lên lịch hạ cấp. Gói hiện tại của bạn sẽ vẫn hoạt động cho đến khi hết hạn.",
+    "downgradeFailed": "Hạ cấp thất bại"
   }
 }

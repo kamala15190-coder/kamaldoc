@@ -186,7 +186,11 @@
     "usageKI": "AI analize",
     "usageBehoerde": "Uprava as.",
     "usageBefund": "Nalaz as.",
-    "unlimited": "Neograničeno"
+    "unlimited": "Neograničeno",
+    "reactivate": "Reaktiviraj pretplatu",
+    "reactivateSuccess": "Pretplata reaktivirana!",
+    "reactivateFailed": "Reaktivacija nije uspjela",
+    "pendingDowngrade": "Vaš plan će se promijeniti u {{plan}} dana {{date}}."
   },
   "categories": {
     "brief": "Pismo",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ili 7 dana)",
     "featureLocked": "Zaključana značajka",
     "upgradeDesc": "Dostupno od {{plan}} plana.",
-    "expensesLocked": "Troškovi dostupni od Basic plana"
+    "expensesLocked": "Troškovi dostupni od Basic plana",
+    "managePlan": "Upravljanje planom",
+    "downgradeConfirm": "Želite li preći na {{plan}}? Vaš trenutni plan ostaje aktivan do kraja obračunskog razdoblja.",
+    "downgradeSuccess": "Sniženje planirano. Vaš trenutni plan ostaje aktivan do isteka.",
+    "downgradeFailed": "Sniženje nije uspjelo"
   }
 }

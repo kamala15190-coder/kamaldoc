@@ -186,7 +186,11 @@
     "usageKI": "Análises IA",
     "usageBehoerde": "Asist. aut.",
     "usageBefund": "Asist. méd.",
-    "unlimited": "Ilimitado"
+    "unlimited": "Ilimitado",
+    "reactivate": "Reactivar subscrición",
+    "reactivateSuccess": "Subscrición reactivada!",
+    "reactivateFailed": "Erro na reactivación",
+    "pendingDowngrade": "O teu plan cambiará a {{plan}} o {{date}}."
   },
   "categories": {
     "brief": "Carta",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 ou 7 días)",
     "featureLocked": "Función bloqueada",
     "upgradeDesc": "Dispoñible dende o plan {{plan}}.",
-    "expensesLocked": "Gastos dende Basic"
+    "expensesLocked": "Gastos dende Basic",
+    "managePlan": "Xestionar plan",
+    "downgradeConfirm": "Queres baixar a {{plan}}? O teu plan actual seguirá activo ata o final do período de facturación.",
+    "downgradeSuccess": "Baixada programada. O teu plan actual seguirá activo ata que expire.",
+    "downgradeFailed": "Erro na baixada"
   }
 }

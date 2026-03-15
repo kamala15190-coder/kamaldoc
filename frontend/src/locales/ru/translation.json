@@ -186,7 +186,11 @@
     "usageKI": "AI-анализы",
     "usageBehoerde": "Асс. ведомств",
     "usageBefund": "Мед. асс.",
-    "unlimited": "Безлимитно"
+    "unlimited": "Безлимитно",
+    "reactivate": "Возобновить подписку",
+    "reactivateSuccess": "Подписка возобновлена!",
+    "reactivateFailed": "Ошибка возобновления",
+    "pendingDowngrade": "Ваш план будет изменён на {{plan}} {{date}}."
   },
   "categories": {
     "brief": "Письмо",
@@ -302,6 +306,10 @@
     "pushAll": "Push-уведомления (1, 3 или 7 дней)",
     "featureLocked": "Эта функция заблокирована",
     "upgradeDesc": "Доступно с плана {{plan}}.",
-    "expensesLocked": "Панель расходов доступна с плана Basic"
+    "expensesLocked": "Панель расходов доступна с плана Basic",
+    "managePlan": "Управление планом",
+    "downgradeConfirm": "Вы хотите перейти на {{plan}}? Ваш текущий план останется активным до конца расчётного периода.",
+    "downgradeSuccess": "Понижение запланировано. Ваш текущий план останется активным до истечения срока.",
+    "downgradeFailed": "Ошибка понижения плана"
   }
 }

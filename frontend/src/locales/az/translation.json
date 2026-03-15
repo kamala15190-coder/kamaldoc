@@ -186,7 +186,11 @@
     "usageKI": "AI analizlər",
     "usageBehoerde": "İdarə assist.",
     "usageBefund": "Tibbi assist.",
-    "unlimited": "Limitsiz"
+    "unlimited": "Limitsiz",
+    "reactivate": "Abunəliyi yenidən aktivləşdir",
+    "reactivateSuccess": "Abunəlik yenidən aktivləşdirildi!",
+    "reactivateFailed": "Yenidən aktivləşdirmə uğursuz oldu",
+    "pendingDowngrade": "Planınız {{date}} tarixində {{plan}} olaraq dəyişdiriləcək."
   },
   "categories": {
     "brief": "Məktub",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 və ya 7 gün)",
     "featureLocked": "Funksiya bağlıdır",
     "upgradeDesc": "{{plan}} planından əlçatandır.",
-    "expensesLocked": "Xərclər Basic plandan"
+    "expensesLocked": "Xərclər Basic plandan",
+    "managePlan": "Planı idarə et",
+    "downgradeConfirm": "{{plan}} planına endirmək istəyirsiniz? Cari planınız faktura dövrünün sonuna qədər aktiv qalacaq.",
+    "downgradeSuccess": "Endirmə planlaşdırıldı. Cari planınız müddəti bitənə qədər aktiv qalacaq.",
+    "downgradeFailed": "Endirmə uğursuz oldu"
   }
 }

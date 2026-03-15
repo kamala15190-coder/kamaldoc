@@ -186,7 +186,11 @@
     "usageKI": "Uchambuzi wa AI",
     "usageBehoerde": "Msaidizi mamlaka",
     "usageBefund": "Msaidizi matibabu",
-    "unlimited": "Bila kikomo"
+    "unlimited": "Bila kikomo",
+    "reactivate": "Amilisha tena usajili",
+    "reactivateSuccess": "Usajili umeamilishwa tena!",
+    "reactivateFailed": "Kuamilisha tena kumeshindwa",
+    "pendingDowngrade": "Mpango wako utabadilishwa kuwa {{plan}} tarehe {{date}}."
   },
   "categories": {
     "brief": "Barua",
@@ -302,6 +306,10 @@
     "pushAll": "Push (siku 1, 3 au 7)",
     "featureLocked": "Kipengele kimefungwa",
     "upgradeDesc": "Inapatikana kutoka mpango wa {{plan}}.",
-    "expensesLocked": "Gharama kutoka mpango wa Basic"
+    "expensesLocked": "Gharama kutoka mpango wa Basic",
+    "managePlan": "Simamia mpango",
+    "downgradeConfirm": "Je, unataka kushuka hadi {{plan}}? Mpango wako wa sasa utabaki hai hadi mwisho wa kipindi cha malipo.",
+    "downgradeSuccess": "Kushuka kumepangwa. Mpango wako wa sasa utabaki hai hadi kumalizika.",
+    "downgradeFailed": "Kushuka kumeshindwa"
   }
 }

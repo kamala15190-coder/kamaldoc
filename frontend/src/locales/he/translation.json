@@ -186,7 +186,11 @@
     "usageKI": "ניתוחי AI",
     "usageBehoerde": "עוזר רשות",
     "usageBefund": "עוזר רפואי",
-    "unlimited": "ללא הגבלה"
+    "unlimited": "ללא הגבלה",
+    "reactivate": "הפעלה מחדש של מנוי",
+    "reactivateSuccess": "המנוי הופעל מחדש!",
+    "reactivateFailed": "ההפעלה מחדש נכשלה",
+    "pendingDowngrade": "התוכנית שלך תשתנה ל-{{plan}} בתאריך {{date}}."
   },
   "categories": {
     "brief": "מכתב",
@@ -302,6 +306,10 @@
     "pushAll": "push (1, 3 או 7 ימים)",
     "featureLocked": "תכונה נעולה",
     "upgradeDesc": "זמין מתוכנית {{plan}}.",
-    "expensesLocked": "הוצאות מתוכנית Basic"
+    "expensesLocked": "הוצאות מתוכנית Basic",
+    "managePlan": "ניהול תוכנית",
+    "downgradeConfirm": "האם ברצונך לעבור ל-{{plan}}? התוכנית הנוכחית שלך תישאר פעילה עד סוף תקופת החיוב.",
+    "downgradeSuccess": "הורדת דרגה תוכננה. התוכנית הנוכחית שלך תישאר פעילה עד לפקיעתה.",
+    "downgradeFailed": "הורדת הדרגה נכשלה"
   }
 }

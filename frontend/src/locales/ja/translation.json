@@ -186,7 +186,11 @@
     "usageKI": "AI分析",
     "usageBehoerde": "行政アシスト",
     "usageBefund": "医療アシスト",
-    "unlimited": "無制限"
+    "unlimited": "無制限",
+    "reactivate": "サブスクリプションを再開",
+    "reactivateSuccess": "サブスクリプションが再開されました！",
+    "reactivateFailed": "再開に失敗しました",
+    "pendingDowngrade": "プランは{{date}}に{{plan}}に変更されます。"
   },
   "categories": {
     "brief": "手紙",
@@ -302,6 +306,10 @@
     "pushAll": "プッシュ（1、3、7日）",
     "featureLocked": "機能はロック中",
     "upgradeDesc": "{{plan}}プランから利用可能。",
-    "expensesLocked": "支出パネルはBasicプランから"
+    "expensesLocked": "支出パネルはBasicプランから",
+    "managePlan": "プランを管理",
+    "downgradeConfirm": "{{plan}}にダウングレードしますか？現在のプランは請求期間の終了まで有効です。",
+    "downgradeSuccess": "ダウングレードが予定されました。現在のプランは期限まで有効です。",
+    "downgradeFailed": "ダウングレードに失敗しました"
   }
 }

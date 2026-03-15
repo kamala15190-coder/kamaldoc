@@ -186,7 +186,11 @@
     "usageKI": "AI विश्लेषण",
     "usageBehoerde": "प्राधि. सहायक",
     "usageBefund": "चिकि. सहायक",
-    "unlimited": "असीमित"
+    "unlimited": "असीमित",
+    "reactivate": "सदस्यता पुनः सक्रिय करें",
+    "reactivateSuccess": "सदस्यता पुनः सक्रिय हो गई!",
+    "reactivateFailed": "पुनः सक्रियण विफल",
+    "pendingDowngrade": "आपकी योजना {{date}} को {{plan}} में बदल जाएगी।"
   },
   "categories": {
     "brief": "पत्र",
@@ -302,6 +306,10 @@
     "pushAll": "पुश (1, 3 या 7 दिन)",
     "featureLocked": "सुविधा लॉक",
     "upgradeDesc": "{{plan}} योजना से उपलब्ध।",
-    "expensesLocked": "व्यय Basic योजना से"
+    "expensesLocked": "व्यय Basic योजना से",
+    "managePlan": "योजना प्रबंधित करें",
+    "downgradeConfirm": "क्या आप {{plan}} में डाउनग्रेड करना चाहते हैं? आपकी वर्तमान योजना बिलिंग अवधि के अंत तक सक्रिय रहेगी।",
+    "downgradeSuccess": "डाउनग्रेड निर्धारित। आपकी वर्तमान योजना समाप्ति तक सक्रिय रहेगी।",
+    "downgradeFailed": "डाउनग्रेड विफल"
   }
 }

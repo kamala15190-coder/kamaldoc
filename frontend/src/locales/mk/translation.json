@@ -186,7 +186,11 @@
     "usageKI": "AI анализи",
     "usageBehoerde": "Управа ас.",
     "usageBefund": "Мед. ас.",
-    "unlimited": "Неограничено"
+    "unlimited": "Неограничено",
+    "reactivate": "Реактивирај претплата",
+    "reactivateSuccess": "Претплатата е реактивирана!",
+    "reactivateFailed": "Реактивирањето не успеа",
+    "pendingDowngrade": "Вашиот план ќе се промени во {{plan}} на {{date}}."
   },
   "categories": {
     "brief": "Писмо",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 или 7 дена)",
     "featureLocked": "Функцијата е заклучена",
     "upgradeDesc": "Достапно од {{plan}}.",
-    "expensesLocked": "Трошоци од Basic"
+    "expensesLocked": "Трошоци од Basic",
+    "managePlan": "Управувај со план",
+    "downgradeConfirm": "Дали сакате да преминете на {{plan}}? Вашиот тековен план останува активен до крајот на периодот на наплата.",
+    "downgradeSuccess": "Намалувањето е планирано. Вашиот тековен план останува активен до истекот.",
+    "downgradeFailed": "Намалувањето не успеа"
   }
 }

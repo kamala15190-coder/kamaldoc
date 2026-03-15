@@ -186,7 +186,11 @@
     "usageKI": "AI analīzes",
     "usageBehoerde": "Iest. asist.",
     "usageBefund": "Med. asist.",
-    "unlimited": "Neierobežots"
+    "unlimited": "Neierobežots",
+    "reactivate": "Atkārtoti aktivizēt abonementu",
+    "reactivateSuccess": "Abonements atkārtoti aktivizēts!",
+    "reactivateFailed": "Atkārtota aktivizēšana neizdevās",
+    "pendingDowngrade": "Jūsu plāns tiks mainīts uz {{plan}} {{date}}."
   },
   "categories": {
     "brief": "Vēstule",
@@ -302,6 +306,10 @@
     "pushAll": "Visi push paziņojumi",
     "featureLocked": "Funkcija bloķēta",
     "upgradeDesc": "Jauniniet plānu, lai izmantotu šo funkciju.",
-    "expensesLocked": "Izdevumu izsekošana bloķēta"
+    "expensesLocked": "Izdevumu izsekošana bloķēta",
+    "managePlan": "Pārvaldīt plānu",
+    "downgradeConfirm": "Vai vēlaties pāriet uz {{plan}}? Jūsu pašreizējais plāns paliks aktīvs līdz norēķinu perioda beigām.",
+    "downgradeSuccess": "Pazemināšana ieplānota. Jūsu pašreizējais plāns paliks aktīvs līdz derīguma termiņa beigām.",
+    "downgradeFailed": "Pazemināšana neizdevās"
   }
 }

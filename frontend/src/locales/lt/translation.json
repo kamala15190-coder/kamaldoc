@@ -186,7 +186,11 @@
     "usageKI": "AI analizės",
     "usageBehoerde": "Inst. asist.",
     "usageBefund": "Med. asist.",
-    "unlimited": "Neribota"
+    "unlimited": "Neribota",
+    "reactivate": "Iš naujo aktyvinti prenumeratą",
+    "reactivateSuccess": "Prenumerata iš naujo aktyvinta!",
+    "reactivateFailed": "Pakartotinis aktyvinimas nepavyko",
+    "pendingDowngrade": "Jūsų planas bus pakeistas į {{plan}} {{date}}."
   },
   "categories": {
     "brief": "Laiškas",
@@ -302,6 +306,10 @@
     "pushAll": "Visi push pranešimai",
     "featureLocked": "Funkcija užrakinta",
     "upgradeDesc": "Atnaujinkite planą, kad galėtumėte naudoti šią funkciją.",
-    "expensesLocked": "Išlaidų stebėjimas užrakintas"
+    "expensesLocked": "Išlaidų stebėjimas užrakintas",
+    "managePlan": "Tvarkyti planą",
+    "downgradeConfirm": "Ar norite pereiti prie {{plan}}? Jūsų dabartinis planas liks aktyvus iki atsiskaitymo laikotarpio pabaigos.",
+    "downgradeSuccess": "Sumažinimas suplanuotas. Jūsų dabartinis planas liks aktyvus iki pasibaigimo.",
+    "downgradeFailed": "Sumažinimas nepavyko"
   }
 }

@@ -186,7 +186,11 @@
     "usageKI": "AI Analizleri",
     "usageBehoerde": "Resmi Asist.",
     "usageBefund": "Tıbbi Asist.",
-    "unlimited": "Sınırsız"
+    "unlimited": "Sınırsız",
+    "reactivate": "Aboneliği yeniden etkinleştir",
+    "reactivateSuccess": "Abonelik yeniden etkinleştirildi!",
+    "reactivateFailed": "Yeniden etkinleştirme başarısız",
+    "pendingDowngrade": "Planınız {{date}} tarihinde {{plan}} olarak değişecek."
   },
   "categories": {
     "brief": "Mektup",
@@ -302,6 +306,10 @@
     "pushAll": "Push bildirimleri (1, 3 veya 7 gün)",
     "featureLocked": "Bu özellik kilitli",
     "upgradeDesc": "{{plan}} planından itibaren kullanılabilir.",
-    "expensesLocked": "Gider Paneli Basic plandan itibaren kullanılabilir"
+    "expensesLocked": "Gider Paneli Basic plandan itibaren kullanılabilir",
+    "managePlan": "Planı yönet",
+    "downgradeConfirm": "{{plan}} planına geçmek istiyor musunuz? Mevcut planınız fatura döneminin sonuna kadar aktif kalacaktır.",
+    "downgradeSuccess": "Düşürme planlandı. Mevcut planınız sona erene kadar aktif kalacaktır.",
+    "downgradeFailed": "Düşürme başarısız"
   }
 }

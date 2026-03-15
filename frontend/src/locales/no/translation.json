@@ -186,7 +186,11 @@
     "usageKI": "AI-analyser",
     "usageBehoerde": "Mynd. assist.",
     "usageBefund": "Med. assist.",
-    "unlimited": "Ubegrenset"
+    "unlimited": "Ubegrenset",
+    "reactivate": "Reaktiver abonnement",
+    "reactivateSuccess": "Abonnement reaktivert!",
+    "reactivateFailed": "Reaktivering mislyktes",
+    "pendingDowngrade": "Planen din endres til {{plan}} den {{date}}."
   },
   "categories": {
     "brief": "Brev",
@@ -302,6 +306,10 @@
     "pushAll": "Push (1, 3 eller 7 dager)",
     "featureLocked": "Funksjonen er låst",
     "upgradeDesc": "Tilgjengelig fra {{plan}}.",
-    "expensesLocked": "Utgifter tilgjengelige fra Basic"
+    "expensesLocked": "Utgifter tilgjengelige fra Basic",
+    "managePlan": "Administrer plan",
+    "downgradeConfirm": "Vil du nedgradere til {{plan}}? Din nåværende plan forblir aktiv til slutten av faktureringsperioden.",
+    "downgradeSuccess": "Nedgradering planlagt. Din nåværende plan forblir aktiv til utløp.",
+    "downgradeFailed": "Nedgradering mislyktes"
   }
 }
