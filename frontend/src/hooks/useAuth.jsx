@@ -32,6 +32,12 @@ export const AuthProvider = ({ children }) => {
       import('@capacitor/app').then(({ App }) => {
         appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
           if (url.includes('login-callback')) {
+            // Close in-app browser
+            try {
+              const { Browser } = await import('@capacitor/browser')
+              await Browser.close()
+            } catch (_) {}
+
             // Try extracting tokens from hash fragment (#access_token=...)
             const hashPart = url.split('#')[1]
             if (hashPart) {

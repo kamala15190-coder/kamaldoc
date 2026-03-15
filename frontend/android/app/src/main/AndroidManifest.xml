@@ -28,7 +28,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="at.kamaldoc.app" />
+                <data android:scheme="at.kamaldoc.app" android:host="login-callback" />
             </intent-filter>
 
         </activity>

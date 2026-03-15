@@ -15,6 +15,7 @@ Dokumente/
 
 # Scripts (local only)
 *.bat
+!build.bat
 server-setup.sh
 check_thumbs.sh
 test_*.sh
@@ -27,8 +28,10 @@ frontend/android/app/build/
 frontend/android/capacitor-cordova-android-plugins/build/
 frontend/android/local.properties
 *.apk
+*.aab
 *.keystore
 *.jks
+releases/
 
 # iOS
 frontend/ios/App/Pods/

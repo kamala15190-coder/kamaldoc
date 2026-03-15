@@ -43,18 +43,28 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const redirectTo = Capacitor.isNativePlatform()
-        ? 'at.kamaldoc.app://login-callback'
-        : window.location.origin
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo,
-        },
-      })
-
-      if (error) throw error
+      if (Capacitor.isNativePlatform()) {
+        // Native: skipBrowserRedirect + open in-app browser
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: 'at.kamaldoc.app://login-callback',
+            skipBrowserRedirect: true,
+          },
+        })
+        if (error) throw error
+        if (data?.url) {
+          const { Browser } = await import('@capacitor/browser')
+          await Browser.open({ url: data.url })
+        }
+      } else {
+        // Web: normaler OAuth Flow
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin },
+        })
+        if (error) throw error
+      }
     } catch (err) {
       setError(err.message || t('auth.googleLoginFailed'))
       setLoading(false)

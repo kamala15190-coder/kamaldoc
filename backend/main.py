@@ -23,7 +23,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from database import DB_PATH, DATA_DIR, get_db, init_db
 from llm_service import (
     analyze_document, check_together_status, generate_reply,
-    explain_authority_document, simplify_medical_report, translate_simplified_report
+    explain_authority_document, simplify_medical_report, translate_simplified_report,
+    extract_expense_items
 )
 from auth import get_current_user
 from subscription import (
@@ -200,6 +201,28 @@ async def run_analysis(doc_id: int, image_path: str):
                          f"kategorie='{verify['kategorie']}'")
 
         logger.info(f"[Analyse] Dokument {doc_id} erfolgreich analysiert und gespeichert")
+
+        # Extract expense items for invoices
+        if result.get("kategorie") == "rechnung" and result.get("volltext"):
+            try:
+                items = await extract_expense_items(result["volltext"])
+                if items:
+                    # Get user_id for this document
+                    cur2 = await db.execute("SELECT user_id FROM documents WHERE id = ?", (doc_id,))
+                    doc_row = await cur2.fetchone()
+                    doc_user_id = doc_row["user_id"] if doc_row else ""
+                    doc_date = result.get("datum")
+                    for item in items:
+                        await db.execute(
+                            "INSERT INTO expense_items (document_id, user_id, name, category, subcategory, price, date) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (doc_id, doc_user_id, item.get("name", ""), item.get("category", "Sonstiges"),
+                             item.get("subcategory"), abs(float(item.get("price", 0))), doc_date),
+                        )
+                    await db.commit()
+                    logger.info(f"[Analyse] {len(items)} expense items für Dokument {doc_id} gespeichert")
+            except Exception as ei_err:
+                logger.error(f"[Analyse] Expense item extraction failed for {doc_id}: {ei_err}")
+
     except Exception as e:
         logger.error(f"[Analyse] FEHLER für Dokument {doc_id}: {e}", exc_info=True)
         await db.execute(
@@ -650,6 +673,117 @@ async def get_expenses(
             "total": round(total, 2),
             "by_category": {k: round(v, 2) for k, v in sorted(by_category.items())},
             "by_month": {k: round(v, 2) for k, v in sorted(by_month.items())},
+        }
+    finally:
+        await db.close()
+
+
+@app.get("/api/expenses/categories")
+async def get_expense_categories(user_id: str = Depends(get_current_user)):
+    """Alle vorhandenen Kategorien des Users aus expense_items."""
+    await check_expenses_access(user_id)
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT DISTINCT category FROM expense_items WHERE user_id = ? ORDER BY category",
+            (user_id,),
+        )
+        rows = await cursor.fetchall()
+        categories = [r["category"] for r in rows]
+
+        # Also include subcategories per category
+        result = {}
+        for cat in categories:
+            cur2 = await db.execute(
+                "SELECT DISTINCT subcategory FROM expense_items WHERE user_id = ? AND category = ? AND subcategory IS NOT NULL ORDER BY subcategory",
+                (user_id, cat),
+            )
+            subs = await cur2.fetchall()
+            result[cat] = [s["subcategory"] for s in subs]
+
+        return {"categories": result}
+    finally:
+        await db.close()
+
+
+@app.get("/api/expenses/items")
+async def get_expense_items(
+    user_id: str = Depends(get_current_user),
+    category: Optional[str] = None,
+    subcategory: Optional[str] = None,
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+):
+    """Gefilterte Expense Items."""
+    await check_expenses_access(user_id)
+    db = await get_db()
+    try:
+        query = "SELECT ei.*, d.absender FROM expense_items ei LEFT JOIN documents d ON ei.document_id = d.id WHERE ei.user_id = ?"
+        params = [user_id]
+
+        if category:
+            query += " AND ei.category = ?"
+            params.append(category)
+        if subcategory:
+            query += " AND ei.subcategory = ?"
+            params.append(subcategory)
+        if year:
+            query += " AND CAST(strftime('%Y', ei.date) AS INTEGER) = ?"
+            params.append(year)
+        if month:
+            query += " AND CAST(strftime('%m', ei.date) AS INTEGER) = ?"
+            params.append(month)
+
+        query += " ORDER BY ei.date DESC, ei.id DESC"
+        cursor = await db.execute(query, params)
+        rows = await cursor.fetchall()
+        return {"items": [row_to_dict(r) for r in rows]}
+    finally:
+        await db.close()
+
+
+@app.get("/api/expenses/summary")
+async def get_expense_summary(
+    user_id: str = Depends(get_current_user),
+    year: Optional[int] = None,
+    month: Optional[int] = None,
+):
+    """Zusammenfassung: total, by_category, by_month (aus expense_items)."""
+    await check_expenses_access(user_id)
+    db = await get_db()
+    try:
+        base = "SELECT * FROM expense_items WHERE user_id = ?"
+        params = [user_id]
+        if year:
+            base += " AND CAST(strftime('%Y', date) AS INTEGER) = ?"
+            params.append(year)
+        if month:
+            base += " AND CAST(strftime('%m', date) AS INTEGER) = ?"
+            params.append(month)
+
+        cursor = await db.execute(base, params)
+        rows = await cursor.fetchall()
+        items = [row_to_dict(r) for r in rows]
+
+        total = sum(i["price"] for i in items)
+        by_category = {}
+        by_month = {}
+        by_day = {}
+        for i in items:
+            cat = i.get("category", "Sonstiges")
+            by_category[cat] = by_category.get(cat, 0) + i["price"]
+            if i.get("date"):
+                m = i["date"][:7]
+                by_month[m] = by_month.get(m, 0) + i["price"]
+                d = i["date"][:10]
+                by_day[d] = by_day.get(d, 0) + i["price"]
+
+        return {
+            "total": round(total, 2),
+            "count": len(items),
+            "by_category": {k: round(v, 2) for k, v in sorted(by_category.items())},
+            "by_month": {k: round(v, 2) for k, v in sorted(by_month.items())},
+            "by_day": {k: round(v, 2) for k, v in sorted(by_day.items())},
         }
     finally:
         await db.close()

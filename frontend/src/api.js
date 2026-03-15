@@ -32,6 +32,21 @@ export async function getExpenses(params = {}) {
   return data;
 }
 
+export async function getExpenseCategories() {
+  const { data } = await api.get('/expenses/categories');
+  return data;
+}
+
+export async function getExpenseItems(params = {}) {
+  const { data } = await api.get('/expenses/items', { params });
+  return data;
+}
+
+export async function getExpenseSummary(params = {}) {
+  const { data } = await api.get('/expenses/summary', { params });
+  return data;
+}
+
 export async function explainDocument(id, targetLanguage = 'de') {
   const { data } = await api.post(`/documents/${id}/explain`, null, { params: { target_language: targetLanguage } });
   return data;

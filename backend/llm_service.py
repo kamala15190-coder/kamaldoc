@@ -231,6 +231,59 @@ async def analyze_document(image_path: str) -> dict:
     return result
 
 
+EXPENSE_ITEMS_PROMPT = """Analysiere diese Rechnung und extrahiere ALLE einzelnen Positionen.
+Für jede Position gib zurück:
+- name: genaue Bezeichnung des Artikels/der Leistung
+- category: Oberkategorie (Lebensmittel, Telekommunikation, Versicherung, Energie, Miete, Transport, Gesundheit, Unterhaltung, Haushalt, Bildung, Kleidung, Abonnement, Steuern, Gebuehren, Sonstiges)
+- subcategory: Unterkategorie falls möglich (z.B. Milchprodukte, Mobilfunk, Haftpflicht, etc.)
+- price: Preis in Euro als Zahl (positiv)
+
+Wenn nur ein Gesamtbetrag ohne Einzelpositionen erkennbar ist, erstelle EINE Position mit dem Gesamtbetrag.
+
+Antworte NUR mit JSON:
+{"items": [{"name": "...", "category": "...", "subcategory": "...", "price": 0.00}]}"""
+
+
+async def extract_expense_items(volltext: str) -> list:
+    """Einzelne Positionen aus einer Rechnung extrahieren."""
+    if not TOGETHER_API_KEY or not volltext:
+        return []
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}],
+        "temperature": 0.1,
+        "max_tokens": 4096,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(
+                f"{TOGETHER_API_URL}/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json=payload,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+
+        content = data["choices"][0]["message"]["content"].strip()
+        if content.startswith("```"):
+            lines = content.split("\n")
+            content = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
+            content = content.strip()
+
+        result = json.loads(content) if content.startswith("{") else json.loads(content[content.find("{"):content.rfind("}") + 1])
+        items = result.get("items", [])
+        logger.info(f"[ExpenseItems] Extracted {len(items)} items")
+        return items
+    except Exception as e:
+        logger.error(f"[ExpenseItems] Extraction failed: {e}")
+        return []
+
+
 # Mapping language codes to full language names for the prompt
 LANGUAGE_NAMES = {
     "de": "Deutsch", "en": "English", "es": "Español", "fr": "Français",

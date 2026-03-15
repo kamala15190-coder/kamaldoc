@@ -42,6 +42,7 @@ export default function DocumentDetail() {
   const [replyLanguage, setReplyLanguage] = useState('de');
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
+  const [savedToast, setSavedToast] = useState(false);
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -94,6 +95,8 @@ export default function DocumentDetail() {
     try {
       const updated = await updateDocument(id, { notizen, tags });
       setDoc(updated);
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 2500);
     } catch (err) {
       console.error(err);
     } finally {
@@ -428,6 +431,11 @@ export default function DocumentDetail() {
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {t('document.save')}
               </button>
+              {savedToast && (
+                <span className="text-sm text-green-600 font-medium flex items-center gap-1">
+                  <CheckCircle className="w-4 h-4" /> Gespeichert!
+                </span>
+              )}
             </div>
           </div>
 

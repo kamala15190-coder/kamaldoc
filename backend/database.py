@@ -101,6 +101,18 @@ async def init_db():
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS expense_items (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
+                user_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                subcategory TEXT,
+                price REAL NOT NULL,
+                date TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
             CREATE TABLE IF NOT EXISTS admins (
                 user_id TEXT PRIMARY KEY
             );
