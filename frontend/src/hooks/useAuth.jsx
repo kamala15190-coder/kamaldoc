@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
 import { initPushNotifications } from '../pushNotifications'
@@ -9,24 +9,59 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-      if (session?.user) initPushNotifications()
-    })
+  const handleSession = useCallback((session) => {
+    setUser(session?.user ?? null)
+    setLoading(false)
+    if (session?.user) initPushNotifications()
+  }, [])
 
-    // Listen for auth changes
+  useEffect(() => {
+    // 1) Listen for auth changes FIRST (before getSession)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-      if (session?.user) initPushNotifications()
+      handleSession(session)
     })
 
-    // Deep link handling for native OAuth callback
+    // 2) Helper: extract tokens from a URL hash fragment
+    const extractTokensFromHash = (hash) => {
+      if (!hash) return null
+      const params = new URLSearchParams(hash)
+      const access_token = params.get('access_token')
+      const refresh_token = params.get('refresh_token')
+      return access_token && refresh_token ? { access_token, refresh_token } : null
+    }
+
+    // 3) On web: if URL contains hash tokens from OAuth redirect, set session explicitly
+    const initSession = async () => {
+      const hash = window.location.hash?.substring(1)
+      const tokens = extractTokensFromHash(hash)
+      if (tokens) {
+        // Clear hash to prevent re-processing
+        window.history.replaceState(null, '', window.location.pathname + window.location.search)
+        const { data, error } = await supabase.auth.setSession(tokens)
+        if (!error && data?.session) {
+          handleSession(data.session)
+          return
+        }
+      }
+      // Fallback: normal session check
+      const { data: { session } } = await supabase.auth.getSession()
+      handleSession(session)
+    }
+    initSession()
+
+    // 4) Refresh session when tab becomes visible again (prevents stale state)
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          handleSession(session)
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+
+    // 5) Deep link handling for native OAuth callback
     let appUrlListener = null
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/app').then(({ App }) => {
@@ -38,27 +73,19 @@ export const AuthProvider = ({ children }) => {
               await Browser.close()
             } catch (_) {}
 
-            // Try extracting tokens from hash fragment (#access_token=...)
+            // Extract tokens from deep link hash
             const hashPart = url.split('#')[1]
-            if (hashPart) {
-              const params = new URLSearchParams(hashPart)
-              const accessToken = params.get('access_token')
-              const refreshToken = params.get('refresh_token')
-              if (accessToken && refreshToken) {
-                await supabase.auth.setSession({
-                  access_token: accessToken,
-                  refresh_token: refreshToken,
-                })
+            const tokens = extractTokensFromHash(hashPart)
+            if (tokens) {
+              const { data, error } = await supabase.auth.setSession(tokens)
+              if (!error && data?.session) {
+                handleSession(data.session)
                 return
               }
             }
-            // Fallback: try getSession in case Supabase already processed the callback
+            // Fallback
             const { data: { session } } = await supabase.auth.getSession()
-            if (session) {
-              setUser(session.user)
-              setLoading(false)
-              initPushNotifications()
-            }
+            handleSession(session)
           }
         })
       })
@@ -66,9 +93,10 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       subscription.unsubscribe()
+      document.removeEventListener('visibilitychange', onVisibilityChange)
       if (appUrlListener) appUrlListener.remove()
     }
-  }, [])
+  }, [handleSession])
 
   const value = {
     user,

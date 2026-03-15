@@ -25,7 +25,7 @@ const fmt = (v) => Number(v).toLocaleString('de-DE', { style: 'currency', curren
 
 export default function ExpensesPage() {
   const { t } = useTranslation();
-  const { isFree } = useSubscription();
+  const { isFree, loading: subLoading } = useSubscription();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -36,6 +36,14 @@ export default function ExpensesPage() {
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
+
+  if (subLoading) {
+    return (
+      <div className="flex justify-center py-20">
+        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      </div>
+    );
+  }
 
   if (isFree) {
     return (

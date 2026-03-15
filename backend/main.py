@@ -680,26 +680,39 @@ async def get_expenses(
 
 @app.get("/api/expenses/categories")
 async def get_expense_categories(user_id: str = Depends(get_current_user)):
-    """Alle vorhandenen Kategorien des Users aus expense_items."""
+    """Alle vorhandenen Kategorien des Users (expense_items + documents fallback)."""
     await check_expenses_access(user_id)
     db = await get_db()
     try:
+        # Categories from expense_items
         cursor = await db.execute(
             "SELECT DISTINCT category FROM expense_items WHERE user_id = ? ORDER BY category",
             (user_id,),
         )
         rows = await cursor.fetchall()
-        categories = [r["category"] for r in rows]
-
-        # Also include subcategories per category
         result = {}
-        for cat in categories:
+        for r in rows:
+            cat = r["category"]
             cur2 = await db.execute(
                 "SELECT DISTINCT subcategory FROM expense_items WHERE user_id = ? AND category = ? AND subcategory IS NOT NULL ORDER BY subcategory",
                 (user_id, cat),
             )
             subs = await cur2.fetchall()
             result[cat] = [s["subcategory"] for s in subs]
+
+        # Fallback: categories from documents without expense_items
+        cur3 = await db.execute(
+            """SELECT DISTINCT d.expense_category FROM documents d
+               LEFT JOIN expense_items ei ON ei.document_id = d.id
+               WHERE d.user_id = ? AND d.kategorie = 'rechnung'
+                 AND d.betrag IS NOT NULL AND d.betrag > 0
+                 AND ei.id IS NULL AND d.expense_category IS NOT NULL""",
+            (user_id,),
+        )
+        for r in await cur3.fetchall():
+            cat = r["expense_category"]
+            if cat and cat not in result:
+                result[cat] = []
 
         return {"categories": result}
     finally:
@@ -714,13 +727,15 @@ async def get_expense_items(
     year: Optional[int] = None,
     month: Optional[int] = None,
 ):
-    """Gefilterte Expense Items."""
+    """Gefilterte Expense Items (expense_items + documents fallback)."""
     await check_expenses_access(user_id)
     db = await get_db()
     try:
+        all_items = []
+
+        # 1) Real expense_items
         query = "SELECT ei.*, d.absender FROM expense_items ei LEFT JOIN documents d ON ei.document_id = d.id WHERE ei.user_id = ?"
         params = [user_id]
-
         if category:
             query += " AND ei.category = ?"
             params.append(category)
@@ -733,11 +748,44 @@ async def get_expense_items(
         if month:
             query += " AND CAST(strftime('%m', ei.date) AS INTEGER) = ?"
             params.append(month)
-
         query += " ORDER BY ei.date DESC, ei.id DESC"
         cursor = await db.execute(query, params)
         rows = await cursor.fetchall()
-        return {"items": [row_to_dict(r) for r in rows]}
+        doc_ids_with_items = set()
+        for r in rows:
+            d = row_to_dict(r)
+            all_items.append(d)
+            doc_ids_with_items.add(d.get("document_id"))
+
+        # 2) Fallback: documents without expense_items
+        fb_query = """SELECT d.id as document_id, d.user_id, d.absender, d.betrag as price,
+                             d.datum as date, d.expense_category as category, d.zusammenfassung as name
+                      FROM documents d
+                      LEFT JOIN expense_items ei ON ei.document_id = d.id
+                      WHERE d.user_id = ? AND d.kategorie = 'rechnung'
+                        AND d.betrag IS NOT NULL AND d.betrag > 0
+                        AND ei.id IS NULL"""
+        fb_params = [user_id]
+        if category:
+            fb_query += " AND d.expense_category = ?"
+            fb_params.append(category)
+        if year:
+            fb_query += " AND CAST(strftime('%Y', d.datum) AS INTEGER) = ?"
+            fb_params.append(year)
+        if month:
+            fb_query += " AND CAST(strftime('%m', d.datum) AS INTEGER) = ?"
+            fb_params.append(month)
+        fb_query += " ORDER BY d.datum DESC"
+        cur2 = await db.execute(fb_query, fb_params)
+        for r in await cur2.fetchall():
+            d = row_to_dict(r)
+            d["id"] = f"doc_{d['document_id']}"
+            d["subcategory"] = None
+            if not d.get("name"):
+                d["name"] = d.get("absender") or "Rechnung"
+            all_items.append(d)
+
+        return {"items": all_items}
     finally:
         await db.close()
 
@@ -748,10 +796,13 @@ async def get_expense_summary(
     year: Optional[int] = None,
     month: Optional[int] = None,
 ):
-    """Zusammenfassung: total, by_category, by_month (aus expense_items)."""
+    """Zusammenfassung: total, by_category, by_month (expense_items + documents fallback)."""
     await check_expenses_access(user_id)
     db = await get_db()
     try:
+        all_items = []
+
+        # 1) Real expense_items
         base = "SELECT * FROM expense_items WHERE user_id = ?"
         params = [user_id]
         if year:
@@ -760,27 +811,48 @@ async def get_expense_summary(
         if month:
             base += " AND CAST(strftime('%m', date) AS INTEGER) = ?"
             params.append(month)
-
         cursor = await db.execute(base, params)
         rows = await cursor.fetchall()
-        items = [row_to_dict(r) for r in rows]
+        doc_ids_with_items = set()
+        for r in rows:
+            d = row_to_dict(r)
+            all_items.append({"price": d["price"], "category": d.get("category", "Sonstiges"), "date": d.get("date")})
+            doc_ids_with_items.add(d.get("document_id"))
 
-        total = sum(i["price"] for i in items)
+        # 2) Fallback: invoices from documents table without expense_items
+        fb = """SELECT d.id, d.betrag, d.datum, d.expense_category
+                FROM documents d
+                LEFT JOIN expense_items ei ON ei.document_id = d.id
+                WHERE d.user_id = ? AND d.kategorie = 'rechnung'
+                  AND d.betrag IS NOT NULL AND d.betrag > 0
+                  AND ei.id IS NULL"""
+        fb_params = [user_id]
+        if year:
+            fb += " AND CAST(strftime('%Y', d.datum) AS INTEGER) = ?"
+            fb_params.append(year)
+        if month:
+            fb += " AND CAST(strftime('%m', d.datum) AS INTEGER) = ?"
+            fb_params.append(month)
+        cur2 = await db.execute(fb, fb_params)
+        for r in await cur2.fetchall():
+            all_items.append({"price": r["betrag"], "category": r["expense_category"] or "Sonstiges", "date": r["datum"]})
+
+        total = sum(i["price"] for i in all_items)
         by_category = {}
         by_month = {}
         by_day = {}
-        for i in items:
+        for i in all_items:
             cat = i.get("category", "Sonstiges")
             by_category[cat] = by_category.get(cat, 0) + i["price"]
             if i.get("date"):
                 m = i["date"][:7]
                 by_month[m] = by_month.get(m, 0) + i["price"]
-                d = i["date"][:10]
-                by_day[d] = by_day.get(d, 0) + i["price"]
+                d_key = i["date"][:10]
+                by_day[d_key] = by_day.get(d_key, 0) + i["price"]
 
         return {
             "total": round(total, 2),
-            "count": len(items),
+            "count": len(all_items),
             "by_category": {k: round(v, 2) for k, v in sorted(by_category.items())},
             "by_month": {k: round(v, 2) for k, v in sorted(by_month.items())},
             "by_day": {k: round(v, 2) for k, v in sorted(by_day.items())},

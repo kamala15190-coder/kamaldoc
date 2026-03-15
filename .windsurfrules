@@ -1,0 +1,9 @@
+﻿CRITICAL RULES - always follow:
+
+1. SSH/SCP: Never use IP addresses directly. Always use the SSH alias:
+   - CORRECT: ssh kamaldoc "command"
+   - CORRECT: scp -r ./folder kamaldoc:/path/
+   - WRONG: ssh root@46.225.191.223
+   - WRONG: scp -r ./folder root@46.225.191.223:/path/
+
+2. File changes: Write all file changes directly via terminal (PowerShell Set-Content), never through the Windsurf editor diff view.
