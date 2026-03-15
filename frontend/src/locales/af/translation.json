@@ -310,6 +310,8 @@
     "managePlan": "Bestuur plan",
     "downgradeConfirm": "Wil jy na {{plan}} afwaarts? Jou huidige plan bly aktief tot die einde van die faktureringstydperk.",
     "downgradeSuccess": "Afwaartse verandering beplan. Jou huidige plan bly aktief tot dit verval.",
-    "downgradeFailed": "Afwaartse verandering het misluk"
+    "downgradeFailed": "Afwaartse verandering het misluk",
+    "upgradePlan": "⚡ Upgrade Plan",
+    "proActive": "🚀 Pro Plan aktief"
   }
 }

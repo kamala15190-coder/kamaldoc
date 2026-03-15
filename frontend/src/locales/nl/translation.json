@@ -310,6 +310,8 @@
     "managePlan": "Plan beheren",
     "downgradeConfirm": "Wil je downgraden naar {{plan}}? Je huidige plan blijft actief tot het einde van de factureringsperiode.",
     "downgradeSuccess": "Downgrade gepland. Je huidige plan blijft actief tot het verloopt.",
-    "downgradeFailed": "Downgrade mislukt"
+    "downgradeFailed": "Downgrade mislukt",
+    "upgradePlan": "⚡ Upgrade plan",
+    "proActive": "🚀 Pro Plan actief"
   }
 }

@@ -310,6 +310,8 @@
     "managePlan": "Gestionează planul",
     "downgradeConfirm": "Dorești să treci la {{plan}}? Planul tău actual rămâne activ până la sfârșitul perioadei de facturare.",
     "downgradeSuccess": "Retrogradare programată. Planul tău actual rămâne activ până la expirare.",
-    "downgradeFailed": "Retrogradarea a eșuat"
+    "downgradeFailed": "Retrogradarea a eșuat",
+    "upgradePlan": "⚡ Îmbunătățește planul",
+    "proActive": "🚀 Plan Pro activ"
   }
 }

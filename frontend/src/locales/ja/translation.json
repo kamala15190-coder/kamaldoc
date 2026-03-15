@@ -310,6 +310,8 @@
     "managePlan": "プランを管理",
     "downgradeConfirm": "{{plan}}にダウングレードしますか？現在のプランは請求期間の終了まで有効です。",
     "downgradeSuccess": "ダウングレードが予定されました。現在のプランは期限まで有効です。",
-    "downgradeFailed": "ダウングレードに失敗しました"
+    "downgradeFailed": "ダウングレードに失敗しました",
+    "upgradePlan": "⚡ プランをアップグレード",
+    "proActive": "🚀 Proプラン有効"
   }
 }

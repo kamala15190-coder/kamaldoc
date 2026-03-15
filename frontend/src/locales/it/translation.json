@@ -310,6 +310,8 @@
     "managePlan": "Gestisci piano",
     "downgradeConfirm": "Vuoi passare a {{plan}}? Il tuo piano attuale resta attivo fino alla fine del periodo di fatturazione.",
     "downgradeSuccess": "Downgrade programmato. Il tuo piano attuale resta attivo fino alla scadenza.",
-    "downgradeFailed": "Downgrade fallito"
+    "downgradeFailed": "Downgrade fallito",
+    "upgradePlan": "⚡ Aggiorna piano",
+    "proActive": "🚀 Piano Pro attivo"
   }
 }

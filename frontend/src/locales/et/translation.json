@@ -310,6 +310,8 @@
     "managePlan": "Halda plaani",
     "downgradeConfirm": "Kas soovid minna üle {{plan}} plaanile? Sinu praegune plaan jääb aktiivseks arveldusperioodi lõpuni.",
     "downgradeSuccess": "Alandamine planeeritud. Sinu praegune plaan jääb aktiivseks kuni aegumiseni.",
-    "downgradeFailed": "Alandamine ebaõnnestus"
+    "downgradeFailed": "Alandamine ebaõnnestus",
+    "upgradePlan": "⚡ Uuenda plaani",
+    "proActive": "🚀 Pro plaan aktiivne"
   }
 }

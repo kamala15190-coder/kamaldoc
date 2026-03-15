@@ -310,6 +310,8 @@
     "managePlan": "Gerenciar plano",
     "downgradeConfirm": "Deseja fazer downgrade para {{plan}}? Seu plano atual permanecerá ativo até o final do período de cobrança.",
     "downgradeSuccess": "Downgrade agendado. Seu plano atual permanecerá ativo até o vencimento.",
-    "downgradeFailed": "Falha no downgrade"
+    "downgradeFailed": "Falha no downgrade",
+    "upgradePlan": "⚡ Melhorar plano",
+    "proActive": "🚀 Plano Pro ativo"
   }
 }

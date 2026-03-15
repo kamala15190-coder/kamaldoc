@@ -310,6 +310,8 @@
     "managePlan": "Tvarkyti planą",
     "downgradeConfirm": "Ar norite pereiti prie {{plan}}? Jūsų dabartinis planas liks aktyvus iki atsiskaitymo laikotarpio pabaigos.",
     "downgradeSuccess": "Sumažinimas suplanuotas. Jūsų dabartinis planas liks aktyvus iki pasibaigimo.",
-    "downgradeFailed": "Sumažinimas nepavyko"
+    "downgradeFailed": "Sumažinimas nepavyko",
+    "upgradePlan": "⚡ Atnaujinti planą",
+    "proActive": "🚀 Pro planas aktyvus"
   }
 }

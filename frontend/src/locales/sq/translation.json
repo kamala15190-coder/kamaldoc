@@ -310,6 +310,8 @@
     "managePlan": "Menaxho planin",
     "downgradeConfirm": "Dëshironi të kaloni në {{plan}}? Plani juaj aktual mbetet aktiv deri në fund të periudhës së faturimit.",
     "downgradeSuccess": "Ulja e planifikuar. Plani juaj aktual mbetet aktiv deri në skadim.",
-    "downgradeFailed": "Ulja dështoi"
+    "downgradeFailed": "Ulja dështoi",
+    "upgradePlan": "⚡ Përmirëso planin",
+    "proActive": "🚀 Plani Pro aktiv"
   }
 }

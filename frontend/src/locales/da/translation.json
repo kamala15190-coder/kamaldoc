@@ -310,6 +310,8 @@
     "managePlan": "Administrer plan",
     "downgradeConfirm": "Vil du nedgradere til {{plan}}? Din nuværende plan forbliver aktiv til slutningen af faktureringsperioden.",
     "downgradeSuccess": "Nedgradering planlagt. Din nuværende plan forbliver aktiv til udløb.",
-    "downgradeFailed": "Nedgradering mislykkedes"
+    "downgradeFailed": "Nedgradering mislykkedes",
+    "upgradePlan": "⚡ Opgrader plan",
+    "proActive": "🚀 Pro Plan aktiv"
   }
 }

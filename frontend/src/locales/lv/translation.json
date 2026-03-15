@@ -310,6 +310,8 @@
     "managePlan": "Pārvaldīt plānu",
     "downgradeConfirm": "Vai vēlaties pāriet uz {{plan}}? Jūsu pašreizējais plāns paliks aktīvs līdz norēķinu perioda beigām.",
     "downgradeSuccess": "Pazemināšana ieplānota. Jūsu pašreizējais plāns paliks aktīvs līdz derīguma termiņa beigām.",
-    "downgradeFailed": "Pazemināšana neizdevās"
+    "downgradeFailed": "Pazemināšana neizdevās",
+    "upgradePlan": "⚡ Uzlabot plānu",
+    "proActive": "🚀 Pro plāns aktīvs"
   }
 }

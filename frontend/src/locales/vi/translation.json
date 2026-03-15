@@ -310,6 +310,8 @@
     "managePlan": "Quản lý gói",
     "downgradeConfirm": "Bạn có muốn hạ xuống {{plan}} không? Gói hiện tại của bạn sẽ vẫn hoạt động cho đến cuối kỳ thanh toán.",
     "downgradeSuccess": "Đã lên lịch hạ cấp. Gói hiện tại của bạn sẽ vẫn hoạt động cho đến khi hết hạn.",
-    "downgradeFailed": "Hạ cấp thất bại"
+    "downgradeFailed": "Hạ cấp thất bại",
+    "upgradePlan": "⚡ Nâng cấp gói",
+    "proActive": "🚀 Gói Pro đang hoạt động"
   }
 }

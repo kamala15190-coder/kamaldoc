@@ -310,6 +310,8 @@
     "managePlan": "Spravovat plán",
     "downgradeConfirm": "Chcete přejít na {{plan}}? Váš aktuální plán zůstane aktivní do konce fakturačního období.",
     "downgradeSuccess": "Snížení naplánováno. Váš aktuální plán zůstane aktivní do vypršení.",
-    "downgradeFailed": "Snížení se nezdařilo"
+    "downgradeFailed": "Snížení se nezdařilo",
+    "upgradePlan": "⚡ Vylepšit plán",
+    "proActive": "🚀 Pro plán aktivní"
   }
 }

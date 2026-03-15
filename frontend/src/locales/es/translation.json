@@ -310,6 +310,8 @@
     "managePlan": "Gestionar plan",
     "downgradeConfirm": "¿Quieres bajar a {{plan}}? Tu plan actual permanecerá activo hasta el final del período de facturación.",
     "downgradeSuccess": "Cambio programado. Tu plan actual permanecerá activo hasta su vencimiento.",
-    "downgradeFailed": "Error al cambiar de plan"
+    "downgradeFailed": "Error al cambiar de plan",
+    "upgradePlan": "⚡ Mejorar plan",
+    "proActive": "🚀 Plan Pro activo"
   }
 }

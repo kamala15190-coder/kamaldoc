@@ -310,6 +310,8 @@
     "pushAll": "Push-Notifications (1, 3 oder 7 Tage)",
     "featureLocked": "Dieses Feature ist gesperrt",
     "upgradeDesc": "Verfügbar ab dem {{plan}} Plan.",
-    "expensesLocked": "Ausgaben-Dashboard ist ab Basic Plan verfügbar"
+    "expensesLocked": "Ausgaben-Dashboard ist ab Basic Plan verfügbar",
+    "upgradePlan": "⚡ Upgrade Plan",
+    "proActive": "🚀 Pro Plan aktiv"
   }
 }

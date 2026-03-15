@@ -310,6 +310,8 @@
     "managePlan": "플랜 관리",
     "downgradeConfirm": "{{plan}}으로 다운그레이드하시겠습니까? 현재 플랜은 청구 기간 종료까지 활성 상태로 유지됩니다.",
     "downgradeSuccess": "다운그레이드가 예약되었습니다. 현재 플랜은 만료까지 활성 상태로 유지됩니다.",
-    "downgradeFailed": "다운그레이드 실패"
+    "downgradeFailed": "다운그레이드 실패",
+    "upgradePlan": "⚡ 플랜 업그레이드",
+    "proActive": "🚀 Pro 플랜 활성"
   }
 }

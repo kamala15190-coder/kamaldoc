@@ -310,6 +310,8 @@
     "managePlan": "Pamahalaan ang plan",
     "downgradeConfirm": "Gusto mo bang mag-downgrade sa {{plan}}? Ang iyong kasalukuyang plan ay mananatiling aktibo hanggang sa katapusan ng billing period.",
     "downgradeSuccess": "Naka-schedule ang downgrade. Ang iyong kasalukuyang plan ay mananatiling aktibo hanggang mag-expire.",
-    "downgradeFailed": "Nabigong mag-downgrade"
+    "downgradeFailed": "Nabigong mag-downgrade",
+    "upgradePlan": "⚡ I-upgrade ang plan",
+    "proActive": "🚀 Pro Plan aktibo"
   }
 }

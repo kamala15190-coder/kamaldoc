@@ -310,6 +310,8 @@
     "managePlan": "Hallinnoi suunnitelmaa",
     "downgradeConfirm": "Haluatko vaihtaa {{plan}} -suunnitelmaan? Nykyinen suunnitelmasi pysyy aktiivisena laskutuskauden loppuun.",
     "downgradeSuccess": "Alennus suunniteltu. Nykyinen suunnitelmasi pysyy aktiivisena vanhenemiseen asti.",
-    "downgradeFailed": "Alennus epäonnistui"
+    "downgradeFailed": "Alennus epäonnistui",
+    "upgradePlan": "⚡ Päivitä suunnitelma",
+    "proActive": "🚀 Pro-suunnitelma aktiivinen"
   }
 }

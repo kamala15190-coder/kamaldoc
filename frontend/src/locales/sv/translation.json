@@ -310,6 +310,8 @@
     "managePlan": "Hantera plan",
     "downgradeConfirm": "Vill du nedgradera till {{plan}}? Din nuvarande plan förblir aktiv till slutet av faktureringsperioden.",
     "downgradeSuccess": "Nedgradering schemalagd. Din nuvarande plan förblir aktiv tills den löper ut.",
-    "downgradeFailed": "Nedgradering misslyckades"
+    "downgradeFailed": "Nedgradering misslyckades",
+    "upgradePlan": "⚡ Uppgradera plan",
+    "proActive": "🚀 Pro Plan aktiv"
   }
 }

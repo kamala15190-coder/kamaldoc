@@ -310,6 +310,8 @@
     "managePlan": "Zarządzaj planem",
     "downgradeConfirm": "Czy chcesz przejść na {{plan}}? Twój obecny plan pozostanie aktywny do końca okresu rozliczeniowego.",
     "downgradeSuccess": "Obniżenie zaplanowane. Twój obecny plan pozostanie aktywny do wygaśnięcia.",
-    "downgradeFailed": "Obniżenie nie powiodło się"
+    "downgradeFailed": "Obniżenie nie powiodło się",
+    "upgradePlan": "⚡ Ulepsz plan",
+    "proActive": "🚀 Plan Pro aktywny"
   }
 }

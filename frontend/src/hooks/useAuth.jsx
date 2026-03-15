@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }) => {
       import('@capacitor/app').then(({ App }) => {
         appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
           if (url.includes('login-callback')) {
-            // Extract tokens from the URL fragment (after #)
+            // Try extracting tokens from hash fragment (#access_token=...)
             const hashPart = url.split('#')[1]
             if (hashPart) {
               const params = new URLSearchParams(hashPart)
@@ -43,7 +43,15 @@ export const AuthProvider = ({ children }) => {
                   access_token: accessToken,
                   refresh_token: refreshToken,
                 })
+                return
               }
+            }
+            // Fallback: try getSession in case Supabase already processed the callback
+            const { data: { session } } = await supabase.auth.getSession()
+            if (session) {
+              setUser(session.user)
+              setLoading(false)
+              initPushNotifications()
             }
           }
         })

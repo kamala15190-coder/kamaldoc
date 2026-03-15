@@ -310,6 +310,8 @@
     "managePlan": "Planı yönet",
     "downgradeConfirm": "{{plan}} planına geçmek istiyor musunuz? Mevcut planınız fatura döneminin sonuna kadar aktif kalacaktır.",
     "downgradeSuccess": "Düşürme planlandı. Mevcut planınız sona erene kadar aktif kalacaktır.",
-    "downgradeFailed": "Düşürme başarısız"
+    "downgradeFailed": "Düşürme başarısız",
+    "upgradePlan": "⚡ Planı yükselt",
+    "proActive": "🚀 Pro Plan aktif"
   }
 }

@@ -310,6 +310,8 @@
     "managePlan": "Planı idarə et",
     "downgradeConfirm": "{{plan}} planına endirmək istəyirsiniz? Cari planınız faktura dövrünün sonuna qədər aktiv qalacaq.",
     "downgradeSuccess": "Endirmə planlaşdırıldı. Cari planınız müddəti bitənə qədər aktiv qalacaq.",
-    "downgradeFailed": "Endirmə uğursuz oldu"
+    "downgradeFailed": "Endirmə uğursuz oldu",
+    "upgradePlan": "⚡ Planı yüksəlt",
+    "proActive": "🚀 Pro Plan aktiv"
   }
 }

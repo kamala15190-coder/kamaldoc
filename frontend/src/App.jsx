@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
@@ -315,12 +316,52 @@ function UpgradeButton({ mobile = false }) {
   );
 }
 
+function NativeStatusBar() {
+  const { isPro } = useSubscription();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
+        StatusBar.setBackgroundColor({ color: '#1F2937' }).catch(() => {});
+        StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
+      });
+    }
+  }, []);
+
+  return (
+    <div style={{
+      backgroundColor: '#1F2937',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    }}>
+      {isPro ? (
+        <span style={{ color: 'white', fontSize: '12px' }}>
+          {t('pricing.proActive')}
+        </span>
+      ) : (
+        <span
+          onClick={() => navigate('/pricing')}
+          style={{ color: 'white', fontSize: '12px', cursor: 'pointer' }}
+        >
+          {t('pricing.upgradePlan')}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   const isAuthPage = ['/login', '/register'].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {!isAuthPage && <NativeStatusBar />}
       {!isAuthPage && <NavBar />}
       <main className={!isAuthPage ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6" : ""}>
         <Routes>

@@ -310,6 +310,8 @@
     "managePlan": "Simamia mpango",
     "downgradeConfirm": "Je, unataka kushuka hadi {{plan}}? Mpango wako wa sasa utabaki hai hadi mwisho wa kipindi cha malipo.",
     "downgradeSuccess": "Kushuka kumepangwa. Mpango wako wa sasa utabaki hai hadi kumalizika.",
-    "downgradeFailed": "Kushuka kumeshindwa"
+    "downgradeFailed": "Kushuka kumeshindwa",
+    "upgradePlan": "⚡ Boresha mpango",
+    "proActive": "🚀 Mpango wa Pro hai"
   }
 }

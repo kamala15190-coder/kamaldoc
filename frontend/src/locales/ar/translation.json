@@ -310,6 +310,8 @@
     "managePlan": "إدارة الخطة",
     "downgradeConfirm": "هل تريد الرجوع إلى {{plan}}؟ ستبقى خطتك الحالية نشطة حتى نهاية فترة الفوترة.",
     "downgradeSuccess": "تم جدولة الرجوع. ستبقى خطتك الحالية نشطة حتى انتهاء صلاحيتها.",
-    "downgradeFailed": "فشل الرجوع"
+    "downgradeFailed": "فشل الرجوع",
+    "upgradePlan": "⚡ ترقية الخطة",
+    "proActive": "🚀 خطة Pro نشطة"
   }
 }

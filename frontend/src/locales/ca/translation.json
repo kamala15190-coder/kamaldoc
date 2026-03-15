@@ -310,6 +310,8 @@
     "managePlan": "Gestionar pla",
     "downgradeConfirm": "Vols baixar a {{plan}}? El teu pla actual seguirà actiu fins al final del període de facturació.",
     "downgradeSuccess": "Baixada programada. El teu pla actual seguirà actiu fins que expiri.",
-    "downgradeFailed": "Error en la baixada"
+    "downgradeFailed": "Error en la baixada",
+    "upgradePlan": "⚡ Millorar pla",
+    "proActive": "🚀 Pla Pro actiu"
   }
 }

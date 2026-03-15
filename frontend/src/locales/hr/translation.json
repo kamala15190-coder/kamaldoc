@@ -310,6 +310,8 @@
     "managePlan": "Upravljanje planom",
     "downgradeConfirm": "Želite li preći na {{plan}}? Vaš trenutni plan ostaje aktivan do kraja obračunskog razdoblja.",
     "downgradeSuccess": "Sniženje planirano. Vaš trenutni plan ostaje aktivan do isteka.",
-    "downgradeFailed": "Sniženje nije uspjelo"
+    "downgradeFailed": "Sniženje nije uspjelo",
+    "upgradePlan": "⚡ Nadogradi plan",
+    "proActive": "🚀 Pro Plan aktivan"
   }
 }

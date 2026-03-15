@@ -310,6 +310,8 @@
     "managePlan": "Kelola paket",
     "downgradeConfirm": "Apakah Anda ingin turun ke {{plan}}? Paket Anda saat ini tetap aktif hingga akhir periode penagihan.",
     "downgradeSuccess": "Penurunan dijadwalkan. Paket Anda saat ini tetap aktif hingga kedaluwarsa.",
-    "downgradeFailed": "Penurunan gagal"
+    "downgradeFailed": "Penurunan gagal",
+    "upgradePlan": "⚡ Upgrade Paket",
+    "proActive": "🚀 Paket Pro aktif"
   }
 }

@@ -310,6 +310,8 @@
     "managePlan": "Csomag kezelése",
     "downgradeConfirm": "Szeretnél {{plan}} csomagra váltani? A jelenlegi csomagod a számlázási időszak végéig aktív marad.",
     "downgradeSuccess": "Visszalépés ütemezve. A jelenlegi csomagod a lejáratig aktív marad.",
-    "downgradeFailed": "Visszalépés sikertelen"
+    "downgradeFailed": "Visszalépés sikertelen",
+    "upgradePlan": "⚡ Csomag frissítése",
+    "proActive": "🚀 Pro csomag aktív"
   }
 }

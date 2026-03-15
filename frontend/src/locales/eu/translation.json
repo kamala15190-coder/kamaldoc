@@ -310,6 +310,8 @@
     "managePlan": "Plana kudeatu",
     "downgradeConfirm": "{{plan}} planera jaitsi nahi duzu? Zure uneko plana aktibo jarraituko du fakturazio-aldiaren amaiera arte.",
     "downgradeSuccess": "Jaitsiera programatuta. Zure uneko plana aktibo jarraituko du iraungitzen den arte.",
-    "downgradeFailed": "Jaitsierak huts egin du"
+    "downgradeFailed": "Jaitsierak huts egin du",
+    "upgradePlan": "⚡ Plana hobetu",
+    "proActive": "🚀 Pro Plana aktiboa"
   }
 }

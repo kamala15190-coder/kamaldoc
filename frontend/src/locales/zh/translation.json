@@ -310,6 +310,8 @@
     "managePlan": "管理计划",
     "downgradeConfirm": "您要降级到 {{plan}} 吗？您当前的计划将在计费周期结束前保持有效。",
     "downgradeSuccess": "降级已计划。您当前的计划将在到期前保持有效。",
-    "downgradeFailed": "降级失败"
+    "downgradeFailed": "降级失败",
+    "upgradePlan": "⚡ 升级计划",
+    "proActive": "🚀 Pro 计划已激活"
   }
 }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Camera, FileText, CheckCircle, Loader2, AlertCircle, X, ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { Capacitor } from '@capacitor/core';
 import { uploadDocument } from '../api';
 
 function useIsMobile() {
@@ -139,20 +140,58 @@ export default function UploadPage() {
   const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
   const handleDragLeave = () => setDragOver(false);
 
-  // Kamera öffnen — für Android: Neues Input-Element erzeugen falls nötig
-  const openCamera = () => {
-    const el = cameraInputRef.current;
-    if (el) {
-      el.value = '';
-      el.click();
+  // Capacitor Camera: DataUrl → File object
+  const dataUrlToFile = (dataUrl, filename) => {
+    const [header, base64] = dataUrl.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(base64);
+    const array = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
+    return new File([array], filename, { type: mime });
+  };
+
+  // Kamera öffnen — Capacitor native auf Mobile, HTML fallback auf Web
+  const openCamera = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { Camera: CapCamera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        const photo = await CapCamera.getPhoto({
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Camera,
+          quality: 90,
+        });
+        if (photo.dataUrl) {
+          const file = dataUrlToFile(photo.dataUrl, `photo_${Date.now()}.jpg`);
+          selectFile(file);
+        }
+      } catch (err) {
+        console.error('[KamalDoc] Camera error:', err);
+      }
+    } else {
+      const el = cameraInputRef.current;
+      if (el) { el.value = ''; el.click(); }
     }
   };
 
-  const openGallery = () => {
-    const el = galleryInputRef.current;
-    if (el) {
-      el.value = '';
-      el.click();
+  const openGallery = async () => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { Camera: CapCamera, CameraResultType, CameraSource } = await import('@capacitor/camera');
+        const photo = await CapCamera.getPhoto({
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Photos,
+          quality: 90,
+        });
+        if (photo.dataUrl) {
+          const file = dataUrlToFile(photo.dataUrl, `gallery_${Date.now()}.jpg`);
+          selectFile(file);
+        }
+      } catch (err) {
+        console.error('[KamalDoc] Gallery error:', err);
+      }
+    } else {
+      const el = galleryInputRef.current;
+      if (el) { el.value = ''; el.click(); }
     }
   };
 

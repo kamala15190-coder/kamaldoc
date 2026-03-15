@@ -310,6 +310,8 @@
     "managePlan": "Gérer le plan",
     "downgradeConfirm": "Voulez-vous passer au plan {{plan}} ? Votre plan actuel reste actif jusqu'à la fin de la période de facturation.",
     "downgradeSuccess": "Rétrogradation planifiée. Votre plan actuel reste actif jusqu'à son expiration.",
-    "downgradeFailed": "Échec de la rétrogradation"
+    "downgradeFailed": "Échec de la rétrogradation",
+    "upgradePlan": "⚡ Améliorer le plan",
+    "proActive": "🚀 Plan Pro actif"
   }
 }
