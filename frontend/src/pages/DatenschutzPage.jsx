@@ -22,7 +22,7 @@ export default function DatenschutzPage() {
           <div className="prose prose-slate max-w-none space-y-6 text-sm leading-relaxed text-slate-700">
             <section>
               <h2 className="text-lg font-semibold text-slate-900">1. Verantwortlicher</h2>
-              <p>Ahmed Kamal el din, Exlwöhr 57, 4871 Vöcklamarkt, Österreich<br />E-Mail: a.kamal.vb@gmail.com</p>
+              <p>Ahmed Kamal el din, Exlwöhr 57, 4871 Vöcklamarkt, Österreich<br />E-Mail: office@kdoc.at</p>
             </section>
 
             <section>
@@ -68,7 +68,7 @@ export default function DatenschutzPage() {
             <section>
               <h2 className="text-lg font-semibold text-slate-900">7. Ihre Rechte (DSGVO)</h2>
               <p>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch</p>
-              <p>Beschwerde: <a href="https://dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">dsb.gv.at</a> — Kontakt: a.kamal.vb@gmail.com</p>
+              <p>Beschwerde: <a href="https://dsb.gv.at" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">dsb.gv.at</a> — Kontakt: office@kdoc.at</p>
             </section>
 
             <section>
@@ -83,7 +83,7 @@ export default function DatenschutzPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-slate-900">10. Kontakt</h2>
-              <p>Ahmed Kamal el din, a.kamal.vb@gmail.com, Exlwöhr 57, 4871 Vöcklamarkt</p>
+              <p>Ahmed Kamal el din, office@kdoc.at, Exlwöhr 57, 4871 Vöcklamarkt</p>
             </section>
           </div>
         </div>

@@ -1226,7 +1226,7 @@ SMTP_HOST = os.getenv("SMTP_HOST", "")
 SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "a.kamal.vb@gmail.com")
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "office@kdoc.at")
 
 PERMANENT_ADMIN = "e9ce1e31-9a52-4f43-97ca-7e3a8137b40c"
 

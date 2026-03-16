@@ -62,7 +62,7 @@ export default function NutzungsbedingungenPage() {
 
             <section>
               <h2 className="text-lg font-semibold text-slate-900">8. Kontakt</h2>
-              <p>Ahmed Kamal el din, a.kamal.vb@gmail.com</p>
+              <p>Ahmed Kamal el din, office@kdoc.at</p>
             </section>
           </div>
         </div>
