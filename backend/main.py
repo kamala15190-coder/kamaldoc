@@ -524,6 +524,7 @@ async def delete_document(doc_id: int, user_id: str = Depends(get_current_user))
 
 @app.post("/api/documents/{doc_id}/reply")
 async def create_reply(doc_id: int, target_language: str = "de", user_id: str = Depends(get_current_user)):
+    await check_analysis_limit(user_id)
     db = await get_db()
     try:
         cursor = await db.execute("SELECT * FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -553,6 +554,8 @@ async def create_reply(doc_id: int, target_language: str = "de", user_id: str = 
         )
         reply_id = cursor.lastrowid
         await db.commit()
+
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"id": reply_id, "inhalt": reply_text, "document_id": doc_id}
     finally:
@@ -870,7 +873,7 @@ async def explain_document(
     user_id: str = Depends(get_current_user),
 ):
     """Behördenschreiben in einfacher Sprache erklären."""
-    # Plan enforcement: Behörden-Assistent Limit
+    await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
     db = await get_db()
@@ -895,6 +898,7 @@ async def explain_document(
 
         # Usage counter
         await increment_usage(user_id, "behoerden_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"erklaerung": erklaerung, "document_id": doc_id}
     finally:
@@ -907,6 +911,7 @@ async def legal_assessment_endpoint(
     user_id: str = Depends(get_current_user),
 ):
     """Unverbindliche Rechtseinschätzung eines Behördenschreibens."""
+    await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
     db = await get_db()
@@ -926,6 +931,7 @@ async def legal_assessment_endpoint(
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
         await increment_usage(user_id, "behoerden_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"assessment": assessment, "document_id": doc_id}
     finally:
@@ -938,6 +944,7 @@ async def contestable_elements_endpoint(
     user_id: str = Depends(get_current_user),
 ):
     """Anfechtbare Elemente eines Behördenschreibens identifizieren."""
+    await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
     db = await get_db()
@@ -957,6 +964,7 @@ async def contestable_elements_endpoint(
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
         await increment_usage(user_id, "behoerden_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"elements": elements, "document_id": doc_id}
     finally:
@@ -970,6 +978,7 @@ async def generate_objection_endpoint(
     user_id: str = Depends(get_current_user),
 ):
     """Widerspruchsschreiben generieren."""
+    await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
     selected_ids = data.get("selected_elements", [])
@@ -1008,6 +1017,7 @@ Telefon: {s.get('telefon', '')}"""
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
         await increment_usage(user_id, "behoerden_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"letter": letter, "document_id": doc_id}
     finally:
@@ -1022,7 +1032,7 @@ async def simplify_document(
     user_id: str = Depends(get_current_user),
 ):
     """Medizinischen Befund vereinfachen (Instanz 1)."""
-    # Plan enforcement: Befund-Assistent Limit
+    await check_analysis_limit(user_id)
     await check_befund_limit(user_id)
 
     db = await get_db()
@@ -1046,6 +1056,7 @@ async def simplify_document(
 
         # Usage counter
         await increment_usage(user_id, "befund_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"vereinfacht": vereinfacht, "document_id": doc_id}
     finally:
@@ -1059,6 +1070,8 @@ async def translate_document(
     user_id: str = Depends(get_current_user),
 ):
     """Vereinfachten Befund übersetzen (Instanz 2)."""
+    await check_analysis_limit(user_id)
+    await check_befund_limit(user_id)
     db = await get_db()
     try:
         cursor = await db.execute("SELECT vereinfacht FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -1081,6 +1094,9 @@ async def translate_document(
             (doc_id, target_language, translated),
         )
         await db.commit()
+
+        await increment_usage(user_id, "befund_month")
+        await increment_usage(user_id, "ki_analyses_total")
 
         return {"translated": translated, "target_language": target_language, "document_id": doc_id}
     finally:

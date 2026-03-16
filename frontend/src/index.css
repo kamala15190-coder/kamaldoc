@@ -6,11 +6,6 @@ body {
   background-color: #f8fafc;
 }
 
-@keyframes wiggle {
-  0%, 100% { transform: scale(0.92) rotate(-0.8deg); }
-  50% { transform: scale(0.92) rotate(0.8deg); }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;

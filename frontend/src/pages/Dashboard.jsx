@@ -611,21 +611,26 @@ export default function Dashboard() {
       {/* Sections — real dashboard always visible */}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={visibleSections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-          {visibleSections.map(s => (
-            <SortableSection
-              key={s.id}
-              id={s.id}
-              editMode={editMode}
-              onRemove={() => setConfirmHide(s.id)}
-              isTouchDragging={touchDragging === s.id}
-              touchOffsetY={touchDragging === s.id ? touchOffsetY : 0}
-              onTouchStart={(e) => handleTouchStart(e, s.id)}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              {sectionContent[s.id]}
-            </SortableSection>
-          ))}
+          {visibleSections.map(s => {
+            const meta = ALL_SECTORS.find(a => a.id === s.id) || {};
+            return (
+              <SortableSection
+                key={s.id}
+                id={s.id}
+                editMode={editMode}
+                onRemove={() => setConfirmHide(s.id)}
+                sectorIcon={meta.icon}
+                sectorLabel={meta.label}
+                isTouchDragging={touchDragging === s.id}
+                touchOffsetY={touchDragging === s.id ? touchOffsetY : 0}
+                onTouchStart={(e) => handleTouchStart(e, s.id)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                {sectionContent[s.id]}
+              </SortableSection>
+            );
+          })}
         </SortableContext>
       </DndContext>
     </div>
@@ -650,7 +655,7 @@ function StatCard({ icon, label, value, color, onClick }) {
   );
 }
 
-function SortableSection({ id, editMode, onRemove, children, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd }) {
+function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorLabel, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id });
 
   const isBeingDragged = isDragging || isTouchDragging;
@@ -664,7 +669,6 @@ function SortableSection({ id, editMode, onRemove, children, isTouchDragging, to
     filter: isBeingDragged ? 'blur(2px)' : 'none',
     opacity: isBeingDragged ? 0.7 : 1,
     touchAction: 'none',
-    animation: isBeingDragged ? 'none' : 'wiggle 0.4s ease-in-out infinite',
   } : {};
 
   return (
@@ -675,7 +679,7 @@ function SortableSection({ id, editMode, onRemove, children, isTouchDragging, to
           backgroundColor: '#2563eb',
           borderRadius: '2px',
           margin: '4px 8px',
-          boxShadow: '0 0 8px rgba(37,99,235,0.5)',
+          boxShadow: '0 0 8px rgba(37,99,235,0.6)',
           transition: 'all 0.15s ease',
         }} />
       )}
@@ -686,23 +690,45 @@ function SortableSection({ id, editMode, onRemove, children, isTouchDragging, to
         onTouchStart={editMode ? onTouchStart : undefined}
         onTouchMove={editMode ? onTouchMove : undefined}
         onTouchEnd={editMode ? onTouchEnd : undefined}
-        className={`relative ${
-          editMode
-            ? 'rounded-xl border-2 border-blue-500 mb-3 p-0.5 cursor-grab active:cursor-grabbing'
-            : ''
-        }`}
+        className="relative"
       >
-        {editMode && (
-          <button
-            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
-            onPointerDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
+        {editMode ? (
+          <div style={{
+            border: '2px solid #2563eb',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            backgroundColor: 'white',
+            cursor: 'grab',
+            marginBottom: '10px',
+          }}>
+            <div style={{
+              padding: '10px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              backgroundColor: '#eff6ff',
+            }}>
+              <span style={{ fontSize: '16px' }}>{sectorIcon}</span>
+              <span style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>{sectorLabel}</span>
+              <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: '12px' }}>↕ verschieben</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                style={{
+                  width: '22px', height: '22px', borderRadius: '50%',
+                  backgroundColor: '#ef4444', color: 'white', border: 'none',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', fontSize: '14px', lineHeight: 1, flexShrink: 0,
+                }}
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          children
         )}
-        {children}
       </div>
     </>
   );
