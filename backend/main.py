@@ -987,11 +987,11 @@ async def generate_objection_endpoint(
         if not volltext:
             raise HTTPException(400, "Dokument hat keinen extrahierten Text")
 
-        # Get user settings for sender data
-        settings_cur = await db.execute("SELECT * FROM einstellungen WHERE user_id = ?", (user_id,))
-        settings_row = await settings_cur.fetchone()
-        if settings_row:
-            s = dict(settings_row)
+        # Get user settings for sender data (key-value table)
+        settings_cur = await db.execute("SELECT key, value FROM user_einstellungen WHERE user_id = ?", (user_id,))
+        settings_rows = await settings_cur.fetchall()
+        s = {r["key"]: r["value"] for r in settings_rows}
+        if s:
             absender_daten = f"""Name: {s.get('vorname', '')} {s.get('nachname', '')}
 Adresse: {s.get('adresse', '')}, {s.get('plz', '')} {s.get('ort', '')}
 Land: {s.get('land', '')}
@@ -1101,9 +1101,12 @@ async def delete_account(user_id: str = Depends(get_current_user)):
         if user_dir.exists():
             shutil.rmtree(user_dir, ignore_errors=True)
 
-        # Delete all DB entries for this user
-        for table in ["documents", "replies", "expense_items", "befund_translations",
-                       "push_tokens", "einstellungen", "usage_counters", "subscriptions"]:
+        # Delete document-linked rows (antworten, befund_translations use document_id FK)
+        await db.execute("DELETE FROM antworten WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
+        await db.execute("DELETE FROM befund_translations WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
+        # Delete user-owned rows
+        for table in ["documents", "expense_items", "push_tokens",
+                       "user_einstellungen", "usage_counters", "subscriptions"]:
             await db.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
         await db.commit()
 

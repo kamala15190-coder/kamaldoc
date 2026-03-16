@@ -659,20 +659,25 @@ function SortableSection({ id, editMode, onRemove, children, isTouchDragging, to
     transform: isTouchDragging
       ? `translateY(${touchOffsetY}px)`
       : CSS.Transform.toString(transform),
-    transition: isTouchDragging ? 'none' : transition,
+    transition: isTouchDragging ? 'none' : (transition || 'transform 0.3s ease'),
     zIndex: isBeingDragged ? 50 : 'auto',
     filter: isBeingDragged ? 'blur(2px)' : 'none',
     opacity: isBeingDragged ? 0.7 : 1,
     touchAction: 'none',
     animation: isBeingDragged ? 'none' : 'wiggle 0.4s ease-in-out infinite',
-    fontSize: '0.92em',
-    padding: '2px',
   } : {};
 
   return (
     <>
       {editMode && isOver && !isBeingDragged && (
-        <div style={{ height: '3px', backgroundColor: '#2563eb', borderRadius: '2px', margin: '4px 0' }} />
+        <div style={{
+          height: '4px',
+          backgroundColor: '#2563eb',
+          borderRadius: '2px',
+          margin: '4px 8px',
+          boxShadow: '0 0 8px rgba(37,99,235,0.5)',
+          transition: 'all 0.15s ease',
+        }} />
       )}
       <div
         ref={setNodeRef}

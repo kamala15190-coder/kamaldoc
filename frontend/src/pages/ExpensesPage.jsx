@@ -6,6 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { getExpenseCategories, getExpenseItems, getExpenseSummary } from '../api';
 import { useSubscription } from '../hooks/useSubscription';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 import UpgradePrompt from '../components/UpgradePrompt';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
@@ -27,6 +28,7 @@ export default function ExpensesPage() {
   const { t } = useTranslation();
   const { isFree, loading: subLoading } = useSubscription();
   const navigate = useNavigate();
+  const { handleApiError } = usePlanLimit();
 
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState({});
@@ -82,7 +84,7 @@ export default function ExpensesPage() {
       setSummary(summaryData);
       setItems(itemsData.items || []);
     } catch (err) {
-      console.error('Fehler beim Laden der Ausgaben:', err);
+      if (!handleApiError(err)) console.error('Fehler beim Laden der Ausgaben:', err);
     } finally {
       setLoading(false);
     }
