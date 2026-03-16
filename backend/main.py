@@ -15,7 +15,7 @@ from typing import Optional
 import fitz  # PyMuPDF
 from fastapi import FastAPI, File, HTTPException, UploadFile, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from PIL import Image
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -44,6 +44,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://kamaldoc-flax.vercel.app",
+        "https://api.kdoc.at",
         "http://localhost:5173",
         "http://100.77.198.89:5173",
         "http://localhost",
@@ -96,6 +97,118 @@ async def startup():
     logger.info("KamalDoc Backend gestartet")
     # Deadline-Checker im Hintergrund starten
     asyncio.create_task(deadline_checker_loop())
+
+
+# --- Google OAuth Proxy (damit Google "Weiter zu kdoc.at" anzeigt) ---
+
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kamaldoc-flax.vercel.app")
+API_URL = os.getenv("API_URL", "https://api.kdoc.at")
+ANDROID_CALLBACK = os.getenv("ANDROID_CALLBACK", "at.kamaldoc.app://login-callback")
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://grbalaqdgdukzwumejfu.supabase.co")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
+
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+
+
+@app.get("/auth/google/login")
+async def google_login(platform: str = "web"):
+    """Redirect user to Google OAuth with our own redirect_uri."""
+    import secrets
+    state = f"{platform}:{secrets.token_urlsafe(32)}"
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": f"{API_URL}/auth/google/callback",
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": state,
+        "access_type": "offline",
+        "prompt": "consent",
+    }
+    query = "&".join(f"{k}={v}" for k, v in params.items())
+    return RedirectResponse(url=f"{GOOGLE_AUTH_URL}?{query}")
+
+
+@app.get("/auth/google/callback")
+async def google_callback(code: str = None, state: str = "", error: str = None):
+    """Handle Google OAuth callback, exchange code, sign in via Supabase, redirect to frontend."""
+    import httpx as _httpx
+    from urllib.parse import urlencode, quote
+
+    if error or not code:
+        logger.error(f"Google OAuth error: {error}")
+        return RedirectResponse(url=f"{FRONTEND_URL}/login?error=google_auth_failed")
+
+    # Determine platform from state
+    platform = "web"
+    if state.startswith("android:"):
+        platform = "android"
+
+    # 1. Exchange authorization code for tokens with Google
+    try:
+        async with _httpx.AsyncClient(timeout=15) as client:
+            token_resp = await client.post(GOOGLE_TOKEN_URL, data={
+                "code": code,
+                "client_id": GOOGLE_CLIENT_ID,
+                "client_secret": GOOGLE_CLIENT_SECRET,
+                "redirect_uri": f"{API_URL}/auth/google/callback",
+                "grant_type": "authorization_code",
+            })
+            token_data = token_resp.json()
+
+        if "error" in token_data:
+            logger.error(f"Google token exchange error: {token_data}")
+            return RedirectResponse(url=f"{FRONTEND_URL}/login?error=token_exchange_failed")
+
+        google_id_token = token_data.get("id_token")
+        if not google_id_token:
+            logger.error("No id_token in Google response")
+            return RedirectResponse(url=f"{FRONTEND_URL}/login?error=no_id_token")
+    except Exception as e:
+        logger.error(f"Google token exchange exception: {e}")
+        return RedirectResponse(url=f"{FRONTEND_URL}/login?error=token_exchange_exception")
+
+    # 2. Sign in to Supabase with the Google ID token
+    try:
+        async with _httpx.AsyncClient(timeout=15) as client:
+            supabase_resp = await client.post(
+                f"{SUPABASE_URL}/auth/v1/token?grant_type=id_token",
+                json={"provider": "google", "id_token": google_id_token},
+                headers={
+                    "apikey": SUPABASE_ANON_KEY,
+                    "Content-Type": "application/json",
+                },
+            )
+            supabase_data = supabase_resp.json()
+
+        if "access_token" not in supabase_data:
+            logger.error(f"Supabase sign-in error: {supabase_data}")
+            return RedirectResponse(url=f"{FRONTEND_URL}/login?error=supabase_auth_failed")
+
+        access_token = supabase_data["access_token"]
+        refresh_token = supabase_data.get("refresh_token", "")
+        expires_in = supabase_data.get("expires_in", 3600)
+        token_type = supabase_data.get("token_type", "bearer")
+    except Exception as e:
+        logger.error(f"Supabase sign-in exception: {e}")
+        return RedirectResponse(url=f"{FRONTEND_URL}/login?error=supabase_exception")
+
+    # 3. Redirect to frontend/app with tokens in URL hash
+    fragment = urlencode({
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": expires_in,
+        "token_type": token_type,
+    })
+
+    if platform == "android":
+        redirect_url = f"{ANDROID_CALLBACK}#{fragment}"
+    else:
+        redirect_url = f"{FRONTEND_URL}/#access_token={quote(access_token)}&refresh_token={quote(refresh_token)}&expires_in={expires_in}&token_type={token_type}"
+
+    return RedirectResponse(url=redirect_url)
 
 
 # --- Hilfsfunktionen ---

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../hooks/useAuth.jsx'
+import { API_BASE_URL } from '../config'
 import { Mail, Lock, AlertCircle, Loader2, CheckCircle, Globe } from 'lucide-react'
 import { LANGUAGES } from '../languages'
 
@@ -85,24 +86,13 @@ export default function RegisterPage() {
 
     try {
       if (Capacitor.isNativePlatform()) {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: 'at.kamaldoc.app://login-callback',
-            skipBrowserRedirect: true,
-          },
-        })
-        if (error) throw error
-        if (data?.url) {
-          const { Browser } = await import('@capacitor/browser')
-          await Browser.open({ url: data.url })
-        }
+        // Native: use OAuth proxy with platform=android
+        const loginUrl = `${API_BASE_URL}/auth/google/login?platform=android`
+        const { Browser } = await import('@capacitor/browser')
+        await Browser.open({ url: loginUrl })
       } else {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin },
-        })
-        if (error) throw error
+        // Web: redirect to our OAuth proxy (Google shows "Weiter zu kdoc.at")
+        window.location.href = `${API_BASE_URL}/auth/google/login?platform=web`
       }
     } catch (err) {
       setError(err.message || t('auth.googleRegisterFailed'))
