@@ -513,3 +513,182 @@ async def translate_simplified_report(text: str, target_language: str = "de") ->
         data = resp.json()
 
     return data["choices"][0]["message"]["content"]
+
+
+# --- Behörden-Assistent: Rechtseinschätzung ---
+
+LEGAL_ASSESSMENT_PROMPT = """Du bist ein rechtlicher Assistent für Österreich, Deutschland und die Schweiz.
+Analysiere dieses Behördenschreiben rechtlich:
+
+---
+{volltext}
+---
+
+1. Um welche Art von Schreiben handelt es sich rechtlich?
+2. Welche Rechte hat der Empfänger?
+3. Welche Fristen sind zu beachten?
+4. Welche Gesetze/Paragraphen sind relevant?
+5. Was sind die empfohlenen nächsten Schritte?
+
+Antworte auf Deutsch, klar und verständlich.
+Strukturiere deine Antwort mit den Überschriften:
+## Rechtliche Einordnung
+## Rechte des Empfängers
+## Fristen
+## Relevante Gesetze
+## Empfohlene nächste Schritte
+
+WICHTIG: Weise am Ende darauf hin, dass dies eine KI-Einschätzung ist und keine professionelle Rechtsberatung ersetzt."""
+
+
+async def legal_assessment(volltext: str) -> str:
+    """Rechtliche Einschätzung eines Behördenschreibens."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    prompt = LEGAL_ASSESSMENT_PROMPT.format(volltext=volltext)
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3,
+        "max_tokens": 4000,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return data["choices"][0]["message"]["content"]
+
+
+# --- Behörden-Assistent: Anfechtbare Elemente ---
+
+CONTESTABLE_ELEMENTS_PROMPT = """Du bist ein rechtlicher Assistent für Österreich, Deutschland und die Schweiz.
+Analysiere dieses Behördenschreiben und identifiziere ALLE Elemente, die angefochten, widersprochen oder eingesprochen werden könnten:
+
+---
+{volltext}
+---
+
+Antworte AUSSCHLIESSLICH mit einem JSON-Array. Jedes Element hat:
+- "id": fortlaufende Nummer (1, 2, 3, ...)
+- "element": Kurzbezeichnung (z.B. "Bescheiddatum", "Betrag", "Berechnung", "Frist", "Rechtsgrundlage")
+- "description": Konkreter Wert/Text aus dem Dokument
+- "reason": Begründung warum dieses Element anfechtbar sein könnte
+
+Beispiel:
+[
+  {{"id": 1, "element": "Betrag", "description": "340,00 EUR", "reason": "Berechnung unklar, keine Aufschlüsselung vorhanden"}},
+  {{"id": 2, "element": "Frist", "description": "14 Tage", "reason": "Möglicherweise zu kurz bemessen"}}
+]
+
+Antworte NUR mit dem JSON-Array, kein anderer Text."""
+
+
+async def get_contestable_elements(volltext: str) -> list:
+    """Anfechtbare Elemente aus Behördenschreiben extrahieren."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    prompt = CONTESTABLE_ELEMENTS_PROMPT.format(volltext=volltext)
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "max_tokens": 3000,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    content = data["choices"][0]["message"]["content"]
+    import re
+    try:
+        match = re.search(r'\[.*\]', content, re.DOTALL)
+        if match:
+            return json.loads(match.group())
+        return json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        return []
+
+
+# --- Behörden-Assistent: Widerspruchsschreiben ---
+
+OBJECTION_LETTER_PROMPT = """Du bist ein rechtlicher Assistent für Österreich, Deutschland und die Schweiz.
+Erstelle ein professionelles Widerspruchsschreiben (Einspruch/Beschwerde) basierend auf dem folgenden Behördenschreiben.
+
+Originaldokument:
+---
+{volltext}
+---
+
+Absenderdaten des Widerspruchsführers:
+{absender_daten}
+
+Folgende Elemente sollen angefochten werden:
+{selected_elements}
+
+Erstelle ein förmliches Widerspruchsschreiben mit:
+1. Korrektem Briefkopf (Absender oben, Empfänger darunter)
+2. Datum und Betreff mit Aktenzeichen (falls vorhanden)
+3. Förmliche Anrede
+4. Einleitung mit Bezug auf den Bescheid
+5. Für JEDES ausgewählte Element: rechtliche Begründung des Widerspruchs
+6. Antrag (was genau beantragt wird)
+7. Fristsetzung für Antwort
+8. Förmlicher Abschluss mit Unterschriftszeile
+
+Verwende korrekte rechtliche Formulierungen passend für AT/DE/CH.
+Schreibe auf Deutsch."""
+
+
+async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str) -> str:
+    """Widerspruchsschreiben generieren."""
+    if not TOGETHER_API_KEY:
+        raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
+
+    prompt = OBJECTION_LETTER_PROMPT.format(
+        volltext=volltext,
+        absender_daten=absender_daten,
+        selected_elements=selected_elements,
+    )
+
+    payload = {
+        "model": TOGETHER_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.3,
+        "max_tokens": 5000,
+    }
+
+    async with httpx.AsyncClient(timeout=120.0) as client:
+        resp = await client.post(
+            f"{TOGETHER_API_URL}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {TOGETHER_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json=payload,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+    return data["choices"][0]["message"]["content"]

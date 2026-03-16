@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateDocument } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 
 export default function BefundAssistent() {
   const { t } = useTranslation();
@@ -24,6 +25,7 @@ export default function BefundAssistent() {
   const [copiedTranslated, setCopiedTranslated] = useState(false);
   const [error, setError] = useState(null);
   const [targetLang, setTargetLang] = useState('de');
+  const { handleApiError } = usePlanLimit();
 
   const fetchDocs = async () => {
     setLoading(true);
@@ -59,7 +61,7 @@ export default function BefundAssistent() {
       setTranslated('');
       fetchDocs();
     } catch (err) {
-      setError(err.message || 'Upload fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Upload fehlgeschlagen');
     } finally {
       setUploading(false);
     }
@@ -74,7 +76,7 @@ export default function BefundAssistent() {
       const result = await simplifyDocument(selectedDoc.id);
       setVereinfacht(result.vereinfacht);
     } catch (err) {
-      setError(err.message || 'Vereinfachung fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Vereinfachung fehlgeschlagen');
     } finally {
       setSimplifying(false);
     }
@@ -88,7 +90,7 @@ export default function BefundAssistent() {
       const result = await translateDocument(selectedDoc.id, targetLang);
       setTranslated(result.translated);
     } catch (err) {
-      setError(err.message || 'Übersetzung fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Übersetzung fehlgeschlagen');
     } finally {
       setTranslating(false);
     }

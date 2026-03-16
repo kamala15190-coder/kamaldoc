@@ -12,6 +12,7 @@ import {
 import AuthImage from '../components/AuthImage';
 import { REPLY_LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 
 const KATEGORIE_COLORS = {
   brief: 'bg-blue-100 text-blue-700',
@@ -43,6 +44,7 @@ export default function DocumentDetail() {
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
+  const { handleApiError } = usePlanLimit();
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -137,8 +139,9 @@ export default function DocumentDetail() {
       await generateReply(id, replyLanguage);
       await fetchReplies();
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.detail || err.message);
+      if (!handleApiError(err)) {
+        console.error(err);
+      }
     } finally {
       setGeneratingReply(false);
     }

@@ -62,6 +62,26 @@ export async function translateDocument(id, targetLanguage) {
   return data;
 }
 
+export async function getLegalAssessment(id) {
+  const { data } = await api.post(`/documents/${id}/legal-assessment`);
+  return data;
+}
+
+export async function getContestableElements(id) {
+  const { data } = await api.post(`/documents/${id}/contestable-elements`);
+  return data;
+}
+
+export async function generateObjection(id, selectedElements) {
+  const { data } = await api.post(`/documents/${id}/generate-objection`, { selected_elements: selectedElements });
+  return data;
+}
+
+export async function deleteAccount() {
+  const { data } = await api.delete('/account');
+  return data;
+}
+
 export async function registerPushToken(token, platform = 'android') {
   const { data } = await api.post('/push-token', { token, platform });
   return data;

@@ -24,7 +24,7 @@ from database import DB_PATH, DATA_DIR, get_db, init_db
 from llm_service import (
     analyze_document, check_together_status, generate_reply,
     explain_authority_document, simplify_medical_report, translate_simplified_report,
-    extract_expense_items
+    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter
 )
 from auth import get_current_user
 from subscription import (
@@ -901,6 +901,119 @@ async def explain_document(
         await db.close()
 
 
+@app.post("/api/documents/{doc_id}/legal-assessment")
+async def legal_assessment_endpoint(
+    doc_id: int,
+    user_id: str = Depends(get_current_user),
+):
+    """Unverbindliche Rechtseinschätzung eines Behördenschreibens."""
+    await check_behoerden_limit(user_id)
+
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+        row = await cursor.fetchone()
+        if not row:
+            raise HTTPException(404, "Dokument nicht gefunden")
+
+        volltext = row["volltext"]
+        if not volltext:
+            raise HTTPException(400, "Dokument hat keinen extrahierten Text")
+
+        try:
+            assessment = await legal_assessment(volltext)
+        except Exception as e:
+            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+
+        await increment_usage(user_id, "behoerden_month")
+
+        return {"assessment": assessment, "document_id": doc_id}
+    finally:
+        await db.close()
+
+
+@app.post("/api/documents/{doc_id}/contestable-elements")
+async def contestable_elements_endpoint(
+    doc_id: int,
+    user_id: str = Depends(get_current_user),
+):
+    """Anfechtbare Elemente eines Behördenschreibens identifizieren."""
+    await check_behoerden_limit(user_id)
+
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+        row = await cursor.fetchone()
+        if not row:
+            raise HTTPException(404, "Dokument nicht gefunden")
+
+        volltext = row["volltext"]
+        if not volltext:
+            raise HTTPException(400, "Dokument hat keinen extrahierten Text")
+
+        try:
+            elements = await get_contestable_elements(volltext)
+        except Exception as e:
+            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+
+        await increment_usage(user_id, "behoerden_month")
+
+        return {"elements": elements, "document_id": doc_id}
+    finally:
+        await db.close()
+
+
+@app.post("/api/documents/{doc_id}/generate-objection")
+async def generate_objection_endpoint(
+    doc_id: int,
+    data: dict,
+    user_id: str = Depends(get_current_user),
+):
+    """Widerspruchsschreiben generieren."""
+    await check_behoerden_limit(user_id)
+
+    selected_ids = data.get("selected_elements", [])
+    if not selected_ids:
+        raise HTTPException(400, "Keine Elemente ausgewählt")
+
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+        row = await cursor.fetchone()
+        if not row:
+            raise HTTPException(404, "Dokument nicht gefunden")
+
+        volltext = row["volltext"]
+        if not volltext:
+            raise HTTPException(400, "Dokument hat keinen extrahierten Text")
+
+        # Get user settings for sender data
+        settings_cur = await db.execute("SELECT * FROM einstellungen WHERE user_id = ?", (user_id,))
+        settings_row = await settings_cur.fetchone()
+        if settings_row:
+            s = dict(settings_row)
+            absender_daten = f"""Name: {s.get('vorname', '')} {s.get('nachname', '')}
+Adresse: {s.get('adresse', '')}, {s.get('plz', '')} {s.get('ort', '')}
+Land: {s.get('land', '')}
+E-Mail: {s.get('email', '')}
+Telefon: {s.get('telefon', '')}"""
+        else:
+            absender_daten = "(Keine Absenderdaten hinterlegt)"
+
+        selected_text = "\n".join([f"- Element {eid}" for eid in selected_ids])
+
+        try:
+            letter = await generate_objection_letter(volltext, absender_daten, selected_text)
+        except Exception as e:
+            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+
+        await increment_usage(user_id, "behoerden_month")
+
+        return {"letter": letter, "document_id": doc_id}
+    finally:
+        await db.close()
+
+
 # --- Befund-Assistent ---
 
 @app.post("/api/documents/{doc_id}/simplify")
@@ -970,6 +1083,49 @@ async def translate_document(
         await db.commit()
 
         return {"translated": translated, "target_language": target_language, "document_id": doc_id}
+    finally:
+        await db.close()
+
+
+# --- Account Deletion ---
+
+@app.delete("/api/account")
+async def delete_account(user_id: str = Depends(get_current_user)):
+    """Delete user account and all associated data."""
+    db = await get_db()
+    try:
+        # Delete user files from disk
+        cursor = await db.execute("SELECT dateiname FROM documents WHERE user_id = ?", (user_id,))
+        rows = await cursor.fetchall()
+        user_dir = DATA_DIR / user_id
+        if user_dir.exists():
+            shutil.rmtree(user_dir, ignore_errors=True)
+
+        # Delete all DB entries for this user
+        for table in ["documents", "replies", "expense_items", "befund_translations",
+                       "push_tokens", "einstellungen", "usage_counters", "subscriptions"]:
+            await db.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
+        await db.commit()
+
+        # Delete Supabase user
+        try:
+            import httpx as _httpx
+            supabase_url = os.getenv("SUPABASE_URL", "")
+            supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+            if supabase_url and supabase_service_key:
+                async with _httpx.AsyncClient(timeout=15.0) as client:
+                    await client.delete(
+                        f"{supabase_url}/auth/v1/admin/users/{user_id}",
+                        headers={
+                            "Authorization": f"Bearer {supabase_service_key}",
+                            "apikey": supabase_service_key,
+                        },
+                    )
+        except Exception as e:
+            logger.error(f"Failed to delete Supabase user {user_id}: {e}")
+
+        logger.info(f"Account deleted: user_id={user_id}")
+        return {"message": "Account gelöscht"}
     finally:
         await db.close()
 

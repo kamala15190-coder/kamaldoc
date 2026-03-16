@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle } from 'lucide-react';
+import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubscription } from '../api';
+import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubscription, deleteAccount } from '../api';
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 
@@ -87,6 +87,8 @@ export default function ProfilPage() {
   const [reactivating, setReactivating] = useState(false);
   const [reactivateSuccess, setReactivateSuccess] = useState(false);
   const [reactivateError, setReactivateError] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [searchParams] = useSearchParams();
 
   // Refresh subscription after checkout success
@@ -124,6 +126,19 @@ export default function ProfilPage() {
       setReactivateError(err.response?.data?.detail || t('profile.reactivateFailed'));
     } finally {
       setReactivating(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeletingAccount(true);
+    try {
+      await deleteAccount();
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Account deletion failed:', err);
+      setDeletingAccount(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -381,6 +396,85 @@ export default function ProfilPage() {
           {t('profile.changePasswordButton')}
         </button>
       </div>
+
+      {/* Danger Zone: Account löschen */}
+      <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-4 md:p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <Trash2 className="w-5 h-5 text-red-600" />
+          <h2 className="text-lg font-semibold text-red-700">Gefahrenzone</h2>
+        </div>
+        <p className="text-sm text-slate-600 mb-4">
+          Wenn du deinen Account löschst, werden alle Daten unwiderruflich entfernt – Dokumente, Analysen, Einstellungen und Abonnement.
+        </p>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer border-none"
+          style={{ minHeight: '44px' }}
+        >
+          <Trash2 className="w-4 h-4" />
+          Account endgültig löschen
+        </button>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 100,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px',
+        }}>
+          <div style={{
+            backgroundColor: 'white', borderRadius: '16px',
+            padding: '24px', width: '100%', maxWidth: '380px',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+          }}>
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚠️</div>
+              <h3 style={{ fontWeight: '700', fontSize: '18px', color: '#dc2626', marginBottom: '8px' }}>
+                Account wirklich löschen?
+              </h3>
+            </div>
+            <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', marginBottom: '20px' }}>
+              <p style={{ marginBottom: '8px' }}>Folgendes wird <strong>unwiderruflich gelöscht</strong>:</p>
+              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+                <li>Alle hochgeladenen Dokumente</li>
+                <li>Alle KI-Analysen und Erklärungen</li>
+                <li>Deine Profil- und Absenderdaten</li>
+                <li>Dein Abonnement</li>
+                <li>Dein Benutzerkonto</li>
+              </ul>
+              <p style={{ marginTop: '12px', fontWeight: '600', color: '#dc2626' }}>
+                Dieser Vorgang kann nicht rückgängig gemacht werden.
+              </p>
+            </div>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deletingAccount}
+              style={{
+                width: '100%', padding: '12px',
+                backgroundColor: '#dc2626', color: 'white',
+                borderRadius: '10px', border: 'none',
+                fontWeight: '600', fontSize: '15px', cursor: 'pointer',
+                marginBottom: '8px', opacity: deletingAccount ? 0.6 : 1,
+              }}
+            >
+              {deletingAccount ? 'Wird gelöscht...' : 'Ja, Account endgültig löschen'}
+            </button>
+            <button
+              onClick={() => setShowDeleteModal(false)}
+              disabled={deletingAccount}
+              style={{
+                width: '100%', padding: '10px',
+                backgroundColor: 'transparent', color: '#6b7280',
+                border: 'none', cursor: 'pointer', fontSize: '14px',
+              }}
+            >
+              Abbrechen
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

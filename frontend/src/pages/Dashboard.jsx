@@ -651,7 +651,7 @@ function StatCard({ icon, label, value, color, onClick }) {
 }
 
 function SortableSection({ id, editMode, onRemove, children, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id });
 
   const isBeingDragged = isDragging || isTouchDragging;
 
@@ -664,34 +664,42 @@ function SortableSection({ id, editMode, onRemove, children, isTouchDragging, to
     filter: isBeingDragged ? 'blur(2px)' : 'none',
     opacity: isBeingDragged ? 0.7 : 1,
     touchAction: 'none',
+    animation: isBeingDragged ? 'none' : 'wiggle 0.4s ease-in-out infinite',
+    fontSize: '0.92em',
+    padding: '2px',
   } : {};
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...(editMode ? { ...attributes, ...listeners } : {})}
-      onTouchStart={editMode ? onTouchStart : undefined}
-      onTouchMove={editMode ? onTouchMove : undefined}
-      onTouchEnd={editMode ? onTouchEnd : undefined}
-      className={`relative ${
-        editMode
-          ? 'rounded-xl border-2 border-blue-500 mb-4 p-1 cursor-grab active:cursor-grabbing'
-          : ''
-      }`}
-    >
-      {editMode && (
-        <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
-          onPointerDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-          className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
-        >
-          <Minus className="w-3.5 h-3.5" />
-        </button>
+    <>
+      {editMode && isOver && !isBeingDragged && (
+        <div style={{ height: '3px', backgroundColor: '#2563eb', borderRadius: '2px', margin: '4px 0' }} />
       )}
-      {children}
-    </div>
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...(editMode ? { ...attributes, ...listeners } : {})}
+        onTouchStart={editMode ? onTouchStart : undefined}
+        onTouchMove={editMode ? onTouchMove : undefined}
+        onTouchEnd={editMode ? onTouchEnd : undefined}
+        className={`relative ${
+          editMode
+            ? 'rounded-xl border-2 border-blue-500 mb-3 p-0.5 cursor-grab active:cursor-grabbing'
+            : ''
+        }`}
+      >
+        {editMode && (
+          <button
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
+            onPointerDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-red-500 text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer border-none"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+        )}
+        {children}
+      </div>
+    </>
   );
 }
 

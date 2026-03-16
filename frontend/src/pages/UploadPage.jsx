@@ -4,6 +4,7 @@ import { Upload, Camera, FileText, CheckCircle, Loader2, AlertCircle, X, ImageIc
 import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
 import { uploadDocument } from '../api';
+import { usePlanLimit } from '../hooks/usePlanLimit';
 
 function useIsMobile() {
   return useMemo(() => {
@@ -20,6 +21,7 @@ export default function UploadPage() {
   const cameraInputRef = useRef(null);
   const galleryInputRef = useRef(null);
   const isMobile = useIsMobile();
+  const { handleApiError } = usePlanLimit();
 
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -114,6 +116,7 @@ export default function UploadPage() {
       setUploadDone(true);
       setUploadDocId(result.id);
     } catch (err) {
+      if (handleApiError(err)) return;
       const msg = err.response?.data?.detail || err.message || 'Upload fehlgeschlagen';
       console.error('[KamalDoc Upload] Upload Fehler', msg, err);
       setUploadError(msg);

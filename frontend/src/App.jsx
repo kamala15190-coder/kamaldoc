@@ -5,6 +5,7 @@ import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, La
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
+import { PlanLimitProvider } from './hooks/usePlanLimit.jsx';
 import { LANGUAGES, isRtl } from './languages';
 import { supabase } from './supabaseClient';
 import Dashboard from './pages/Dashboard';
@@ -486,9 +487,11 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <SubscriptionProvider>
-          <RtlWrapper>
-            <AppContent />
-          </RtlWrapper>
+          <PlanLimitProvider>
+            <RtlWrapper>
+              <AppContent />
+            </RtlWrapper>
+          </PlanLimitProvider>
         </SubscriptionProvider>
       </AuthProvider>
     </BrowserRouter>
