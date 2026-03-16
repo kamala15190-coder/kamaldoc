@@ -5,7 +5,7 @@ import {
   ChevronRight, AlertCircle, Globe, Scale, Shield
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { uploadDocument, getDocuments, getDocument, explainDocument, getLegalAssessment, getContestableElements, generateObjection } from '../api';
+import { uploadDocument, getDocuments, getDocument, explainDocument, getLegalAssessment, getContestableElements, generateObjection, getBehoerdenResults } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 
@@ -72,6 +72,14 @@ export default function BehoerdeAssistent() {
       setContestableElements([]);
       setSelectedElements(new Set());
       setObjectionLetter('');
+      // Load saved results for newly uploaded doc
+      try {
+        const saved = await getBehoerdenResults(doc.id);
+        if (saved.erklaerung) setErklaerung(saved.erklaerung);
+        if (saved.rechtseinschaetzung) setLegalAssessment(saved.rechtseinschaetzung);
+        if (saved.anfechtbare_elemente) setContestableElements(saved.anfechtbare_elemente);
+        if (saved.widerspruchsschreiben) setObjectionLetter(cleanObjectionText(saved.widerspruchsschreiben));
+      } catch (_) {}
       fetchDocs();
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Upload fehlgeschlagen');
@@ -138,7 +146,7 @@ export default function BehoerdeAssistent() {
     setError(null);
     try {
       const result = await generateObjection(selectedDoc.id, Array.from(selectedElements));
-      setObjectionLetter(result.letter);
+      setObjectionLetter(cleanObjectionText(result.letter));
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Widerspruch fehlgeschlagen');
     } finally {
@@ -152,6 +160,26 @@ export default function BehoerdeAssistent() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Cleanup: strip AI meta-comments from objection letter
+  const cleanObjectionText = (text) => {
+    if (!text) return text;
+    const cutPatterns = [
+      /\n\s*Bitte beachten Sie, dass.*/s,
+      /\n\s*Da .{0,40}nicht (definiert|spezifiziert|angegeben).*/s,
+      /\n\s*Für weitere rechtliche Schritte.*/s,
+      /\n\s*Hinweis:.*/s,
+      /\n\s*Anmerkung:.*/s,
+      /\n\s*Disclaimer:.*/s,
+      /\n\s*Ich habe .{0,60}angefochten.*/s,
+      /\n\s*\*\*Hinweis.*/s,
+    ];
+    let cleaned = text;
+    for (const pattern of cutPatterns) {
+      cleaned = cleaned.replace(pattern, '');
+    }
+    return cleaned.trimEnd();
+  };
+
   const selectDoc = async (doc) => {
     const full = await getDocument(doc.id);
     setSelectedDoc(full);
@@ -160,6 +188,14 @@ export default function BehoerdeAssistent() {
     setContestableElements([]);
     setSelectedElements(new Set());
     setObjectionLetter('');
+    // Load saved results from behoerden_results table
+    try {
+      const saved = await getBehoerdenResults(doc.id);
+      if (saved.erklaerung) setErklaerung(saved.erklaerung);
+      if (saved.rechtseinschaetzung) setLegalAssessment(saved.rechtseinschaetzung);
+      if (saved.anfechtbare_elemente) setContestableElements(saved.anfechtbare_elemente);
+      if (saved.widerspruchsschreiben) setObjectionLetter(cleanObjectionText(saved.widerspruchsschreiben));
+    } catch (_) { /* no saved results yet */ }
   };
 
   return (
@@ -332,7 +368,8 @@ export default function BehoerdeAssistent() {
 
             {contestableElements.length > 0 && (
               <div className="mt-4">
-                <div className="overflow-x-auto">
+                {/* Desktop: Table */}
+                <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-sm border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
@@ -360,6 +397,36 @@ export default function BehoerdeAssistent() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile: Cards */}
+                <div className="md:hidden space-y-3">
+                  {contestableElements.map(el => (
+                    <div
+                      key={el.id}
+                      onClick={() => toggleElement(el.id)}
+                      className={`relative rounded-xl border p-4 cursor-pointer transition-all ${
+                        selectedElements.has(el.id)
+                          ? 'border-red-400 bg-red-50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-slate-900">{el.element}</p>
+                          <p className="text-sm text-slate-600 mt-1">{el.description}</p>
+                          <p className="text-xs text-slate-400 mt-2">{el.reason}</p>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={selectedElements.has(el.id)}
+                          onChange={() => toggleElement(el.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="w-5 h-5 accent-red-600 cursor-pointer shrink-0 mt-0.5"
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {selectedElements.size > 0 && (

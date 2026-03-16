@@ -214,18 +214,18 @@
     "reactivateFailed": "ხელახალი გააქტიურება ვერ მოხერხდა",
     "pendingDowngrade": "თქვენი გეგმა შეიცვლება {{plan}}-ზე {{date}}-ს.",
     "dangerZone": "Danger Zone",
-    "deleteAccountDesc": "If you delete your account, all data will be permanently removed – documents, analyses, settings and subscription.",
-    "deleteAccountButton": "Permanently delete account",
+    "deleteAccountDesc": "Permanently delete your account and all data. This action cannot be undone.",
+    "deleteAccountButton": "Delete account",
     "deleteAccountConfirm": "Really delete account?",
-    "deleteWarning": "The following will be permanently deleted:",
-    "deleteDocuments": "All uploaded documents",
-    "deleteAnalyses": "All AI analyses and explanations",
-    "deleteProfile": "Your profile and sender data",
+    "deleteWarning": "This will permanently delete:",
+    "deleteDocuments": "All your documents",
+    "deleteAnalyses": "All analyses and results",
+    "deleteProfile": "Your profile data",
     "deleteSubscription": "Your subscription",
     "deleteUserAccount": "Your user account",
-    "deleteIrreversible": "This action cannot be undone.",
+    "deleteIrreversible": "This action is irreversible!",
     "deleting": "Deleting…",
-    "confirmDeleteButton": "Yes, permanently delete account",
+    "confirmDeleteButton": "Delete permanently",
     "cancelButton": "Cancel"
   },
   "categories": {
@@ -364,14 +364,14 @@
     "proActive": "🚀 Pro გეგმა აქტიურია"
   },
   "upgradeModal": {
-    "limitReached": "Plan limit reached. Please upgrade.",
-    "description": "Upgrade your plan to continue.",
-    "upgradeButton": "Upgrade plan",
+    "limitReached": "Limit reached",
+    "description": "You have reached the limit for your current plan. Upgrade to use this feature without restrictions.",
+    "upgradeButton": "Upgrade now",
     "close": "Close"
   },
   "support": {
     "title": "Support",
-    "subtitle": "Describe your issue and we will help you.",
+    "subtitle": "Describe your issue and we'll help you.",
     "priority": "Priority",
     "priorityLow": "Low",
     "priorityMedium": "Medium",
@@ -386,8 +386,8 @@
     "sending": "Sending…",
     "submitButton": "Create ticket",
     "successTitle": "Ticket created!",
-    "successDesc": "Your ticket was successfully created. We will get back to you soon!",
+    "successDesc": "Your ticket was successfully created. We'll get back to you soon!",
     "newTicket": "New ticket",
-    "sendError": "Error sending the ticket."
+    "sendError": "Error sending ticket."
   }
 }

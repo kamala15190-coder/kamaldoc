@@ -866,6 +866,59 @@ async def get_expense_summary(
 
 # --- Behörden-Assistent ---
 
+@app.get("/api/documents/{doc_id}/behoerden-results")
+async def get_behoerden_results(
+    doc_id: int,
+    user_id: str = Depends(get_current_user),
+):
+    """Gespeicherte Behörden-Ergebnisse abrufen."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT erklaerung, rechtseinschaetzung, anfechtbare_elemente, widerspruchsschreiben "
+            "FROM behoerden_results WHERE document_id = ? AND user_id = ?",
+            (doc_id, user_id),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return {"erklaerung": None, "rechtseinschaetzung": None, "anfechtbare_elemente": None, "widerspruchsschreiben": None}
+        import json as _json
+        ae = row["anfechtbare_elemente"]
+        return {
+            "erklaerung": row["erklaerung"],
+            "rechtseinschaetzung": row["rechtseinschaetzung"],
+            "anfechtbare_elemente": _json.loads(ae) if ae else None,
+            "widerspruchsschreiben": row["widerspruchsschreiben"],
+        }
+    finally:
+        await db.close()
+
+
+async def _upsert_behoerden_result(db, doc_id: int, user_id: str, **fields):
+    """Insert or update a single field in behoerden_results."""
+    cursor = await db.execute(
+        "SELECT id FROM behoerden_results WHERE document_id = ? AND user_id = ?",
+        (doc_id, user_id),
+    )
+    row = await cursor.fetchone()
+    if row:
+        sets = ", ".join(f"{k} = ?" for k in fields)
+        vals = list(fields.values()) + [doc_id, user_id]
+        await db.execute(
+            f"UPDATE behoerden_results SET {sets}, updated_at = datetime('now','localtime') WHERE document_id = ? AND user_id = ?",
+            vals,
+        )
+    else:
+        cols = ["document_id", "user_id"] + list(fields.keys())
+        placeholders = ", ".join(["?"] * len(cols))
+        vals = [doc_id, user_id] + list(fields.values())
+        await db.execute(
+            f"INSERT INTO behoerden_results ({', '.join(cols)}) VALUES ({placeholders})",
+            vals,
+        )
+    await db.commit()
+
+
 @app.post("/api/documents/{doc_id}/explain")
 async def explain_document(
     doc_id: int,
@@ -894,7 +947,7 @@ async def explain_document(
 
         # Erklärung speichern
         await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
-        await db.commit()
+        await _upsert_behoerden_result(db, doc_id, user_id, erklaerung=erklaerung)
 
         # Usage counter
         await increment_usage(user_id, "behoerden_month")
@@ -930,6 +983,8 @@ async def legal_assessment_endpoint(
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
+        await _upsert_behoerden_result(db, doc_id, user_id, rechtseinschaetzung=assessment)
+
         await increment_usage(user_id, "behoerden_month")
         await increment_usage(user_id, "ki_analyses_total")
 
@@ -962,6 +1017,9 @@ async def contestable_elements_endpoint(
             elements = await get_contestable_elements(volltext)
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+
+        import json as _json
+        await _upsert_behoerden_result(db, doc_id, user_id, anfechtbare_elemente=_json.dumps(elements, ensure_ascii=False))
 
         await increment_usage(user_id, "behoerden_month")
         await increment_usage(user_id, "ki_analyses_total")
@@ -1015,6 +1073,8 @@ Telefon: {s.get('telefon', '')}"""
             letter = await generate_objection_letter(volltext, absender_daten, selected_text)
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+
+        await _upsert_behoerden_result(db, doc_id, user_id, widerspruchsschreiben=letter)
 
         await increment_usage(user_id, "behoerden_month")
         await increment_usage(user_id, "ki_analyses_total")

@@ -101,6 +101,19 @@ async def init_db():
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS behoerden_results (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER NOT NULL,
+                user_id TEXT NOT NULL,
+                erklaerung TEXT,
+                rechtseinschaetzung TEXT,
+                anfechtbare_elemente TEXT,
+                widerspruchsschreiben TEXT,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS expense_items (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,

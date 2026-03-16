@@ -658,7 +658,11 @@ Erstelle ein förmliches Widerspruchsschreiben mit:
 8. Förmlicher Abschluss mit Unterschriftszeile
 
 Verwende korrekte rechtliche Formulierungen passend für AT/DE/CH.
-Schreibe auf Deutsch."""
+Schreibe auf Deutsch.
+
+WICHTIG: Gib NUR das fertige Widerspruchsschreiben aus. KEIN zusätzlicher Text danach.
+KEINE Erklärungen, KEINE Meta-Kommentare, KEINE Hinweise wie "Bitte beachten Sie, dass...",
+KEIN Text nach der Grußformel und Unterschriftszeile. Das Schreiben endet mit der Unterschriftszeile."""
 
 
 async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str) -> str:
