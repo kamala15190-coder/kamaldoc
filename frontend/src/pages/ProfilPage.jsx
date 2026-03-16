@@ -401,10 +401,10 @@ export default function ProfilPage() {
       <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-4 md:p-6">
         <div className="flex items-center gap-2 mb-2">
           <Trash2 className="w-5 h-5 text-red-600" />
-          <h2 className="text-lg font-semibold text-red-700">Gefahrenzone</h2>
+          <h2 className="text-lg font-semibold text-red-700">{t('profile.dangerZone')}</h2>
         </div>
         <p className="text-sm text-slate-600 mb-4">
-          Wenn du deinen Account löschst, werden alle Daten unwiderruflich entfernt – Dokumente, Analysen, Einstellungen und Abonnement.
+          {t('profile.deleteAccountDesc')}
         </p>
         <button
           onClick={() => setShowDeleteModal(true)}
@@ -412,7 +412,7 @@ export default function ProfilPage() {
           style={{ minHeight: '44px' }}
         >
           <Trash2 className="w-4 h-4" />
-          Account endgültig löschen
+          {t('profile.deleteAccountButton')}
         </button>
       </div>
 
@@ -432,20 +432,20 @@ export default function ProfilPage() {
             <div style={{ textAlign: 'center', marginBottom: '16px' }}>
               <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚠️</div>
               <h3 style={{ fontWeight: '700', fontSize: '18px', color: '#dc2626', marginBottom: '8px' }}>
-                Account wirklich löschen?
+                {t('profile.deleteAccountConfirm')}
               </h3>
             </div>
             <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', marginBottom: '20px' }}>
-              <p style={{ marginBottom: '8px' }}>Folgendes wird <strong>unwiderruflich gelöscht</strong>:</p>
+              <p style={{ marginBottom: '8px' }}>{t('profile.deleteWarning')}</p>
               <ul style={{ paddingLeft: '20px', margin: 0 }}>
-                <li>Alle hochgeladenen Dokumente</li>
-                <li>Alle KI-Analysen und Erklärungen</li>
-                <li>Deine Profil- und Absenderdaten</li>
-                <li>Dein Abonnement</li>
-                <li>Dein Benutzerkonto</li>
+                <li>{t('profile.deleteDocuments')}</li>
+                <li>{t('profile.deleteAnalyses')}</li>
+                <li>{t('profile.deleteProfile')}</li>
+                <li>{t('profile.deleteSubscription')}</li>
+                <li>{t('profile.deleteUserAccount')}</li>
               </ul>
               <p style={{ marginTop: '12px', fontWeight: '600', color: '#dc2626' }}>
-                Dieser Vorgang kann nicht rückgängig gemacht werden.
+                {t('profile.deleteIrreversible')}
               </p>
             </div>
             <button
@@ -459,7 +459,7 @@ export default function ProfilPage() {
                 marginBottom: '8px', opacity: deletingAccount ? 0.6 : 1,
               }}
             >
-              {deletingAccount ? 'Wird gelöscht...' : 'Ja, Account endgültig löschen'}
+              {deletingAccount ? t('profile.deleting') : t('profile.confirmDeleteButton')}
             </button>
             <button
               onClick={() => setShowDeleteModal(false)}
@@ -470,7 +470,7 @@ export default function ProfilPage() {
                 border: 'none', cursor: 'pointer', fontSize: '14px',
               }}
             >
-              Abbrechen
+              {t('profile.cancelButton')}
             </button>
           </div>
         </div>

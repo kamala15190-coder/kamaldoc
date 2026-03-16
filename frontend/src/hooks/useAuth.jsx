@@ -32,12 +32,27 @@ export const AuthProvider = ({ children }) => {
       return access_token && refresh_token ? { access_token, refresh_token } : null
     }
 
-    // 3) On web: if URL contains hash tokens from OAuth redirect, set session explicitly
+    // 3) On web: handle OAuth redirect — PKCE (?code=) or implicit (#access_token)
     const initSession = async () => {
+      // PKCE flow: exchange code for session
+      const url = new URL(window.location.href)
+      const code = url.searchParams.get('code')
+      if (code) {
+        url.searchParams.delete('code')
+        window.history.replaceState(null, '', url.pathname + url.search + window.location.hash)
+        try {
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+          if (!error && data?.session) {
+            handleSession(data.session)
+            return
+          }
+        } catch (_) { /* fall through */ }
+      }
+
+      // Implicit flow: extract tokens from hash fragment
       const hash = window.location.hash?.substring(1)
       const tokens = extractTokensFromHash(hash)
       if (tokens) {
-        // Clear hash to prevent re-processing
         window.history.replaceState(null, '', window.location.pathname + window.location.search)
         const { data, error } = await supabase.auth.setSession(tokens)
         if (!error && data?.session) {
@@ -45,6 +60,7 @@ export const AuthProvider = ({ children }) => {
           return
         }
       }
+
       // Fallback: normal session check
       const { data: { session } } = await supabase.auth.getSession()
       handleSession(session)

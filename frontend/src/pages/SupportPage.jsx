@@ -26,7 +26,7 @@ export default function SupportPage() {
       setEmail('')
       setMessage('')
     } catch (err) {
-      setError(err?.response?.data?.detail || 'Fehler beim Senden des Tickets.')
+      setError(err?.response?.data?.detail || t('support.sendError'))
     } finally {
       setLoading(false)
     }
@@ -39,13 +39,13 @@ export default function SupportPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
             <CheckCircle className="w-8 h-8 text-green-600" />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Ticket erstellt!</h2>
-          <p className="text-slate-600 mb-6">Dein Ticket wurde erfolgreich erstellt. Wir melden uns bald!</p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{t('support.successTitle')}</h2>
+          <p className="text-slate-600 mb-6">{t('support.successDesc')}</p>
           <button
             onClick={() => setSuccess(false)}
             className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors cursor-pointer border-none"
           >
-            Neues Ticket
+            {t('support.newTicket')}
           </button>
         </div>
       </div>
@@ -59,8 +59,8 @@ export default function SupportPage() {
           <Headphones className="w-6 h-6 text-indigo-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Support</h1>
-          <p className="text-sm text-slate-500">Beschreibe dein Problem und wir helfen dir weiter.</p>
+          <h1 className="text-2xl font-bold text-slate-900">{t('support.title')}</h1>
+          <p className="text-sm text-slate-500">{t('support.subtitle')}</p>
         </div>
       </div>
 
@@ -74,28 +74,28 @@ export default function SupportPage() {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Priorität</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{t('support.priority')}</label>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
               disabled={loading}
             >
-              <option value="niedrig">Niedrig</option>
-              <option value="mittel">Mittel</option>
-              <option value="hoch">Hoch</option>
-              <option value="sehr_hoch">Sehr hoch</option>
+              <option value="niedrig">{t('support.priorityLow')}</option>
+              <option value="mittel">{t('support.priorityMedium')}</option>
+              <option value="hoch">{t('support.priorityHigh')}</option>
+              <option value="sehr_hoch">{t('support.priorityVeryHigh')}</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">E-Mail</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">{t('support.email')}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder="deine@email.com"
+              placeholder={t('support.emailPlaceholder')}
               required
               disabled={loading}
             />
@@ -103,20 +103,20 @@ export default function SupportPage() {
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
-              Problem beschreiben <span className="text-slate-400 font-normal">(min. 20 Zeichen)</span>
+              {t('support.describeLabel')} <span className="text-slate-400 font-normal">{t('support.minChars')}</span>
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
               rows={5}
-              placeholder="Beschreibe dein Problem so genau wie möglich..."
+              placeholder={t('support.describePlaceholder')}
               required
               minLength={20}
               disabled={loading}
             />
             <p className={`text-xs mt-1 ${message.length >= 20 ? 'text-green-600' : 'text-slate-400'}`}>
-              {message.length}/20 Zeichen
+              {t('support.charCount', { count: message.length })}
             </p>
           </div>
 
@@ -128,12 +128,12 @@ export default function SupportPage() {
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Wird gesendet...
+                {t('support.sending')}
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                Ticket erstellen
+                {t('support.submitButton')}
               </>
             )}
           </button>

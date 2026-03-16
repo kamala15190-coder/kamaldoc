@@ -40,7 +40,11 @@
     "chooseLanguage": "App-Sprache wählen",
     "or": "oder",
     "loggingIn": "Anmelden...",
-    "registering": "Registrieren..."
+    "registering": "Registrieren...",
+    "iHaveRead": "Ich habe die",
+    "privacyPolicy": "Datenschutzerklärung",
+    "termsOfService": "Nutzungsbedingungen",
+    "readAndAccepted": "gelesen und akzeptiert"
   },
   "dashboard": {
     "openTasks": "Offene Aufgaben",
@@ -61,7 +65,24 @@
     "overdue": "überfällig",
     "analysisRunning": "Analyse…",
     "error": "Fehler",
-    "loadMore": "Mehr laden"
+    "loadMore": "Mehr laden",
+    "addSector": "+ Sektor",
+    "resetLayout": "Zurücksetzen",
+    "editDone": "✓ Fertig",
+    "addSectorTitle": "Sektor hinzufügen",
+    "allSectorsVisible": "Alle Sektoren sind bereits sichtbar.",
+    "sectorUpgrade": "⚡ Upgrade",
+    "hideSectorTitle": "Sektor ausblenden?",
+    "hideSectorDesc": "\"{{name}}\" wird ausgeblendet. Du kannst ihn jederzeit wieder hinzufügen.",
+    "cancelButton": "Abbrechen",
+    "hideButton": "Ausblenden",
+    "dragToMove": "↕ verschieben",
+    "sectorTodos": "Offene Aufgaben",
+    "sectorStats": "Statistik-Karten",
+    "sectorSearch": "Suche & Filter",
+    "sectorDocuments": "Dokumente",
+    "sectorAusgaben": "Ausgaben-Dashboard",
+    "sectorArchiv": "Archiv"
   },
   "upload": {
     "title": "Dokument hochladen",
@@ -191,7 +212,21 @@
     "usageKI": "KI-Analysen",
     "usageBehoerde": "Behörden-Ass.",
     "usageBefund": "Befund-Ass.",
-    "unlimited": "Unbegrenzt"
+    "unlimited": "Unbegrenzt",
+    "dangerZone": "Gefahrenzone",
+    "deleteAccountDesc": "Wenn du deinen Account löschst, werden alle Daten unwiderruflich entfernt – Dokumente, Analysen, Einstellungen und Abonnement.",
+    "deleteAccountButton": "Account endgültig löschen",
+    "deleteAccountConfirm": "Account wirklich löschen?",
+    "deleteWarning": "Folgendes wird unwiderruflich gelöscht:",
+    "deleteDocuments": "Alle hochgeladenen Dokumente",
+    "deleteAnalyses": "Alle KI-Analysen und Erklärungen",
+    "deleteProfile": "Deine Profil- und Absenderdaten",
+    "deleteSubscription": "Dein Abonnement",
+    "deleteUserAccount": "Dein Benutzerkonto",
+    "deleteIrreversible": "Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "deleting": "Wird gelöscht…",
+    "confirmDeleteButton": "Ja, Account endgültig löschen",
+    "cancelButton": "Abbrechen"
   },
   "categories": {
     "brief": "Brief",
@@ -234,7 +269,20 @@
     "explainButton": "In einfacher Sprache erkl\u00e4ren",
     "explaining": "Wird erkl\u00e4rt…",
     "previousDocs": "Bisherige Beh\u00f6rdenschreiben",
-    "noDocs": "Noch keine Beh\u00f6rdenschreiben hochgeladen"
+    "noDocs": "Noch keine Behördenschreiben hochgeladen",
+    "explanationTitle": "Erklärung in einfacher Sprache",
+    "legalAssessmentTitle": "Unverbindliche Rechtseinschätzung",
+    "analyzing": "Wird analysiert…",
+    "requestAssessment": "Rechtseinschätzung anfordern",
+    "legalDisclaimer": "⚠️ Hinweis: Diese Rechtseinschätzung ist unverbindlich und wurde von einer KI erstellt. Sie ersetzt keine professionelle Rechtsberatung durch einen Anwalt. Bei rechtlich relevanten Entscheidungen empfehlen wir, einen Rechtsanwalt zu konsultieren.",
+    "objectionTitle": "Widerspruch / Einspruch",
+    "checkElements": "Anfechtbare Elemente prüfen",
+    "elementHeader": "Element",
+    "descriptionHeader": "Beschreibung",
+    "reasonHeader": "Begründung",
+    "generating": "Wird generiert…",
+    "generateObjection": "Widerspruchsschreiben generieren ({{count}} Element{{plural}})",
+    "objectionDisclaimer": "⚠️ Hinweis: Dieses Widerspruchsschreiben wurde von einer KI erstellt und ist unverbindlich. Lassen Sie es vor dem Absenden von einem Rechtsanwalt prüfen."
   },
   "befund": {
     "title": "Befund-Assistent",
@@ -314,5 +362,32 @@
     "expensesLocked": "Ausgaben-Dashboard ist ab Basic Plan verfügbar",
     "upgradePlan": "⚡ Upgrade Plan",
     "proActive": "🚀 Pro Plan aktiv"
+  },
+  "upgradeModal": {
+    "limitReached": "Plan-Limit erreicht. Bitte upgraden.",
+    "description": "Upgrade deinen Plan um fortzufahren.",
+    "upgradeButton": "Plan upgraden",
+    "close": "Schließen"
+  },
+  "support": {
+    "title": "Support",
+    "subtitle": "Beschreibe dein Problem und wir helfen dir weiter.",
+    "priority": "Priorität",
+    "priorityLow": "Niedrig",
+    "priorityMedium": "Mittel",
+    "priorityHigh": "Hoch",
+    "priorityVeryHigh": "Sehr hoch",
+    "email": "E-Mail",
+    "emailPlaceholder": "deine@email.com",
+    "describeLabel": "Problem beschreiben",
+    "minChars": "(min. 20 Zeichen)",
+    "describePlaceholder": "Beschreibe dein Problem so genau wie möglich…",
+    "charCount": "{{count}}/20 Zeichen",
+    "sending": "Wird gesendet…",
+    "submitButton": "Ticket erstellen",
+    "successTitle": "Ticket erstellt!",
+    "successDesc": "Dein Ticket wurde erfolgreich erstellt. Wir melden uns bald!",
+    "newTicket": "Neues Ticket",
+    "sendError": "Fehler beim Senden des Tickets."
   }
 }

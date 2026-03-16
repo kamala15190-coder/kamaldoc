@@ -488,7 +488,7 @@ export default function Dashboard() {
               borderRadius: '8px', padding: '5px 10px', cursor: 'pointer',
             }}
           >
-            + Sektor
+            {t('dashboard.addSector')}
           </button>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             <button
@@ -498,7 +498,7 @@ export default function Dashboard() {
                 background: 'none', border: 'none', cursor: 'pointer',
               }}
             >
-              Zurücksetzen
+              {t('dashboard.resetLayout')}
             </button>
             <button
               onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
@@ -508,7 +508,7 @@ export default function Dashboard() {
                 borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
               }}
             >
-              ✓ Fertig
+              {t('dashboard.editDone')}
             </button>
           </div>
         </div>
@@ -534,7 +534,7 @@ export default function Dashboard() {
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>Sektor hinzufügen</span>
+              <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{t('dashboard.addSectorTitle')}</span>
               <button
                 onClick={() => setShowAddModal(false)}
                 style={{ background: 'none', border: 'none', fontSize: '18px', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
@@ -544,7 +544,7 @@ export default function Dashboard() {
             </div>
             {availableSectors.length === 0 ? (
               <p style={{ fontSize: '14px', color: '#6b7280', textAlign: 'center', padding: '16px 0' }}>
-                Alle Sektoren sind bereits sichtbar.
+                {t('dashboard.allSectorsVisible')}
               </p>
             ) : (
               availableSectors.map(sector => (
@@ -570,10 +570,10 @@ export default function Dashboard() {
                   }}
                 >
                   <span style={{ fontSize: '14px', color: sector.locked ? '#9ca3af' : '#374151' }}>
-                    {sector.icon} {sector.label}
+                    {sector.icon} {t('dashboard.sector' + sector.id.charAt(0).toUpperCase() + sector.id.slice(1))}
                   </span>
                   {sector.locked && (
-                    <span style={{ fontSize: '12px', color: '#f59e0b' }}>⚡ Upgrade</span>
+                    <span style={{ fontSize: '12px', color: '#f59e0b' }}>{t('dashboard.sectorUpgrade')}</span>
                   )}
                 </div>
               ))
@@ -586,22 +586,22 @@ export default function Dashboard() {
       {confirmHide && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setConfirmHide(null)}>
           <div className="bg-white rounded-xl shadow-xl p-5 max-w-xs w-full mx-4" onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-medium text-slate-900 mb-1">Sektor ausblenden?</p>
+            <p className="text-sm font-medium text-slate-900 mb-1">{t('dashboard.hideSectorTitle')}</p>
             <p className="text-xs text-slate-500 mb-4">
-              "{SECTION_LABELS[confirmHide]}" wird ausgeblendet. Du kannst ihn jederzeit wieder hinzufügen.
+              {t('dashboard.hideSectorDesc', { name: t('dashboard.sector' + confirmHide.charAt(0).toUpperCase() + confirmHide.slice(1)) })}
             </p>
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => setConfirmHide(null)}
                 className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 cursor-pointer border-none"
               >
-                Abbrechen
+                {t('dashboard.cancelButton')}
               </button>
               <button
                 onClick={() => hideSection(confirmHide)}
                 className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer border-none"
               >
-                Ausblenden
+                {t('dashboard.hideButton')}
               </button>
             </div>
           </div>
@@ -620,7 +620,7 @@ export default function Dashboard() {
                 editMode={editMode}
                 onRemove={() => setConfirmHide(s.id)}
                 sectorIcon={meta.icon}
-                sectorLabel={meta.label}
+                sectorLabel={t('dashboard.sector' + s.id.charAt(0).toUpperCase() + s.id.slice(1))}
                 isTouchDragging={touchDragging === s.id}
                 touchOffsetY={touchDragging === s.id ? touchOffsetY : 0}
                 onTouchStart={(e) => handleTouchStart(e, s.id)}
@@ -656,6 +656,7 @@ function StatCard({ icon, label, value, color, onClick }) {
 }
 
 function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorLabel, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd }) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id });
 
   const isBeingDragged = isDragging || isTouchDragging;
@@ -710,7 +711,7 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
             }}>
               <span style={{ fontSize: '16px' }}>{sectorIcon}</span>
               <span style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>{sectorLabel}</span>
-              <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: '12px' }}>↕ verschieben</span>
+              <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: '12px' }}>{t('dashboard.dragToMove')}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
                 onPointerDown={(e) => e.stopPropagation()}

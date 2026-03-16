@@ -259,7 +259,7 @@ export default function BehoerdeAssistent() {
           {/* Explanation Result */}
           {erklaerung && (
             <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">Erklärung in einfacher Sprache</h3>
+              <h3 className="text-sm font-semibold text-slate-900 mb-3">{t('behoerde.explanationTitle')}</h3>
               <div className="relative bg-slate-50 rounded-lg p-4 border border-slate-200">
                 <button
                   onClick={handleCopy}
@@ -279,7 +279,7 @@ export default function BehoerdeAssistent() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
             <div className="flex items-center gap-2 mb-3">
               <Scale className="w-5 h-5 text-amber-600" />
-              <h3 className="text-sm font-semibold text-slate-900">Unverbindliche Rechtseinschätzung</h3>
+              <h3 className="text-sm font-semibold text-slate-900">{t('behoerde.legalAssessmentTitle')}</h3>
             </div>
             <button
               onClick={handleLegalAssessment}
@@ -288,7 +288,7 @@ export default function BehoerdeAssistent() {
               style={{ minHeight: '44px' }}
             >
               {assessingLegal ? <Loader2 className="w-4 h-4 animate-spin" /> : <Scale className="w-4 h-4" />}
-              {assessingLegal ? 'Wird analysiert...' : 'Rechtseinschätzung anfordern'}
+              {assessingLegal ? t('behoerde.analyzing') : t('behoerde.requestAssessment')}
             </button>
 
             {legalAssessment && (
@@ -307,9 +307,7 @@ export default function BehoerdeAssistent() {
                 </div>
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                   <p className="text-xs text-yellow-800">
-                    <strong>⚠️ Hinweis:</strong> Diese Rechtseinschätzung ist unverbindlich und wurde von einer KI erstellt.
-                    Sie ersetzt keine professionelle Rechtsberatung durch einen Anwalt.
-                    Bei rechtlich relevanten Entscheidungen empfehlen wir, einen Rechtsanwalt zu konsultieren.
+                    {t('behoerde.legalDisclaimer')}
                   </p>
                 </div>
               </>
@@ -320,7 +318,7 @@ export default function BehoerdeAssistent() {
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
             <div className="flex items-center gap-2 mb-3">
               <Shield className="w-5 h-5 text-red-600" />
-              <h3 className="text-sm font-semibold text-slate-900">Widerspruch / Einspruch</h3>
+              <h3 className="text-sm font-semibold text-slate-900">{t('behoerde.objectionTitle')}</h3>
             </div>
             <button
               onClick={handleContestableElements}
@@ -329,7 +327,7 @@ export default function BehoerdeAssistent() {
               style={{ minHeight: '44px' }}
             >
               {loadingElements ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
-              {loadingElements ? 'Wird analysiert...' : 'Anfechtbare Elemente prüfen'}
+              {loadingElements ? t('behoerde.analyzing') : t('behoerde.checkElements')}
             </button>
 
             {contestableElements.length > 0 && (
@@ -338,9 +336,9 @@ export default function BehoerdeAssistent() {
                   <table className="w-full text-sm border-collapse">
                     <thead>
                       <tr className="bg-slate-50">
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">Element</th>
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">Beschreibung</th>
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">Begründung</th>
+                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.elementHeader')}</th>
+                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.descriptionHeader')}</th>
+                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.reasonHeader')}</th>
                         <th className="px-3 py-2 text-xs font-medium text-slate-500 border-b w-10"></th>
                       </tr>
                     </thead>
@@ -372,7 +370,7 @@ export default function BehoerdeAssistent() {
                     style={{ minHeight: '44px' }}
                   >
                     {generatingObjection ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                    {generatingObjection ? 'Wird generiert...' : `Widerspruchsschreiben generieren (${selectedElements.size} Element${selectedElements.size > 1 ? 'e' : ''})`}
+                    {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
                   </button>
                 )}
               </div>
@@ -394,8 +392,7 @@ export default function BehoerdeAssistent() {
                 </div>
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
                   <p className="text-xs text-yellow-800">
-                    <strong>⚠️ Hinweis:</strong> Dieses Widerspruchsschreiben wurde von einer KI erstellt und ist unverbindlich.
-                    Lassen Sie es vor dem Absenden von einem Rechtsanwalt prüfen.
+                    {t('behoerde.objectionDisclaimer')}
                   </p>
                 </div>
               </>

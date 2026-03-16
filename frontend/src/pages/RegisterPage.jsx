@@ -1,14 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
+import { useAuth } from '../hooks/useAuth.jsx'
 import { Mail, Lock, AlertCircle, Loader2, CheckCircle, Globe } from 'lucide-react'
 import { LANGUAGES } from '../languages'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
   const { t, i18n } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -20,6 +22,13 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
 
   const canSubmit = acceptPrivacy && acceptTerms
+
+  // Redirect if already authenticated (e.g. after OAuth callback)
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/', { replace: true })
+    }
+  }, [user, authLoading, navigate])
 
   const handleRegister = async (e) => {
     e.preventDefault()
@@ -234,9 +243,9 @@ export default function RegisterPage() {
                   className="mt-0.5 accent-indigo-600"
                 />
                 <span>
-                  Ich habe die{' '}
-                  <Link to="/datenschutz" className="text-indigo-600 hover:underline font-medium">Datenschutzerklärung</Link>
-                  {' '}gelesen und akzeptiert
+                  {t('auth.iHaveRead')}{' '}
+                  <Link to="/datenschutz" className="text-indigo-600 hover:underline font-medium">{t('auth.privacyPolicy')}</Link>
+                  {' '}{t('auth.readAndAccepted')}
                 </span>
               </label>
               <label className="flex items-start gap-2 cursor-pointer text-sm text-slate-600">
@@ -247,9 +256,9 @@ export default function RegisterPage() {
                   className="mt-0.5 accent-indigo-600"
                 />
                 <span>
-                  Ich habe die{' '}
-                  <Link to="/nutzungsbedingungen" className="text-indigo-600 hover:underline font-medium">Nutzungsbedingungen</Link>
-                  {' '}gelesen und akzeptiert
+                  {t('auth.iHaveRead')}{' '}
+                  <Link to="/nutzungsbedingungen" className="text-indigo-600 hover:underline font-medium">{t('auth.termsOfService')}</Link>
+                  {' '}{t('auth.readAndAccepted')}
                 </span>
               </label>
             </div>

@@ -1,11 +1,13 @@
 import { useState, useCallback, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const PlanLimitContext = createContext({});
 
 export const PlanLimitProvider = ({ children }) => {
   const [modal, setModal] = useState({ open: false, message: '' });
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const showLimitModal = useCallback((message) => {
     setModal({ open: true, message });
@@ -18,7 +20,7 @@ export const PlanLimitProvider = ({ children }) => {
   const handleApiError = useCallback((error) => {
     if (error?.response?.status === 403) {
       const detail = error?.response?.data?.detail;
-      const message = typeof detail === 'object' ? detail?.message : (detail || 'Plan-Limit erreicht. Bitte upgraden.');
+      const message = typeof detail === 'object' ? detail?.message : (detail || t('upgradeModal.limitReached'));
       showLimitModal(message);
       return true;
     }
@@ -45,7 +47,7 @@ export const PlanLimitProvider = ({ children }) => {
               {modal.message}
             </h3>
             <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
-              Upgrade deinen Plan um fortzufahren.
+              {t('upgradeModal.description')}
             </p>
             <button onClick={() => { closeModal(); navigate('/pricing'); }} style={{
               width: '100%', padding: '12px',
@@ -54,14 +56,14 @@ export const PlanLimitProvider = ({ children }) => {
               fontWeight: '600', fontSize: '15px', cursor: 'pointer',
               marginBottom: '8px',
             }}>
-              Plan upgraden
+              {t('upgradeModal.upgradeButton')}
             </button>
             <button onClick={closeModal} style={{
               width: '100%', padding: '10px',
               backgroundColor: 'transparent', color: '#6b7280',
               border: 'none', cursor: 'pointer', fontSize: '14px',
             }}>
-              Schließen
+              {t('upgradeModal.close')}
             </button>
           </div>
         </div>
