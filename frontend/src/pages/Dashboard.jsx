@@ -14,6 +14,16 @@ import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } 
 import { CSS } from '@dnd-kit/utilities';
 
 
+const KATEGORIE_BADGE = {
+  brief: 'badge-brief',
+  rechnung: 'badge-rechnung',
+  lohnzettel: 'badge-lohnzettel',
+  kontoauszug: 'badge-kontoauszug',
+  vertrag: 'badge-vertrag',
+  behoerde: 'badge-behoerde',
+  sonstiges: 'badge-sonstiges',
+};
+
 const KATEGORIE_COLORS = {
   brief: 'bg-blue-100 text-blue-700',
   rechnung: 'bg-amber-100 text-amber-700',
@@ -277,92 +287,54 @@ export default function Dashboard() {
 
   const sectionContent = {
     todos: offeneTodos.length > 0 && (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
-        <div className="px-4 md:px-5 py-3 md:py-4 border-b border-slate-100 flex items-center gap-3">
-          <ClipboardList className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-base font-semibold text-slate-900">{t('dashboard.openTasks')}</h2>
-          <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full">
+      <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ padding: 6, borderRadius: 8, background: 'var(--danger-soft)' }}>
+            <ClipboardList style={{ width: 16, height: 16, color: '#ef4444' }} />
+          </div>
+          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.openTasks')}</span>
+          <span style={{
+            marginLeft: 'auto', fontSize: 11, fontWeight: 700,
+            padding: '2px 8px', borderRadius: 20,
+            background: 'var(--danger-soft)', color: '#ef4444',
+          }}>
             {offeneTodos.length}
           </span>
         </div>
 
-        {/* Desktop: Tabelle */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-slate-50 text-left">
-                <th className="px-5 py-2.5 font-medium text-slate-500 text-xs">{t('dashboard.sender')}</th>
-                <th className="px-5 py-2.5 font-medium text-slate-500 text-xs">{t('dashboard.task')}</th>
-                <th className="px-5 py-2.5 font-medium text-slate-500 text-xs">{t('dashboard.amount')}</th>
-                <th className="px-5 py-2.5 font-medium text-slate-500 text-xs">{t('dashboard.dueDate')}</th>
-                <th className="px-5 py-2.5 font-medium text-slate-500 text-xs text-right">{t('dashboard.action')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {offeneTodos.map((todo, idx) => (
-                <tr
-                  key={todo.id}
-                  className={`border-t border-slate-100 hover:bg-indigo-50/50 cursor-pointer transition-all duration-300 ${
-                    dismissingIds.has(todo.id) ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'
-                  }`}
-                  style={{ animationDelay: `${idx * 50}ms`, animation: 'fadeInUp 0.3s ease-out both' }}
-                  onClick={() => navigate(`/documents/${todo.id}`)}
-                >
-                  <td className="px-5 py-3 font-medium text-slate-800">{todo.absender || '—'}</td>
-                  <td className="px-5 py-3 text-slate-600 max-w-xs truncate">{todo.handlung_beschreibung || '—'}</td>
-                  <td className="px-5 py-3 text-slate-700 font-medium whitespace-nowrap">
-                    {todo.betrag != null && todo.betrag > 0
-                      ? Number(todo.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
-                      : '—'}
-                  </td>
-                  <td className={`px-5 py-3 whitespace-nowrap font-medium ${
-                    todo.faelligkeitsdatum && isOverdue(todo.faelligkeitsdatum) ? 'text-red-600' : 'text-slate-600'
-                  }`}>
-                    {todo.faelligkeitsdatum
-                      ? new Date(todo.faelligkeitsdatum).toLocaleDateString('de-DE')
-                      : '—'}
-                    {todo.faelligkeitsdatum && isOverdue(todo.faelligkeitsdatum) && (
-                      <span className="ml-1.5 text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">{t('dashboard.overdue')}</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }}
-                      disabled={dismissingIds.has(todo.id)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-green-100 text-green-700 rounded-lg hover:bg-green-500 hover:text-white transition-all duration-200 cursor-pointer border-none disabled:opacity-50"
-                    >
-                      <CheckCircle className="w-3.5 h-3.5" /> {t('dashboard.done')}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile: Cards */}
-        <div className="md:hidden divide-y divide-slate-100">
+        <div>
           {offeneTodos.map((todo, idx) => (
             <div
               key={todo.id}
-              className={`p-4 transition-all duration-300 ${
-                dismissingIds.has(todo.id) ? 'opacity-0 translate-x-8' : 'opacity-100 translate-x-0'
-              }`}
-              style={{ animationDelay: `${idx * 50}ms`, animation: 'fadeInUp 0.3s ease-out both' }}
+              style={{
+                padding: '14px 16px',
+                borderBottom: '1px solid var(--border-glass)',
+                transition: 'all 0.3s ease',
+                opacity: dismissingIds.has(todo.id) ? 0 : 1,
+                transform: dismissingIds.has(todo.id) ? 'translateX(40px)' : 'translateX(0)',
+                animation: `fadeInUp 0.3s ease-out ${idx * 0.05}s both`,
+                cursor: 'pointer',
+              }}
               onClick={() => navigate(`/documents/${todo.id}`)}
             >
-              <p className="text-base font-semibold text-slate-900 truncate">{todo.absender || '—'}</p>
-              <p className="text-sm text-slate-600 mt-0.5 truncate">{todo.handlung_beschreibung || '—'}</p>
-              <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {todo.absender || '—'}
+              </p>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {todo.handlung_beschreibung || '—'}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
                 {todo.betrag != null && todo.betrag > 0 && (
-                  <span className="text-sm font-semibold text-slate-800">
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                     {Number(todo.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
                   </span>
                 )}
                 {todo.faelligkeitsdatum && (
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded ${
-                    isOverdue(todo.faelligkeitsdatum) ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
-                  }`}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 6,
+                    background: isOverdue(todo.faelligkeitsdatum) ? 'var(--danger-soft)' : 'var(--bg-glass)',
+                    color: isOverdue(todo.faelligkeitsdatum) ? '#ef4444' : 'var(--text-secondary)',
+                  }}>
                     {new Date(todo.faelligkeitsdatum).toLocaleDateString('de-DE')}
                     {isOverdue(todo.faelligkeitsdatum) && ` — ${t('dashboard.overdue')}`}
                   </span>
@@ -371,10 +343,17 @@ export default function Dashboard() {
               <button
                 onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }}
                 disabled={dismissingIds.has(todo.id)}
-                className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-green-100 text-green-700 rounded-lg hover:bg-green-500 hover:text-white transition-all duration-200 cursor-pointer border-none disabled:opacity-50"
-                style={{ minHeight: '44px' }}
+                className="btn-ghost"
+                style={{
+                  width: '100%', marginTop: 10, padding: '10px 0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  fontSize: 13, fontWeight: 600,
+                  background: 'var(--success-soft)', color: '#10b981',
+                  border: '1px solid rgba(16, 185, 129, 0.2)',
+                  borderRadius: 10,
+                }}
               >
-                <CheckCircle className="w-4 h-4" /> {t('dashboard.done')}
+                <CheckCircle style={{ width: 15, height: 15 }} /> {t('dashboard.done')}
               </button>
             </div>
           ))}
@@ -383,31 +362,33 @@ export default function Dashboard() {
     ),
 
     stats: (
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-        <StatCard icon={<FileText className="w-5 h-5" />} label={t('dashboard.total')} value={total} color="bg-indigo-50 text-indigo-600" onClick={() => navigate('/sektor/gesamt')} />
-        <StatCard icon={<AlertCircle className="w-5 h-5" />} label={t('dashboard.open')} value={offen} color="bg-red-50 text-red-600" onClick={() => navigate('/sektor/offen')} />
-        <StatCard icon={<Receipt className="w-5 h-5" />} label={t('dashboard.invoices')} value={rechnungen} color="bg-amber-50 text-amber-600" onClick={() => navigate('/sektor/rechnungen')} />
-        <StatCard icon={<Mail className="w-5 h-5" />} label={t('dashboard.letters')} value={briefe} color="bg-blue-50 text-blue-600" onClick={() => navigate('/sektor/briefe')} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+        <StatCard icon={<FileText style={{ width: 18, height: 18 }} />} label={t('dashboard.total')} value={total} gradient="linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))" iconColor="#818cf8" onClick={() => navigate('/sektor/gesamt')} delay={0} />
+        <StatCard icon={<AlertCircle style={{ width: 18, height: 18 }} />} label={t('dashboard.open')} value={offen} gradient="linear-gradient(135deg, rgba(239,68,68,0.12), rgba(244,63,94,0.08))" iconColor="#f87171" onClick={() => navigate('/sektor/offen')} delay={1} />
+        <StatCard icon={<Receipt style={{ width: 18, height: 18 }} />} label={t('dashboard.invoices')} value={rechnungen} gradient="linear-gradient(135deg, rgba(245,158,11,0.12), rgba(251,191,36,0.08))" iconColor="#fbbf24" onClick={() => navigate('/sektor/rechnungen')} delay={2} />
+        <StatCard icon={<Mail style={{ width: 18, height: 18 }} />} label={t('dashboard.letters')} value={briefe} gradient="linear-gradient(135deg, rgba(59,130,246,0.12), rgba(96,165,250,0.08))" iconColor="#60a5fa" onClick={() => navigate('/sektor/briefe')} delay={3} />
       </div>
     ),
 
     search: (
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+      <div className="glass-card animate-fade-in-up" style={{ padding: 14, marginBottom: 20 }}>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--text-muted)' }} />
             <input
               type="text"
               placeholder={t('dashboard.searchPlaceholder')}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="input-dark"
+              style={{ paddingLeft: 38, padding: '10px 14px 10px 38px', fontSize: 14 }}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div style={{ position: 'relative' }}>
+            <Filter style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-muted)', pointerEvents: 'none', zIndex: 1 }} />
             <select
-              className="pl-10 pr-8 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
+              className="input-dark"
+              style={{ paddingLeft: 32, paddingRight: 12, fontSize: 13, appearance: 'none', minWidth: 110 }}
               value={kategorie}
               onChange={e => setKategorie(e.target.value)}
             >
@@ -424,32 +405,42 @@ export default function Dashboard() {
     documents: (
       <>
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: '50%',
+              border: '3px solid rgba(139,92,246,0.15)',
+              borderTopColor: 'var(--accent-solid)',
+              animation: 'spin 0.8s linear infinite',
+            }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         ) : documents.length === 0 ? (
-          <div className="text-center py-20">
-            <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-500 text-lg">{t('dashboard.noDocuments')}</p>
-            <Link to="/upload" className="inline-flex items-center gap-2 mt-4 text-indigo-600 hover:text-indigo-800 font-medium">
-              {t('dashboard.uploadDocument')} <ChevronRight className="w-4 h-4" />
+          <div style={{ textAlign: 'center', padding: '60px 20px' }} className="animate-fade-in">
+            <FileText style={{ width: 48, height: 48, color: 'var(--text-muted)', margin: '0 auto 16px', opacity: 0.4 }} />
+            <p style={{ color: 'var(--text-secondary)', fontSize: 16, margin: 0 }}>{t('dashboard.noDocuments')}</p>
+            <Link to="/upload" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 16,
+              color: 'var(--accent-solid)', fontWeight: 600, fontSize: 14, textDecoration: 'none',
+            }}>
+              {t('dashboard.uploadDocument')} <ChevronRight style={{ width: 16, height: 16 }} />
             </Link>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {documents.map(doc => (
-                <DocumentCard key={doc.id} doc={doc} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {documents.map((doc, idx) => (
+                <DocumentCard key={doc.id} doc={doc} delay={idx} />
               ))}
             </div>
             {hasMore && (
-              <div className="flex justify-center mt-6">
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
                 <button
                   onClick={() => fetchDocs(true)}
                   disabled={loadingMore}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-indigo-200 transition-all cursor-pointer disabled:opacity-50"
+                  className="btn-ghost"
+                  style={{ padding: '10px 24px', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
                 >
-                  {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {loadingMore ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : null}
                   {loadingMore ? t('common.loading') : t('dashboard.loadMore')}
                 </button>
               </div>
@@ -470,43 +461,35 @@ export default function Dashboard() {
 
   return (
     <div>
-      {/* Toolbar — sticky, full width, subtle */}
+      {/* Toolbar — sticky, full width */}
       {editMode && (
         <div style={{
           position: 'sticky', top: 56, zIndex: 40,
-          backgroundColor: 'white', borderBottom: '1px solid #e5e7eb',
+          background: 'rgba(10, 15, 26, 0.9)',
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid var(--border-glass)',
           padding: '8px 16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          marginLeft: '-16px', marginRight: '-16px', marginBottom: '12px',
+          marginLeft: -16, marginRight: -16, marginBottom: 12,
         }}>
           <button
             onClick={() => setShowAddModal(true)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '4px',
-              fontSize: '13px', color: '#374151',
-              background: 'none', border: '1px solid #d1d5db',
-              borderRadius: '8px', padding: '5px 10px', cursor: 'pointer',
-            }}
+            className="btn-ghost"
+            style={{ fontSize: 13, padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 4 }}
           >
             {t('dashboard.addSector')}
           </button>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               onClick={resetLayout}
-              style={{
-                fontSize: '13px', color: '#6b7280',
-                background: 'none', border: 'none', cursor: 'pointer',
-              }}
+              style={{ fontSize: 13, color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {t('dashboard.resetLayout')}
             </button>
             <button
               onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
-              style={{
-                fontSize: '13px', color: 'white',
-                background: '#2563eb', border: 'none',
-                borderRadius: '8px', padding: '5px 14px', cursor: 'pointer',
-              }}
+              className="btn-accent"
+              style={{ fontSize: 13, padding: '6px 16px' }}
             >
               {t('dashboard.editDone')}
             </button>
@@ -517,33 +500,36 @@ export default function Dashboard() {
       {/* Add Sector Modal */}
       {showAddModal && (
         <div
+          className="modal-overlay"
           style={{
             position: 'fixed', inset: 0, zIndex: 100,
-            backgroundColor: 'rgba(0,0,0,0.4)',
+            background: 'rgba(0,0,0,0.6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '20px',
+            padding: 20,
           }}
           onClick={() => setShowAddModal(false)}
         >
           <div
+            className="modal-content"
             style={{
-              backgroundColor: 'white', borderRadius: '16px',
-              padding: '20px', width: '100%', maxWidth: '320px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+              background: 'var(--bg-secondary)', borderRadius: 18,
+              border: '1px solid var(--border-glass-strong)',
+              padding: 20, width: '100%', maxWidth: 320,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <span style={{ fontWeight: '600', fontSize: '16px', color: '#1f2937' }}>{t('dashboard.addSectorTitle')}</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <span style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}>{t('dashboard.addSectorTitle')}</span>
               <button
                 onClick={() => setShowAddModal(false)}
-                style={{ background: 'none', border: 'none', fontSize: '18px', color: '#9ca3af', cursor: 'pointer', padding: '4px' }}
+                style={{ background: 'none', border: 'none', fontSize: 18, color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
               >
                 ✕
               </button>
             </div>
             {availableSectors.length === 0 ? (
-              <p style={{ fontSize: '14px', color: '#6b7280', textAlign: 'center', padding: '16px 0' }}>
+              <p style={{ fontSize: 14, color: 'var(--text-muted)', textAlign: 'center', padding: '16px 0' }}>
                 {t('dashboard.allSectorsVisible')}
               </p>
             ) : (
@@ -560,20 +546,20 @@ export default function Dashboard() {
                   }}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px', marginBottom: '8px', borderRadius: '10px',
-                    backgroundColor: sector.locked ? '#f9fafb' : '#f0f7ff',
+                    padding: 12, marginBottom: 8, borderRadius: 10,
+                    background: sector.locked ? 'var(--bg-glass)' : 'var(--accent-soft)',
                     opacity: sector.locked ? 0.5 : 1,
                     cursor: sector.locked ? 'not-allowed' : 'pointer',
                     border: '1px solid',
-                    borderColor: sector.locked ? '#e5e7eb' : '#bfdbfe',
-                    transition: 'background-color 0.15s',
+                    borderColor: sector.locked ? 'var(--border-glass)' : 'var(--accent-soft-border)',
+                    transition: 'background 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: '14px', color: sector.locked ? '#9ca3af' : '#374151' }}>
+                  <span style={{ fontSize: 14, color: sector.locked ? 'var(--text-muted)' : 'var(--text-primary)' }}>
                     {sector.icon} {t('dashboard.sector' + sector.id.charAt(0).toUpperCase() + sector.id.slice(1))}
                   </span>
                   {sector.locked && (
-                    <span style={{ fontSize: '12px', color: '#f59e0b' }}>{t('dashboard.sectorUpgrade')}</span>
+                    <span style={{ fontSize: 12, color: '#fbbf24' }}>{t('dashboard.sectorUpgrade')}</span>
                   )}
                 </div>
               ))
@@ -584,22 +570,27 @@ export default function Dashboard() {
 
       {/* Confirm-hide popup */}
       {confirmHide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={() => setConfirmHide(null)}>
-          <div className="bg-white rounded-xl shadow-xl p-5 max-w-xs w-full mx-4" onClick={e => e.stopPropagation()}>
-            <p className="text-sm font-medium text-slate-900 mb-1">{t('dashboard.hideSectorTitle')}</p>
-            <p className="text-xs text-slate-500 mb-4">
+        <div className="modal-overlay" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }} onClick={() => setConfirmHide(null)}>
+          <div className="modal-content" style={{ background: 'var(--bg-secondary)', borderRadius: 16, border: '1px solid var(--border-glass-strong)', padding: 20, maxWidth: 300, width: '100%', margin: '0 16px' }} onClick={e => e.stopPropagation()}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>{t('dashboard.hideSectorTitle')}</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>
               {t('dashboard.hideSectorDesc', { name: t('dashboard.sector' + confirmHide.charAt(0).toUpperCase() + confirmHide.slice(1)) })}
             </p>
-            <div className="flex gap-2 justify-end">
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setConfirmHide(null)}
-                className="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 cursor-pointer border-none"
+                className="btn-ghost"
+                style={{ padding: '6px 14px', fontSize: 13, fontWeight: 500 }}
               >
                 {t('dashboard.cancelButton')}
               </button>
               <button
                 onClick={() => hideSection(confirmHide)}
-                className="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 cursor-pointer border-none"
+                style={{
+                  padding: '6px 14px', fontSize: 13, fontWeight: 600,
+                  background: '#ef4444', color: 'white', border: 'none',
+                  borderRadius: 10, cursor: 'pointer',
+                }}
               >
                 {t('dashboard.hideButton')}
               </button>
@@ -637,18 +628,28 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, value, color, onClick }) {
+function StatCard({ icon, label, value, gradient, iconColor, onClick, delay = 0 }) {
   return (
     <div
-      className="bg-white rounded-xl shadow-sm border border-slate-200 p-3 md:p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all"
-      style={{ minHeight: '44px' }}
+      className="glass-card animate-fade-in-up"
+      style={{
+        padding: 14, cursor: 'pointer',
+        animationDelay: `${delay * 0.08}s`,
+      }}
       onClick={onClick}
     >
-      <div className="flex items-center gap-2 md:gap-3">
-        <div className={`p-1.5 md:p-2 rounded-lg ${color}`}>{icon}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          padding: 8, borderRadius: 10,
+          background: gradient,
+          color: iconColor,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {icon}
+        </div>
         <div>
-          <p className="text-xl md:text-2xl font-bold text-slate-900">{value}</p>
-          <p className="text-xs md:text-sm text-slate-500">{label}</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0, lineHeight: 1 }}>{value}</p>
+          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '4px 0 0', fontWeight: 500 }}>{label}</p>
         </div>
       </div>
     </div>
@@ -676,11 +677,11 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
     <>
       {editMode && isOver && !isBeingDragged && (
         <div style={{
-          height: '4px',
-          backgroundColor: '#2563eb',
-          borderRadius: '2px',
+          height: 3,
+          background: 'var(--accent-gradient)',
+          borderRadius: 2,
           margin: '4px 8px',
-          boxShadow: '0 0 8px rgba(37,99,235,0.6)',
+          boxShadow: '0 0 12px rgba(139,92,246,0.5)',
           transition: 'all 0.15s ease',
         }} />
       )}
@@ -695,32 +696,32 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
       >
         {editMode ? (
           <div style={{
-            border: '2px solid #2563eb',
-            borderRadius: '12px',
+            border: '2px solid var(--accent-solid)',
+            borderRadius: 14,
             overflow: 'hidden',
-            backgroundColor: 'white',
+            background: 'var(--bg-glass)',
             cursor: 'grab',
-            marginBottom: '10px',
+            marginBottom: 10,
           }}>
             <div style={{
               padding: '10px 16px',
               display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              backgroundColor: '#eff6ff',
+              gap: 8,
+              background: 'var(--accent-soft)',
             }}>
-              <span style={{ fontSize: '16px' }}>{sectorIcon}</span>
-              <span style={{ fontWeight: '600', fontSize: '14px', color: '#1f2937' }}>{sectorLabel}</span>
-              <span style={{ marginLeft: 'auto', color: '#94a3b8', fontSize: '12px' }}>{t('dashboard.dragToMove')}</span>
+              <span style={{ fontSize: 16 }}>{sectorIcon}</span>
+              <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{sectorLabel}</span>
+              <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: 11 }}>{t('dashboard.dragToMove')}</span>
               <button
                 onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }}
                 onPointerDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
                 style={{
-                  width: '22px', height: '22px', borderRadius: '50%',
+                  width: 22, height: 22, borderRadius: '50%',
                   backgroundColor: '#ef4444', color: 'white', border: 'none',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', fontSize: '14px', lineHeight: 1, flexShrink: 0,
+                  cursor: 'pointer', fontSize: 14, lineHeight: 1, flexShrink: 0,
                 }}
               >
                 <Minus className="w-3 h-3" />
@@ -735,73 +736,94 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
   );
 }
 
-function DocumentCard({ doc }) {
+function DocumentCard({ doc, delay = 0 }) {
   const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
 
   return (
     <Link
       to={`/documents/${doc.id}`}
-      className="group bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md hover:border-indigo-200 transition-all no-underline"
+      className="glass-card animate-fade-in-up"
+      style={{
+        display: 'flex', gap: 12, padding: 12, textDecoration: 'none',
+        animationDelay: `${Math.min(delay, 8) * 0.05}s`,
+      }}
     >
       {/* Thumbnail */}
-      <div className="aspect-4/3 bg-slate-100 overflow-hidden">
+      <div style={{
+        width: 64, height: 64, borderRadius: 12, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.03)', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
         {!imgError ? (
           <AuthImage
             src={`/documents/${doc.id}/thumbnail`}
             alt={doc.dateiname}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <FileText className="w-12 h-12 text-slate-300" />
-          </div>
+          <FileText style={{ width: 24, height: 24, color: 'var(--text-muted)', opacity: 0.5 }} />
         )}
       </div>
 
       {/* Info */}
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <p className="text-sm font-medium text-slate-900 truncate flex-1">
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+          <p style={{
+            fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0,
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1,
+          }}>
             {doc.absender || doc.dateiname}
           </p>
           {doc.handlung_erforderlich && !doc.handlung_erledigt && (
-            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', flexShrink: 0 }} />
           )}
         </div>
 
         {doc.datum && (
-          <p className="text-xs text-slate-500 mb-2">
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 6px' }}>
             {new Date(doc.datum).toLocaleDateString('de-DE')}
           </p>
         )}
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           {doc.kategorie && (
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KATEGORIE_COLORS[doc.kategorie] || KATEGORIE_COLORS.sonstiges}`}>
+            <span className={KATEGORIE_BADGE[doc.kategorie] || KATEGORIE_BADGE.sonstiges}
+              style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
               {t(`categories.${doc.kategorie}`, doc.kategorie)}
             </span>
           )}
           {doc.status === 'analyse_laeuft' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 font-medium flex items-center gap-1">
-              <Loader2 className="w-3 h-3 animate-spin" /> {t('dashboard.analysisRunning')}
+            <span style={{
+              fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500,
+              background: 'var(--warning-soft)', color: '#fbbf24',
+              display: 'flex', alignItems: 'center', gap: 4,
+            }}>
+              <Loader2 style={{ width: 10, height: 10, animation: 'spin 0.8s linear infinite' }} /> {t('dashboard.analysisRunning')}
             </span>
           )}
           {doc.status === 'fehler' && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">
+            <span style={{
+              fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500,
+              background: 'var(--danger-soft)', color: '#ef4444',
+            }}>
               {t('dashboard.error')}
             </span>
           )}
           {doc.betrag != null && doc.betrag > 0 && (
-            <span className="text-xs font-semibold text-slate-700">
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginLeft: 'auto' }}>
               {Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
             </span>
           )}
         </div>
 
         {doc.zusammenfassung && (
-          <p className="text-xs text-slate-500 mt-2 line-clamp-2">{doc.zusammenfassung}</p>
+          <p style={{
+            fontSize: 12, color: 'var(--text-muted)', margin: '6px 0 0',
+            overflow: 'hidden', display: '-webkit-box',
+            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>{doc.zusammenfassung}</p>
         )}
       </div>
     </Link>

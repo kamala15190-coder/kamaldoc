@@ -152,41 +152,49 @@ export default function ProfilPage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <User className="w-6 h-6 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-slate-900">{t('profile.title')}</h1>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'var(--accent-soft)' }}>
+          <User style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.title')}</h1>
       </div>
 
       {/* Checkout Success Banner */}
       {searchParams.get('checkout') === 'success' && (
-        <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3 text-green-700">
-          <CheckCircle className="w-5 h-5" />
-          <span className="text-sm font-medium">{t('profile.checkoutSuccess')}</span>
+        <div className="glass-card animate-fade-in" style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 10, border: '1px solid rgba(16,185,129,0.2)' }}>
+          <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#34d399' }}>{t('profile.checkoutSuccess')}</span>
         </div>
       )}
 
       {/* Section: Subscription */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <CreditCard className="w-5 h-5 text-slate-600" />
-          <h2 className="text-lg font-semibold text-slate-900">{t('profile.subscription')}</h2>
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <CreditCard style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.subscription')}</h2>
         </div>
 
-        <div className="flex items-center gap-3 mb-4">
-          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold ${badge.className}`}>
-            <BadgeIcon className="w-4 h-4" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 12px', borderRadius: 20, fontSize: 13, fontWeight: 700,
+            background: plan === 'pro' ? 'var(--accent-soft)' : plan === 'basic' ? 'var(--warning-soft)' : 'var(--bg-glass)',
+            color: plan === 'pro' ? 'var(--accent-solid)' : plan === 'basic' ? '#fbbf24' : 'var(--text-muted)',
+          }}>
+            <BadgeIcon style={{ width: 14, height: 14 }} />
             {badge.label}
           </span>
           {subscription?.expires_at && (
-            <span className="text-sm text-slate-500">
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               {subscription.cancelled_at
                 ? t('profile.cancelledUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })
                 : t('profile.activeUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })}
@@ -194,9 +202,8 @@ export default function ProfilPage() {
           )}
         </div>
 
-        {/* Usage Stats */}
         {usage && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
             <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} />
             <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_total || 0} max={limits.ki_analyses_total} />
             <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} />
@@ -204,11 +211,10 @@ export default function ProfilPage() {
           </div>
         )}
 
-        {/* Pending Downgrade Info */}
         {subscription?.pending_plan && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center gap-2 text-amber-700">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span className="text-sm">
+          <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <AlertCircle style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: '#fbbf24' }}>
               {t('profile.pendingDowngrade', {
                 date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—',
                 plan: subscription.pending_plan.charAt(0).toUpperCase() + subscription.pending_plan.slice(1),
@@ -217,58 +223,44 @@ export default function ProfilPage() {
           </div>
         )}
 
-        {cancelSuccess && (
-          <div className="mb-4 flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('profile.cancelledSuccess')}</span>
-          </div>
-        )}
-        {cancelError && (
-          <div className="mb-4 flex items-center gap-2 text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span>
-          </div>
-        )}
-        {reactivateSuccess && (
-          <div className="mb-4 flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('profile.reactivateSuccess')}</span>
-          </div>
-        )}
-        {reactivateError && (
-          <div className="mb-4 flex items-center gap-2 text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span>
-          </div>
-        )}
+        {cancelSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.cancelledSuccess')}</span></div>}
+        {cancelError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span></div>}
+        {reactivateSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.reactivateSuccess')}</span></div>}
+        {reactivateError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span></div>}
 
-        <div className="flex flex-wrap gap-3">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {isFree && (
-            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-semibold hover:from-amber-600 hover:to-orange-600 transition-all no-underline" style={{ minHeight: '44px' }}>
-              <Zap className="w-4 h-4" /> {t('pricing.upgradeNow')}
+            <Link to="/pricing" className="btn-accent" style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Zap style={{ width: 16, height: 16 }} /> {t('pricing.upgradeNow')}
             </Link>
           )}
           {isBasic && (
-            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-all no-underline" style={{ minHeight: '44px' }}>
-              <Rocket className="w-4 h-4" /> {t('pricing.upgradePro')}
+            <Link to="/pricing" className="btn-accent" style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Rocket style={{ width: 16, height: 16 }} /> {t('pricing.upgradePro')}
             </Link>
           )}
           {isPro && (
-            <Link to="/pricing" className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition-all no-underline" style={{ minHeight: '44px' }}>
-              <Rocket className="w-4 h-4" /> {t('pricing.managePlan')}
+            <Link to="/pricing" className="btn-ghost" style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Rocket style={{ width: 16, height: 16 }} /> {t('pricing.managePlan')}
             </Link>
           )}
           {!isFree && !subscription?.cancelled_at && (
-            <button onClick={handleCancel} disabled={cancelling}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-all cursor-pointer disabled:opacity-50" style={{ minHeight: '44px' }}>
-              {cancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+            <button onClick={handleCancel} disabled={cancelling} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+              background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: cancelling ? 0.5 : 1,
+            }}>
+              {cancelling ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <XCircle style={{ width: 14, height: 14 }} />}
               {t('profile.cancelPlan')}
             </button>
           )}
           {!isFree && subscription?.cancelled_at && (
-            <button onClick={handleReactivate} disabled={reactivating}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all cursor-pointer border-none disabled:opacity-50" style={{ minHeight: '44px' }}>
-              {reactivating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            <button onClick={handleReactivate} disabled={reactivating} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+              background: 'var(--success-soft)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)',
+              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: reactivating ? 0.5 : 1,
+            }}>
+              {reactivating ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle style={{ width: 14, height: 14 }} />}
               {t('profile.reactivate')}
             </button>
           )}
@@ -276,142 +268,116 @@ export default function ProfilPage() {
       </div>
 
       {/* Section 1: Absenderdaten */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-1">{t('profile.senderData')}</h2>
-        <p className="text-sm text-slate-500 mb-5">{t('profile.senderDesc')}</p>
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>{t('profile.senderData')}</h2>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>{t('profile.senderDesc')}</p>
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.firstName')}</label>
-              <input type="text" value={form.vorname || ''} onChange={e => handleChange('vorname', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.firstName')}</label>
+              <input type="text" value={form.vorname || ''} onChange={e => handleChange('vorname', e.target.value)} className="input-dark" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.lastName')}</label>
-              <input type="text" value={form.nachname || ''} onChange={e => handleChange('nachname', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.lastName')}</label>
+              <input type="text" value={form.nachname || ''} onChange={e => handleChange('nachname', e.target.value)} className="input-dark" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.street')}</label>
-            <input type="text" value={form.adresse || ''} onChange={e => handleChange('adresse', e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.street')}</label>
+            <input type="text" value={form.adresse || ''} onChange={e => handleChange('adresse', e.target.value)} className="input-dark" />
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-            <div className="col-span-1">
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.zip')}</label>
-              <input type="text" value={form.plz || ''} onChange={e => handleChange('plz', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.zip')}</label>
+              <input type="text" value={form.plz || ''} onChange={e => handleChange('plz', e.target.value)} className="input-dark" />
             </div>
-            <div className="col-span-2 md:col-span-3">
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.city')}</label>
-              <input type="text" value={form.ort || ''} onChange={e => handleChange('ort', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.city')}</label>
+              <input type="text" value={form.ort || ''} onChange={e => handleChange('ort', e.target.value)} className="input-dark" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.country')}</label>
-            <input type="text" value={form.land || ''} onChange={e => handleChange('land', e.target.value)}
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.country')}</label>
+            <input type="text" value={form.land || ''} onChange={e => handleChange('land', e.target.value)} className="input-dark" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.emailLabel')}</label>
-              <input type="email" value={form.email || ''} onChange={e => handleChange('email', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.emailLabel')}</label>
+              <input type="email" value={form.email || ''} onChange={e => handleChange('email', e.target.value)} className="input-dark" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.phoneLabel')}</label>
-              <input type="tel" value={form.telefon || ''} onChange={e => handleChange('telefon', e.target.value)}
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.phoneLabel')}</label>
+              <input type="tel" value={form.telefon || ''} onChange={e => handleChange('telefon', e.target.value)} className="input-dark" />
             </div>
           </div>
         </div>
 
-        {saved && (
-          <div className="mt-4 flex items-center gap-2 text-green-600" style={{ animation: 'fadeInUp 0.2s ease-out' }}>
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('profile.saved')}</span>
-          </div>
-        )}
-        {error && (
-          <div className="mt-4 flex items-center gap-2 text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">{error}</span>
-          </div>
-        )}
+        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.saved')}</span></div>}
+        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{error}</span></div>}
 
-        <button onClick={handleSave} disabled={saving}
-          className="w-full md:w-auto mt-5 flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 cursor-pointer border-none disabled:opacity-50 transition-colors"
-          style={{ minHeight: '44px' }}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        <button onClick={handleSave} disabled={saving} className="btn-accent" style={{
+          width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: saving ? 0.5 : 1,
+        }}>
+          {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
           {t('profile.saveButton')}
         </button>
       </div>
 
       {/* Section 2: Passwort ändern */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Lock className="w-5 h-5 text-slate-600" />
-          <h2 className="text-lg font-semibold text-slate-900">{t('profile.changePassword')}</h2>
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <Lock style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.changePassword')}</h2>
         </div>
 
-        <div className="space-y-4 max-w-md">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.newPassword')}</label>
-            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.newPassword')}</label>
+            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" className="input-dark" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">{t('profile.repeatPassword')}</label>
-            <input type="password" value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" style={{ minHeight: '44px' }} />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.repeatPassword')}</label>
+            <input type="password" value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} placeholder="••••••••" className="input-dark" />
           </div>
         </div>
 
-        {pwSuccess && (
-          <div className="mt-4 flex items-center gap-2 text-green-600">
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">{t('profile.passwordChanged')}</span>
-          </div>
-        )}
-        {pwError && (
-          <div className="mt-4 flex items-center gap-2 text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">{pwError}</span>
-          </div>
-        )}
+        {pwSuccess && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.passwordChanged')}</span></div>}
+        {pwError && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{pwError}</span></div>}
 
-        <button onClick={handlePasswordChange} disabled={pwSaving || !newPassword}
-          className="w-full md:w-auto mt-5 flex items-center justify-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-900 cursor-pointer border-none disabled:opacity-50 transition-colors"
-          style={{ minHeight: '44px' }}>
-          {pwSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+        <button onClick={handlePasswordChange} disabled={pwSaving || !newPassword} className="btn-ghost" style={{
+          width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          opacity: (pwSaving || !newPassword) ? 0.5 : 1,
+        }}>
+          {pwSaving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Lock style={{ width: 16, height: 16 }} />}
           {t('profile.changePasswordButton')}
         </button>
       </div>
 
-      {/* Danger Zone: Account löschen */}
-      <div className="bg-white rounded-xl shadow-sm border-2 border-red-200 p-4 md:p-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Trash2 className="w-5 h-5 text-red-600" />
-          <h2 className="text-lg font-semibold text-red-700">{t('profile.dangerZone')}</h2>
+      {/* Danger Zone */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16, border: '1px solid rgba(239,68,68,0.15)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          <Trash2 style={{ width: 16, height: 16, color: '#ef4444' }} />
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#ef4444', margin: 0 }}>{t('profile.dangerZone')}</h2>
         </div>
-        <p className="text-sm text-slate-600 mb-4">
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>
           {t('profile.deleteAccountDesc')}
         </p>
         <button
           onClick={() => setShowDeleteModal(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer border-none"
-          style={{ minHeight: '44px' }}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            padding: '10px 20px', background: '#ef4444', color: 'white',
+            border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          }}
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 style={{ width: 16, height: 16 }} />
           {t('profile.deleteAccountButton')}
         </button>
       </div>
@@ -420,31 +386,28 @@ export default function ProfilPage() {
       {showDeleteModal && (
         <div style={{
           position: 'fixed', inset: 0, zIndex: 100,
-          backgroundColor: 'rgba(0,0,0,0.5)',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: '20px',
+          padding: 20,
         }}>
-          <div style={{
-            backgroundColor: 'white', borderRadius: '16px',
-            padding: '24px', width: '100%', maxWidth: '380px',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
-          }}>
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <div style={{ fontSize: '40px', marginBottom: '8px' }}>⚠️</div>
-              <h3 style={{ fontWeight: '700', fontSize: '18px', color: '#dc2626', marginBottom: '8px' }}>
+          <div className="glass-card animate-scale-in" style={{ padding: 24, width: '100%', maxWidth: 380 }}>
+            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+              <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
+              <h3 style={{ fontWeight: 700, fontSize: 18, color: '#ef4444', margin: '0 0 8px' }}>
                 {t('profile.deleteAccountConfirm')}
               </h3>
             </div>
-            <div style={{ fontSize: '14px', color: '#374151', lineHeight: '1.6', marginBottom: '20px' }}>
-              <p style={{ marginBottom: '8px' }}>{t('profile.deleteWarning')}</p>
-              <ul style={{ paddingLeft: '20px', margin: 0 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 20 }}>
+              <p style={{ marginBottom: 8 }}>{t('profile.deleteWarning')}</p>
+              <ul style={{ paddingLeft: 20, margin: 0 }}>
                 <li>{t('profile.deleteDocuments')}</li>
                 <li>{t('profile.deleteAnalyses')}</li>
                 <li>{t('profile.deleteProfile')}</li>
                 <li>{t('profile.deleteSubscription')}</li>
                 <li>{t('profile.deleteUserAccount')}</li>
               </ul>
-              <p style={{ marginTop: '12px', fontWeight: '600', color: '#dc2626' }}>
+              <p style={{ marginTop: 12, fontWeight: 600, color: '#ef4444' }}>
                 {t('profile.deleteIrreversible')}
               </p>
             </div>
@@ -452,11 +415,11 @@ export default function ProfilPage() {
               onClick={handleDeleteAccount}
               disabled={deletingAccount}
               style={{
-                width: '100%', padding: '12px',
-                backgroundColor: '#dc2626', color: 'white',
-                borderRadius: '10px', border: 'none',
-                fontWeight: '600', fontSize: '15px', cursor: 'pointer',
-                marginBottom: '8px', opacity: deletingAccount ? 0.6 : 1,
+                width: '100%', padding: 12,
+                backgroundColor: '#ef4444', color: 'white',
+                borderRadius: 10, border: 'none',
+                fontWeight: 600, fontSize: 15, cursor: 'pointer',
+                marginBottom: 8, opacity: deletingAccount ? 0.6 : 1,
               }}
             >
               {deletingAccount ? t('profile.deleting') : t('profile.confirmDeleteButton')}
@@ -465,9 +428,9 @@ export default function ProfilPage() {
               onClick={() => setShowDeleteModal(false)}
               disabled={deletingAccount}
               style={{
-                width: '100%', padding: '10px',
-                backgroundColor: 'transparent', color: '#6b7280',
-                border: 'none', cursor: 'pointer', fontSize: '14px',
+                width: '100%', padding: 10,
+                backgroundColor: 'transparent', color: 'var(--text-muted)',
+                border: 'none', cursor: 'pointer', fontSize: 14,
               }}
             >
               {t('profile.cancelButton')}
@@ -475,7 +438,7 @@ export default function ProfilPage() {
           </div>
         </div>
       )}
-
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -487,19 +450,20 @@ function UsageStat({ label, used, max }) {
   const isHigh = !isUnlimited && pct >= 80;
 
   return (
-    <div className="bg-slate-50 rounded-lg p-3">
-      <div className="text-xs text-slate-500 mb-1">{label}</div>
-      <div className={`text-lg font-bold ${isHigh ? 'text-red-600' : 'text-slate-900'}`}>
+    <div style={{ padding: 10, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 17, fontWeight: 700, color: isHigh ? '#ef4444' : 'var(--text-primary)' }}>
         {used}{isUnlimited ? '' : `/${max}`}
       </div>
       {isUnlimited ? (
-        <div className="text-xs text-green-600 font-medium mt-0.5">{t('profile.unlimited')}</div>
+        <div style={{ fontSize: 11, color: '#34d399', fontWeight: 600, marginTop: 2 }}>{t('profile.unlimited')}</div>
       ) : (
-        <div className="w-full bg-slate-200 rounded-full h-1.5 mt-1.5">
-          <div
-            className={`h-1.5 rounded-full transition-all ${isHigh ? 'bg-red-500' : 'bg-indigo-500'}`}
-            style={{ width: `${pct}%` }}
-          />
+        <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 6 }}>
+          <div style={{
+            height: 4, borderRadius: 2, transition: 'all 0.3s ease',
+            width: `${pct}%`,
+            background: isHigh ? '#ef4444' : 'var(--accent-solid)',
+          }} />
         </div>
       )}
     </div>

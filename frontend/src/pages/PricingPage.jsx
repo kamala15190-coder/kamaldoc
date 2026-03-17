@@ -109,88 +109,83 @@ export default function PricingPage() {
 
   const pendingPlan = subscription?.pending_plan;
 
+  const getButtonBg = (planId, isPopular, isCurrent) => {
+    if (isCurrent) return { background: 'var(--success-soft)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' };
+    if (isDowngrade(planId)) return { background: 'var(--bg-glass)', color: 'var(--text-muted)', border: '1px solid var(--border-glass)' };
+    if (isPopular) return { background: 'var(--accent-solid)', color: '#fff', border: 'none' };
+    return { background: 'var(--bg-glass)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' };
+  };
+
   return (
-    <div className="max-w-5xl mx-auto py-4">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">{t('pricing.title')}</h1>
-        <p className="text-slate-500">{t('pricing.subtitle')}</p>
+    <div style={{ maxWidth: 480, margin: '0 auto' }}>
+      <div style={{ textAlign: 'center', marginBottom: 24 }} className="animate-fade-in">
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 6px' }}>{t('pricing.title')}</h1>
+        <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>{t('pricing.subtitle')}</p>
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center">
-          {error}
-        </div>
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>{error}</div>
       )}
-
       {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm text-center flex items-center justify-center gap-2">
-          <CheckCircle className="w-4 h-4" />
-          {success}
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#34d399', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          <CheckCircle style={{ width: 14, height: 14 }} />{success}
         </div>
       )}
-
       {pendingPlan && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm text-center">
-          {t('profile.pendingDowngrade', {
-            date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—',
-            plan: t(`pricing.${pendingPlan}`),
-          })}
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#fbbf24', border: '1px solid rgba(245,158,11,0.15)' }}>
+          {t('profile.pendingDowngrade', { date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—', plan: t(`pricing.${pendingPlan}`) })}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {PLANS.map((plan) => {
           const isCurrent = plan.id === currentPlan;
           const isPopular = plan.popular;
           const isPending = pendingPlan === plan.id;
+          const btnStyle = getButtonBg(plan.id, isPopular, isCurrent);
 
           return (
             <div
               key={plan.id}
-              className={`relative bg-white rounded-2xl border-2 p-6 flex flex-col transition-all ${
-                isPopular && !isCurrent
-                  ? 'border-indigo-500 shadow-lg shadow-indigo-100 scale-[1.02]'
-                  : isCurrent
-                  ? 'border-green-400 shadow-sm'
-                  : isPending
-                  ? 'border-amber-400 shadow-sm'
-                  : 'border-slate-200 shadow-sm hover:border-slate-300'
-              }`}
+              className="glass-card animate-fade-in-up"
+              style={{
+                position: 'relative', padding: 20, display: 'flex', flexDirection: 'column',
+                border: isPopular && !isCurrent ? '1px solid var(--accent-solid)' : isCurrent ? '1px solid rgba(16,185,129,0.3)' : isPending ? '1px solid rgba(245,158,11,0.3)' : undefined,
+              }}
             >
               {isPopular && !isCurrent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-xs font-bold px-4 py-1 rounded-full">
+                <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-solid)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 14px', borderRadius: 20 }}>
                   {t('pricing.recommended')}
                 </div>
               )}
-
               {isCurrent && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', background: '#10b981', color: '#fff', fontSize: 11, fontWeight: 700, padding: '3px 14px', borderRadius: 20 }}>
                   {t('pricing.currentBadge')}
                 </div>
               )}
 
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  {plan.id === 'free' && <Lock className="w-5 h-5 text-slate-400" />}
-                  {plan.id === 'basic' && <Zap className="w-5 h-5 text-amber-500" />}
-                  {plan.id === 'pro' && <Rocket className="w-5 h-5 text-indigo-600" />}
-                  <h2 className="text-xl font-bold text-slate-900">{t(plan.nameKey)}</h2>
+              <div style={{ marginBottom: 14, paddingTop: (isPopular || isCurrent) ? 4 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                  {plan.id === 'free' && <Lock style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />}
+                  {plan.id === 'basic' && <Zap style={{ width: 16, height: 16, color: '#fbbf24' }} />}
+                  {plan.id === 'pro' && <Rocket style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} />}
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t(plan.nameKey)}</h2>
                 </div>
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">{plan.price}€</span>
-                  <span className="text-slate-500 text-sm">/{t('pricing.month')}</span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-primary)' }}>{plan.price}€</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>/{t('pricing.month')}</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 mb-6 flex-1">
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 8, flex: 1 }}>
                 {plan.features.map((feat, i) => (
-                  <li key={i} className="flex items-start gap-2.5">
+                  <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     {feat.included ? (
-                      <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                      <Check style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0, marginTop: 1 }} />
                     ) : (
-                      <X className="w-5 h-5 text-slate-300 shrink-0 mt-0.5" />
+                      <X style={{ width: 16, height: 16, color: 'var(--text-muted)', opacity: 0.4, flexShrink: 0, marginTop: 1 }} />
                     )}
-                    <span className={feat.included ? 'text-slate-700 text-sm' : 'text-slate-400 text-sm line-through'}>
+                    <span style={{ fontSize: 13, color: feat.included ? 'var(--text-secondary)' : 'var(--text-muted)', textDecoration: feat.included ? 'none' : 'line-through' }}>
                       {t(feat.key)}
                     </span>
                   </li>
@@ -200,13 +195,15 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSelect(plan.id)}
                 disabled={isCurrent || loadingPlan === plan.id}
-                className={`w-full py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer border-none disabled:cursor-default ${
-                  getButtonStyle(plan.id, isPopular, isCurrent)
-                }`}
-                style={{ minHeight: '48px' }}
+                style={{
+                  width: '100%', padding: '14px 0', borderRadius: 10,
+                  fontSize: 14, fontWeight: 600, cursor: isCurrent ? 'default' : 'pointer',
+                  transition: 'all 0.15s ease', opacity: (isCurrent || loadingPlan === plan.id) ? 0.7 : 1,
+                  ...btnStyle,
+                }}
               >
                 {loadingPlan === plan.id ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                  <Loader2 style={{ width: 18, height: 18, animation: 'spin 0.8s linear infinite', margin: '0 auto' }} />
                 ) : (
                   getButtonText(plan.id)
                 )}
@@ -216,9 +213,10 @@ export default function PricingPage() {
         })}
       </div>
 
-      <p className="text-center text-xs text-slate-400 mt-8">
+      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 24 }}>
         {t('pricing.cancelAnytime')}
       </p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

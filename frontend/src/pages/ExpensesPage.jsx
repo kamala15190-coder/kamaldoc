@@ -41,20 +41,23 @@ export default function ExpensesPage() {
 
   if (subLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (isFree) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <DollarSign className="w-6 h-6 text-indigo-600" />
-          <h1 className="text-2xl font-bold text-slate-900">{t('expenses.title')}</h1>
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+          <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
+            <DollarSign style={{ width: 18, height: 18, color: '#fbbf24' }} />
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
         </div>
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="glass-card" style={{ overflow: 'hidden' }}>
           <UpgradePrompt messageKey="pricing.expensesLocked" minPlan="basic" />
         </div>
       </div>
@@ -129,31 +132,30 @@ export default function ExpensesPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-amber-100 rounded-lg">
-          <DollarSign className="w-6 h-6 text-amber-600" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
+          <DollarSign style={{ width: 18, height: 18, color: '#fbbf24' }} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('expenses.title')}</h1>
-          <p className="text-sm text-slate-500">{t('expenses.subtitle')}</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('expenses.subtitle')}</p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-6">
-        <div className="flex flex-wrap gap-3 items-center">
-          {/* Year */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 14, marginBottom: 16 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
           <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
+            className="input-dark"
+            style={{ fontSize: 13, appearance: 'none', minWidth: 90, flex: 1 }}
             value={selectedYear}
             onChange={e => setSelectedYear(Number(e.target.value))}
           >
             {years.map(y => <option key={y} value={y}>{y}</option>)}
           </select>
-
-          {/* Month */}
           <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none bg-white"
+            className="input-dark"
+            style={{ fontSize: 13, appearance: 'none', minWidth: 120, flex: 1 }}
             value={selectedMonth}
             onChange={e => setSelectedMonth(Number(e.target.value))}
           >
@@ -164,12 +166,15 @@ export default function ExpensesPage() {
 
         {/* Category Chips */}
         {Object.keys(categories).length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-3">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
             <button
               onClick={() => { setSelectedCategory(''); setSelectedSubcategory(''); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border-none ${
-                !selectedCategory ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
+              style={{
+                padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
+                background: !selectedCategory ? 'var(--accent-gradient)' : 'var(--bg-glass)',
+                color: !selectedCategory ? 'white' : 'var(--text-secondary)',
+              }}
             >
               Alle
             </button>
@@ -177,10 +182,12 @@ export default function ExpensesPage() {
               <button
                 key={cat}
                 onClick={() => { setSelectedCategory(cat === selectedCategory ? '' : cat); setSelectedSubcategory(''); }}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer border-none ${
-                  selectedCategory === cat ? 'text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-                style={selectedCategory === cat ? { backgroundColor: CATEGORY_COLORS[cat] || FALLBACK_COLOR } : {}}
+                style={{
+                  padding: '5px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
+                  background: selectedCategory === cat ? (CATEGORY_COLORS[cat] || FALLBACK_COLOR) : 'var(--bg-glass)',
+                  color: selectedCategory === cat ? 'white' : 'var(--text-secondary)',
+                }}
               >
                 {cat}
               </button>
@@ -190,14 +197,17 @@ export default function ExpensesPage() {
 
         {/* Subcategory Chips */}
         {subcategories.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
             {subcategories.map(sub => (
               <button
                 key={sub}
                 onClick={() => setSelectedSubcategory(sub === selectedSubcategory ? '' : sub)}
-                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer border-none ${
-                  selectedSubcategory === sub ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
-                }`}
+                style={{
+                  padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+                  border: 'none', cursor: 'pointer', transition: 'all 0.15s ease',
+                  background: selectedSubcategory === sub ? 'var(--accent-solid)' : 'var(--accent-soft)',
+                  color: selectedSubcategory === sub ? 'white' : 'var(--accent-solid)',
+                }}
               >
                 {sub}
               </button>
@@ -207,44 +217,50 @@ export default function ExpensesPage() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : !summary ? (
-        <div className="text-center py-20 text-slate-500">{t('expenses.noData')}</div>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>{t('expenses.noData')}</div>
       ) : (
         <>
           {/* Total Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-amber-100 rounded-xl">
-                <TrendingUp className="w-8 h-8 text-amber-600" />
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ padding: 10, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.08))' }}>
+                <TrendingUp style={{ width: 24, height: 24, color: '#fbbf24' }} />
               </div>
               <div>
-                <p className="text-sm text-slate-500">{t('expenses.totalExpenses')}</p>
-                <p className="text-3xl font-bold text-slate-900">{fmt(summary.total)}</p>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>{t('expenses.totalExpenses')}</p>
+                <p style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', margin: '2px 0 0', lineHeight: 1 }}>{fmt(summary.total)}</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '4px 0 0' }}>
                   {summary.count} Positionen
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Bar Chart — Months or Days */}
+          {/* Bar Chart */}
           {chartData.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-              <h2 className="text-base font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-600" />
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 14px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Calendar style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} />
                 {selectedMonth ? `${MONTHS_FULL[selectedMonth]} ${selectedYear}` : `Ausgaben ${selectedYear}`}
               </h2>
-              <div style={{ width: '100%', height: 280 }}>
+              <div style={{ width: '100%', height: 260 }}>
                 <ResponsiveContainer>
                   <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} />
-                    <YAxis tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={v => `${v}€`} />
-                    <Tooltip formatter={(v) => fmt(v)} labelStyle={{ fontWeight: 600 }} />
-                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#6366f1" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }} stroke="rgba(255,255,255,0.08)" />
+                    <YAxis tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }} tickFormatter={v => `${v}€`} stroke="rgba(255,255,255,0.08)" />
+                    <Tooltip
+                      formatter={(v) => fmt(v)}
+                      labelStyle={{ fontWeight: 600, color: '#fff' }}
+                      contentStyle={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 13, color: '#fff' }}
+                      itemStyle={{ color: '#a78bfa' }}
+                    />
+                    <Bar dataKey="value" radius={[4, 4, 0, 0]} fill="#8b5cf6" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -253,15 +269,19 @@ export default function ExpensesPage() {
 
           {/* Category Breakdown Chart */}
           {categoryChartData.length > 0 && !selectedCategory && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-              <h2 className="text-base font-semibold text-slate-900 mb-4">Nach Kategorie</h2>
-              <div style={{ width: '100%', height: Math.max(categoryChartData.length * 44, 150) }}>
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 14px' }}>Nach Kategorie</h2>
+              <div style={{ width: '100%', height: Math.max(categoryChartData.length * 40, 150) }}>
                 <ResponsiveContainer>
                   <BarChart data={categoryChartData} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={v => `${v}€`} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#374151' }} width={120} />
-                    <Tooltip formatter={(v) => fmt(v)} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.4)' }} tickFormatter={v => `${v}€`} stroke="rgba(255,255,255,0.08)" />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'rgba(255,255,255,0.7)' }} width={110} stroke="rgba(255,255,255,0.08)" />
+                    <Tooltip
+                      formatter={(v) => fmt(v)}
+                      contentStyle={{ background: 'rgba(15,20,35,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, fontSize: 13, color: '#fff' }}
+                      itemStyle={{ color: '#a78bfa' }}
+                    />
                     <Bar dataKey="value" radius={[0, 4, 4, 0]}>
                       {categoryChartData.map((entry, idx) => (
                         <Cell key={idx} fill={entry.color} />
@@ -275,40 +295,45 @@ export default function ExpensesPage() {
 
           {/* Items List */}
           {items.length > 0 && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-100">
-                <h2 className="text-base font-semibold text-slate-900">Einzelpositionen ({items.length})</h2>
+            <div className="glass-card animate-fade-in-up" style={{ overflow: 'hidden', padding: 0 }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-glass)' }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>Einzelpositionen ({items.length})</h2>
               </div>
-              <div className="divide-y divide-slate-100">
-                {items.map(item => (
+              <div>
+                {items.map((item, idx) => (
                   <div
                     key={item.id}
-                    className="px-5 py-3 hover:bg-indigo-50/50 cursor-pointer transition-colors flex items-center justify-between gap-3"
+                    style={{
+                      padding: '12px 16px', cursor: item.document_id ? 'pointer' : 'default',
+                      borderBottom: idx < items.length - 1 ? '1px solid var(--border-glass)' : 'none',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                      transition: 'background 0.15s ease',
+                    }}
                     onClick={() => item.document_id && navigate(`/documents/${item.document_id}`)}
                   >
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-800 truncate">{item.name}</p>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span
-                          className="text-xs px-1.5 py-0.5 rounded font-medium text-white"
-                          style={{ backgroundColor: CATEGORY_COLORS[item.category] || FALLBACK_COLOR }}
-                        >
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3, flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontSize: 10, padding: '1px 6px', borderRadius: 4, fontWeight: 600,
+                          color: 'white', backgroundColor: CATEGORY_COLORS[item.category] || FALLBACK_COLOR,
+                        }}>
                           {item.category}
                         </span>
                         {item.subcategory && (
-                          <span className="text-xs text-slate-500">{item.subcategory}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{item.subcategory}</span>
                         )}
                         {item.absender && (
-                          <span className="text-xs text-slate-400">von {item.absender}</span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>von {item.absender}</span>
                         )}
                         {item.date && (
-                          <span className="text-xs text-slate-400">
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                             {new Date(item.date).toLocaleDateString('de-DE')}
                           </span>
                         )}
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-slate-900 whitespace-nowrap">{fmt(item.price)}</span>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>{fmt(item.price)}</span>
                   </div>
                 ))}
               </div>

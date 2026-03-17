@@ -56,148 +56,90 @@ export default function Einstellungen() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <Settings className="w-6 h-6 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-slate-900">Einstellungen</h1>
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'var(--accent-soft)' }}>
+          <Settings style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Einstellungen</h1>
       </div>
 
-      {/* Hinweis wenn leer */}
       {isEmpty && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3" style={{ animation: 'fadeInUp 0.3s ease-out' }}>
-          <User className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
+        <div className="glass-card animate-fade-in" style={{ padding: 14, marginBottom: 14, display: 'flex', alignItems: 'flex-start', gap: 10, border: '1px solid rgba(245,158,11,0.15)' }}>
+          <User style={{ width: 18, height: 18, color: '#fbbf24', marginTop: 1, flexShrink: 0 }} />
           <div>
-            <p className="text-sm font-medium text-amber-800">Absenderdaten fehlen</p>
-            <p className="text-sm text-amber-600 mt-0.5">
+            <p style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24', margin: 0 }}>Absenderdaten fehlen</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
               Bitte hinterlege deine Absenderdaten, damit sie automatisch in generierten Antwortbriefen verwendet werden.
             </p>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Absenderdaten</h2>
-        <p className="text-sm text-slate-500 mb-5">
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>Absenderdaten</h2>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>
           Diese Daten werden beim Generieren von Antwortbriefen als Absender verwendet.
         </p>
 
-        <div className="space-y-4">
-          {/* Vorname + Nachname nebeneinander */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             {FIELDS.filter(f => f.key === 'vorname' || f.key === 'nachname').map(field => (
               <div key={field.key}>
-                <label className="block text-xs font-medium text-slate-500 mb-1">{field.label}</label>
-                <input
-                  type="text"
-                  value={form[field.key] || ''}
-                  onChange={e => handleChange(field.key, e.target.value)}
-                  placeholder={field.placeholder}
-                  className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  style={{ minHeight: '44px' }}
-                />
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{field.label}</label>
+                <input type="text" value={form[field.key] || ''} onChange={e => handleChange(field.key, e.target.value)} placeholder={field.placeholder} className="input-dark" />
               </div>
             ))}
           </div>
 
-          {/* Adresse */}
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Adresse</label>
-            <input
-              type="text"
-              value={form.adresse || ''}
-              onChange={e => handleChange('adresse', e.target.value)}
-              placeholder="Musterstraße 1"
-              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              style={{ minHeight: '44px' }}
-            />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>Adresse</label>
+            <input type="text" value={form.adresse || ''} onChange={e => handleChange('adresse', e.target.value)} placeholder="Musterstraße 1" className="input-dark" />
           </div>
 
-          {/* PLZ + Ort nebeneinander */}
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-            <div className="col-span-1">
-              <label className="block text-xs font-medium text-slate-500 mb-1">PLZ</label>
-              <input
-                type="text"
-                value={form.plz || ''}
-                onChange={e => handleChange('plz', e.target.value)}
-                placeholder="12345"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ minHeight: '44px' }}
-              />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>PLZ</label>
+              <input type="text" value={form.plz || ''} onChange={e => handleChange('plz', e.target.value)} placeholder="12345" className="input-dark" />
             </div>
-            <div className="col-span-2 md:col-span-3">
-              <label className="block text-xs font-medium text-slate-500 mb-1">Ort</label>
-              <input
-                type="text"
-                value={form.ort || ''}
-                onChange={e => handleChange('ort', e.target.value)}
-                placeholder="Berlin"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ minHeight: '44px' }}
-              />
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>Ort</label>
+              <input type="text" value={form.ort || ''} onChange={e => handleChange('ort', e.target.value)} placeholder="Berlin" className="input-dark" />
             </div>
           </div>
 
-          {/* E-Mail + Telefon nebeneinander */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">E-Mail</label>
-              <input
-                type="email"
-                value={form.email || ''}
-                onChange={e => handleChange('email', e.target.value)}
-                placeholder="max@beispiel.de"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ minHeight: '44px' }}
-              />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>E-Mail</label>
+              <input type="email" value={form.email || ''} onChange={e => handleChange('email', e.target.value)} placeholder="max@beispiel.de" className="input-dark" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1">Telefon</label>
-              <input
-                type="tel"
-                value={form.telefon || ''}
-                onChange={e => handleChange('telefon', e.target.value)}
-                placeholder="+49 123 456789"
-                className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                style={{ minHeight: '44px' }}
-              />
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>Telefon</label>
+              <input type="tel" value={form.telefon || ''} onChange={e => handleChange('telefon', e.target.value)} placeholder="+49 123 456789" className="input-dark" />
             </div>
           </div>
         </div>
 
-        {/* Erfolg */}
-        {saved && (
-          <div className="mt-4 flex items-center gap-2 text-green-600" style={{ animation: 'fadeInUp 0.2s ease-out' }}>
-            <CheckCircle className="w-4 h-4" />
-            <span className="text-sm font-medium">Einstellungen gespeichert!</span>
-          </div>
-        )}
+        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>Einstellungen gespeichert!</span></div>}
+        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{error}</span></div>}
 
-        {/* Fehler */}
-        {error && (
-          <div className="mt-4 flex items-center gap-2 text-red-600">
-            <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">{error}</span>
-          </div>
-        )}
-
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full md:w-auto mt-5 flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 cursor-pointer border-none disabled:opacity-50 transition-colors"
-          style={{ minHeight: '44px' }}
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        <button onClick={handleSave} disabled={saving} className="btn-accent" style={{
+          width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: saving ? 0.5 : 1,
+        }}>
+          {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
           Speichern
         </button>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

@@ -200,229 +200,143 @@ export default function BehoerdeAssistent() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-teal-100 rounded-lg">
-          <Landmark className="w-6 h-6 text-teal-600" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'rgba(20,184,166,0.1)' }}>
+          <Landmark style={{ width: 18, height: 18, color: '#2dd4bf' }} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('behoerde.title')}</h1>
-          <p className="text-sm text-slate-500">{t('behoerde.subtitle')}</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.title')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('behoerde.subtitle')}</p>
         </div>
       </div>
 
-      {/* Upload Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-3">{t('behoerde.uploadTitle')}</h2>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <label className="flex-1 flex items-center gap-3 px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-indigo-400 transition-colors">
-            <Upload className="w-5 h-5 text-slate-400" />
-            <span className="text-sm text-slate-600 truncate">
-              {file ? file.name : t('behoerde.chooseFile')}
-            </span>
-            <input
-              type="file"
-              className="hidden"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={e => setFile(e.target.files[0] || null)}
-            />
+      {/* Upload */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('behoerde.uploadTitle')}</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '2px dashed var(--border-glass)', borderRadius: 10, cursor: 'pointer' }}>
+            <Upload style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file ? file.name : t('behoerde.chooseFile')}</span>
+            <input type="file" style={{ display: 'none' }} accept=".jpg,.jpeg,.png,.pdf" onChange={e => setFile(e.target.files[0] || null)} />
           </label>
-          <button
-            onClick={handleUpload}
-            disabled={!file || uploading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ minHeight: '44px' }}
-          >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+          <button onClick={handleUpload} disabled={!file || uploading} className="btn-accent" style={{ width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: (!file || uploading) ? 0.5 : 1 }}>
+            {uploading ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Upload style={{ width: 16, height: 16 }} />}
             {uploading ? t('behoerde.uploading') : t('behoerde.uploadButton')}
           </button>
         </div>
-        {error && (
-          <div className="mt-3 flex items-center gap-2 text-red-600 text-sm">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
+        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#fca5a5' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
       </div>
 
-      {/* Selected Document + Actions */}
       {selectedDoc && (
-        <div className="space-y-5 mb-6">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 14 }}>
           {/* Doc Info */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h2 className="text-base font-semibold text-slate-900">
-                  {selectedDoc.absender || selectedDoc.dateiname}
-                </h2>
-                {selectedDoc.zusammenfassung && (
-                  <p className="text-sm text-slate-500 mt-1">{selectedDoc.zusammenfassung}</p>
-                )}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{selectedDoc.absender || selectedDoc.dateiname}</h2>
+                {selectedDoc.zusammenfassung && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>{selectedDoc.zusammenfassung}</p>}
               </div>
-              <button
-                onClick={() => navigate(`/documents/${selectedDoc.id}`)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 bg-transparent border-none cursor-pointer"
-              >
-                {t('document.original')} <ChevronRight className="w-3 h-3" />
+              <button onClick={() => navigate(`/documents/${selectedDoc.id}`)} style={{ fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                {t('document.original')} <ChevronRight style={{ width: 12, height: 12 }} />
               </button>
             </div>
-
-            {/* Action Buttons Row */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-slate-400" />
-                <select
-                  value={targetLang}
-                  onChange={e => setTargetLang(e.target.value)}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                >
-                  {REPLY_LANGUAGES.map(l => (
-                    <option key={l.code} value={l.code}>{l.label}</option>
-                  ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                <select value={targetLang} onChange={e => setTargetLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
+                  {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
                 </select>
               </div>
-              <button
-                onClick={handleExplain}
-                disabled={explaining}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer border-none disabled:opacity-50"
-                style={{ minHeight: '44px' }}
-              >
-                {explaining ? <Loader2 className="w-4 h-4 animate-spin" /> : <Landmark className="w-4 h-4" />}
+              <button onClick={handleExplain} disabled={explaining} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: explaining ? 0.5 : 1 }}>
+                {explaining ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Landmark style={{ width: 14, height: 14 }} />}
                 {explaining ? t('behoerde.explaining') : t('behoerde.explainButton')}
               </button>
             </div>
           </div>
 
-          {/* Explanation Result */}
+          {/* Explanation */}
           {erklaerung && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-              <h3 className="text-sm font-semibold text-slate-900 mb-3">{t('behoerde.explanationTitle')}</h3>
-              <div className="relative bg-slate-50 rounded-lg p-4 border border-slate-200">
-                <button
-                  onClick={handleCopy}
-                  className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer bg-transparent border-none"
-                  title={t('document.copy')}
-                >
-                  {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('behoerde.explanationTitle')}</h3>
+              <div style={{ position: 'relative', padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                <button onClick={handleCopy} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  {copied ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                 </button>
-                <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap pr-10">
-                  {erklaerung}
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{erklaerung}</div>
               </div>
             </div>
           )}
 
           {/* Legal Assessment */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Scale className="w-5 h-5 text-amber-600" />
-              <h3 className="text-sm font-semibold text-slate-900">{t('behoerde.legalAssessmentTitle')}</h3>
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <Scale style={{ width: 16, height: 16, color: '#fbbf24' }} />
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.legalAssessmentTitle')}</h3>
             </div>
-            <button
-              onClick={handleLegalAssessment}
-              disabled={assessingLegal}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors cursor-pointer border-none disabled:opacity-50"
-              style={{ minHeight: '44px' }}
-            >
-              {assessingLegal ? <Loader2 className="w-4 h-4 animate-spin" /> : <Scale className="w-4 h-4" />}
+            <button onClick={handleLegalAssessment} disabled={assessingLegal} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
+              background: 'var(--warning-soft)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)',
+              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: assessingLegal ? 0.5 : 1,
+            }}>
+              {assessingLegal ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Scale style={{ width: 14, height: 14 }} />}
               {assessingLegal ? t('behoerde.analyzing') : t('behoerde.requestAssessment')}
             </button>
-
             {legalAssessment && (
               <>
-                <div className="relative mt-4 bg-amber-50 rounded-lg p-4 border border-amber-200">
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer bg-transparent border-none"
-                    title={t('document.copy')}
-                  >
-                    {copiedLegal ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+                <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                  <button onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    {copiedLegal ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                   </button>
-                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap pr-10">
-                    {legalAssessment}
-                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{legalAssessment}</div>
                 </div>
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                  <p className="text-xs text-yellow-800">
-                    {t('behoerde.legalDisclaimer')}
-                  </p>
+                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                  <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.legalDisclaimer')}</p>
                 </div>
               </>
             )}
           </div>
 
-          {/* Objection / Widerspruch */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Shield className="w-5 h-5 text-red-600" />
-              <h3 className="text-sm font-semibold text-slate-900">{t('behoerde.objectionTitle')}</h3>
+          {/* Objection */}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+              <Shield style={{ width: 16, height: 16, color: '#ef4444' }} />
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.objectionTitle')}</h3>
             </div>
-            <button
-              onClick={handleContestableElements}
-              disabled={loadingElements}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors cursor-pointer border-none disabled:opacity-50"
-              style={{ minHeight: '44px' }}
-            >
-              {loadingElements ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+            <button onClick={handleContestableElements} disabled={loadingElements} style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
+              background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: loadingElements ? 0.5 : 1,
+            }}>
+              {loadingElements ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Shield style={{ width: 14, height: 14 }} />}
               {loadingElements ? t('behoerde.analyzing') : t('behoerde.checkElements')}
             </button>
 
             {contestableElements.length > 0 && (
-              <div className="mt-4">
-                {/* Desktop: Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50">
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.elementHeader')}</th>
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.descriptionHeader')}</th>
-                        <th className="text-left px-3 py-2 text-xs font-medium text-slate-500 border-b">{t('behoerde.reasonHeader')}</th>
-                        <th className="px-3 py-2 text-xs font-medium text-slate-500 border-b w-10"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {contestableElements.map(el => (
-                        <tr key={el.id} className="border-b border-slate-100 hover:bg-slate-50">
-                          <td className="px-3 py-2 font-medium text-slate-800">{el.element}</td>
-                          <td className="px-3 py-2 text-slate-600">{el.description}</td>
-                          <td className="px-3 py-2 text-slate-500 text-xs">{el.reason}</td>
-                          <td className="px-3 py-2 text-center">
-                            <input
-                              type="checkbox"
-                              checked={selectedElements.has(el.id)}
-                              onChange={() => toggleElement(el.id)}
-                              className="w-4 h-4 accent-red-600 cursor-pointer"
-                            />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile: Cards */}
-                <div className="md:hidden space-y-3">
+              <div style={{ marginTop: 14 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {contestableElements.map(el => (
                     <div
                       key={el.id}
                       onClick={() => toggleElement(el.id)}
-                      className={`relative rounded-xl border p-4 cursor-pointer transition-all ${
-                        selectedElements.has(el.id)
-                          ? 'border-red-400 bg-red-50 shadow-sm'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
+                      style={{
+                        position: 'relative', borderRadius: 10, padding: 14, cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        background: selectedElements.has(el.id) ? 'var(--danger-soft)' : 'var(--bg-glass)',
+                        border: selectedElements.has(el.id) ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border-glass)',
+                      }}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-slate-900">{el.element}</p>
-                          <p className="text-sm text-slate-600 mt-1">{el.description}</p>
-                          <p className="text-xs text-slate-400 mt-2">{el.reason}</p>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{el.element}</p>
+                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0' }}>{el.description}</p>
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>{el.reason}</p>
                         </div>
                         <input
                           type="checkbox"
                           checked={selectedElements.has(el.id)}
                           onChange={() => toggleElement(el.id)}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-5 h-5 accent-red-600 cursor-pointer shrink-0 mt-0.5"
+                          style={{ width: 18, height: 18, accentColor: '#ef4444', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}
                         />
                       </div>
                     </div>
@@ -430,13 +344,13 @@ export default function BehoerdeAssistent() {
                 </div>
 
                 {selectedElements.size > 0 && (
-                  <button
-                    onClick={handleGenerateObjection}
-                    disabled={generatingObjection}
-                    className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-red-700 text-white rounded-lg text-sm font-medium hover:bg-red-800 transition-colors cursor-pointer border-none disabled:opacity-50"
-                    style={{ minHeight: '44px' }}
-                  >
-                    {generatingObjection ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                  <button onClick={handleGenerateObjection} disabled={generatingObjection} style={{
+                    marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '12px 20px', background: '#ef4444', color: 'white',
+                    border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    opacity: generatingObjection ? 0.5 : 1,
+                  }}>
+                    {generatingObjection ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <FileText style={{ width: 14, height: 14 }} />}
                     {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
                   </button>
                 )}
@@ -445,22 +359,14 @@ export default function BehoerdeAssistent() {
 
             {objectionLetter && (
               <>
-                <div className="relative mt-4 bg-red-50 rounded-lg p-4 border border-red-200">
-                  <button
-                    onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-red-100 transition-colors cursor-pointer bg-transparent border-none"
-                    title={t('document.copy')}
-                  >
-                    {copiedObjection ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+                <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                  <button onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    {copiedObjection ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                   </button>
-                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap pr-10">
-                    {objectionLetter}
-                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{objectionLetter}</div>
                 </div>
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
-                  <p className="text-xs text-yellow-800">
-                    {t('behoerde.objectionDisclaimer')}
-                  </p>
+                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                  <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.objectionDisclaimer')}</p>
                 </div>
               </>
             )}
@@ -469,43 +375,45 @@ export default function BehoerdeAssistent() {
       )}
 
       {/* Previous Documents */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-900">{t('behoerde.previousDocs')}</h2>
+      <div className="glass-card animate-fade-in-up" style={{ overflow: 'hidden', padding: 0 }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-glass)' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.previousDocs')}</h2>
         </div>
         {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : docs.length === 0 ? (
-          <div className="text-center py-10 text-slate-400">
-            <Landmark className="w-10 h-10 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">{t('behoerde.noDocs')}</p>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <Landmark style={{ width: 36, height: 36, color: 'var(--text-muted)', opacity: 0.3, margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('behoerde.noDocs')}</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
-            {docs.map(doc => (
+          <div>
+            {docs.map((doc, idx) => (
               <div
                 key={doc.id}
-                className={`px-5 py-3 hover:bg-indigo-50/50 cursor-pointer transition-colors flex items-center gap-3 ${
-                  selectedDoc?.id === doc.id ? 'bg-indigo-50' : ''
-                }`}
+                style={{
+                  padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
+                  borderBottom: idx < docs.length - 1 ? '1px solid var(--border-glass)' : 'none',
+                  background: selectedDoc?.id === doc.id ? 'var(--accent-soft)' : 'transparent',
+                  transition: 'background 0.15s ease',
+                }}
                 onClick={() => selectDoc(doc)}
               >
-                <FileText className="w-5 h-5 text-teal-500 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-800 truncate">{doc.absender || doc.dateiname}</p>
-                  {doc.datum && (
-                    <p className="text-xs text-slate-500">{new Date(doc.datum).toLocaleDateString('de-DE')}</p>
-                  )}
+                <FileText style={{ width: 18, height: 18, color: '#2dd4bf', flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.absender || doc.dateiname}</p>
+                  {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</p>}
                 </div>
-                {doc.erklaerung && <Check className="w-4 h-4 text-green-500 shrink-0" />}
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                {doc.erklaerung && <Check style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0 }} />}
+                <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
               </div>
             ))}
           </div>
         )}
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

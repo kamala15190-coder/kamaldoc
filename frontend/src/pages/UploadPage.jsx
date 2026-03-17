@@ -207,91 +207,107 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-900 mb-6">{t('upload.title')}</h1>
+    <div>
+      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }} className="animate-fade-in">
+        {t('upload.title')}
+      </h1>
 
       {/* Vorschau wenn Datei ausgewählt */}
       {selectedFile && (
-        <div className="bg-white rounded-xl shadow-sm border-2 border-green-300 p-4 md:p-5 mb-6" style={{ animation: 'fadeInUp 0.3s ease-out' }}>
-          {/* Visuelles Feedback: grüner Rand + Dateiname */}
-          <div className="flex items-center gap-2 mb-3 text-green-700 bg-green-50 rounded-lg px-3 py-2">
-            <CheckCircle className="w-4 h-4 shrink-0" />
-            <span className="text-sm font-medium truncate">{t('upload.fileSelected', { name: selectedFile.name })}</span>
-            <span className="text-xs text-green-600 shrink-0">({(selectedFile.size / 1024).toFixed(0)} KB)</span>
+        <div className="glass-card animate-scale-in" style={{ padding: 20, border: '1px solid rgba(16,185,129,0.25)' }}>
+          {/* Visuelles Feedback */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+            padding: '10px 14px', borderRadius: 10,
+            background: 'var(--success-soft)', border: '1px solid rgba(16,185,129,0.15)',
+          }}>
+            <CheckCircle style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#34d399', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {t('upload.fileSelected', { name: selectedFile.name })}
+            </span>
+            <span style={{ fontSize: 11, color: '#6ee7b7', flexShrink: 0 }}>({(selectedFile.size / 1024).toFixed(0)} KB)</span>
           </div>
 
-          {/* Mobile: Bild groß zentriert */}
-          <div className="md:hidden mb-4">
-            <div className="w-full aspect-square max-w-xs mx-auto rounded-xl bg-slate-100 overflow-hidden flex items-center justify-center">
-              {preview === 'pdf' ? (
-                <FileText className="w-16 h-16 text-slate-400" />
-              ) : preview ? (
-                <img src={preview} alt="Vorschau" className="w-full h-full object-cover" />
-              ) : (
-                <ImageIcon className="w-16 h-16 text-slate-300" />
-              )}
-            </div>
-          </div>
-
-          {/* Desktop: Side-by-side */}
-          <div className="hidden md:flex items-start gap-4">
-            <div className="w-32 h-32 rounded-lg bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-              {preview === 'pdf' ? (
-                <FileText className="w-12 h-12 text-slate-400" />
-              ) : preview ? (
-                <img src={preview} alt="Vorschau" className="w-full h-full object-cover" />
-              ) : (
-                <ImageIcon className="w-12 h-12 text-slate-300" />
-              )}
-            </div>
+          {/* Preview */}
+          <div style={{
+            width: '100%', aspectRatio: '1', maxWidth: 280, margin: '0 auto 16px',
+            borderRadius: 14, overflow: 'hidden',
+            background: 'rgba(255,255,255,0.03)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '1px solid var(--border-glass)',
+          }}>
+            {preview === 'pdf' ? (
+              <FileText style={{ width: 48, height: 48, color: 'var(--text-muted)', opacity: 0.5 }} />
+            ) : preview ? (
+              <img src={preview} alt="Vorschau" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : (
+              <ImageIcon style={{ width: 48, height: 48, color: 'var(--text-muted)', opacity: 0.3 }} />
+            )}
           </div>
 
           {/* Upload-Fortschritt */}
           {uploading && (
-            <div className="mt-4">
-              <div className="flex items-center justify-center gap-2 text-indigo-600 mb-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span className="text-sm font-medium">{t('upload.uploading')}</span>
+            <div style={{ marginTop: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  border: '2px solid rgba(139,92,246,0.2)',
+                  borderTopColor: 'var(--accent-solid)',
+                  animation: 'spin 0.8s linear infinite',
+                }} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-solid)' }}>{t('upload.uploading')}</span>
               </div>
-              <div className="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                <div className="bg-indigo-500 h-full rounded-full animate-pulse" style={{ width: '70%' }} />
+              <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--bg-glass)', overflow: 'hidden' }}>
+                <div style={{
+                  width: '70%', height: '100%', borderRadius: 2,
+                  background: 'var(--accent-gradient)',
+                  animation: 'shimmer 1.5s ease-in-out infinite',
+                  backgroundSize: '200% 100%',
+                }} />
               </div>
             </div>
           )}
 
           {/* Erfolg */}
           {uploadDone && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-green-600">
-              <CheckCircle className="w-5 h-5" />
-              <span className="text-sm font-medium">{t('upload.uploadSuccess')}</span>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#34d399' }}>{t('upload.uploadSuccess')}</span>
             </div>
           )}
 
           {/* Fehler */}
           {uploadError && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-red-600">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm">{uploadError}</span>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
+              <span style={{ fontSize: 13, color: '#fca5a5' }}>{uploadError}</span>
             </div>
           )}
 
           {/* Buttons */}
           {!uploading && !uploadDone && (
-            <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mt-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
               <button
                 onClick={handleUpload}
                 disabled={!selectedFile}
-                className="flex items-center justify-center gap-2 px-5 py-3 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 cursor-pointer border-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ minHeight: '48px' }}
+                className="btn-accent"
+                style={{
+                  width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  opacity: !selectedFile ? 0.5 : 1,
+                }}
               >
-                <Upload className="w-5 h-5" /> {t('upload.uploadButton')}
+                <Upload style={{ width: 18, height: 18 }} /> {t('upload.uploadButton')}
               </button>
               <button
                 onClick={handleReset}
-                className="flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-600 rounded-lg text-sm hover:bg-slate-50 cursor-pointer"
-                style={{ minHeight: '48px' }}
+                className="btn-ghost"
+                style={{
+                  width: '100%', padding: '12px 0', fontSize: 14,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
               >
-                <X className="w-4 h-4" /> {t('upload.cancel')}
+                <X style={{ width: 16, height: 16 }} /> {t('upload.cancel')}
               </button>
             </div>
           )}
@@ -304,102 +320,102 @@ export default function UploadPage() {
           {/* Desktop: Drag & Drop */}
           {!isMobile && (
             <div
-              className={`border-2 border-dashed rounded-2xl p-12 text-center transition-colors cursor-pointer ${
-                dragOver
-                  ? 'border-indigo-500 bg-indigo-50'
-                  : 'border-slate-300 bg-white hover:border-indigo-300 hover:bg-slate-50'
-              }`}
+              style={{
+                border: '2px dashed',
+                borderColor: dragOver ? 'var(--accent-solid)' : 'var(--border-glass-strong)',
+                borderRadius: 18, padding: 48, textAlign: 'center',
+                background: dragOver ? 'var(--accent-soft)' : 'var(--bg-glass)',
+                cursor: 'pointer', transition: 'all 0.25s ease',
+              }}
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onClick={openFileDialog}
             >
-              <Upload className={`w-12 h-12 mx-auto mb-4 ${dragOver ? 'text-indigo-500' : 'text-slate-400'}`} />
-              <p className="text-lg font-medium text-slate-700 mb-1">
+              <Upload style={{ width: 40, height: 40, margin: '0 auto 16px', color: dragOver ? 'var(--accent-solid)' : 'var(--text-muted)' }} />
+              <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>
                 {t('upload.dragDrop')}
               </p>
-              <p className="text-sm text-slate-500">
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
                 {t('upload.fileTypes')}
               </p>
             </div>
           )}
 
-          {/* Mobile: Große Buttons nebeneinander */}
+          {/* Mobile: Große Buttons */}
           {isMobile && (
-            <div>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="animate-fade-in-up">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <button
                   onClick={openCamera}
-                  className="flex flex-col items-center justify-center gap-2 px-4 bg-indigo-600 text-white rounded-2xl text-sm font-medium cursor-pointer border-none active:scale-95 transition-transform"
-                  style={{ minHeight: '80px' }}
+                  className="btn-accent"
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, padding: 20, borderRadius: 16, minHeight: 100,
+                    fontSize: 14, fontWeight: 600,
+                  }}
                 >
-                  <Camera className="w-7 h-7" />
+                  <Camera style={{ width: 28, height: 28 }} />
                   {t('upload.camera')}
                 </button>
                 <button
                   onClick={openGallery}
-                  className="flex flex-col items-center justify-center gap-2 px-4 bg-white border-2 border-slate-200 text-slate-700 rounded-2xl text-sm font-medium cursor-pointer active:scale-95 transition-transform"
-                  style={{ minHeight: '80px' }}
+                  className="glass-card"
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 8, padding: 20, minHeight: 100,
+                    fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
+                    cursor: 'pointer', border: '1px solid var(--border-glass-strong)',
+                  }}
                 >
-                  <ImageIcon className="w-7 h-7" />
+                  <ImageIcon style={{ width: 28, height: 28, color: 'var(--text-secondary)' }} />
                   {t('upload.gallery')}
                 </button>
               </div>
-              <p className="text-center text-xs text-slate-400 mt-3">{t('upload.fileTypes')}</p>
+
+              {/* File button below */}
+              <button
+                onClick={openFileDialog}
+                className="btn-ghost"
+                style={{
+                  width: '100%', marginTop: 12, padding: '14px 0',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  fontSize: 14, fontWeight: 500,
+                }}
+              >
+                <FileText style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+                <span style={{ color: 'var(--text-secondary)' }}>PDF / {t('upload.fileTypes')}</span>
+              </button>
             </div>
           )}
 
           {/* Desktop: Kamera-Button unter Drag&Drop */}
           {!isMobile && (
-            <div className="mt-4 flex justify-center gap-3">
-              <button
-                onClick={openCamera}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
-              >
-                <Camera className="w-4 h-4" /> {t('upload.cameraButton')}
+            <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 10 }}>
+              <button onClick={openCamera} className="btn-ghost" style={{ padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Camera style={{ width: 16, height: 16 }} /> {t('upload.cameraButton')}
               </button>
-              <button
-                onClick={openGallery}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 cursor-pointer"
-              >
-                <ImageIcon className="w-4 h-4" /> {t('upload.galleryButton')}
+              <button onClick={openGallery} className="btn-ghost" style={{ padding: '10px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <ImageIcon style={{ width: 16, height: 16 }} /> {t('upload.galleryButton')}
               </button>
             </div>
           )}
 
           {/* Fehler */}
           {uploadError && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-red-600">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-sm">{uploadError}</span>
+            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
+              <span style={{ fontSize: 13, color: '#fca5a5' }}>{uploadError}</span>
             </div>
           )}
         </>
       )}
 
-      {/* Hidden file inputs — IMMER gerendert, damit refs stabil bleiben */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-        style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-        tabIndex={-1}
-      />
-      <input
-        ref={cameraInputRef}
-        type="file"
-        accept="image/jpeg,image/png"
-        capture="environment"
-        style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-        tabIndex={-1}
-      />
-      <input
-        ref={galleryInputRef}
-        type="file"
-        accept="image/*,application/pdf"
-        style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
-        tabIndex={-1}
-      />
+      {/* Hidden file inputs */}
+      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
+      <input ref={cameraInputRef} type="file" accept="image/jpeg,image/png" capture="environment" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
+      <input ref={galleryInputRef} type="file" accept="image/*,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

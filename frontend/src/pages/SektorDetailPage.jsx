@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next'
 import { getDocuments } from '../api'
 
 const SEKTOR_CONFIG = {
-  gesamt: { icon: FileText, color: 'text-indigo-600 bg-indigo-50', labelKey: 'dashboard.total' },
-  offen: { icon: AlertCircle, color: 'text-red-600 bg-red-50', labelKey: 'dashboard.open' },
-  rechnungen: { icon: Receipt, color: 'text-amber-600 bg-amber-50', labelKey: 'dashboard.invoices' },
-  briefe: { icon: Mail, color: 'text-blue-600 bg-blue-50', labelKey: 'dashboard.letters' },
+  gesamt: { icon: FileText, color: 'var(--accent-solid)', bg: 'var(--accent-soft)', labelKey: 'dashboard.total' },
+  offen: { icon: AlertCircle, color: '#ef4444', bg: 'var(--danger-soft)', labelKey: 'dashboard.open' },
+  rechnungen: { icon: Receipt, color: '#fbbf24', bg: 'var(--warning-soft)', labelKey: 'dashboard.invoices' },
+  briefe: { icon: Mail, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', labelKey: 'dashboard.letters' },
 }
 
 export default function SektorDetailPage() {
@@ -47,110 +47,60 @@ export default function SektorDetailPage() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => navigate('/')}
-          className="p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer bg-transparent border-none"
-        >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <button onClick={() => navigate('/')} style={{ padding: 8, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <ArrowLeft style={{ width: 18, height: 18, color: 'var(--text-secondary)' }} />
         </button>
-        <div className={`p-2 rounded-lg ${config.color}`}>
-          <Icon className="w-5 h-5" />
+        <div style={{ padding: 8, borderRadius: 10, background: config.bg }}>
+          <Icon style={{ width: 18, height: 18, color: config.color }} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{t(config.labelKey)}</h1>
-          <p className="text-sm text-slate-500">{documents.length} Dokumente</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t(config.labelKey)}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{documents.length} Dokumente</p>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : documents.length === 0 ? (
-        <div className="text-center py-20">
-          <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <p className="text-slate-500 text-lg">Keine Dokumente in diesem Bereich.</p>
+        <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+          <FileText style={{ width: 48, height: 48, color: 'var(--text-muted)', opacity: 0.3, margin: '0 auto 12px' }} />
+          <p style={{ fontSize: 15, color: 'var(--text-muted)', margin: 0 }}>Keine Dokumente in diesem Bereich.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          {/* Desktop Table */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50 text-left">
-                  <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('dashboard.sender')}</th>
-                  <th className="px-5 py-3 font-medium text-slate-500 text-xs">Upload-Datum</th>
-                  <th className="px-5 py-3 font-medium text-slate-500 text-xs">Deadline</th>
-                  <th className="px-5 py-3 font-medium text-slate-500 text-xs">Notizen</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.map((doc) => (
-                  <tr
-                    key={doc.id}
-                    className="border-t border-slate-100 hover:bg-indigo-50/50 cursor-pointer transition-colors"
-                    onClick={() => navigate(`/documents/${doc.id}`)}
-                  >
-                    <td className="px-5 py-3 font-medium text-slate-800">
-                      {doc.absender || doc.dateiname || '—'}
-                    </td>
-                    <td className="px-5 py-3 text-slate-600 whitespace-nowrap">
-                      {doc.hochgeladen_am
-                        ? new Date(doc.hochgeladen_am).toLocaleDateString('de-DE')
-                        : doc.datum
-                        ? new Date(doc.datum).toLocaleDateString('de-DE')
-                        : '—'}
-                    </td>
-                    <td className={`px-5 py-3 whitespace-nowrap ${
-                      doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date()
-                        ? 'text-red-600 font-medium'
-                        : 'text-slate-600'
-                    }`}>
-                      {doc.faelligkeitsdatum
-                        ? new Date(doc.faelligkeitsdatum).toLocaleDateString('de-DE')
-                        : doc.deadline
-                        ? new Date(doc.deadline).toLocaleDateString('de-DE')
-                        : '—'}
-                    </td>
-                    <td className="px-5 py-3 text-slate-500 max-w-xs truncate">
-                      {doc.notizen || doc.zusammenfassung || '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Mobile Cards */}
-          <div className="md:hidden divide-y divide-slate-100">
-            {documents.map((doc) => (
+        <div className="glass-card animate-fade-in-up" style={{ overflow: 'hidden', padding: 0 }}>
+          <div>
+            {documents.map((doc, idx) => (
               <div
                 key={doc.id}
-                className="p-4 hover:bg-slate-50 cursor-pointer transition-colors"
+                style={{
+                  padding: '14px 16px', cursor: 'pointer', transition: 'background 0.15s ease',
+                  borderBottom: idx < documents.length - 1 ? '1px solid var(--border-glass)' : 'none',
+                }}
                 onClick={() => navigate(`/documents/${doc.id}`)}
               >
-                <p className="text-base font-semibold text-slate-900 truncate">
+                <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {doc.absender || doc.dateiname || '—'}
                 </p>
-                <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>
                   <span>
                     {doc.hochgeladen_am
                       ? new Date(doc.hochgeladen_am).toLocaleDateString('de-DE')
                       : '—'}
                   </span>
                   {(doc.faelligkeitsdatum || doc.deadline) && (
-                    <span className={
-                      doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date()
-                        ? 'text-red-600 font-medium'
-                        : ''
-                    }>
+                    <span style={{
+                      color: doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date() ? '#ef4444' : 'var(--text-muted)',
+                      fontWeight: doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date() ? 600 : 400,
+                    }}>
                       Deadline: {new Date(doc.faelligkeitsdatum || doc.deadline).toLocaleDateString('de-DE')}
                     </span>
                   )}
                 </div>
                 {(doc.notizen || doc.zusammenfassung) && (
-                  <p className="text-xs text-slate-400 mt-1 truncate">
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '4px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {doc.notizen || doc.zusammenfassung}
                   </p>
                 )}
@@ -159,6 +109,7 @@ export default function SektorDetailPage() {
           </div>
         </div>
       )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

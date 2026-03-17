@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/KDoc_Logo.png",
+      "src": "/KDoc-Applogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/Logo.png",
+      "src": "/KDoc-Applogo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"

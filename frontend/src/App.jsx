@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
-import { Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign, Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Pencil, Check } from 'lucide-react';
+import {
+  Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
+  Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Pencil,
+  Check, Plus, ChevronRight, Settings
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
@@ -21,20 +25,24 @@ import BefundAssistent from './pages/BefundAssistent';
 import PricingPage from './pages/PricingPage';
 import DatenschutzPage from './pages/DatenschutzPage';
 import NutzungsbedingungenPage from './pages/NutzungsbedingungenPage';
+import AGBPage from './pages/AGBPage';
 import SupportPage from './pages/SupportPage';
 import AdminPage from './pages/AdminPage';
 import SektorDetailPage from './pages/SektorDetailPage';
 import { checkAdmin } from './api';
 
-const NAV_ITEMS = [
+const TAB_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { path: '/upload', labelKey: 'nav.upload', icon: Upload },
+  { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
+  { path: '/upload', labelKey: 'nav.upload', icon: Plus, isCenter: true },
   { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
+  { path: '/profil', labelKey: 'nav.profile', icon: User },
+];
+
+const MORE_ITEMS = [
   { path: '/behoerde', labelKey: 'nav.behoerde', icon: Landmark },
   { path: '/befund', labelKey: 'nav.befund', icon: Stethoscope },
-  { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
   { path: '/support', labelKey: 'nav.support', icon: Headphones },
-  { path: '/profil', labelKey: 'nav.profile', icon: User },
 ];
 
 function useIsAdmin() {
@@ -54,8 +62,17 @@ function PrivateRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-slate-600">{t('common.loading')}</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%',
+            border: '3px solid rgba(139,92,246,0.2)',
+            borderTopColor: 'var(--accent-solid)',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <span style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('common.loading')}</span>
+        </div>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
@@ -67,201 +84,271 @@ function PrivateRoute({ children }) {
   return children;
 }
 
-function NavBar() {
+function BottomTabBar() {
   const location = useLocation();
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [dashboardEditMode, setDashboardEditMode] = useState(false);
-  const { user, signOut } = useAuth();
   const { t } = useTranslation();
-  const isAdmin = useIsAdmin();
   const isActive = (path) => location.pathname === path;
+
+  return (
+    <nav className="tab-bar-glass fixed bottom-0 left-0 right-0 z-50" style={{
+      paddingBottom: 'var(--safe-area-bottom)',
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-around',
+        height: 'var(--tab-bar-height)',
+        maxWidth: 500,
+        margin: '0 auto',
+        padding: '0 4px',
+      }}>
+        {TAB_ITEMS.map(({ path, labelKey, icon: Icon, isCenter }) => {
+          const active = isActive(path);
+
+          if (isCenter) {
+            return (
+              <Link key={path} to={path} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 52, height: 52, borderRadius: 16,
+                background: 'var(--accent-gradient)',
+                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.35)',
+                textDecoration: 'none',
+                transform: 'translateY(-8px)',
+                transition: 'all 0.25s ease',
+              }}>
+                <Icon style={{ width: 24, height: 24, color: 'white', strokeWidth: 2.5 }} />
+              </Link>
+            );
+          }
+
+          return (
+            <Link key={path} to={path} style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              gap: 3, textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: 12,
+              transition: 'all 0.25s ease',
+              minWidth: 56,
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32, height: 32, borderRadius: 10,
+                background: active ? 'var(--accent-soft)' : 'transparent',
+                transition: 'all 0.25s ease',
+              }}>
+                <Icon style={{
+                  width: 20, height: 20,
+                  color: active ? 'var(--accent-solid)' : 'var(--text-muted)',
+                  strokeWidth: active ? 2.2 : 1.8,
+                  transition: 'all 0.25s ease',
+                }} />
+              </div>
+              <span style={{
+                fontSize: 10, fontWeight: active ? 600 : 500,
+                color: active ? 'var(--accent-solid)' : 'var(--text-muted)',
+                letterSpacing: '0.01em',
+                transition: 'all 0.25s ease',
+              }}>
+                {t(labelKey)}
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+function TopHeader() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [dashboardEditMode, setDashboardEditMode] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const isAdmin = useIsAdmin();
+  const { signOut } = useAuth();
   const isDashboard = location.pathname === '/';
 
-  // Sync edit mode state from Dashboard
   useEffect(() => {
     const handler = (e) => setDashboardEditMode(e.detail);
     window.addEventListener('dashboard-edit-mode', handler);
     return () => window.removeEventListener('dashboard-edit-mode', handler);
   }, []);
 
-  // Reset edit mode when navigating away
   useEffect(() => {
     if (!isDashboard) setDashboardEditMode(false);
   }, [isDashboard]);
 
-  const handleLogout = async () => {
-    await signOut();
-    setDrawerOpen(false);
-  };
-
-  // Drawer schließen bei Routenwechsel
   useEffect(() => {
-    setDrawerOpen(false);
+    setMoreOpen(false);
   }, [location.pathname]);
 
-  // Body scroll sperren wenn Drawer offen
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : '';
+    document.body.style.overflow = moreOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [drawerOpen]);
+  }, [moreOpen]);
+
+  const handleLogout = async () => {
+    await signOut();
+    setMoreOpen(false);
+  };
 
   return (
     <>
-      <nav className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 md:h-16">
-            <Link to="/" className="flex items-center gap-2 no-underline">
-              <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-9 object-contain" />
-            </Link>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 40,
+        background: 'rgba(10, 15, 26, 0.8)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border-glass)',
+        padding: '0 16px',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          height: 56, maxWidth: 500, margin: '0 auto',
+        }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 30, objectFit: 'contain' }} />
+          </Link>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-0.5">
-              {NAV_ITEMS.map(({ path, labelKey, icon: Icon }) => (
-                <Link
-                  key={path}
-                  to={path}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium no-underline transition-colors whitespace-nowrap ${
-                    isActive(path) ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  {t(labelKey)}
-                </Link>
-              ))}
-              {isAdmin && (
-                <Link
-                  to="/admin"
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium no-underline transition-colors whitespace-nowrap ${
-                    isActive('/admin') ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                  }`}
-                >
-                  <Shield className="w-3.5 h-3.5" />
-                  Admin
-                </Link>
-              )}
-              <UpgradeButton />
-              {isDashboard && (
-                <button
-                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
-                  className={`p-1.5 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
-                    dashboardEditMode ? 'text-blue-600 hover:bg-blue-50' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                  }`}
-                  title={dashboardEditMode ? 'Bearbeitung beenden' : 'Dashboard bearbeiten'}
-                >
-                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
-                </button>
-              )}
-              <LanguageSwitcher />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            {isDashboard && (
               <button
-                onClick={handleLogout}
-                className="flex items-center gap-1.5 px-3 py-1.5 ml-2 rounded-lg text-xs font-medium text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors cursor-pointer bg-transparent border-none"
+                onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 36, height: 36, borderRadius: 10,
+                  background: dashboardEditMode ? 'var(--accent-soft)' : 'transparent',
+                  border: 'none', cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                <LogOut className="w-3.5 h-3.5" />
-                {t('nav.logout')}
+                {dashboardEditMode
+                  ? <Check style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
+                  : <Pencil style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+                }
               </button>
-            </div>
-
-            {/* Mobile: Language + Edit + Hamburger */}
-            <div className="lg:hidden flex items-center gap-1">
-              {isDashboard && (
-                <button
-                  onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
-                  className={`flex items-center justify-center w-9 h-9 rounded-lg transition-colors cursor-pointer bg-transparent border-none ${
-                    dashboardEditMode ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  {dashboardEditMode ? <Check className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
-                </button>
-              )}
-              <LanguageSwitcher />
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
-                style={{ minHeight: '44px', minWidth: '44px' }}
-              >
-                <Menu className="w-6 h-6" />
-              </button>
-            </div>
+            )}
+            <LanguageSwitcher />
+            <button
+              onClick={() => setMoreOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 36, height: 36, borderRadius: 10,
+                background: 'transparent', border: 'none', cursor: 'pointer',
+              }}
+            >
+              <Menu style={{ width: 20, height: 20, color: 'var(--text-secondary)' }} />
+            </button>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Mobile Drawer Overlay */}
-      {drawerOpen && (
+      {/* More menu overlay */}
+      {moreOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-60 bg-black/40 transition-opacity duration-300"
-          onClick={() => setDrawerOpen(false)}
+          className="modal-overlay"
+          style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setMoreOpen(false)}
         />
       )}
 
-      {/* Mobile Drawer */}
-      <div
-        className={`lg:hidden fixed top-0 left-0 bottom-0 z-70 w-72 bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
-          drawerOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-8 object-contain" />
-          </div>
+      {/* More menu drawer from right */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 70,
+        width: 280, background: 'var(--bg-secondary)',
+        borderLeft: '1px solid var(--border-glass)',
+        transform: moreOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        display: 'flex', flexDirection: 'column',
+      }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px', borderBottom: '1px solid var(--border-glass)',
+        }}>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Menu</span>
           <button
-            onClick={() => setDrawerOpen(false)}
-            className="flex items-center justify-center w-10 h-10 rounded-lg text-slate-500 hover:bg-slate-100 cursor-pointer bg-transparent border-none"
-            style={{ minHeight: '44px', minWidth: '44px' }}
+            onClick={() => setMoreOpen(false)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 36, height: 36, borderRadius: 10,
+              background: 'var(--bg-glass)', border: 'none', cursor: 'pointer',
+            }}
           >
-            <X className="w-5 h-5" />
+            <X style={{ width: 18, height: 18, color: 'var(--text-secondary)' }} />
           </button>
         </div>
-        <nav className="p-3 space-y-1">
-          {NAV_ITEMS.map(({ path, labelKey, icon: Icon }) => (
+
+        <div style={{ padding: 12, flex: 1, overflowY: 'auto' }}>
+          {MORE_ITEMS.map(({ path, labelKey, icon: Icon }) => (
             <Link
               key={path}
               to={path}
-              onClick={() => setDrawerOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium no-underline transition-all ${
-                isActive(path)
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-              style={{ minHeight: '48px' }}
+              onClick={() => setMoreOpen(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 12, textDecoration: 'none',
+                color: location.pathname === path ? 'var(--accent-solid)' : 'var(--text-primary)',
+                background: location.pathname === path ? 'var(--accent-soft)' : 'transparent',
+                marginBottom: 4,
+                transition: 'all 0.2s ease',
+              }}
             >
-              <Icon className="w-5 h-5" />
-              {t(labelKey)}
+              <Icon style={{ width: 20, height: 20, opacity: 0.8 }} />
+              <span style={{ fontSize: 15, fontWeight: 500 }}>{t(labelKey)}</span>
+              <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
             </Link>
           ))}
-          
-          {/* Admin (Mobile) */}
+
+          <Link
+            to="/pricing"
+            onClick={() => setMoreOpen(false)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 16px', borderRadius: 12, textDecoration: 'none',
+              color: 'var(--text-primary)', marginBottom: 4,
+              background: location.pathname === '/pricing' ? 'var(--accent-soft)' : 'transparent',
+            }}
+          >
+            <Zap style={{ width: 20, height: 20, opacity: 0.8 }} />
+            <span style={{ fontSize: 15, fontWeight: 500 }}>{t('pricing.upgrade')}</span>
+            <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
+          </Link>
+
           {isAdmin && (
             <Link
               to="/admin"
-              onClick={() => setDrawerOpen(false)}
-              className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium no-underline transition-all ${
-                isActive('/admin')
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-              }`}
-              style={{ minHeight: '48px' }}
+              onClick={() => setMoreOpen(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '14px 16px', borderRadius: 12, textDecoration: 'none',
+                color: 'var(--text-primary)', marginBottom: 4,
+              }}
             >
-              <Shield className="w-5 h-5" />
-              Admin
+              <Shield style={{ width: 20, height: 20, opacity: 0.8 }} />
+              <span style={{ fontSize: 15, fontWeight: 500 }}>Admin</span>
+              <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
             </Link>
           )}
+        </div>
 
-          {/* Upgrade Button (Mobile) */}
-          <div className="px-3 pt-2">
-            <UpgradeButton mobile />
-          </div>
-
-          {/* Logout Button */}
+        <div style={{
+          padding: '12px 16px 24px', borderTop: '1px solid var(--border-glass)',
+        }}>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-base font-medium text-red-600 hover:bg-red-50 transition-all cursor-pointer bg-transparent border-none"
-            style={{ minHeight: '48px' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              width: '100%', padding: '14px 16px', borderRadius: 12,
+              background: 'var(--danger-soft)', border: 'none',
+              color: '#ef4444', fontSize: 15, fontWeight: 500,
+              cursor: 'pointer', transition: 'all 0.2s ease',
+            }}
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut style={{ width: 18, height: 18 }} />
             {t('nav.logout')}
           </button>
-        </nav>
+        </div>
       </div>
     </>
   );
@@ -305,36 +392,58 @@ function LanguageSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(prev => !prev)}
-        className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer bg-transparent border-none text-lg"
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: 36, height: 36, borderRadius: 10,
+          background: 'transparent', border: 'none', cursor: 'pointer',
+          fontSize: 18,
+        }}
         title={currentLang.label}
-        style={{ minHeight: '36px', minWidth: '36px' }}
       >
         {currentLang.flag}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-[100] max-h-72 overflow-y-auto w-52">
+        <div className="modal-content" style={{
+          position: 'absolute', right: 0, top: '100%', marginTop: 8,
+          background: 'var(--bg-secondary)', borderRadius: 14,
+          border: '1px solid var(--border-glass-strong)',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.4)',
+          padding: 6, zIndex: 100, maxHeight: 288, overflowY: 'auto', width: 200,
+        }}>
           {LANGUAGES.slice(0, 2).map(lang => (
             <button
               key={lang.code}
               onClick={() => handleChange(lang.code)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors cursor-pointer bg-transparent border-none ${
-                lang.code === i18n.language ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'
-              }`}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 10, border: 'none',
+                background: lang.code === i18n.language ? 'var(--accent-soft)' : 'transparent',
+                color: lang.code === i18n.language ? 'var(--accent-solid)' : 'var(--text-primary)',
+                fontWeight: lang.code === i18n.language ? 600 : 400,
+                fontSize: 14, cursor: 'pointer', textAlign: 'left',
+                transition: 'background 0.15s ease',
+              }}
             >
-              <span className="text-base">{lang.flag}</span>
+              <span style={{ fontSize: 16 }}>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
-          <div className="border-t border-slate-100 my-1" />
+          <div style={{ height: 1, background: 'var(--border-glass)', margin: '4px 8px' }} />
           {LANGUAGES.slice(2).map(lang => (
             <button
               key={lang.code}
               onClick={() => handleChange(lang.code)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-slate-50 transition-colors cursor-pointer bg-transparent border-none ${
-                lang.code === i18n.language ? 'bg-indigo-50 text-indigo-700 font-semibold' : 'text-slate-700'
-              }`}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 10, border: 'none',
+                background: lang.code === i18n.language ? 'var(--accent-soft)' : 'transparent',
+                color: lang.code === i18n.language ? 'var(--accent-solid)' : 'var(--text-primary)',
+                fontWeight: lang.code === i18n.language ? 600 : 400,
+                fontSize: 14, cursor: 'pointer', textAlign: 'left',
+                transition: 'background 0.15s ease',
+              }}
             >
-              <span className="text-base">{lang.flag}</span>
+              <span style={{ fontSize: 16 }}>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
@@ -354,14 +463,19 @@ function UpgradeButton({ mobile = false }) {
     return (
       <Link
         to="/pricing"
-        className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
-          mobile
-            ? 'w-full px-4 py-3 rounded-xl text-base bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-            : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-        }`}
-        style={mobile ? { minHeight: '48px' } : {}}
+        className="no-underline"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          width: mobile ? '100%' : 'auto',
+          padding: mobile ? '14px 16px' : '6px 12px',
+          borderRadius: 12,
+          background: 'var(--accent-soft)',
+          color: 'var(--accent-solid)',
+          fontWeight: 600, fontSize: mobile ? 15 : 12,
+          transition: 'all 0.2s ease',
+        }}
       >
-        <Crown className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+        <Crown style={{ width: mobile ? 20 : 14, height: mobile ? 20 : 14 }} />
         {t('pricing.managePlan')}
       </Link>
     );
@@ -371,14 +485,19 @@ function UpgradeButton({ mobile = false }) {
     return (
       <Link
         to="/pricing"
-        className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
-          mobile
-            ? 'w-full px-4 py-3 rounded-xl text-base bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-            : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
-        }`}
-        style={mobile ? { minHeight: '48px' } : {}}
+        className="no-underline"
+        style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          width: mobile ? '100%' : 'auto',
+          padding: mobile ? '14px 16px' : '6px 12px',
+          borderRadius: 12,
+          background: 'var(--accent-soft)',
+          color: 'var(--accent-solid)',
+          fontWeight: 600, fontSize: mobile ? 15 : 12,
+          transition: 'all 0.2s ease',
+        }}
       >
-        <Rocket className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+        <Rocket style={{ width: mobile ? 20 : 14, height: mobile ? 20 : 14 }} />
         {t('pricing.upgradePro')}
       </Link>
     );
@@ -388,14 +507,19 @@ function UpgradeButton({ mobile = false }) {
   return (
     <Link
       to="/pricing"
-      className={`flex items-center gap-1.5 no-underline font-semibold transition-all ${
-        mobile
-          ? 'w-full px-4 py-3 rounded-xl text-base bg-amber-50 text-amber-700 hover:bg-amber-100'
-          : 'px-2.5 py-1.5 ml-1 rounded-lg text-xs bg-amber-50 text-amber-700 hover:bg-amber-100'
-      }`}
-      style={mobile ? { minHeight: '48px' } : {}}
+      className="no-underline"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        width: mobile ? '100%' : 'auto',
+        padding: mobile ? '14px 16px' : '6px 12px',
+        borderRadius: 12,
+        background: 'var(--warning-soft)',
+        color: '#fbbf24',
+        fontWeight: 600, fontSize: mobile ? 15 : 12,
+        transition: 'all 0.2s ease',
+      }}
     >
-      <Zap className={mobile ? 'w-5 h-5' : 'w-3.5 h-3.5'} />
+      <Zap style={{ width: mobile ? 20 : 14, height: mobile ? 20 : 14 }} />
       {t('pricing.upgrade')}
     </Link>
   );
@@ -409,7 +533,7 @@ function NativeStatusBar() {
   useEffect(() => {
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
-        StatusBar.setBackgroundColor({ color: '#1F2937' }).catch(() => {});
+        StatusBar.setBackgroundColor({ color: '#0a0f1a' }).catch(() => {});
         StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
       });
     }
@@ -417,23 +541,28 @@ function NativeStatusBar() {
 
   return (
     <div style={{
-      backgroundColor: '#1F2937',
-      height: '30px',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      background: 'linear-gradient(90deg, var(--bg-primary), var(--bg-secondary))',
+      height: 28,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>
       {loading ? (
-        <span style={{ color: '#9CA3AF', fontSize: '12px' }}>…</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>…</span>
       ) : isPaid ? (
-        <span style={{ color: 'white', fontSize: '12px' }}>
+        <span style={{
+          fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
+          background: 'var(--accent-gradient)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        }}>
           {t('pricing.proActive')}
         </span>
       ) : (
         <span
           onClick={() => navigate('/pricing')}
-          style={{ color: 'white', fontSize: '12px', cursor: 'pointer' }}
+          style={{
+            fontSize: 11, fontWeight: 500, cursor: 'pointer',
+            color: 'var(--text-muted)',
+          }}
         >
           {t('pricing.upgradePlan')}
         </span>
@@ -447,15 +576,19 @@ function AppContent() {
   const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       {!isAuthPage && <NativeStatusBar />}
-      {!isAuthPage && <NavBar />}
-      <main className={!isAuthPage ? "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 md:py-6" : ""}>
+      {!isAuthPage && <TopHeader />}
+      <main style={!isAuthPage ? {
+        maxWidth: 500, margin: '0 auto',
+        padding: '16px 16px calc(var(--tab-bar-height) + var(--safe-area-bottom) + 16px)',
+      } : {}}>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/datenschutz" element={<DatenschutzPage />} />
           <Route path="/nutzungsbedingungen" element={<NutzungsbedingungenPage />} />
+          <Route path="/agb" element={<AGBPage />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
           <Route path="/ausgaben" element={<PrivateRoute><ExpensesPage /></PrivateRoute>} />
@@ -470,6 +603,7 @@ function AppContent() {
           <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
       </main>
+      {!isAuthPage && <BottomTabBar />}
     </div>
   );
 }

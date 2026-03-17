@@ -117,150 +117,94 @@ export default function BefundAssistent() {
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-rose-100 rounded-lg">
-          <Stethoscope className="w-6 h-6 text-rose-600" />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'rgba(244,63,94,0.1)' }}>
+          <Stethoscope style={{ width: 18, height: 18, color: '#fb7185' }} />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('befund.title')}</h1>
-          <p className="text-sm text-slate-500">{t('befund.subtitle')}</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('befund.title')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('befund.subtitle')}</p>
         </div>
       </div>
 
-      {/* Upload Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-6">
-        <h2 className="text-base font-semibold text-slate-900 mb-3">{t('befund.uploadTitle')}</h2>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <label className="flex-1 flex items-center gap-3 px-4 py-3 border-2 border-dashed border-slate-300 rounded-lg cursor-pointer hover:border-indigo-400 transition-colors">
-            <Upload className="w-5 h-5 text-slate-400" />
-            <span className="text-sm text-slate-600 truncate">
-              {file ? file.name : t('befund.chooseFile')}
-            </span>
-            <input
-              type="file"
-              className="hidden"
-              accept=".jpg,.jpeg,.png,.pdf"
-              onChange={e => setFile(e.target.files[0] || null)}
-            />
+      {/* Upload */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
+        <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('befund.uploadTitle')}</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '2px dashed var(--border-glass)', borderRadius: 10, cursor: 'pointer', transition: 'border-color 0.15s' }}>
+            <Upload style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file ? file.name : t('befund.chooseFile')}</span>
+            <input type="file" style={{ display: 'none' }} accept=".jpg,.jpeg,.png,.pdf" onChange={e => setFile(e.target.files[0] || null)} />
           </label>
-          <button
-            onClick={handleUpload}
-            disabled={!file || uploading}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700 transition-colors cursor-pointer border-none disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ minHeight: '44px' }}
-          >
-            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+          <button onClick={handleUpload} disabled={!file || uploading} className="btn-accent" style={{ width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: (!file || uploading) ? 0.5 : 1 }}>
+            {uploading ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Upload style={{ width: 16, height: 16 }} />}
             {uploading ? t('befund.uploading') : t('befund.uploadButton')}
           </button>
         </div>
-        {error && (
-          <div className="mt-3 flex items-center gap-2 text-red-600 text-sm">
-            <AlertCircle className="w-4 h-4" />
-            {error}
-          </div>
-        )}
+        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#fca5a5' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
       </div>
 
-      {/* Selected Document */}
       {selectedDoc && (
-        <div className="space-y-5 mb-6">
-          {/* Doc Info */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex items-start justify-between">
-              <div>
-                <h2 className="text-base font-semibold text-slate-900">
-                  {selectedDoc.absender || selectedDoc.dateiname}
-                </h2>
-                {selectedDoc.zusammenfassung && (
-                  <p className="text-sm text-slate-500 mt-1">{selectedDoc.zusammenfassung}</p>
-                )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 14 }}>
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{selectedDoc.absender || selectedDoc.dateiname}</h2>
+                {selectedDoc.zusammenfassung && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>{selectedDoc.zusammenfassung}</p>}
               </div>
-              <button
-                onClick={() => navigate(`/documents/${selectedDoc.id}`)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 bg-transparent border-none cursor-pointer"
-              >
-                {t('document.original')} <ChevronRight className="w-3 h-3" />
+              <button onClick={() => navigate(`/documents/${selectedDoc.id}`)} style={{ fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 3 }}>
+                {t('document.original')} <ChevronRight style={{ width: 12, height: 12 }} />
               </button>
             </div>
           </div>
 
-          {/* Step 1: Simplify */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-rose-100 text-rose-700 text-xs font-bold">1</span>
-              <h3 className="text-sm font-semibold text-slate-900">{t('befund.step1Title')}</h3>
+          {/* Step 1 */}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 11, fontWeight: 700 }}>1</span>
+              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('befund.step1Title')}</h3>
             </div>
-            <p className="text-xs text-slate-500 mb-3">{t('befund.step1Desc')}</p>
-            <button
-              onClick={handleSimplify}
-              disabled={simplifying}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-medium hover:bg-rose-700 transition-colors cursor-pointer border-none disabled:opacity-50"
-              style={{ minHeight: '44px' }}
-            >
-              {simplifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Stethoscope className="w-4 h-4" />}
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step1Desc')}</p>
+            <button onClick={handleSimplify} disabled={simplifying} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: simplifying ? 0.5 : 1 }}>
+              {simplifying ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Stethoscope style={{ width: 14, height: 14 }} />}
               {simplifying ? t('befund.simplifying') : t('befund.simplifyButton')}
             </button>
-
             {vereinfacht && (
-              <div className="relative mt-4 bg-rose-50 rounded-lg p-4 border border-rose-200">
-                <button
-                  onClick={handleCopySimple}
-                  className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer bg-transparent border-none"
-                  title={t('document.copy')}
-                >
-                  {copiedSimple ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+              <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                <button onClick={handleCopySimple} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  {copiedSimple ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                 </button>
-                <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap pr-10">
-                  {vereinfacht}
-                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{vereinfacht}</div>
               </div>
             )}
           </div>
 
-          {/* Step 2: Translate */}
+          {/* Step 2 */}
           {vereinfacht && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">2</span>
-                <h3 className="text-sm font-semibold text-slate-900">{t('befund.step2Title')}</h3>
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', background: 'var(--accent-soft)', color: 'var(--accent-solid)', fontSize: 11, fontWeight: 700 }}>2</span>
+                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('befund.step2Title')}</h3>
               </div>
-              <p className="text-xs text-slate-500 mb-3">{t('befund.step2Desc')}</p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-slate-400" />
-                  <select
-                    value={targetLang}
-                    onChange={e => setTargetLang(e.target.value)}
-                    className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                  >
-                    {REPLY_LANGUAGES.map(l => (
-                      <option key={l.code} value={l.code}>{l.label}</option>
-                    ))}
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step2Desc')}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <select value={targetLang} onChange={e => setTargetLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
+                    {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
                   </select>
                 </div>
-                <button
-                  onClick={handleTranslate}
-                  disabled={translating || targetLang === 'de'}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors cursor-pointer border-none disabled:opacity-50"
-                  style={{ minHeight: '44px' }}
-                >
-                  {translating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                <button onClick={handleTranslate} disabled={translating || targetLang === 'de'} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: (translating || targetLang === 'de') ? 0.5 : 1 }}>
+                  {translating ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Globe style={{ width: 14, height: 14 }} />}
                   {translating ? t('befund.translating') : t('befund.translateButton')}
                 </button>
               </div>
-
               {translated && (
-                <div className="relative mt-4 bg-indigo-50 rounded-lg p-4 border border-indigo-200">
-                  <button
-                    onClick={handleCopyTranslated}
-                    className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-indigo-100 transition-colors cursor-pointer bg-transparent border-none"
-                    title={t('document.copy')}
-                  >
-                    {copiedTranslated ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4 text-slate-400" />}
+                <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                  <button onClick={handleCopyTranslated} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    {copiedTranslated ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                   </button>
-                  <div className="prose prose-sm max-w-none text-slate-700 whitespace-pre-wrap pr-10">
-                    {translated}
-                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{translated}</div>
                 </div>
               )}
             </div>
@@ -269,43 +213,45 @@ export default function BefundAssistent() {
       )}
 
       {/* Previous Documents */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="px-5 py-3 border-b border-slate-100">
-          <h2 className="text-base font-semibold text-slate-900">{t('befund.previousDocs')}</h2>
+      <div className="glass-card animate-fade-in-up" style={{ overflow: 'hidden', padding: 0 }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-glass)' }}>
+          <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('befund.previousDocs')}</h2>
         </div>
         {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : docs.length === 0 ? (
-          <div className="text-center py-10 text-slate-400">
-            <Stethoscope className="w-10 h-10 mx-auto mb-2 opacity-40" />
-            <p className="text-sm">{t('befund.noDocs')}</p>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <Stethoscope style={{ width: 36, height: 36, color: 'var(--text-muted)', opacity: 0.3, margin: '0 auto 8px' }} />
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('befund.noDocs')}</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
-            {docs.map(doc => (
+          <div>
+            {docs.map((doc, idx) => (
               <div
                 key={doc.id}
-                className={`px-5 py-3 hover:bg-indigo-50/50 cursor-pointer transition-colors flex items-center gap-3 ${
-                  selectedDoc?.id === doc.id ? 'bg-indigo-50' : ''
-                }`}
+                style={{
+                  padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
+                  borderBottom: idx < docs.length - 1 ? '1px solid var(--border-glass)' : 'none',
+                  background: selectedDoc?.id === doc.id ? 'var(--accent-soft)' : 'transparent',
+                  transition: 'background 0.15s ease',
+                }}
                 onClick={() => selectDoc(doc)}
               >
-                <FileText className="w-5 h-5 text-rose-500 shrink-0" />
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-slate-800 truncate">{doc.absender || doc.dateiname}</p>
-                  {doc.datum && (
-                    <p className="text-xs text-slate-500">{new Date(doc.datum).toLocaleDateString('de-DE')}</p>
-                  )}
+                <FileText style={{ width: 18, height: 18, color: '#fb7185', flexShrink: 0 }} />
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.absender || doc.dateiname}</p>
+                  {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</p>}
                 </div>
-                {doc.vereinfacht && <Check className="w-4 h-4 text-green-500 shrink-0" />}
-                <ChevronRight className="w-4 h-4 text-slate-300 shrink-0" />
+                {doc.vereinfacht && <Check style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0 }} />}
+                <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
               </div>
             ))}
           </div>
         )}
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

@@ -34,17 +34,14 @@ export default function SupportPage() {
 
   if (success) {
     return (
-      <div className="max-w-xl mx-auto mt-8">
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+      <div style={{ maxWidth: 480, margin: '0 auto', paddingTop: 32 }}>
+        <div className="glass-card animate-scale-in" style={{ padding: 32, textAlign: 'center' }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <CheckCircle style={{ width: 28, height: 28, color: '#10b981' }} />
           </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">{t('support.successTitle')}</h2>
-          <p className="text-slate-600 mb-6">{t('support.successDesc')}</p>
-          <button
-            onClick={() => setSuccess(false)}
-            className="px-6 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors cursor-pointer border-none"
-          >
+          <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>{t('support.successTitle')}</h2>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px' }}>{t('support.successDesc')}</p>
+          <button onClick={() => setSuccess(false)} className="btn-accent" style={{ padding: '12px 28px', fontSize: 14, fontWeight: 600 }}>
             {t('support.newTicket')}
           </button>
         </div>
@@ -53,34 +50,29 @@ export default function SupportPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-indigo-100 rounded-lg">
-          <Headphones className="w-6 h-6 text-indigo-600" />
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'var(--accent-soft)' }}>
+          <Headphones style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">{t('support.title')}</h1>
-          <p className="text-sm text-slate-500">{t('support.subtitle')}</p>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('support.title')}</h1>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('support.subtitle')}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+      <div className="glass-card animate-fade-in-up" style={{ padding: 20 }}>
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">{error}</p>
+          <div style={{ marginBottom: 18, padding: '12px 14px', borderRadius: 10, background: 'var(--danger-soft)', border: '1px solid rgba(239,68,68,0.15)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <AlertCircle style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
+            <p style={{ fontSize: 13, color: '#fca5a5', margin: 0 }}>{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">{t('support.priority')}</label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
-              disabled={loading}
-            >
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('support.priority')}</label>
+            <select value={priority} onChange={(e) => setPriority(e.target.value)} className="input-dark" disabled={loading}>
               <option value="niedrig">{t('support.priorityLow')}</option>
               <option value="mittel">{t('support.priorityMedium')}</option>
               <option value="hoch">{t('support.priorityHigh')}</option>
@@ -89,56 +81,30 @@ export default function SupportPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">{t('support.email')}</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              placeholder={t('support.emailPlaceholder')}
-              required
-              disabled={loading}
-            />
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('support.email')}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark" placeholder={t('support.emailPlaceholder')} required disabled={loading} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              {t('support.describeLabel')} <span className="text-slate-400 font-normal">{t('support.minChars')}</span>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
+              {t('support.describeLabel')} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{t('support.minChars')}</span>
             </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-              rows={5}
-              placeholder={t('support.describePlaceholder')}
-              required
-              minLength={20}
-              disabled={loading}
-            />
-            <p className={`text-xs mt-1 ${message.length >= 20 ? 'text-green-600' : 'text-slate-400'}`}>
+            <textarea value={message} onChange={(e) => setMessage(e.target.value)} className="input-dark" style={{ resize: 'none', minHeight: 120 }} rows={5} placeholder={t('support.describePlaceholder')} required minLength={20} disabled={loading} />
+            <p style={{ fontSize: 11, marginTop: 4, color: message.length >= 20 ? '#34d399' : 'var(--text-muted)' }}>
               {t('support.charCount', { count: message.length })}
             </p>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !canSubmit}
-            className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer border-none"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t('support.sending')}
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                {t('support.submitButton')}
-              </>
-            )}
+          <button type="submit" disabled={loading || !canSubmit} className="btn-accent" style={{
+            width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            opacity: (loading || !canSubmit) ? 0.5 : 1, cursor: (loading || !canSubmit) ? 'not-allowed' : 'pointer',
+          }}>
+            {loading ? (<><Loader2 style={{ width: 18, height: 18, animation: 'spin 0.8s linear infinite' }} />{t('support.sending')}</>) : (<><Send style={{ width: 16, height: 16 }} />{t('support.submitButton')}</>)}
           </button>
         </form>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

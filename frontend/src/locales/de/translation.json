@@ -44,7 +44,8 @@
     "iHaveRead": "Ich habe die",
     "privacyPolicy": "Datenschutzerklärung",
     "termsOfService": "Nutzungsbedingungen",
-    "readAndAccepted": "gelesen und akzeptiert"
+    "readAndAccepted": "gelesen und akzeptiert",
+    "agb": "Allgemeinen Geschäftsbedingungen (AGB)"
   },
   "dashboard": {
     "openTasks": "Offene Aufgaben",

@@ -21,8 +21,9 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false)
   const [acceptPrivacy, setAcceptPrivacy] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
+  const [acceptAGB, setAcceptAGB] = useState(false)
 
-  const canSubmit = acceptPrivacy && acceptTerms
+  const canSubmit = acceptPrivacy && acceptTerms && acceptAGB
 
   // Redirect if already authenticated (e.g. after OAuth callback)
   useEffect(() => {
@@ -102,24 +103,19 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-3">
-                {t('auth.registerSuccess')}
-              </h2>
-              <p className="text-slate-600 mb-6" dangerouslySetInnerHTML={{ __html: t('auth.confirmEmail', { email }) }} />
-              <Link
-                to="/login"
-                className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
-              >
-                {t('auth.toLogin')}
-              </Link>
+      <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+        <div style={{ width: '100%', maxWidth: 400 }}>
+          <div className="glass-card animate-scale-in" style={{ padding: 32, textAlign: 'center' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <CheckCircle style={{ width: 28, height: 28, color: '#10b981' }} />
             </div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 10px' }}>
+              {t('auth.registerSuccess')}
+            </h2>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px' }} dangerouslySetInnerHTML={{ __html: t('auth.confirmEmail', { email }) }} />
+            <Link to="/login" className="btn-accent" style={{ display: 'inline-block', padding: '12px 28px', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>
+              {t('auth.toLogin')}
+            </Link>
           </div>
         </div>
       </div>
@@ -127,91 +123,53 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <img src="/KDoc_Logo.png" alt="KamalDoc" className="h-12 object-contain mx-auto mb-2" />
-          <p className="text-slate-600">{t('common.appDesc')}</p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }} className="animate-fade-in">
+          <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 40, objectFit: 'contain', margin: '0 auto 8px' }} />
+          <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>{t('common.appDesc')}</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6">{t('auth.register')}</h2>
+        <div className="glass-card animate-fade-in-up" style={{ padding: 24 }}>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }}>{t('auth.register')}</h2>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800">{error}</p>
+            <div style={{ marginBottom: 18, padding: '12px 14px', borderRadius: 10, background: 'var(--danger-soft)', border: '1px solid rgba(239,68,68,0.15)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13, color: '#fca5a5', margin: 0 }}>{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleRegister} className="space-y-4 mb-6">
+          <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('auth.email')}
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder={t('auth.emailPlaceholder')}
-                  required
-                  disabled={loading}
-                />
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('auth.email')}</label>
+              <div style={{ position: 'relative' }}>
+                <Mail style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input-dark" style={{ paddingLeft: 40 }} placeholder={t('auth.emailPlaceholder')} required disabled={loading} />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('auth.password')}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder={t('auth.passwordMinLength')}
-                  required
-                  disabled={loading}
-                  minLength={6}
-                />
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('auth.password')}</label>
+              <div style={{ position: 'relative' }}>
+                <Lock style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-dark" style={{ paddingLeft: 40 }} placeholder={t('auth.passwordMinLength')} required disabled={loading} minLength={6} />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('auth.passwordRepeat')}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <input
-                  type="password"
-                  value={passwordConfirm}
-                  onChange={(e) => setPasswordConfirm(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  placeholder={t('auth.passwordConfirmPlaceholder')}
-                  required
-                  disabled={loading}
-                />
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('auth.passwordRepeat')}</label>
+              <div style={{ position: 'relative' }}>
+                <Lock style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+                <input type="password" value={passwordConfirm} onChange={(e) => setPasswordConfirm(e.target.value)} className="input-dark" style={{ paddingLeft: 40 }} placeholder={t('auth.passwordConfirmPlaceholder')} required disabled={loading} />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                {t('auth.chooseLanguage')}
-              </label>
-              <div className="relative">
-                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <select
-                  value={appLanguage}
-                  onChange={(e) => setAppLanguage(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white appearance-none"
-                  disabled={loading}
-                >
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{t('auth.chooseLanguage')}</label>
+              <div style={{ position: 'relative' }}>
+                <Globe style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+                <select value={appLanguage} onChange={(e) => setAppLanguage(e.target.value)} className="input-dark" style={{ paddingLeft: 40, appearance: 'none' }} disabled={loading}>
                   {LANGUAGES.slice(0, 2).map(lang => (
                     <option key={lang.code} value={lang.code}>{lang.flag} {lang.label}</option>
                   ))}
@@ -223,100 +181,62 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Checkboxen */}
-            <div className="space-y-2">
-              <label className="flex items-start gap-2 cursor-pointer text-sm text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={acceptPrivacy}
-                  onChange={(e) => setAcceptPrivacy(e.target.checked)}
-                  className="mt-0.5 accent-indigo-600"
-                />
-                <span>
-                  {t('auth.iHaveRead')}{' '}
-                  <Link to="/datenschutz" className="text-indigo-600 hover:underline font-medium">{t('auth.privacyPolicy')}</Link>
-                  {' '}{t('auth.readAndAccepted')}
-                </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
+                <input type="checkbox" checked={acceptPrivacy} onChange={(e) => setAcceptPrivacy(e.target.checked)} style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }} />
+                <span>{t('auth.iHaveRead')}{' '}<Link to="/datenschutz" style={{ color: 'var(--accent-solid)', fontWeight: 600 }}>{t('auth.privacyPolicy')}</Link>{' '}{t('auth.readAndAccepted')}</span>
               </label>
-              <label className="flex items-start gap-2 cursor-pointer text-sm text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  className="mt-0.5 accent-indigo-600"
-                />
-                <span>
-                  {t('auth.iHaveRead')}{' '}
-                  <Link to="/nutzungsbedingungen" className="text-indigo-600 hover:underline font-medium">{t('auth.termsOfService')}</Link>
-                  {' '}{t('auth.readAndAccepted')}
-                </span>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
+                <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }} />
+                <span>{t('auth.iHaveRead')}{' '}<Link to="/nutzungsbedingungen" style={{ color: 'var(--accent-solid)', fontWeight: 600 }}>{t('auth.termsOfService')}</Link>{' '}{t('auth.readAndAccepted')}</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
+                <input type="checkbox" checked={acceptAGB} onChange={(e) => setAcceptAGB(e.target.checked)} style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }} />
+                <span>{t('auth.iHaveRead')}{' '}<Link to="/agb" style={{ color: 'var(--accent-solid)', fontWeight: 600 }}>{t('auth.agb')}</Link>{' '}{t('auth.readAndAccepted')}</span>
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || !canSubmit}
-              className="w-full bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {t('auth.registering')}
-                </>
-              ) : (
-                t('auth.registerButton')
-              )}
+            <button type="submit" disabled={loading || !canSubmit} className="btn-accent" style={{
+              width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              opacity: (loading || !canSubmit) ? 0.5 : 1, cursor: (loading || !canSubmit) ? 'not-allowed' : 'pointer',
+            }}>
+              {loading ? (<><Loader2 style={{ width: 18, height: 18, animation: 'spin 0.8s linear infinite' }} />{t('auth.registering')}</>) : t('auth.registerButton')}
             </button>
           </form>
 
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-300"></div>
+          <div style={{ position: 'relative', marginBottom: 18 }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
+              <div style={{ width: '100%', height: 1, background: 'var(--border-glass)' }} />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-slate-500">{t('auth.or')}</span>
+            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+              <span style={{ padding: '0 12px', fontSize: 13, color: 'var(--text-muted)', background: 'var(--bg-card)' }}>{t('auth.or')}</span>
             </div>
           </div>
 
-          <button
-            onClick={handleGoogleSignUp}
-            disabled={loading || !canSubmit}
-            className="w-full bg-white border border-slate-300 text-slate-700 py-3 rounded-lg font-medium hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path
-                fill="#4285F4"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="#34A853"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="#FBBC05"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="#EA4335"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
+          <button onClick={handleGoogleSignUp} disabled={loading || !canSubmit} className="btn-ghost" style={{
+            width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            opacity: (loading || !canSubmit) ? 0.5 : 1,
+          }}>
+            <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             {t('auth.googleRegister')}
           </button>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-slate-600">
+          <div style={{ marginTop: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
               {t('auth.hasAccount')}{' '}
-              <Link
-                to="/login"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
-              >
-                {t('auth.loginNow')}
-              </Link>
+              <Link to="/login" style={{ color: 'var(--accent-solid)', fontWeight: 600 }}>{t('auth.loginNow')}</Link>
             </p>
           </div>
         </div>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

@@ -14,6 +14,16 @@ import { REPLY_LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 
+const KATEGORIE_BADGE = {
+  brief: 'badge-brief',
+  rechnung: 'badge-rechnung',
+  lohnzettel: 'badge-lohnzettel',
+  kontoauszug: 'badge-kontoauszug',
+  vertrag: 'badge-vertrag',
+  behoerde: 'badge-behoerde',
+  sonstiges: 'badge-sonstiges',
+};
+
 const KATEGORIE_COLORS = {
   brief: 'bg-blue-100 text-blue-700',
   rechnung: 'bg-amber-100 text-amber-700',
@@ -155,16 +165,22 @@ export default function DocumentDetail() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '3px solid rgba(139,92,246,0.15)',
+          borderTopColor: 'var(--accent-solid)',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (!doc) {
     return (
-      <div className="text-center py-20">
-        <p className="text-slate-500 text-lg">{t('document.notFound')}</p>
+      <div style={{ textAlign: 'center', padding: '60px 20px' }} className="animate-fade-in">
+        <p style={{ color: 'var(--text-secondary)', fontSize: 16 }}>{t('document.notFound')}</p>
       </div>
     );
   }
@@ -172,92 +188,111 @@ export default function DocumentDetail() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 md:mb-6">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }} className="animate-fade-in">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer bg-transparent border-none text-sm"
-          style={{ minHeight: '44px' }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            color: 'var(--text-secondary)', fontSize: 14, fontWeight: 500,
+            background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0',
+          }}
         >
-          <ArrowLeft className="w-4 h-4" /> {t('document.back')}
+          <ArrowLeft style={{ width: 18, height: 18 }} /> {t('document.back')}
         </button>
-        <div className="flex items-center gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             onClick={() => downloadFile(doc.id, doc.dateiname)}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-700 cursor-pointer"
-            style={{ minHeight: '44px' }}
+            className="btn-ghost"
+            style={{ padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6 }}
           >
-            <ExternalLink className="w-4 h-4" /> <span className="hidden md:inline">{t('document.original')}</span>
+            <ExternalLink style={{ width: 16, height: 16 }} />
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="flex items-center gap-2 px-3 py-2 text-sm bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 text-red-700 cursor-pointer disabled:opacity-50"
-            style={{ minHeight: '44px' }}
+            style={{
+              padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+              background: 'var(--danger-soft)', color: '#ef4444',
+              border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10,
+              cursor: 'pointer', opacity: deleting ? 0.5 : 1,
+            }}
           >
-            <Trash2 className="w-4 h-4" /> <span className="hidden md:inline">{t('document.delete')}</span>
+            <Trash2 style={{ width: 16, height: 16 }} />
           </button>
         </div>
       </div>
 
-      {/* Mobile: Bild oben full-width */}
-      <div className="md:hidden bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-4">
+      {/* Image Preview */}
+      <div className="glass-card animate-fade-in-up" style={{ overflow: 'hidden', marginBottom: 14, padding: 0 }}>
         <AuthImage
           src={doc.dateityp === 'pdf' ? `/documents/${doc.id}/thumbnail` : `/documents/${doc.id}/file`}
           alt={doc.dateiname}
-          className="w-full h-auto"
+          style={{ width: '100%', height: 'auto', display: 'block' }}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        {/* Linke Spalte: Bild (Desktop) */}
-        <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <AuthImage
-            src={doc.dateityp === 'pdf' ? `/documents/${doc.id}/thumbnail` : `/documents/${doc.id}/file`}
-            alt={doc.dateiname}
-            className="w-full h-auto"
-          />
-        </div>
-
-        {/* Rechte Spalte: Daten */}
-        <div className="space-y-4">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* Status-Banner */}
           {doc.status === 'analyse_laeuft' && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
-              <Loader2 className="w-5 h-5 text-yellow-600 animate-spin" />
+            <div className="glass-card animate-fade-in" style={{
+              padding: 14, display: 'flex', alignItems: 'center', gap: 10,
+              border: '1px solid rgba(245,158,11,0.2)',
+            }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: '50%',
+                border: '2px solid rgba(251,191,36,0.3)',
+                borderTopColor: '#fbbf24',
+                animation: 'spin 0.8s linear infinite',
+              }} />
               <div>
-                <p className="text-sm font-medium text-yellow-800">{t('document.analysisRunning')}</p>
-                <p className="text-xs text-yellow-600">{t('document.analysisRunningDesc')}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', margin: 0 }}>{t('document.analysisRunning')}</p>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('document.analysisRunningDesc')}</p>
               </div>
             </div>
           )}
 
           {doc.status === 'fehler' && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-sm font-medium text-red-800">{t('document.analysisFailed')}</p>
-              <p className="text-xs text-red-600 mt-1">{doc.analyse_fehler}</p>
+            <div className="glass-card animate-fade-in" style={{
+              padding: 14, border: '1px solid rgba(239,68,68,0.2)',
+            }}>
+              <p style={{ fontSize: 13, fontWeight: 600, color: '#ef4444', margin: 0 }}>{t('document.analysisFailed')}</p>
+              <p style={{ fontSize: 12, color: '#fca5a5', margin: '4px 0 0' }}>{doc.analyse_fehler}</p>
               <button
                 onClick={() => window.location.reload()}
-                className="flex items-center gap-1 mt-2 text-xs text-red-700 hover:text-red-900 cursor-pointer bg-transparent border-none"
+                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
               >
-                <RefreshCw className="w-3 h-3" /> {t('document.reload')}
+                <RefreshCw style={{ width: 12, height: 12 }} /> {t('document.reload')}
               </button>
             </div>
           )}
 
           {/* Handlungsbedarf */}
           {doc.handlung_erforderlich && !doc.handlung_erledigt && (
-            <div className={`rounded-xl p-4 transition-all duration-500 ${justMarkedDone ? 'bg-green-50 border border-green-200 scale-[0.98]' : 'bg-red-50 border border-red-200'}`}>
-              <div className="flex items-start gap-3 mb-3">
+            <div className="glass-card animate-fade-in-up" style={{
+              padding: 14, transition: 'all 0.5s ease',
+              border: justMarkedDone ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.2)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
                 {justMarkedDone ? (
-                  <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 shrink-0 animate-bounce" />
+                  <CheckCircle style={{ width: 18, height: 18, color: '#10b981', flexShrink: 0, marginTop: 1 }} />
                 ) : (
-                  <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                  <AlertCircle style={{ width: 18, height: 18, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
                 )}
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium transition-all duration-500 ${justMarkedDone ? 'text-green-800 line-through opacity-60' : 'text-red-800'}`}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    fontSize: 14, fontWeight: 600, margin: 0, transition: 'all 0.5s ease',
+                    color: justMarkedDone ? '#34d399' : '#ef4444',
+                    textDecoration: justMarkedDone ? 'line-through' : 'none',
+                    opacity: justMarkedDone ? 0.6 : 1,
+                  }}>
                     {justMarkedDone ? t('document.doneLabel') : t('document.actionRequired')}
                   </p>
-                  <p className={`text-sm mt-1 transition-all duration-500 ${justMarkedDone ? 'text-green-600 line-through opacity-60' : 'text-red-600'}`}>
+                  <p style={{
+                    fontSize: 13, margin: '4px 0 0', transition: 'all 0.5s ease',
+                    color: justMarkedDone ? '#6ee7b7' : '#fca5a5',
+                    textDecoration: justMarkedDone ? 'line-through' : 'none',
+                    opacity: justMarkedDone ? 0.6 : 1,
+                  }}>
                     {doc.handlung_beschreibung}
                   </p>
                 </div>
@@ -265,17 +300,20 @@ export default function DocumentDetail() {
               <button
                 onClick={handleMarkDone}
                 disabled={markingDone}
-                className={`w-full md:w-auto flex items-center justify-center gap-2 px-5 py-3 text-sm font-medium rounded-lg cursor-pointer border-none transition-all duration-300 ${
-                  justMarkedDone
-                    ? 'bg-green-500 text-white scale-[1.02]'
-                    : 'bg-green-100 text-green-700 hover:bg-green-500 hover:text-white hover:scale-[1.02]'
-                } disabled:cursor-not-allowed`}
-                style={{ minHeight: '44px' }}
+                style={{
+                  width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  borderRadius: 10, cursor: 'pointer', border: 'none',
+                  transition: 'all 0.3s ease',
+                  background: justMarkedDone ? '#10b981' : 'var(--success-soft)',
+                  color: justMarkedDone ? 'white' : '#10b981',
+                  opacity: markingDone ? 0.5 : 1,
+                }}
               >
                 {markingDone && !justMarkedDone ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(16,185,129,0.3)', borderTopColor: '#10b981', animation: 'spin 0.8s linear infinite' }} />
                 ) : (
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle style={{ width: 16, height: 16 }} />
                 )}
                 {justMarkedDone ? t('document.doneLabel') : t('document.markDone')}
               </button>
@@ -283,11 +321,14 @@ export default function DocumentDetail() {
           )}
 
           {doc.handlung_erforderlich && doc.handlung_erledigt ? (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-              <CheckCircle className="w-5 h-5 text-green-500" />
+            <div className="glass-card animate-fade-in" style={{
+              padding: 14, display: 'flex', alignItems: 'center', gap: 10,
+              border: '1px solid rgba(16,185,129,0.2)',
+            }}>
+              <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
               <div>
-                <p className="text-sm text-green-700 line-through opacity-70">{doc.handlung_beschreibung || t('document.actionDone')}</p>
-                <p className="text-xs text-green-600 mt-0.5 font-medium">
+                <p style={{ fontSize: 13, color: '#6ee7b7', textDecoration: 'line-through', opacity: 0.7, margin: 0 }}>{doc.handlung_beschreibung || t('document.actionDone')}</p>
+                <p style={{ fontSize: 12, color: '#34d399', margin: '2px 0 0', fontWeight: 600 }}>
                   {doc.erledigt_am ? t('document.doneAt', { date: new Date(doc.erledigt_am).toLocaleDateString() }) : t('document.doneLabel')}
                 </p>
               </div>
@@ -295,12 +336,13 @@ export default function DocumentDetail() {
           ) : null}
 
           {/* Extrahierte Daten */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('document.documentData')}</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>{t('document.documentData')}</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 16px' }}>
               <Field label={t('document.category')} value={
                 doc.kategorie ? (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KATEGORIE_COLORS[doc.kategorie] || ''}`}>
+                  <span className={KATEGORIE_BADGE[doc.kategorie] || KATEGORIE_BADGE.sonstiges}
+                    style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
                     {t(`categories.${doc.kategorie}`, doc.kategorie)}
                   </span>
                 ) : null
@@ -314,34 +356,43 @@ export default function DocumentDetail() {
               <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
             </div>
 
-            {/* Deadline-Wächter */}
-            <div className="mt-4 pt-4 border-t border-slate-100">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-amber-500" />
-                <p className="text-xs font-medium text-slate-500">{t('document.deadline')}</p>
+            {/* Deadline */}
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                <Clock style={{ width: 14, height: 14, color: '#fbbf24' }} />
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>{t('document.deadline')}</p>
               </div>
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <input
-                  type="date"
-                  value={deadline}
-                  onChange={e => setDeadline(e.target.value)}
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button
-                  onClick={async () => {
-                    setSavingDeadline(true);
-                    try {
-                      const updated = await updateDocument(id, { deadline: deadline || '' });
-                      setDoc(updated);
-                    } catch (err) { console.error(err); }
-                    finally { setSavingDeadline(false); }
-                  }}
-                  disabled={savingDeadline}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium hover:bg-amber-200 transition-colors cursor-pointer border-none disabled:opacity-50"
-                >
-                  {savingDeadline ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
-                  {t('document.saveDeadline')}
-                </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <input
+                    type="date"
+                    value={deadline}
+                    onChange={e => setDeadline(e.target.value)}
+                    className="input-dark"
+                    style={{ flex: 1, minWidth: 140, fontSize: 13 }}
+                  />
+                  <button
+                    onClick={async () => {
+                      setSavingDeadline(true);
+                      try {
+                        const updated = await updateDocument(id, { deadline: deadline || '' });
+                        setDoc(updated);
+                      } catch (err) { console.error(err); }
+                      finally { setSavingDeadline(false); }
+                    }}
+                    disabled={savingDeadline}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 4,
+                      padding: '8px 14px', fontSize: 12, fontWeight: 600,
+                      background: 'var(--warning-soft)', color: '#fbbf24',
+                      border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8,
+                      cursor: 'pointer', opacity: savingDeadline ? 0.5 : 1,
+                    }}
+                  >
+                    {savingDeadline ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 12, height: 12 }} />}
+                    {t('document.saveDeadline')}
+                  </button>
+                </div>
                 {deadline && (
                   <button
                     onClick={async () => {
@@ -353,38 +404,37 @@ export default function DocumentDetail() {
                       } catch (err) { console.error(err); }
                       finally { setSavingDeadline(false); }
                     }}
-                    className="text-xs text-red-500 hover:text-red-700 cursor-pointer bg-transparent border-none"
+                    style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                   >
                     {t('document.removeDeadline')}
                   </button>
                 )}
               </div>
               {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
-                <p className="text-xs text-amber-600 font-medium mt-1.5">
+                <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, margin: '6px 0 0' }}>
                   ⚠️ {t('document.deadlineSoon')}
                 </p>
               )}
               {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
-                <p className="text-xs text-red-600 font-medium mt-1.5">
+                <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: '6px 0 0' }}>
                   ⚠️ {t('document.deadlineOverdue')}
                 </p>
               )}
 
-              {/* Push-Notification Reminder per Document */}
               {deadline && <ReminderSettings docId={id} currentDays={doc.reminder_days} onUpdate={(updated) => setDoc(updated)} />}
             </div>
 
             {doc.zusammenfassung && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <p className="text-xs font-medium text-slate-500 mb-1">{t('document.summary')}</p>
-                <p className="text-sm text-slate-700">{doc.zusammenfassung}</p>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.summary')}</p>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>{doc.zusammenfassung}</p>
               </div>
             )}
 
             {(doc.kontakt_name || doc.kontakt_adresse || doc.kontakt_email || doc.kontakt_telefon) && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <p className="text-xs font-medium text-slate-500 mb-2">{t('document.contactData')}</p>
-                <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('document.contactData')}</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
                   <Field label={t('document.name')} value={doc.kontakt_name} small />
                   <Field label={t('document.email')} value={doc.kontakt_email} small />
                   <Field label={t('document.address')} value={doc.kontakt_adresse} small />
@@ -394,32 +444,33 @@ export default function DocumentDetail() {
             )}
 
             {doc.volltext && (
-              <div className="mt-4 pt-4 border-t border-slate-100">
-                <p className="text-xs font-medium text-slate-500 mb-1">{t('document.fulltext')}</p>
-                <p className="text-sm text-slate-600 whitespace-pre-wrap max-h-60 overflow-y-auto">{doc.volltext}</p>
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.fulltext')}</p>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto', margin: 0 }}>{doc.volltext}</p>
               </div>
             )}
           </div>
 
           {/* Notizen & Tags */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-            <h2 className="text-lg font-semibold text-slate-900 mb-4">{t('document.notesAndTags')}</h2>
-            <div className="space-y-3">
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>{t('document.notesAndTags')}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">{t('document.notes')}</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.notes')}</label>
                 <textarea
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
+                  className="input-dark"
+                  style={{ resize: 'vertical', minHeight: 70 }}
                   value={notizen}
                   onChange={e => setNotizen(e.target.value)}
                   placeholder={t('document.notesPlaceholder')}
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">{t('document.tags')}</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.tags')}</label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="input-dark"
                   value={tags}
                   onChange={e => setTags(e.target.value)}
                   placeholder={t('document.tagsPlaceholder')}
@@ -428,83 +479,96 @@ export default function DocumentDetail() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 cursor-pointer border-none disabled:opacity-50"
-                style={{ minHeight: '44px' }}
+                className="btn-accent"
+                style={{
+                  width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  opacity: saving ? 0.5 : 1,
+                }}
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
                 {t('document.save')}
               </button>
               {savedToast && (
-                <span className="text-sm text-green-600 font-medium flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" /> Gespeichert!
+                <span style={{ fontSize: 13, color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <CheckCircle style={{ width: 14, height: 14 }} /> Gespeichert!
                 </span>
               )}
             </div>
           </div>
 
-          {/* Antwort generieren — für alle Kategorien verfügbar */}
+          {/* Antwort generieren */}
           {doc.status === 'analysiert' && (
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
-                <h2 className="text-lg font-semibold text-slate-900">
-                  {{ brief: t('document.replyLetter'), rechnung: t('document.replyInvoice'), behoerde: t('document.replyAuthority') }[doc.kategorie] || t('document.replySection')}
-                </h2>
-                <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-slate-400 shrink-0" />
-                    <select
-                      value={replyLanguage}
-                      onChange={e => setReplyLanguage(e.target.value)}
-                      className="px-2 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                      style={{ minHeight: '44px' }}
-                    >
-                      {REPLY_LANGUAGES.map(lang => (
-                        <option key={lang.code} value={lang.code}>{lang.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <button
-                    onClick={handleGenerateReply}
-                    disabled={generatingReply}
-                    className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 cursor-pointer border-none disabled:opacity-50"
-                    style={{ minHeight: '44px' }}
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>
+                {{ brief: t('document.replyLetter'), rechnung: t('document.replyInvoice'), behoerde: t('document.replyAuthority') }[doc.kategorie] || t('document.replySection')}
+              </h2>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: replies.length > 0 ? 14 : 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                  <select
+                    value={replyLanguage}
+                    onChange={e => setReplyLanguage(e.target.value)}
+                    className="input-dark"
+                    style={{ flex: 1, fontSize: 13 }}
                   >
-                    {generatingReply ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> {t('document.generating')}</>
-                    ) : (
-                      <><MessageSquare className="w-4 h-4" />
-                        {{ brief: t('document.generateReply'), rechnung: t('document.generateReplyInvoice'), behoerde: t('document.generateReplyAuthority') }[doc.kategorie] || t('document.generateReply')}
-                      </>
-                    )}
-                  </button>
+                    {REPLY_LANGUAGES.map(lang => (
+                      <option key={lang.code} value={lang.code}>{lang.label}</option>
+                    ))}
+                  </select>
                 </div>
+                <button
+                  onClick={handleGenerateReply}
+                  disabled={generatingReply}
+                  className="btn-accent"
+                  style={{
+                    width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    opacity: generatingReply ? 0.5 : 1,
+                  }}
+                >
+                  {generatingReply ? (
+                    <><Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> {t('document.generating')}</>
+                  ) : (
+                    <><MessageSquare style={{ width: 16, height: 16 }} />
+                      {{ brief: t('document.generateReply'), rechnung: t('document.generateReplyInvoice'), behoerde: t('document.generateReplyAuthority') }[doc.kategorie] || t('document.generateReply')}
+                    </>
+                  )}
+                </button>
               </div>
 
               {replies.length > 0 && (
-                <div className="space-y-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {replies.map((reply, idx) => (
-                    <div key={reply.id} className="border border-slate-200 rounded-lg p-4 bg-slate-50">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs text-slate-500">
+                    <div key={reply.id} style={{
+                      padding: 14, borderRadius: 12,
+                      background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                        <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
                           {new Date(reply.erstellt_am).toLocaleString()}
                         </p>
                         <button
                           onClick={() => handleCopy(reply.inhalt, idx)}
-                          className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 cursor-pointer bg-transparent border-none"
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 4,
+                            fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
+                            background: 'none', border: 'none', cursor: 'pointer',
+                          }}
                         >
-                          <Copy className="w-3.5 h-3.5" />
+                          <Copy style={{ width: 13, height: 13 }} />
                           {copied === idx ? t('document.copied') : t('document.copy')}
                         </button>
                       </div>
-                      <p className="text-sm text-slate-700 whitespace-pre-wrap">{reply.inhalt}</p>
+                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0 }}>{reply.inhalt}</p>
                     </div>
                   ))}
                 </div>
               )}
             </div>
           )}
-        </div>
       </div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }
@@ -513,8 +577,8 @@ function Field({ label, value, small }) {
   if (value === null || value === undefined || value === '') return null;
   return (
     <div>
-      <p className={`font-medium text-slate-500 ${small ? 'text-xs' : 'text-xs'}`}>{label}</p>
-      <div className={`text-slate-800 ${small ? 'text-xs' : 'text-sm'}`}>{value}</div>
+      <p style={{ fontSize: small ? 11 : 11, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 2px' }}>{label}</p>
+      <div style={{ fontSize: small ? 12 : 13, color: 'var(--text-primary)' }}>{value}</div>
     </div>
   );
 }
@@ -549,36 +613,43 @@ function ReminderSettings({ docId, currentDays, onUpdate }) {
   };
 
   return (
-    <div className="mt-3 pt-3 border-t border-slate-100">
-      <p className="text-xs font-medium text-slate-500 mb-2">{t('document.reminderTitle')}</p>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-glass)' }}>
+      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('document.reminderTitle')}</p>
       {isFree && (
-        <p className="text-xs text-amber-600 mb-2 flex items-center gap-1">
-          <Lock className="w-3 h-3" /> {t('document.reminderFreeLocked')}
+        <p style={{ fontSize: 12, color: '#fbbf24', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Lock style={{ width: 12, height: 12 }} /> {t('document.reminderFreeLocked')}
         </p>
       )}
-      <div className="space-y-1.5">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {options.map((opt) => {
           const enabled = canSelect(opt);
+          const isSelected = selected === opt.value;
           return (
             <label
               key={String(opt.value)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm cursor-pointer transition-colors ${
-                enabled ? 'hover:bg-slate-50' : 'opacity-50 cursor-not-allowed'
-              } ${selected === opt.value ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600'}`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 12px', borderRadius: 8, fontSize: 13,
+                cursor: enabled ? 'pointer' : 'not-allowed',
+                opacity: enabled ? 1 : 0.4,
+                background: isSelected ? 'var(--accent-soft)' : 'transparent',
+                color: isSelected ? 'var(--accent-solid)' : 'var(--text-secondary)',
+                transition: 'all 0.15s ease',
+              }}
             >
               <input
                 type="radio"
                 name="reminder_days"
                 value={String(opt.value)}
-                checked={selected === opt.value}
+                checked={isSelected}
                 disabled={!enabled || saving}
                 onChange={() => enabled && handleChange(opt.value)}
-                className="accent-indigo-600"
+                style={{ accentColor: 'var(--accent-solid)' }}
               />
               <span>{t(opt.labelKey)}</span>
               {!enabled && (
-                <span className="ml-auto text-xs text-slate-400 flex items-center gap-1">
-                  <Lock className="w-3 h-3" />
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <Lock style={{ width: 10, height: 10 }} />
                   {opt.minPlan === 'pro' ? 'Pro' : 'Basic'}
                 </span>
               )}
@@ -586,7 +657,7 @@ function ReminderSettings({ docId, currentDays, onUpdate }) {
           );
         })}
       </div>
-      {saving && <Loader2 className="w-4 h-4 animate-spin text-indigo-500 mt-2" />}
+      {saving && <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', marginTop: 8 }} />}
     </div>
   );
 }

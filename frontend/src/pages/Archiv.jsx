@@ -7,6 +7,16 @@ import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
 
 
+const KATEGORIE_BADGE = {
+  brief: 'badge-brief',
+  rechnung: 'badge-rechnung',
+  lohnzettel: 'badge-lohnzettel',
+  kontoauszug: 'badge-kontoauszug',
+  vertrag: 'badge-vertrag',
+  behoerde: 'badge-behoerde',
+  sonstiges: 'badge-sonstiges',
+};
+
 const KATEGORIE_COLORS = {
   brief: 'bg-blue-100 text-blue-700',
   rechnung: 'bg-amber-100 text-amber-700',
@@ -56,120 +66,83 @@ export default function Archiv() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: '3px solid rgba(139,92,246,0.15)',
+          borderTopColor: 'var(--accent-solid)',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   if (docs.length === 0) {
     return (
-      <div className="text-center py-20">
-        <Archive className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-        <p className="text-slate-500 text-lg">{t('archive.noItems')}</p>
-        <p className="text-slate-400 text-sm mt-1">{t('archive.noItemsDesc')}</p>
+      <div style={{ textAlign: 'center', padding: '60px 20px' }} className="animate-fade-in">
+        <Archive style={{ width: 48, height: 48, color: 'var(--text-muted)', margin: '0 auto 16px', opacity: 0.4 }} />
+        <p style={{ color: 'var(--text-secondary)', fontSize: 16, margin: 0 }}>{t('archive.noItems')}</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>{t('archive.noItemsDesc')}</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Archive className="w-6 h-6 text-indigo-600" />
-        <h1 className="text-2xl font-bold text-slate-900">{t('archive.title')}</h1>
-        <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+        <div style={{ padding: 8, borderRadius: 10, background: 'var(--success-soft)' }}>
+          <Archive style={{ width: 18, height: 18, color: '#10b981' }} />
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('archive.title')}</h1>
+        <span style={{
+          fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+          background: 'var(--success-soft)', color: '#34d399',
+        }}>
           {t('archive.doneCount', { count: docs.length })}
         </span>
       </div>
 
-      {/* Desktop: Tabelle */}
-      <div className="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-slate-50 text-left">
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('archive.sender')}</th>
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('archive.task')}</th>
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('archive.amount')}</th>
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('archive.category')}</th>
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs">{t('archive.doneAt')}</th>
-              <th className="px-5 py-3 font-medium text-slate-500 text-xs text-right">{t('archive.action')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {docs.map((doc, idx) => (
-              <tr
-                key={doc.id}
-                className={`border-t border-slate-100 hover:bg-indigo-50/50 cursor-pointer transition-all duration-300 ${
-                  reopeningIds.has(doc.id) ? 'opacity-0 -translate-x-8' : 'opacity-100 translate-x-0'
-                }`}
-                style={{ animationDelay: `${idx * 50}ms`, animation: 'fadeInUp 0.3s ease-out both' }}
-                onClick={() => navigate(`/documents/${doc.id}`)}
-              >
-                <td className="px-5 py-3 font-medium text-slate-800">{doc.absender || '—'}</td>
-                <td className="px-5 py-3 text-slate-600 max-w-xs truncate line-through opacity-70">{doc.handlung_beschreibung || '—'}</td>
-                <td className="px-5 py-3 text-slate-700 font-medium whitespace-nowrap">
-                  {doc.betrag != null && doc.betrag > 0
-                    ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })
-                    : '—'}
-                </td>
-                <td className="px-5 py-3">
-                  {doc.kategorie && (
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KATEGORIE_COLORS[doc.kategorie] || KATEGORIE_COLORS.sonstiges}`}>
-                      {t(`categories.${doc.kategorie}`, doc.kategorie)}
-                    </span>
-                  )}
-                </td>
-                <td className="px-5 py-3 text-slate-500 whitespace-nowrap">
-                  {doc.erledigt_am
-                    ? new Date(doc.erledigt_am).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                    : '—'}
-                </td>
-                <td className="px-5 py-3 text-right">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleReopen(doc.id); }}
-                    disabled={reopeningIds.has(doc.id)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-500 hover:text-white transition-all duration-200 cursor-pointer border-none disabled:opacity-50"
-                  >
-                    <Undo2 className="w-3.5 h-3.5" /> {t('archive.reopen')}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile: Cards */}
-      <div className="md:hidden space-y-3">
+      {/* Mobile Cards */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {docs.map((doc, idx) => (
           <div
             key={doc.id}
-            className={`bg-white rounded-xl shadow-sm border border-slate-200 p-4 transition-all duration-300 ${
-              reopeningIds.has(doc.id) ? 'opacity-0 -translate-x-8' : 'opacity-100 translate-x-0'
-            }`}
-            style={{ animationDelay: `${idx * 50}ms`, animation: 'fadeInUp 0.3s ease-out both' }}
+            className="glass-card animate-fade-in-up"
+            style={{
+              padding: 14, cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              opacity: reopeningIds.has(doc.id) ? 0 : 1,
+              transform: reopeningIds.has(doc.id) ? 'translateX(-30px)' : 'translateX(0)',
+              animationDelay: `${Math.min(idx, 8) * 0.05}s`,
+            }}
             onClick={() => navigate(`/documents/${doc.id}`)}
           >
-            <div className="flex items-start justify-between mb-2">
-              <div className="flex-1 min-w-0">
-                <p className="text-base font-semibold text-slate-900 truncate">{doc.absender || '—'}</p>
-                <p className="text-sm text-slate-500 line-through opacity-70 truncate mt-0.5">{doc.handlung_beschreibung || '—'}</p>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {doc.absender || '—'}
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0', textDecoration: 'line-through', opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {doc.handlung_beschreibung || '—'}
+                </p>
               </div>
-              <CheckCircle className="w-5 h-5 text-green-500 shrink-0 ml-2" />
+              <CheckCircle style={{ width: 18, height: 18, color: '#10b981', flexShrink: 0 }} />
             </div>
-            <div className="flex items-center gap-3 flex-wrap mt-2">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
               {doc.kategorie && (
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${KATEGORIE_COLORS[doc.kategorie] || KATEGORIE_COLORS.sonstiges}`}>
+                <span className={KATEGORIE_BADGE[doc.kategorie] || KATEGORIE_BADGE.sonstiges}
+                  style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
                   {t(`categories.${doc.kategorie}`, doc.kategorie)}
                 </span>
               )}
               {doc.betrag != null && doc.betrag > 0 && (
-                <span className="text-xs font-semibold text-slate-700">
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
                 </span>
               )}
               {doc.erledigt_am && (
-                <span className="text-xs text-slate-400">
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                   {new Date(doc.erledigt_am).toLocaleDateString('de-DE')}
                 </span>
               )}
@@ -177,10 +150,18 @@ export default function Archiv() {
             <button
               onClick={(e) => { e.stopPropagation(); handleReopen(doc.id); }}
               disabled={reopeningIds.has(doc.id)}
-              className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-500 hover:text-white transition-all duration-200 cursor-pointer border-none disabled:opacity-50"
-              style={{ minHeight: '44px' }}
+              style={{
+                width: '100%', marginTop: 10, padding: '10px 0',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                fontSize: 13, fontWeight: 600,
+                background: 'var(--warning-soft)', color: '#fbbf24',
+                border: '1px solid rgba(245, 158, 11, 0.2)',
+                borderRadius: 10, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                opacity: reopeningIds.has(doc.id) ? 0.5 : 1,
+              }}
             >
-              <Undo2 className="w-4 h-4" /> {t('archive.reopen')}
+              <Undo2 style={{ width: 14, height: 14 }} /> {t('archive.reopen')}
             </button>
           </div>
         ))}
