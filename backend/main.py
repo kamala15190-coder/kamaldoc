@@ -73,7 +73,11 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         if request.url.path in self.EXEMPT_PATHS or request.method == "OPTIONS":
             return await call_next(request)
 
-        client_ip = request.client.host if request.client else "unknown"
+        client_ip = (
+            request.headers.get("x-real-ip")
+            or request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or (request.client.host if request.client else "unknown")
+        )
         now = time.time()
         # Alte Einträge entfernen
         self.requests[client_ip] = [
