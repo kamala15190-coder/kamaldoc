@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
-  ChevronRight, Loader2, Filter, CheckCircle, ClipboardList,
+  ChevronRight, Loader2, CheckCircle, ClipboardList,
   Minus, Settings
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -288,14 +288,12 @@ export default function Dashboard() {
   const sectionContent = {
     todos: offeneTodos.length > 0 && (
       <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ padding: 6, borderRadius: 8, background: 'var(--danger-soft)' }}>
-            <ClipboardList style={{ width: 16, height: 16, color: '#ef4444' }} />
-          </div>
-          <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.openTasks')}</span>
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <ClipboardList style={{ width: 14, height: 14, color: '#ef4444' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.openTasks')}</span>
           <span style={{
-            marginLeft: 'auto', fontSize: 11, fontWeight: 700,
-            padding: '2px 8px', borderRadius: 20,
+            marginLeft: 'auto', fontSize: 10, fontWeight: 700,
+            padding: '1px 7px', borderRadius: 20,
             background: 'var(--danger-soft)', color: '#ef4444',
           }}>
             {offeneTodos.length}
@@ -307,53 +305,53 @@ export default function Dashboard() {
             <div
               key={todo.id}
               style={{
-                padding: '14px 16px',
-                borderBottom: '1px solid var(--border-glass)',
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 12px 8px 16px',
+                borderBottom: idx < offeneTodos.length - 1 ? '1px solid var(--border-glass)' : 'none',
                 transition: 'all 0.3s ease',
                 opacity: dismissingIds.has(todo.id) ? 0 : 1,
                 transform: dismissingIds.has(todo.id) ? 'translateX(40px)' : 'translateX(0)',
-                animation: `fadeInUp 0.3s ease-out ${idx * 0.05}s both`,
                 cursor: 'pointer',
               }}
               onClick={() => navigate(`/documents/${todo.id}`)}
             >
-              <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {todo.absender || '—'}
-              </p>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '3px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {todo.handlung_beschreibung || '—'}
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-                {todo.betrag != null && todo.betrag > 0 && (
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {Number(todo.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {todo.absender || '—'}
                   </span>
-                )}
-                {todo.faelligkeitsdatum && (
-                  <span style={{
-                    fontSize: 11, fontWeight: 500, padding: '2px 8px', borderRadius: 6,
-                    background: isOverdue(todo.faelligkeitsdatum) ? 'var(--danger-soft)' : 'var(--bg-glass)',
-                    color: isOverdue(todo.faelligkeitsdatum) ? '#ef4444' : 'var(--text-secondary)',
-                  }}>
-                    {new Date(todo.faelligkeitsdatum).toLocaleDateString('de-DE')}
-                    {isOverdue(todo.faelligkeitsdatum) && ` — ${t('dashboard.overdue')}`}
+                  {todo.betrag != null && todo.betrag > 0 && (
+                    <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', flexShrink: 0 }}>
+                      {Number(todo.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {todo.handlung_beschreibung || '—'}
                   </span>
-                )}
+                  {todo.faelligkeitsdatum && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0,
+                      background: isOverdue(todo.faelligkeitsdatum) ? 'var(--danger-soft)' : 'transparent',
+                      color: isOverdue(todo.faelligkeitsdatum) ? '#ef4444' : 'var(--text-muted)',
+                    }}>
+                      {new Date(todo.faelligkeitsdatum).toLocaleDateString('de-DE')}
+                    </span>
+                  )}
+                </div>
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }}
                 disabled={dismissingIds.has(todo.id)}
                 style={{
-                  marginTop: 8, padding: '5px 14px',
-                  display: 'inline-flex', alignItems: 'center', gap: 5,
-                  fontSize: 12, fontWeight: 600,
-                  background: 'var(--success-soft)', color: '#10b981',
-                  border: '1px solid rgba(16, 185, 129, 0.15)',
-                  borderRadius: 8, cursor: 'pointer',
-                  transition: 'all 0.2s ease',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 28, height: 28, flexShrink: 0,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  borderRadius: '50%', transition: 'all 0.15s ease',
                 }}
               >
-                <CheckCircle style={{ width: 13, height: 13 }} /> {t('dashboard.done')}
+                <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
               </button>
             </div>
           ))}
@@ -371,33 +369,37 @@ export default function Dashboard() {
     ),
 
     search: (
-      <div className="glass-card animate-fade-in-up" style={{ padding: 14, marginBottom: 20 }}>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 16, height: 16, color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder={t('dashboard.searchPlaceholder')}
-              className="input-dark"
-              style={{ paddingLeft: 38, padding: '10px 14px 10px 38px', fontSize: 14 }}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-          </div>
-          <div style={{ position: 'relative' }}>
-            <Filter style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--text-muted)', pointerEvents: 'none', zIndex: 1 }} />
-            <select
-              className="input-dark"
-              style={{ paddingLeft: 32, paddingRight: 12, fontSize: 13, appearance: 'none', minWidth: 110 }}
-              value={kategorie}
-              onChange={e => setKategorie(e.target.value)}
+      <div className="animate-fade-in-up" style={{ marginBottom: 16 }}>
+        <div style={{ position: 'relative', marginBottom: 8 }}>
+          <Search style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', width: 15, height: 15, color: 'var(--text-muted)' }} />
+          <input
+            type="text"
+            placeholder={t('dashboard.searchPlaceholder')}
+            className="input-dark"
+            style={{ paddingLeft: 36, padding: '9px 12px 9px 36px', fontSize: 13, borderRadius: 10 }}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+          {[{ value: '', labelKey: 'dashboard.allCategories' },
+            ...['brief','rechnung','lohnzettel','kontoauszug','vertrag','behoerde','sonstiges'].map(k => ({ value: k, labelKey: `categories.${k}` }))
+          ].map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setKategorie(opt.value)}
+              style={{
+                padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500,
+                whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.15s ease',
+                border: '1px solid',
+                background: kategorie === opt.value ? 'var(--accent-soft)' : 'transparent',
+                color: kategorie === opt.value ? 'var(--accent-solid)' : 'var(--text-muted)',
+                borderColor: kategorie === opt.value ? 'var(--accent-solid)' : 'var(--border-glass)',
+              }}
             >
-              <option value="">{t('dashboard.allCategories')}</option>
-              {['brief','rechnung','lohnzettel','kontoauszug','vertrag','behoerde','sonstiges'].map(k => (
-                <option key={k} value={k}>{t(`categories.${k}`)}</option>
-              ))}
-            </select>
-          </div>
+              {t(opt.labelKey)}
+            </button>
+          ))}
         </div>
       </div>
     ),

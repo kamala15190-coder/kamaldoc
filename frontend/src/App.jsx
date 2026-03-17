@@ -237,7 +237,7 @@ function TopHeader() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px', borderBottom: '1px solid var(--border-glass)',
         }}>
-          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Menu</span>
+          <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{t('nav.menu')}</span>
           <button
             onClick={() => setMoreOpen(false)}
             style={{

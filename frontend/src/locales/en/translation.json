@@ -7,8 +7,9 @@
     "befund": "Medical",
     "archive": "Archive",
     "profile": "Profile",
-    "support": "Support",
-    "logout": "Sign Out"
+    "support": "Help & Support",
+    "menu": "Menu",
+    "logout": "Logout"
   },
   "auth": {
     "login": "Sign In",
@@ -83,7 +84,8 @@
     "sectorSearch": "Search & Filter",
     "sectorDocuments": "Documents",
     "sectorAusgaben": "Expenses Dashboard",
-    "sectorArchiv": "Archive"
+    "sectorArchiv": "Archive",
+    "customizeLayout": "Customize layout"
   },
   "upload": {
     "title": "Upload Document",

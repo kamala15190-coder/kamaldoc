@@ -7,7 +7,8 @@
     "befund": "Befund",
     "archive": "Archiv",
     "profile": "Profil",
-    "support": "Support",
+    "support": "Hilfe & Support",
+    "menu": "Menü",
     "logout": "Abmelden"
   },
   "auth": {
@@ -83,7 +84,8 @@
     "sectorSearch": "Suche & Filter",
     "sectorDocuments": "Dokumente",
     "sectorAusgaben": "Ausgaben-Dashboard",
-    "sectorArchiv": "Archiv"
+    "sectorArchiv": "Archiv",
+    "customizeLayout": "Layout anpassen"
   },
   "upload": {
     "title": "Dokument hochladen",
