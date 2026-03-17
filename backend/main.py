@@ -60,15 +60,17 @@ app.add_middleware(
 # --- Rate Limiting Middleware (60 Requests/Minute pro IP) ---
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+    EXEMPT_PATHS = {"/api/status", "/auth/google/login", "/auth/google/callback"}
+
+    def __init__(self, app, max_requests: int = 120, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests = defaultdict(list)
 
     async def dispatch(self, request: Request, call_next):
-        # Health-Check vom Rate Limit ausnehmen
-        if request.url.path == "/api/status":
+        # Health-Check, Auth-Endpoints und OPTIONS vom Rate Limit ausnehmen
+        if request.url.path in self.EXEMPT_PATHS or request.method == "OPTIONS":
             return await call_next(request)
 
         client_ip = request.client.host if request.client else "unknown"
@@ -78,14 +80,21 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             t for t in self.requests[client_ip] if now - t < self.window_seconds
         ]
         if len(self.requests[client_ip]) >= self.max_requests:
+            # CORS-Header hinzufügen damit der Browser die Antwort nicht blockiert
+            origin = request.headers.get("origin", "")
+            headers = {}
+            if origin:
+                headers["access-control-allow-origin"] = origin
+                headers["access-control-allow-credentials"] = "true"
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Too Many Requests – max 60 pro Minute"},
+                content={"detail": "Too Many Requests – max 120 pro Minute"},
+                headers=headers,
             )
         self.requests[client_ip].append(now)
         return await call_next(request)
 
-app.add_middleware(RateLimitMiddleware, max_requests=60, window_seconds=60)
+app.add_middleware(RateLimitMiddleware, max_requests=120, window_seconds=60)
 
 ORIGINALS_DIR = DATA_DIR / "originals"
 THUMBNAILS_DIR = DATA_DIR / "thumbnails"
