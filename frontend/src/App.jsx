@@ -345,8 +345,10 @@ function LanguageSwitcher() {
 }
 
 function UpgradeButton({ mobile = false }) {
-  const { isFree, isBasic, isPro } = useSubscription();
+  const { isFree, isBasic, isPro, loading } = useSubscription();
   const { t } = useTranslation();
+
+  if (loading) return null;
 
   if (isPro) {
     return (
@@ -400,7 +402,7 @@ function UpgradeButton({ mobile = false }) {
 }
 
 function NativeStatusBar() {
-  const { isPro } = useSubscription();
+  const { isPro, isPaid, loading } = useSubscription();
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -422,7 +424,9 @@ function NativeStatusBar() {
       justifyContent: 'center',
       flexShrink: 0,
     }}>
-      {isPro ? (
+      {loading ? (
+        <span style={{ color: '#9CA3AF', fontSize: '12px' }}>…</span>
+      ) : isPaid ? (
         <span style={{ color: 'white', fontSize: '12px' }}>
           {t('pricing.proActive')}
         </span>
