@@ -28,7 +28,7 @@ const PLANS = [
     popular: false,
     features: [
       { key: 'pricing.docs50', included: true },
-      { key: 'pricing.kiUnlimited', included: true },
+      { key: 'pricing.ki50', included: true },
       { key: 'pricing.behoerde10', included: true },
       { key: 'pricing.befund10', included: true },
       { key: 'pricing.expenses', included: true },
@@ -42,9 +42,9 @@ const PLANS = [
     popular: true,
     features: [
       { key: 'pricing.docsUnlimited', included: true },
-      { key: 'pricing.kiUnlimited', included: true },
-      { key: 'pricing.behoerdeUnlimited', included: true },
-      { key: 'pricing.befundUnlimited', included: true },
+      { key: 'pricing.ki500', included: true },
+      { key: 'pricing.behoerde50', included: true },
+      { key: 'pricing.befund50', included: true },
       { key: 'pricing.expenses', included: true },
       { key: 'pricing.pushAll', included: true },
     ],

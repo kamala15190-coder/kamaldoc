@@ -376,6 +376,7 @@ async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
     try:
         await check_analysis_limit(user_id)
         await run_analysis(doc_id, image_path)
+        await increment_usage(user_id, "ki_analyses_month")
         await increment_usage(user_id, "ki_analyses_total")
     except HTTPException:
         # Limit reached — still run analysis for free tier (already uploaded)
@@ -681,6 +682,7 @@ async def create_reply(doc_id: int, target_language: str = "de", user_id: str = 
         reply_id = cursor.lastrowid
         await db.commit()
 
+        await increment_usage(user_id, "ki_analyses_month")
         await increment_usage(user_id, "ki_analyses_total")
 
         return {"id": reply_id, "inhalt": reply_text, "document_id": doc_id}
@@ -1075,9 +1077,7 @@ async def explain_document(
         await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
         await _upsert_behoerden_result(db, doc_id, user_id, erklaerung=erklaerung)
 
-        # Usage counter
         await increment_usage(user_id, "behoerden_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"erklaerung": erklaerung, "document_id": doc_id}
     finally:
@@ -1112,7 +1112,6 @@ async def legal_assessment_endpoint(
         await _upsert_behoerden_result(db, doc_id, user_id, rechtseinschaetzung=assessment)
 
         await increment_usage(user_id, "behoerden_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"assessment": assessment, "document_id": doc_id}
     finally:
@@ -1148,7 +1147,6 @@ async def contestable_elements_endpoint(
         await _upsert_behoerden_result(db, doc_id, user_id, anfechtbare_elemente=_json.dumps(elements, ensure_ascii=False))
 
         await increment_usage(user_id, "behoerden_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"elements": elements, "document_id": doc_id}
     finally:
@@ -1162,10 +1160,10 @@ async def generate_objection_endpoint(
     user_id: str = Depends(get_current_user),
 ):
     """Widerspruchsschreiben generieren."""
-    await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
     selected_ids = data.get("selected_elements", [])
+    target_language = data.get("target_language", "Deutsch")
     if not selected_ids:
         raise HTTPException(400, "Keine Elemente ausgewählt")
 
@@ -1196,14 +1194,13 @@ Telefon: {s.get('telefon', '')}"""
         selected_text = "\n".join([f"- Element {eid}" for eid in selected_ids])
 
         try:
-            letter = await generate_objection_letter(volltext, absender_daten, selected_text)
+            letter = await generate_objection_letter(volltext, absender_daten, selected_text, target_language)
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
         await _upsert_behoerden_result(db, doc_id, user_id, widerspruchsschreiben=letter)
 
         await increment_usage(user_id, "behoerden_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"letter": letter, "document_id": doc_id}
     finally:
@@ -1240,9 +1237,7 @@ async def simplify_document(
         await db.execute("UPDATE documents SET vereinfacht = ? WHERE id = ? AND user_id = ?", (vereinfacht, doc_id, user_id))
         await db.commit()
 
-        # Usage counter
         await increment_usage(user_id, "befund_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"vereinfacht": vereinfacht, "document_id": doc_id}
     finally:
@@ -1282,7 +1277,6 @@ async def translate_document(
         await db.commit()
 
         await increment_usage(user_id, "befund_month")
-        await increment_usage(user_id, "ki_analyses_total")
 
         return {"translated": translated, "target_language": target_language, "document_id": doc_id}
     finally:

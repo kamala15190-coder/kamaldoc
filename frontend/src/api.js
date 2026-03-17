@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_BASE_URL } from './config';
 import { supabase } from './supabaseClient';
+import { REPLY_LANGUAGES } from './languages';
 
 const api = axios.create({
   baseURL: API_BASE_URL + '/api',
@@ -72,8 +73,10 @@ export async function getContestableElements(id) {
   return data;
 }
 
-export async function generateObjection(id, selectedElements) {
-  const { data } = await api.post(`/documents/${id}/generate-objection`, { selected_elements: selectedElements });
+export async function generateObjection(id, selectedElements, targetLanguage = 'de') {
+  const lang = REPLY_LANGUAGES.find(l => l.code === targetLanguage);
+  const langName = lang ? lang.label : 'Deutsch';
+  const { data } = await api.post(`/documents/${id}/generate-objection`, { selected_elements: selectedElements, target_language: langName });
   return data;
 }
 

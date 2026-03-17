@@ -658,14 +658,14 @@ Erstelle ein förmliches Widerspruchsschreiben mit:
 8. Förmlicher Abschluss mit Unterschriftszeile
 
 Verwende korrekte rechtliche Formulierungen passend für AT/DE/CH.
-Schreibe auf Deutsch.
+Schreibe das gesamte Widerspruchsschreiben auf {target_language}.
 
 WICHTIG: Gib NUR das fertige Widerspruchsschreiben aus. KEIN zusätzlicher Text danach.
 KEINE Erklärungen, KEINE Meta-Kommentare, KEINE Hinweise wie "Bitte beachten Sie, dass...",
 KEIN Text nach der Grußformel und Unterschriftszeile. Das Schreiben endet mit der Unterschriftszeile."""
 
 
-async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str) -> str:
+async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str, target_language: str = "Deutsch") -> str:
     """Widerspruchsschreiben generieren."""
     if not TOGETHER_API_KEY:
         raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
@@ -674,6 +674,7 @@ async def generate_objection_letter(volltext: str, absender_daten: str, selected
         volltext=volltext,
         absender_daten=absender_daten,
         selected_elements=selected_elements,
+        target_language=target_language,
     )
 
     payload = {

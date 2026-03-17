@@ -36,6 +36,7 @@ export default function BehoerdeAssistent() {
   const [generatingObjection, setGeneratingObjection] = useState(false);
   const [objectionLetter, setObjectionLetter] = useState('');
   const [copiedObjection, setCopiedObjection] = useState(false);
+  const [objectionLang, setObjectionLang] = useState('de');
 
   const fetchDocs = async () => {
     setLoading(true);
@@ -145,7 +146,7 @@ export default function BehoerdeAssistent() {
     setGeneratingObjection(true);
     setError(null);
     try {
-      const result = await generateObjection(selectedDoc.id, Array.from(selectedElements));
+      const result = await generateObjection(selectedDoc.id, Array.from(selectedElements), objectionLang);
       setObjectionLetter(cleanObjectionText(result.letter));
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Widerspruch fehlgeschlagen');
@@ -344,15 +345,23 @@ export default function BehoerdeAssistent() {
                 </div>
 
                 {selectedElements.size > 0 && (
-                  <button onClick={handleGenerateObjection} disabled={generatingObjection} style={{
-                    marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 6,
-                    padding: '12px 20px', background: '#ef4444', color: 'white',
-                    border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                    opacity: generatingObjection ? 0.5 : 1,
-                  }}>
-                    {generatingObjection ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <FileText style={{ width: 14, height: 14 }} />}
-                    {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
-                  </button>
+                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                      <select value={objectionLang} onChange={e => setObjectionLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
+                        {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+                      </select>
+                    </div>
+                    <button onClick={handleGenerateObjection} disabled={generatingObjection} style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '12px 20px', background: '#ef4444', color: 'white',
+                      border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                      opacity: generatingObjection ? 0.5 : 1,
+                    }}>
+                      {generatingObjection ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <FileText style={{ width: 14, height: 14 }} />}
+                      {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
+                    </button>
+                  </div>
                 )}
               </div>
             )}

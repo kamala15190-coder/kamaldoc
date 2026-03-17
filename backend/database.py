@@ -173,6 +173,8 @@ async def init_db():
             "ALTER TABLE documents ADD COLUMN user_id TEXT NOT NULL DEFAULT ''",
             "ALTER TABLE documents ADD COLUMN reminder_days INTEGER DEFAULT 3",
             "ALTER TABLE subscriptions ADD COLUMN pending_plan TEXT",
+            "ALTER TABLE usage_counters ADD COLUMN ki_analyses_month INTEGER DEFAULT 0",
+            "ALTER TABLE usage_counters ADD COLUMN registration_date TEXT",
         ]
         for migration in migrations:
             try:

@@ -31,6 +31,7 @@ PLAN_LIMITS = {
     "free": {
         "documents_total": 10,
         "ki_analyses_total": 10,
+        "ki_analyses_month": 10,
         "behoerden_total": 2,
         "befund_total": 2,
         "expenses": False,
@@ -39,7 +40,7 @@ PLAN_LIMITS = {
     },
     "basic": {
         "documents_total": 50,
-        "ki_analyses_total": None,  # unlimited
+        "ki_analyses_month": 50,
         "behoerden_month": 10,
         "befund_month": 10,
         "expenses": True,
@@ -48,9 +49,9 @@ PLAN_LIMITS = {
     },
     "pro": {
         "documents_total": None,  # unlimited
-        "ki_analyses_total": None,
-        "behoerden_month": None,
-        "befund_month": None,
+        "ki_analyses_month": 500,
+        "behoerden_month": 50,
+        "befund_month": 50,
         "expenses": True,
         "push_notifications": True,
         "reminder_options": [1, 3, 7],
@@ -83,14 +84,21 @@ async def ensure_usage(user_id: str):
     db = await get_db()
     try:
         cursor = await db.execute(
-            "SELECT user_id FROM usage_counters WHERE user_id = ?", (user_id,)
+            "SELECT user_id, registration_date FROM usage_counters WHERE user_id = ?", (user_id,)
         )
         row = await cursor.fetchone()
         if not row:
             now = datetime.now().strftime("%Y-%m-%d")
             await db.execute(
-                "INSERT INTO usage_counters (user_id, last_reset) VALUES (?, ?)",
-                (user_id, now),
+                "INSERT INTO usage_counters (user_id, last_reset, registration_date) VALUES (?, ?, ?)",
+                (user_id, now, now),
+            )
+            await db.commit()
+        elif not row["registration_date"]:
+            now = datetime.now().strftime("%Y-%m-%d")
+            await db.execute(
+                "UPDATE usage_counters SET registration_date = ? WHERE user_id = ?",
+                (now, user_id),
             )
             await db.commit()
     finally:
@@ -136,6 +144,54 @@ async def get_user_plan(user_id: str) -> str:
         await db.close()
 
 
+def _calc_reset_boundary(registration_date_str: str, now: datetime) -> datetime:
+    """Calculate the most recent monthly reset boundary based on the user's registration day."""
+    import calendar
+    try:
+        reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
+        reg_day = reg_date.day
+    except (ValueError, TypeError):
+        reg_day = 1
+
+    # Find the reset day in the current month (clamp to last day if needed)
+    _, last_day = calendar.monthrange(now.year, now.month)
+    reset_day = min(reg_day, last_day)
+    boundary_this_month = now.replace(day=reset_day, hour=0, minute=0, second=0, microsecond=0)
+
+    if now >= boundary_this_month:
+        return boundary_this_month
+    else:
+        # Use previous month's boundary
+        prev_month = now.month - 1 if now.month > 1 else 12
+        prev_year = now.year if now.month > 1 else now.year - 1
+        _, prev_last = calendar.monthrange(prev_year, prev_month)
+        prev_day = min(reg_day, prev_last)
+        return datetime(prev_year, prev_month, prev_day)
+
+
+def _calc_next_reset(registration_date_str: str, now: datetime) -> str:
+    """Calculate the next monthly reset date for display."""
+    import calendar
+    try:
+        reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
+        reg_day = reg_date.day
+    except (ValueError, TypeError):
+        reg_day = 1
+
+    _, last_day = calendar.monthrange(now.year, now.month)
+    reset_day = min(reg_day, last_day)
+    boundary_this_month = now.replace(day=reset_day, hour=0, minute=0, second=0, microsecond=0)
+
+    if now < boundary_this_month:
+        return boundary_this_month.strftime("%Y-%m-%d")
+    else:
+        next_month = now.month + 1 if now.month < 12 else 1
+        next_year = now.year if now.month < 12 else now.year + 1
+        _, next_last = calendar.monthrange(next_year, next_month)
+        next_day = min(reg_day, next_last)
+        return datetime(next_year, next_month, next_day).strftime("%Y-%m-%d")
+
+
 async def get_usage(user_id: str) -> dict:
     """Get user's usage counters, auto-resetting monthly counters if needed."""
     await ensure_usage(user_id)
@@ -147,25 +203,32 @@ async def get_usage(user_id: str) -> dict:
         row = await cursor.fetchone()
         usage = dict(row)
 
-        # Auto-reset monthly counters on 1st of month
         now = datetime.now()
         last_reset = usage.get("last_reset") or ""
+        reg_date = usage.get("registration_date") or last_reset or now.strftime("%Y-%m-%d")
+
         try:
             last_date = datetime.strptime(last_reset, "%Y-%m-%d")
-            if last_date.month != now.month or last_date.year != now.year:
+            boundary = _calc_reset_boundary(reg_date, now)
+            if last_date < boundary:
                 await db.execute(
                     """UPDATE usage_counters
-                       SET behoerden_month = 0, befund_month = 0, last_reset = ?
+                       SET ki_analyses_month = 0, behoerden_month = 0, befund_month = 0, last_reset = ?
                        WHERE user_id = ?""",
                     (now.strftime("%Y-%m-%d"), user_id),
                 )
                 await db.commit()
+                usage["ki_analyses_month"] = 0
                 usage["behoerden_month"] = 0
                 usage["befund_month"] = 0
                 usage["last_reset"] = now.strftime("%Y-%m-%d")
-                logger.info(f"Monthly counters reset for user {user_id}")
+                logger.info(f"Monthly counters reset for user {user_id} (registration-day based)")
         except (ValueError, TypeError):
             pass
+
+        # Attach next reset date for frontend display
+        usage["next_reset"] = _calc_next_reset(reg_date, now)
+        usage["registration_date"] = reg_date
 
         return usage
     finally:
@@ -211,23 +274,24 @@ async def check_upload_limit(user_id: str):
 
 
 async def check_analysis_limit(user_id: str):
-    """Check if user can run KI analysis."""
+    """Check if user can run KI analysis (monthly limit)."""
     plan = await get_user_plan(user_id)
     limits = PLAN_LIMITS[plan]
-    max_analyses = limits["ki_analyses_total"]
-    if max_analyses is None:
-        return
+    max_month = limits.get("ki_analyses_month")
+    if max_month is None:
+        return  # unlimited
 
     usage = await get_usage(user_id)
-    if usage["ki_analyses_total"] >= max_analyses:
+    current = usage.get("ki_analyses_month", 0)
+    if current >= max_month:
         raise HTTPException(
             status_code=403,
             detail={
                 "code": "ANALYSIS_LIMIT",
-                "message": f"KI-Analyse-Limit erreicht ({max_analyses}). Bitte upgraden.",
+                "message": f"KI-Analyse-Limit erreicht ({max_month}/Monat). Bitte upgraden.",
                 "plan": plan,
-                "limit": max_analyses,
-                "used": usage["ki_analyses_total"],
+                "limit": max_month,
+                "used": current,
             },
         )
 
@@ -240,7 +304,6 @@ async def check_behoerden_limit(user_id: str):
 
     if plan == "free":
         max_total = limits.get("behoerden_total", 2)
-        # For free plan, we track total via behoerden_month (reused as total)
         if usage["behoerden_month"] >= max_total:
             raise HTTPException(
                 status_code=403,
@@ -252,9 +315,9 @@ async def check_behoerden_limit(user_id: str):
                     "used": usage["behoerden_month"],
                 },
             )
-    elif plan == "basic":
-        max_month = limits.get("behoerden_month", 10)
-        if max_month and usage["behoerden_month"] >= max_month:
+    else:
+        max_month = limits.get("behoerden_month")
+        if max_month is not None and usage["behoerden_month"] >= max_month:
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -265,7 +328,6 @@ async def check_behoerden_limit(user_id: str):
                     "used": usage["behoerden_month"],
                 },
             )
-    # Pro: unlimited
 
 
 async def check_befund_limit(user_id: str):
@@ -287,9 +349,9 @@ async def check_befund_limit(user_id: str):
                     "used": usage["befund_month"],
                 },
             )
-    elif plan == "basic":
-        max_month = limits.get("befund_month", 10)
-        if max_month and usage["befund_month"] >= max_month:
+    else:
+        max_month = limits.get("befund_month")
+        if max_month is not None and usage["befund_month"] >= max_month:
             raise HTTPException(
                 status_code=403,
                 detail={
@@ -345,7 +407,7 @@ async def get_subscription_status(user_id: str) -> dict:
         "stripe_subscription_id": sub.get("stripe_subscription_id"),
         "limits": {
             "documents_total": limits["documents_total"],
-            "ki_analyses_total": limits["ki_analyses_total"],
+            "ki_analyses_month": limits.get("ki_analyses_month"),
             "behoerden": limits.get("behoerden_total") if plan == "free" else limits.get("behoerden_month"),
             "befund": limits.get("befund_total") if plan == "free" else limits.get("befund_month"),
             "expenses": limits["expenses"],
@@ -354,9 +416,11 @@ async def get_subscription_status(user_id: str) -> dict:
         },
         "usage": {
             "documents_total": usage["documents_total"],
-            "ki_analyses_total": usage["ki_analyses_total"],
+            "ki_analyses_month": usage.get("ki_analyses_month", 0),
             "behoerden_used": usage["behoerden_month"],
             "befund_used": usage["befund_month"],
+            "next_reset": usage.get("next_reset"),
+            "registration_date": usage.get("registration_date"),
         },
     }
 

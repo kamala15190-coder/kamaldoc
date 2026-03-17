@@ -203,12 +203,26 @@ export default function ProfilPage() {
         </div>
 
         {usage && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-            <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} />
-            <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_total || 0} max={limits.ki_analyses_total} />
-            <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} />
-            <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} />
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+              <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} />
+              <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_month || 0} max={limits.ki_analyses_month} />
+              <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} />
+              <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} />
+            </div>
+            {usage.next_reset && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 12px', borderRadius: 8,
+                background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+                marginBottom: 14,
+              }}>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {t('profile.nextReset', { date: new Date(usage.next_reset).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : undefined) })}
+                </span>
+              </div>
+            )}
+          </>
         )}
 
         {subscription?.pending_plan && (
