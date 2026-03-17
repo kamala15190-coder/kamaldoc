@@ -25,6 +25,7 @@
   --warning-soft: rgba(245, 158, 11, 0.12);
   --tab-bar-height: 72px;
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-top: env(safe-area-inset-top, 0px);
 }
 
 body {
@@ -230,6 +231,16 @@ html, body, #root {
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
+}
+
+/* ===== HIDE SCROLLBAR (keep scroll) ===== */
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ===== SAFE AREA PADDING ===== */

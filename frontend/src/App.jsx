@@ -513,7 +513,8 @@ function NativeStatusBar() {
   return (
     <div style={{
       background: 'linear-gradient(90deg, var(--bg-primary), var(--bg-secondary))',
-      height: 28,
+      minHeight: 28,
+      paddingTop: 'var(--safe-area-top)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
     }}>

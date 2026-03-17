@@ -381,7 +381,7 @@ export default function Dashboard() {
             onChange={e => setSearch(e.target.value)}
           />
         </div>
-        <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
+        <div className="hide-scrollbar" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
           {[{ value: '', labelKey: 'dashboard.allCategories' },
             ...['brief','rechnung','lohnzettel','kontoauszug','vertrag','behoerde','sonstiges'].map(k => ({ value: k, labelKey: `categories.${k}` }))
           ].map(opt => (
