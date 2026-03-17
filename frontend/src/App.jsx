@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate 
 import { Capacitor } from '@capacitor/core';
 import {
   Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
-  Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Pencil,
-  Check, Plus, ChevronRight, Settings
+  Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield,
+  Plus, ChevronRight, Settings, Download
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
@@ -33,15 +33,15 @@ import { checkAdmin } from './api';
 
 const TAB_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
-  { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
+  { path: '/befund', labelKey: 'nav.befund', icon: Stethoscope },
   { path: '/upload', labelKey: 'nav.upload', icon: Plus, isCenter: true },
-  { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
+  { path: '/behoerde', labelKey: 'nav.behoerde', icon: Landmark },
   { path: '/profil', labelKey: 'nav.profile', icon: User },
 ];
 
 const MORE_ITEMS = [
-  { path: '/behoerde', labelKey: 'nav.behoerde', icon: Landmark },
-  { path: '/befund', labelKey: 'nav.befund', icon: Stethoscope },
+  { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
+  { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
   { path: '/support', labelKey: 'nav.support', icon: Headphones },
 ];
 
@@ -163,21 +163,9 @@ function TopHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [dashboardEditMode, setDashboardEditMode] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const isAdmin = useIsAdmin();
   const { signOut } = useAuth();
-  const isDashboard = location.pathname === '/';
-
-  useEffect(() => {
-    const handler = (e) => setDashboardEditMode(e.detail);
-    window.addEventListener('dashboard-edit-mode', handler);
-    return () => window.removeEventListener('dashboard-edit-mode', handler);
-  }, []);
-
-  useEffect(() => {
-    if (!isDashboard) setDashboardEditMode(false);
-  }, [isDashboard]);
 
   useEffect(() => {
     setMoreOpen(false);
@@ -212,23 +200,6 @@ function TopHeader() {
           </Link>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {isDashboard && (
-              <button
-                onClick={() => window.dispatchEvent(new Event('toggle-dashboard-edit'))}
-                style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  width: 36, height: 36, borderRadius: 10,
-                  background: dashboardEditMode ? 'var(--accent-soft)' : 'transparent',
-                  border: 'none', cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {dashboardEditMode
-                  ? <Check style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
-                  : <Pencil style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-                }
-              </button>
-            )}
             <LanguageSwitcher />
             <button
               onClick={() => setMoreOpen(true)}
@@ -571,12 +542,107 @@ function NativeStatusBar() {
   );
 }
 
+function PWAInstallBanner() {
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [show, setShow] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    // Don't show on native platform or if already installed as PWA
+    if (Capacitor.isNativePlatform()) return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (sessionStorage.getItem('pwa_banner_dismissed')) return;
+
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShow(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      setShow(false);
+    }
+    setDeferredPrompt(null);
+  };
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    sessionStorage.setItem('pwa_banner_dismissed', '1');
+    setTimeout(() => setShow(false), 300);
+  };
+
+  if (!show) return null;
+
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+      padding: '12px 16px',
+      background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(99,102,241,0.95))',
+      backdropFilter: 'blur(12px)',
+      display: 'flex', alignItems: 'center', gap: 12,
+      animation: dismissed ? 'slideUp 0.3s ease forwards' : 'slideDown 0.4s cubic-bezier(0.16,1,0.3,1)',
+      boxShadow: '0 4px 24px rgba(139,92,246,0.3)',
+    }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: 10, overflow: 'hidden',
+        background: 'rgba(255,255,255,0.15)', flexShrink: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <img src="/KDoc-Applogo.png" alt="" style={{ width: 32, height: 32, borderRadius: 6 }} />
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'white', margin: 0 }}>
+          {t('pwa.installTitle', 'Install KamalDoc App')}
+        </p>
+        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', margin: '2px 0 0' }}>
+          {t('pwa.installDesc', 'Add to home screen for quick access')}
+        </p>
+      </div>
+      <button
+        onClick={handleInstall}
+        style={{
+          padding: '8px 14px', borderRadius: 10,
+          background: 'white', color: '#7c3aed',
+          border: 'none', fontSize: 12, fontWeight: 700,
+          cursor: 'pointer', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 5,
+        }}
+      >
+        <Download style={{ width: 14, height: 14 }} />
+        {t('pwa.install', 'Install')}
+      </button>
+      <button
+        onClick={handleDismiss}
+        style={{
+          background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)',
+          cursor: 'pointer', padding: 4, flexShrink: 0,
+        }}
+      >
+        <X style={{ width: 16, height: 16 }} />
+      </button>
+      <style>{`
+        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100%); opacity: 0; } }
+      `}</style>
+    </div>
+  );
+}
+
 function AppContent() {
   const location = useLocation();
   const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen'].includes(location.pathname);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+      <PWAInstallBanner />
       {!isAuthPage && <NativeStatusBar />}
       {!isAuthPage && <TopHeader />}
       <main style={!isAuthPage ? {

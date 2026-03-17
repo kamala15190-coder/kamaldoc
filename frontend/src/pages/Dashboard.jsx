@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, Filter, CheckCircle, ClipboardList,
-  Minus
+  Minus, Settings
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
@@ -343,17 +343,17 @@ export default function Dashboard() {
               <button
                 onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }}
                 disabled={dismissingIds.has(todo.id)}
-                className="btn-ghost"
                 style={{
-                  width: '100%', marginTop: 10, padding: '10px 0',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  fontSize: 13, fontWeight: 600,
+                  marginTop: 8, padding: '5px 14px',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  fontSize: 12, fontWeight: 600,
                   background: 'var(--success-soft)', color: '#10b981',
-                  border: '1px solid rgba(16, 185, 129, 0.2)',
-                  borderRadius: 10,
+                  border: '1px solid rgba(16, 185, 129, 0.15)',
+                  borderRadius: 8, cursor: 'pointer',
+                  transition: 'all 0.2s ease',
                 }}
               >
-                <CheckCircle style={{ width: 15, height: 15 }} /> {t('dashboard.done')}
+                <CheckCircle style={{ width: 13, height: 13 }} /> {t('dashboard.done')}
               </button>
             </div>
           ))}
@@ -624,19 +624,45 @@ export default function Dashboard() {
           })}
         </SortableContext>
       </DndContext>
+
+      {/* Subtle customize link */}
+      {!editMode && (
+        <div style={{ textAlign: 'center', padding: '20px 0 8px' }}>
+          <button
+            onClick={() => setEditMode(true)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, color: 'var(--text-muted)', fontWeight: 500,
+              opacity: 0.5, transition: 'opacity 0.2s ease',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
+          >
+            <Settings style={{ width: 12, height: 12 }} />
+            {t('dashboard.customizeLayout', 'Customize layout')}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
 function StatCard({ icon, label, value, gradient, iconColor, onClick, delay = 0 }) {
+  const [pressed, setPressed] = useState(false);
   return (
     <div
       className="glass-card animate-fade-in-up"
       style={{
         padding: 14, cursor: 'pointer',
         animationDelay: `${delay * 0.08}s`,
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        transform: pressed ? 'scale(0.97)' : 'scale(1)',
       }}
       onClick={onClick}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
@@ -644,6 +670,8 @@ function StatCard({ icon, label, value, gradient, iconColor, onClick, delay = 0 
           background: gradient,
           color: iconColor,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'transform 0.2s ease',
+          transform: pressed ? 'scale(0.9)' : 'scale(1)',
         }}>
           {icon}
         </div>
@@ -739,6 +767,7 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
 function DocumentCard({ doc, delay = 0 }) {
   const { t } = useTranslation();
   const [imgError, setImgError] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   return (
     <Link
@@ -747,7 +776,12 @@ function DocumentCard({ doc, delay = 0 }) {
       style={{
         display: 'flex', gap: 12, padding: 12, textDecoration: 'none',
         animationDelay: `${Math.min(delay, 8) * 0.05}s`,
+        transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        transform: pressed ? 'scale(0.98)' : 'scale(1)',
       }}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
     >
       {/* Thumbnail */}
       <div style={{
