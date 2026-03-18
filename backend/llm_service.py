@@ -305,7 +305,7 @@ LANGUAGE_NAMES = {
 }
 
 
-async def generate_reply(document: dict, einstellungen: dict = None, target_language: str = "de") -> str:
+async def generate_reply(document: dict, einstellungen: dict = None, target_language: str = "de", hints: str = "") -> str:
     """Antwortbrief via Together.ai LLM generieren."""
     if not TOGETHER_API_KEY:
         raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
@@ -333,6 +333,7 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
     else:
         absender_info = "Verwende Platzhalter [IHR NAME] und [IHRE ADRESSE] für die eigenen Absenderdaten."
 
+    hints_text = f"\n\nZusätzliche Anweisungen vom User: {hints}" if hints else ""
     prompt = ANTWORT_PROMPT_TEMPLATE.format(
         absender=document.get("absender", "Unbekannt"),
         datum=document.get("datum", "Unbekannt"),
@@ -341,7 +342,7 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
         volltext=document.get("volltext", ""),
         absender_info=absender_info,
         target_language_name=target_language_name,
-    )
+    ) + hints_text
 
     payload = {
         "model": TOGETHER_MODEL,
@@ -541,12 +542,15 @@ Strukturiere deine Antwort mit den Überschriften:
 WICHTIG: Weise am Ende darauf hin, dass dies eine KI-Einschätzung ist und keine professionelle Rechtsberatung ersetzt."""
 
 
-async def legal_assessment(volltext: str) -> str:
+async def legal_assessment(volltext: str, language: str = "de") -> str:
     """Rechtliche Einschätzung eines Behördenschreibens."""
     if not TOGETHER_API_KEY:
         raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
 
+    lang_name = LANGUAGE_NAMES.get(language, "Deutsch")
     prompt = LEGAL_ASSESSMENT_PROMPT.format(volltext=volltext)
+    if language != "de":
+        prompt += f"\n\nAntworte auf {lang_name}."
 
     payload = {
         "model": TOGETHER_MODEL,
@@ -594,12 +598,15 @@ Beispiel:
 Antworte NUR mit dem JSON-Array, kein anderer Text."""
 
 
-async def get_contestable_elements(volltext: str) -> list:
+async def get_contestable_elements(volltext: str, language: str = "de") -> list:
     """Anfechtbare Elemente aus Behördenschreiben extrahieren."""
     if not TOGETHER_API_KEY:
         raise ValueError("TOGETHER_API_KEY Umgebungsvariable nicht gesetzt")
 
+    lang_name = LANGUAGE_NAMES.get(language, "Deutsch")
     prompt = CONTESTABLE_ELEMENTS_PROMPT.format(volltext=volltext)
+    if language != "de":
+        prompt += f"\n\nAntworte auf {lang_name}, aber behalte das JSON-Format bei."
 
     payload = {
         "model": TOGETHER_MODEL,

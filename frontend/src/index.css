@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root, [data-theme="dark"] {
   --bg-primary: #0a0f1a;
@@ -29,6 +29,12 @@
   --header-bg: rgba(10, 15, 26, 0.8);
   --tab-bar-bg: rgba(10, 15, 26, 0.85);
   --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --action-bg: rgba(245, 158, 11, 0.08);
+  --action-border: rgba(245, 158, 11, 0.25);
+  --action-text: #fbbf24;
+  --action-icon: #f59e0b;
+  --nav-inactive: #ebebf5;
+  --nav-inactive-opacity: 0.5;
 }
 
 [data-theme="light"] {
@@ -57,6 +63,12 @@
   --header-bg: rgba(242, 242, 247, 0.85);
   --tab-bar-bg: rgba(255, 255, 255, 0.85);
   --scrollbar-thumb: rgba(0, 0, 0, 0.1);
+  --action-bg: rgba(245, 158, 11, 0.1);
+  --action-border: rgba(245, 158, 11, 0.3);
+  --action-text: #d97706;
+  --action-icon: #f59e0b;
+  --nav-inactive: #3c3c43;
+  --nav-inactive-opacity: 0.7;
 }
 
 body {
@@ -333,8 +345,8 @@ html, body, #root {
 /* ===== PLUS BUTTON — Glass Aero Shine ===== */
 
 @keyframes glassShine {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% { transform: translateX(-100%) rotate(0deg); }
+  100% { transform: translateX(100%) rotate(0deg); }
 }
 
 @keyframes subtlePulse {
@@ -352,33 +364,36 @@ html, body, #root {
   content: '';
   position: absolute;
   top: -50%;
-  left: -50%;
-  width: 200%;
+  left: -75%;
+  width: 250%;
   height: 200%;
   background: linear-gradient(
     105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.08) 45%,
-    rgba(255, 255, 255, 0.15) 50%,
-    rgba(255, 255, 255, 0.08) 55%,
-    transparent 60%
+    transparent 30%,
+    rgba(255, 255, 255, 0.05) 38%,
+    rgba(255, 255, 255, 0.18) 45%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.18) 55%,
+    rgba(255, 255, 255, 0.05) 62%,
+    transparent 70%
   );
-  background-size: 200% 100%;
   animation: glassShine 4s ease-in-out infinite;
   pointer-events: none;
+  border-radius: inherit;
 }
 
 [data-theme="light"] .plus-button::before {
   background: linear-gradient(
     105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.15) 45%,
-    rgba(255, 255, 255, 0.25) 50%,
-    rgba(255, 255, 255, 0.15) 55%,
-    transparent 60%
+    transparent 30%,
+    rgba(255, 255, 255, 0.1) 38%,
+    rgba(255, 255, 255, 0.3) 45%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.3) 55%,
+    rgba(255, 255, 255, 0.1) 62%,
+    transparent 70%
   );
-  background-size: 200% 100%;
-  animation: glassShine 5s ease-in-out infinite;
+  animation: glassShine 4s ease-in-out infinite;
 }
 
 .plus-button:active {

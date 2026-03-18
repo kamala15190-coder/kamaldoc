@@ -63,13 +63,13 @@ export async function translateDocument(id, targetLanguage) {
   return data;
 }
 
-export async function getLegalAssessment(id) {
-  const { data } = await api.post(`/documents/${id}/legal-assessment`);
+export async function getLegalAssessment(id, language = 'de') {
+  const { data } = await api.post(`/documents/${id}/legal-assessment`, null, { params: { language } });
   return data;
 }
 
-export async function getContestableElements(id) {
-  const { data } = await api.post(`/documents/${id}/contestable-elements`);
+export async function getContestableElements(id, language = 'de') {
+  const { data } = await api.post(`/documents/${id}/contestable-elements`, null, { params: { language } });
   return data;
 }
 
@@ -118,6 +118,29 @@ export async function generateReply(id, targetLanguage) {
 
 export async function getReplies(id) {
   const { data } = await api.get(`/documents/${id}/replies`);
+  return data;
+}
+
+
+// --- Todos ---
+
+export async function getTodos(docId) {
+  const { data } = await api.get(`/documents/${docId}/todos`);
+  return data;
+}
+
+export async function createTodo(docId, text) {
+  const { data } = await api.post(`/documents/${docId}/todos`, { text });
+  return data;
+}
+
+export async function updateTodo(todoId, done) {
+  const { data } = await api.patch(`/todos/${todoId}`, { done });
+  return data;
+}
+
+export async function deleteTodo(todoId) {
+  const { data } = await api.delete(`/todos/${todoId}`);
   return data;
 }
 

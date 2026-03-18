@@ -1,14 +1,16 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
-  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock, Brain, MessageCircle, StickyNote, Zap
+  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock, Brain, MessageCircle, StickyNote, Zap, Share2, ListChecks, Plus as PlusIcon, X as XIcon
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   getDocument, updateDocument, deleteDocument,
-  generateReply, getReplies, downloadFile
+  generateReply, getReplies, downloadFile,
+  getTodos, createTodo as apiCreateTodo, updateTodo as apiUpdateTodo, deleteTodo as apiDeleteTodo
 } from '../api';
+import { Capacitor } from '@capacitor/core';
 import AuthImage from '../components/AuthImage';
 import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES } from '../languages';
@@ -52,6 +54,10 @@ export default function DocumentDetail() {
   const [markingDone, setMarkingDone] = useState(false);
   const [justMarkedDone, setJustMarkedDone] = useState(false);
   const [replyLanguage, setReplyLanguage] = useState('de');
+  const [replyHints, setReplyHints] = useState('');
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState('');
+  const [shared, setShared] = useState(null);
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
   const [savedToast, setSavedToast] = useState(false);
@@ -81,10 +87,20 @@ export default function DocumentDetail() {
     }
   }, [id]);
 
+  const fetchTodos = useCallback(async () => {
+    try {
+      const data = await getTodos(id);
+      setTodos(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchDoc();
     fetchReplies();
-  }, [fetchDoc, fetchReplies]);
+    fetchTodos();
+  }, [fetchDoc, fetchReplies, fetchTodos]);
 
   // Polling wenn Analyse laeuft
   useEffect(() => {
@@ -147,7 +163,7 @@ export default function DocumentDetail() {
   const handleGenerateReply = async () => {
     setGeneratingReply(true);
     try {
-      await generateReply(id, replyLanguage);
+      await generateReply(id, replyLanguage, replyHints);
       await fetchReplies();
     } catch (err) {
       if (!handleApiError(err)) {
@@ -164,6 +180,42 @@ export default function DocumentDetail() {
     setTimeout(() => setCopied(null), 2000);
   };
 
+  const addTodo = async () => {
+    const text = newTodo.trim();
+    if (!text) return;
+    try {
+      const todo = await apiCreateTodo(id, text);
+      setTodos(prev => [...prev, todo]);
+      setNewTodo('');
+    } catch (err) { console.error(err); }
+  };
+
+  const toggleTodo = async (todoId, currentDone) => {
+    try {
+      await apiUpdateTodo(todoId, currentDone ? 0 : 1);
+      setTodos(prev => prev.map(t => t.id === todoId ? { ...t, done: currentDone ? 0 : 1 } : t));
+    } catch (err) { console.error(err); }
+  };
+
+  const removeTodo = async (todoId) => {
+    try {
+      await apiDeleteTodo(todoId);
+      setTodos(prev => prev.filter(t => t.id !== todoId));
+    } catch (err) { console.error(err); }
+  };
+
+  const handleShare = async (text, title = 'KamalDoc') => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const { Share } = await import('@capacitor/share');
+        await Share.share({ title, text, dialogTitle: t('document.share') });
+      } catch (_) {}
+    } else if (navigator.share) {
+      try { await navigator.share({ title, text }); } catch (_) {}
+    } else {
+      window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
+    }
+  };
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
@@ -271,18 +323,18 @@ export default function DocumentDetail() {
           {doc.handlung_erforderlich && !doc.handlung_erledigt && (
             <div className="glass-card animate-fade-in-up" style={{
               padding: 14, transition: 'all 0.5s ease',
-              border: justMarkedDone ? '1px solid rgba(16,185,129,0.3)' : '1px solid rgba(239,68,68,0.2)',
+              border: justMarkedDone ? '1px solid rgba(16,185,129,0.3)' : '1px solid var(--action-border)',
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
                 {justMarkedDone ? (
                   <CheckCircle style={{ width: 18, height: 18, color: '#10b981', flexShrink: 0, marginTop: 1 }} />
                 ) : (
-                  <AlertCircle style={{ width: 18, height: 18, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
+                  <AlertCircle style={{ width: 18, height: 18, color: 'var(--action-icon)', flexShrink: 0, marginTop: 1 }} />
                 )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{
                     fontSize: 14, fontWeight: 600, margin: 0, transition: 'all 0.5s ease',
-                    color: justMarkedDone ? '#34d399' : '#ef4444',
+                    color: justMarkedDone ? '#34d399' : 'var(--action-text)',
                     textDecoration: justMarkedDone ? 'line-through' : 'none',
                     opacity: justMarkedDone ? 0.6 : 1,
                   }}>
@@ -290,7 +342,7 @@ export default function DocumentDetail() {
                   </p>
                   <p style={{
                     fontSize: 13, margin: '4px 0 0', transition: 'all 0.5s ease',
-                    color: justMarkedDone ? '#6ee7b7' : '#fca5a5',
+                    color: justMarkedDone ? '#6ee7b7' : 'var(--text-secondary)',
                     textDecoration: justMarkedDone ? 'line-through' : 'none',
                     opacity: justMarkedDone ? 0.6 : 1,
                   }}>
@@ -336,6 +388,72 @@ export default function DocumentDetail() {
             </div>
           ) : null}
 
+
+          {/* Aufgaben / Todos */}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <CollapsibleSection title={t('document.tasks')} icon={ListChecks} level={1} defaultOpen={true}
+              badge={todos.filter(t => !t.done).length > 0 ? `${todos.filter(t => !t.done).length}` : undefined}>
+
+              {/* KI-erkannte Aufgabe */}
+              {doc.handlung_beschreibung && !doc.handlung_erledigt && (
+                <div style={{
+                  padding: '10px 14px', backgroundColor: 'var(--action-bg)',
+                  border: '1px solid var(--action-border)', borderRadius: 8,
+                  marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
+                }}>
+                  <span style={{ fontSize: 16 }}>📋</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 11, color: 'var(--action-text)', fontWeight: 600 }}>
+                      {t('document.aiDetectedTask')}
+                    </div>
+                    <div style={{ color: 'var(--text-primary)', fontSize: 14 }}>
+                      {doc.handlung_beschreibung}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Manual Todos */}
+              {todos.map(todo => (
+                <div key={todo.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 14px', borderRadius: 8,
+                  backgroundColor: 'var(--bg-glass)', marginBottom: 8,
+                  border: '1px solid var(--border-glass)',
+                }}>
+                  <input type="checkbox" checked={!!todo.done}
+                    onChange={() => toggleTodo(todo.id, todo.done)}
+                    style={{ width: 18, height: 18, accentColor: 'var(--accent-solid)', cursor: 'pointer', flexShrink: 0 }} />
+                  <span style={{
+                    flex: 1, fontSize: 14,
+                    textDecoration: todo.done ? 'line-through' : 'none',
+                    color: todo.done ? 'var(--text-muted)' : 'var(--text-primary)',
+                    opacity: todo.done ? 0.6 : 1,
+                  }}>{todo.text}</span>
+                  <button onClick={() => removeTodo(todo.id)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, fontSize: 16, lineHeight: 1 }}>
+                    <XIcon style={{ width: 14, height: 14 }} />
+                  </button>
+                </div>
+              ))}
+
+              {/* New todo input */}
+              <div style={{ display: 'flex', gap: 8, marginTop: todos.length > 0 ? 4 : 0 }}>
+                <input
+                  value={newTodo}
+                  onChange={e => setNewTodo(e.target.value)}
+                  placeholder={t('document.addTask')}
+                  className="input-dark"
+                  style={{ flex: 1, fontSize: 14 }}
+                  onKeyDown={e => e.key === 'Enter' && addTodo()}
+                />
+                <button onClick={addTodo} className="btn-accent"
+                  style={{ padding: '10px 16px', fontSize: 16, fontWeight: 700, borderRadius: 10 }}>
+                  <PlusIcon style={{ width: 16, height: 16 }} />
+                </button>
+              </div>
+            </CollapsibleSection>
+          </div>
           {/* KI-Analyse Section (Collapsible) */}
           <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
             <CollapsibleSection title={t('document.documentData')} icon={Brain} level={1} defaultOpen={true}>
@@ -477,6 +595,19 @@ export default function DocumentDetail() {
                       ))}
                     </select>
                   </div>
+                  {/* Context hints for AI */}
+                  <div>
+                    <label style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, display: 'block', fontWeight: 600 }}>
+                      {t('document.replyHintsLabel')}
+                    </label>
+                    <textarea
+                      value={replyHints}
+                      onChange={e => setReplyHints(e.target.value)}
+                      placeholder={t('document.replyHintsPlaceholder')}
+                      className="input-dark"
+                      style={{ width: '100%', minHeight: 70, resize: 'vertical', fontSize: 13, marginBottom: 10 }}
+                    />
+                  </div>
                   <button
                     onClick={handleGenerateReply}
                     disabled={generatingReply}
@@ -508,17 +639,30 @@ export default function DocumentDetail() {
                           <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
                             {new Date(reply.erstellt_am).toLocaleString()}
                           </p>
-                          <button
-                            onClick={() => handleCopy(reply.inhalt, idx)}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 4,
-                              fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
-                              background: 'none', border: 'none', cursor: 'pointer',
-                            }}
-                          >
-                            <Copy style={{ width: 13, height: 13 }} />
-                            {copied === idx ? t('document.copied') : t('document.copy')}
-                          </button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <button
+                              onClick={() => handleShare(reply.inhalt, t('document.replySection'))}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: 4,
+                                fontSize: 12, color: 'var(--text-muted)', fontWeight: 600,
+                                background: 'none', border: 'none', cursor: 'pointer',
+                              }}
+                              title={t('document.share')}
+                            >
+                              <Share2 style={{ width: 13, height: 13 }} />
+                            </button>
+                            <button
+                              onClick={() => handleCopy(reply.inhalt, idx)}
+                              style={{
+                                display: 'flex', alignItems: 'center', gap: 4,
+                                fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
+                                background: 'none', border: 'none', cursor: 'pointer',
+                              }}
+                            >
+                              <Copy style={{ width: 13, height: 13 }} />
+                              {copied === idx ? t('document.copied') : t('document.copy')}
+                            </button>
+                          </div>
                         </div>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0 }}>{reply.inhalt}</p>
                       </div>

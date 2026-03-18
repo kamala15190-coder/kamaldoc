@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Landmark, Upload, Loader2, FileText, Copy, Check,
@@ -109,7 +109,7 @@ export default function BehoerdeAssistent() {
     setAssessingLegal(true);
     setError(null);
     try {
-      const result = await getLegalAssessment(selectedDoc.id);
+      const result = await getLegalAssessment(selectedDoc.id, targetLang);
       setLegalAssessment(result.assessment);
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Rechtseinschaetzung fehlgeschlagen');
@@ -125,7 +125,7 @@ export default function BehoerdeAssistent() {
     setSelectedElements(new Set());
     setObjectionLetter('');
     try {
-      const result = await getContestableElements(selectedDoc.id);
+      const result = await getContestableElements(selectedDoc.id, targetLang);
       setContestableElements(result.elements || []);
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Analyse fehlgeschlagen');

@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle, Trash2, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -216,6 +216,38 @@ export default function ProfilPage() {
         </div>
       </div>
 
+
+      {/* Section: App Download */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 16 }}>📱</span>
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.installApp')}</h2>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 12px' }}>{t('profile.installAppDesc')}</p>
+        <a
+          href="https://api.schulbox.at/download/kamaldoc.apk"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '12px 16px', borderRadius: 10,
+            background: '#34a853', color: 'white',
+            textDecoration: 'none', marginBottom: 8,
+            fontWeight: 600, fontSize: 14,
+          }}
+        >
+          🤖 {t('profile.downloadAndroid')}
+        </a>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '12px 16px', borderRadius: 10,
+          background: 'var(--bg-glass)',
+          color: 'var(--text-muted)', fontSize: 14,
+          border: '1px solid var(--border-glass)',
+        }}>
+          🍎 {t('profile.iosComingSoon')}
+        </div>
+      </div>
       {/* Section: Subscription */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>

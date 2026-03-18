@@ -1,4 +1,4 @@
-﻿import aiosqlite
+import aiosqlite
 import os
 import logging
 from pathlib import Path
@@ -50,12 +50,12 @@ async def init_db():
                 kontakt_adresse TEXT,
                 kontakt_email TEXT,
                 kontakt_telefon TEXT,
-                -- Deadline-WÃ¤chter
+                -- Deadline-Wächter
                 deadline TEXT,
                 deadline_notified INTEGER DEFAULT 0,
-                -- Ausgaben-Kategorie (fÃ¼r Rechnungen)
+                -- Ausgaben-Kategorie (für Rechnungen)
                 expense_category TEXT,
-                -- BehÃ¶rden-/Befund-Assistent
+                -- Behörden-/Befund-Assistent
                 erklaerung TEXT,
                 vereinfacht TEXT,
                 -- Benutzer-Felder
@@ -150,6 +150,15 @@ async def init_db():
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
+            CREATE TABLE IF NOT EXISTS todos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER REFERENCES documents(id) ON DELETE CASCADE,
+                user_id TEXT NOT NULL,
+                text TEXT NOT NULL,
+                done INTEGER DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
             CREATE TABLE IF NOT EXISTS usage_counters (
                 user_id TEXT PRIMARY KEY,
                 documents_total INTEGER DEFAULT 0,
@@ -161,7 +170,7 @@ async def init_db():
         """)
         await db.commit()
 
-        # Migrations: Spalten hinzufÃ¼gen falls noch nicht vorhanden
+        # Migrations: Spalten hinzufügen falls noch nicht vorhanden
         migrations = [
             "ALTER TABLE documents ADD COLUMN erledigt_am TEXT",
             "ALTER TABLE documents ADD COLUMN doc_type TEXT NOT NULL DEFAULT 'standard'",

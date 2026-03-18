@@ -1,6 +1,7 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
   Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield,
@@ -108,7 +109,7 @@ function BottomTabBar() {
 
           if (isCenter) {
             return (
-              <Link key={path} to={path} className="plus-button" style={{
+              <Link key={path} to={path} className="plus-button" onClick={() => { if (Capacitor.isNativePlatform()) { Haptics.impact({ style: ImpactStyle.Light }).catch(() => {}); } }} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 52, height: 52, borderRadius: 16,
                 background: 'var(--accent-gradient)',
@@ -139,14 +140,16 @@ function BottomTabBar() {
               }}>
                 <Icon style={{
                   width: 20, height: 20,
-                  color: active ? 'var(--accent-solid)' : 'var(--text-muted)',
+                  color: active ? 'var(--accent-solid)' : 'var(--nav-inactive)',
+                  opacity: active ? 1 : 'var(--nav-inactive-opacity)',
                   strokeWidth: active ? 2.2 : 1.8,
                   transition: 'all 0.25s ease',
                 }} />
               </div>
               <span style={{
                 fontSize: 10, fontWeight: active ? 600 : 500,
-                color: active ? 'var(--accent-solid)' : 'var(--text-muted)',
+                color: active ? 'var(--accent-solid)' : 'var(--nav-inactive)',
+                opacity: active ? 1 : 'var(--nav-inactive-opacity)',
                 letterSpacing: '0.01em',
                 transition: 'all 0.25s ease',
               }}>

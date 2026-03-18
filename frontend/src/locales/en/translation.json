@@ -1,4 +1,4 @@
-﻿{
+{
     "nav":  {
                 "dashboard":  "Dashboard",
                 "upload":  "Upload",
@@ -147,6 +147,12 @@
                      "generateReplyAuthority":  "Generate reply to authority",
                      "generating":  "Generatingâ€¦",
                      "copied":  "Copied!",
+                    "tasks":  "Tasks",
+                    "aiDetectedTask":  "AI-detected task",
+                    "addTask":  "Add task...",
+                    "replyHintsLabel":  "Context hints (optional)",
+                    "replyHintsPlaceholder":  "e.g. Please be polite, refer to paragraph 5...",
+                    "share":  "Share",
                      "copy":  "Copy",
                      "replyLanguage":  "Language:",
                      "actionDone":  "Action completed",
@@ -351,7 +357,7 @@
                     "downgradeConfirm":  "Do you want to downgrade to {{plan}}? Your current plan remains active until the end of the billing period.",
                     "downgradeSuccess":  "Downgrade scheduled. Your current plan remains active until expiry.",
                     "downgradeFailed":  "Downgrade failed",
-                    "cancelAnytime":  "Monthly billing Â· Cancel anytime Â· No hidden costs",
+                    "cancelAnytime":  "Monthly billing · Cancel anytime · No hidden costs",
                     "stripeNotReady":  "Payment system is not configured yet.",
                     "error":  "Error creating checkout session.",
                     "docs10":  "Max. 10 documents total",
