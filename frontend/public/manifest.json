@@ -3,7 +3,7 @@
   "short_name": "KamalDoc",
   "description": "Dokumente scannen, analysieren & verwalten",
   "start_url": "/",
-  "display": "fullscreen",
+  "display": "standalone",
   "background_color": "#0a0f1a",
   "theme_color": "#0a0f1a",
   "orientation": "portrait-primary",

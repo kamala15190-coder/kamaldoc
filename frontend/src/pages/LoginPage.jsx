@@ -60,8 +60,16 @@ export default function LoginPage() {
         const { Browser } = await import('@capacitor/browser')
         await Browser.open({ url: loginUrl })
       } else {
-        // Web: redirect to our OAuth proxy (Google shows "Weiter zu kdoc.at")
-        window.location.href = `${API_BASE_URL}/auth/google/login?platform=web`
+        const loginUrl = `${API_BASE_URL}/auth/google/login?platform=web`
+        // In PWA mode: open in new tab so the PWA stays in the foreground
+        const isPWA = window.matchMedia('(display-mode: standalone)').matches
+          || window.matchMedia('(display-mode: fullscreen)').matches
+          || window.navigator.standalone
+        if (isPWA) {
+          window.open(loginUrl, '_blank')
+        } else {
+          window.location.href = loginUrl
+        }
       }
     } catch (err) {
       setError(err.message || t('auth.googleLoginFailed'))

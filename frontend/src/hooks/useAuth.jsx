@@ -57,6 +57,13 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase.auth.setSession(tokens)
         if (!error && data?.session) {
           handleSession(data.session)
+          // If this tab was opened by the PWA for OAuth, try to close it
+          const isPWA = window.matchMedia('(display-mode: standalone)').matches
+            || window.matchMedia('(display-mode: fullscreen)').matches
+            || window.navigator.standalone
+          if (!isPWA) {
+            try { window.close() } catch (_) {}
+          }
           return
         }
       }

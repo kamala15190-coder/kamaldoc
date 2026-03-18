@@ -117,7 +117,7 @@ i18n
       escapeValue: false,
     },
     detection: {
-      order: ['localStorage'],
+      order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
       lookupLocalStorage: 'kamaldoc_language',
     },

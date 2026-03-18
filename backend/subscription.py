@@ -552,12 +552,20 @@ async def create_checkout_session(user_id: str, plan: str) -> dict:
 
     session = stripe.checkout.Session.create(
         customer=customer_id,
-        payment_method_types=["card"],
         mode="subscription",
         line_items=[{"price": price_id, "quantity": 1}],
+        payment_method_types=["card", "amazon_pay"],
+        payment_method_options={
+            "card": {
+                "request_three_d_secure": "automatic",
+            },
+        },
         success_url=f"{FRONTEND_URL}/profil?checkout=success",
         cancel_url=f"{FRONTEND_URL}/pricing?checkout=cancel",
         metadata={"user_id": user_id, "plan": plan},
+        custom_text={
+            "submit": {"message": "KamalDoc – Ihr Dokumenten-Assistent"},
+        },
     )
 
     return {"checkout_url": session.url, "session_id": session.id}
