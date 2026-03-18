@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Capacitor } from '@capacitor/core'
@@ -8,6 +8,14 @@ import { API_BASE_URL } from '../config'
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
 
 const GOOGLE_CLIENT_ID = '246007067980-44qma6u29hu8eiimp7f1n5akqo3k0j3p.apps.googleusercontent.com'
+
+// SHA-256 hash helper for nonce
+async function sha256(plain) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(plain)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -20,6 +28,7 @@ export default function LoginPage() {
   const [acceptPrivacy, setAcceptPrivacy] = useState(false)
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [acceptAGB, setAcceptAGB] = useState(false)
+  const nonceRef = useRef(null)
 
   const canSubmit = acceptPrivacy && acceptTerms && acceptAGB
 
@@ -38,6 +47,7 @@ export default function LoginPage() {
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: response.credential,
+        nonce: nonceRef.current,
       })
       if (error) throw error
       navigate('/', { replace: true })
@@ -69,7 +79,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
     setError(null)
 
     if (Capacitor.isNativePlatform()) {
@@ -84,9 +94,15 @@ export default function LoginPage() {
 
     // Web: use Google Sign-In SDK (GSI) — no redirect, stays in PWA
     if (window.google?.accounts?.id) {
+      // Generate nonce: raw for Supabase, SHA-256 hashed for Google
+      const rawNonce = crypto.randomUUID()
+      nonceRef.current = rawNonce
+      const hashedNonce = await sha256(rawNonce)
+
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
+        nonce: hashedNonce,
         auto_select: false,
         cancel_on_tap_outside: true,
       })
