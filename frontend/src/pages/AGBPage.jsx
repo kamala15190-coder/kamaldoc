@@ -45,7 +45,7 @@ export default function AGBPage() {
             <section style={sectionStyle}>
               <h2 style={h2Style}>§ 2 Besondere Hinweise zur Art der hochgeladenen Dokumente</h2>
               <p style={{...pStyle, padding: '10px 14px', borderRadius: 10, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)'}}>
-                <strong style={{color: '#fbbf24'}}>WICHTIGER HINWEIS:</strong> KDoc ist darauf ausgelegt, dass Nutzer potenziell <strong style={strongStyle}>höchst vertrauliche und sensible Dokumente</strong> hochladen, darunter insbesondere:
+                <strong style={{color: 'var(--warning-text)'}}>WICHTIGER HINWEIS:</strong> KDoc ist darauf ausgelegt, dass Nutzer potenziell <strong style={strongStyle}>höchst vertrauliche und sensible Dokumente</strong> hochladen, darunter insbesondere:
               </p>
               <ul style={ulStyle}>
                 <li style={liStyle}><strong style={strongStyle}>Medizinische Befunde und Arztbriefe</strong> (z. B. Diagnosen, Laborergebnisse, ärztliche Gutachten, Entlassungsberichte)</li>
@@ -160,7 +160,7 @@ export default function AGBPage() {
             <section style={sectionStyle}>
               <h2 style={h2Style}>§ 7 Haftungsausschluss und Haftungsbeschränkung</h2>
               <p style={{...pStyle, padding: '10px 14px', borderRadius: 10, background: 'var(--danger-soft)', border: '1px solid rgba(239,68,68,0.15)'}}>
-                <strong style={{color: '#ef4444'}}>WICHTIGER HAFTUNGSHINWEIS:</strong> Die folgenden Ausschlüsse und Beschränkungen sind wesentlicher Bestandteil dieser AGB.
+                <strong style={{color: 'var(--danger)'}}>WICHTIGER HAFTUNGSHINWEIS:</strong> Die folgenden Ausschlüsse und Beschränkungen sind wesentlicher Bestandteil dieser AGB.
               </p>
 
               <h3 style={h3Style}>7.1 Keine Rechts-, Steuer- oder Medizinberatung</h3>

@@ -265,7 +265,7 @@ export default function DocumentDetail() {
             disabled={deleting}
             style={{
               padding: '8px 12px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
-              background: 'var(--danger-soft)', color: '#ef4444',
+              background: 'var(--danger-soft)', color: 'var(--danger)',
               border: '1px solid rgba(239,68,68,0.2)', borderRadius: 10,
               cursor: 'pointer', opacity: deleting ? 0.5 : 1,
             }}
@@ -298,7 +298,7 @@ export default function DocumentDetail() {
                 animation: 'spin 0.8s linear infinite',
               }} />
               <div>
-                <p style={{ fontSize: 13, fontWeight: 600, color: '#fbbf24', margin: 0 }}>{t('document.analysisRunning')}</p>
+                <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--warning-text)', margin: 0 }}>{t('document.analysisRunning')}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('document.analysisRunningDesc')}</p>
               </div>
             </div>
@@ -308,11 +308,11 @@ export default function DocumentDetail() {
             <div className="glass-card animate-fade-in" style={{
               padding: 14, border: '1px solid rgba(239,68,68,0.2)',
             }}>
-              <p style={{ fontSize: 13, fontWeight: 600, color: '#ef4444', margin: 0 }}>{t('document.analysisFailed')}</p>
-              <p style={{ fontSize: 12, color: '#fca5a5', margin: '4px 0 0' }}>{doc.analyse_fehler}</p>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--danger)', margin: 0 }}>{t('document.analysisFailed')}</p>
+              <p style={{ fontSize: 12, color: 'var(--danger-text)', margin: '4px 0 0' }}>{doc.analyse_fehler}</p>
               <button
                 onClick={() => window.location.reload()}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 12, color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer' }}
               >
                 <RefreshCw style={{ width: 12, height: 12 }} /> {t('document.reload')}
               </button>
@@ -327,7 +327,7 @@ export default function DocumentDetail() {
             }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 12 }}>
                 {justMarkedDone ? (
-                  <CheckCircle style={{ width: 18, height: 18, color: '#10b981', flexShrink: 0, marginTop: 1 }} />
+                  <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)', flexShrink: 0, marginTop: 1 }} />
                 ) : (
                   <AlertCircle style={{ width: 18, height: 18, color: 'var(--action-icon)', flexShrink: 0, marginTop: 1 }} />
                 )}
@@ -378,10 +378,10 @@ export default function DocumentDetail() {
               padding: 14, display: 'flex', alignItems: 'center', gap: 10,
               border: '1px solid rgba(16,185,129,0.2)',
             }}>
-              <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
+              <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
               <div>
-                <p style={{ fontSize: 13, color: '#6ee7b7', textDecoration: 'line-through', opacity: 0.7, margin: 0 }}>{doc.handlung_beschreibung || t('document.actionDone')}</p>
-                <p style={{ fontSize: 12, color: '#34d399', margin: '2px 0 0', fontWeight: 600 }}>
+                <p style={{ fontSize: 13, color: 'var(--success-text)', textDecoration: 'line-through', opacity: 0.7, margin: 0 }}>{doc.handlung_beschreibung || t('document.actionDone')}</p>
+                <p style={{ fontSize: 12, color: 'var(--success-text)', margin: '2px 0 0', fontWeight: 600 }}>
                   {doc.erledigt_am ? t('document.doneAt', { date: new Date(doc.erledigt_am).toLocaleDateString() }) : t('document.doneLabel')}
                 </p>
               </div>
@@ -447,9 +447,16 @@ export default function DocumentDetail() {
                   style={{ flex: 1, fontSize: 14 }}
                   onKeyDown={e => e.key === 'Enter' && addTodo()}
                 />
-                <button onClick={addTodo} className="btn-accent"
-                  style={{ padding: '10px 16px', fontSize: 16, fontWeight: 700, borderRadius: 10 }}>
-                  <PlusIcon style={{ width: 16, height: 16 }} />
+                <button onClick={addTodo}
+                  style={{
+                    padding: '8px 12px', borderRadius: 8,
+                    backgroundColor: 'transparent',
+                    border: '1px solid var(--accent-solid)',
+                    color: 'var(--accent-solid)',
+                    cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                  }}>
+                  + {t('document.addTaskBtn')}
                 </button>
               </div>
             </CollapsibleSection>
@@ -478,7 +485,7 @@ export default function DocumentDetail() {
               {/* Deadline */}
               <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                  <Clock style={{ width: 14, height: 14, color: '#fbbf24' }} />
+                  <Clock style={{ width: 14, height: 14, color: 'var(--warning-text)' }} />
                   <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>{t('document.deadline')}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -503,7 +510,7 @@ export default function DocumentDetail() {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 4,
                         padding: '8px 14px', fontSize: 12, fontWeight: 600,
-                        background: 'var(--warning-soft)', color: '#fbbf24',
+                        background: 'var(--warning-soft)', color: 'var(--warning-text)',
                         border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8,
                         cursor: 'pointer', opacity: savingDeadline ? 0.5 : 1,
                       }}
@@ -523,19 +530,19 @@ export default function DocumentDetail() {
                         } catch (err) { console.error(err); }
                         finally { setSavingDeadline(false); }
                       }}
-                      style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                      style={{ fontSize: 12, color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                     >
                       {t('document.removeDeadline')}
                     </button>
                   )}
                 </div>
                 {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
-                  <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, margin: '6px 0 0' }}>
+                  <p style={{ fontSize: 12, color: 'var(--warning-text)', fontWeight: 600, margin: '6px 0 0' }}>
                     {t('document.deadlineSoon')}
                   </p>
                 )}
                 {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
-                  <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: '6px 0 0' }}>
+                  <p style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, margin: '6px 0 0' }}>
                     {t('document.deadlineOverdue')}
                   </p>
                 )}
@@ -712,7 +719,7 @@ export default function DocumentDetail() {
                   {t('document.save')}
                 </button>
                 {savedToast && (
-                  <span style={{ fontSize: 13, color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <CheckCircle style={{ width: 14, height: 14 }} /> Gespeichert!
                   </span>
                 )}
@@ -768,7 +775,7 @@ function ReminderSettings({ docId, currentDays, onUpdate }) {
     <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border-glass)' }}>
       <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('document.reminderTitle')}</p>
       {isFree && (
-        <p style={{ fontSize: 12, color: '#fbbf24', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
+        <p style={{ fontSize: 12, color: 'var(--warning-text)', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
           <Lock style={{ width: 12, height: 12 }} /> {t('document.reminderFreeLocked')}
         </p>
       )}

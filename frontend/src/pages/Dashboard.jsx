@@ -310,12 +310,12 @@ export default function Dashboard() {
     todos: offeneTodos.length > 0 && (
       <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
         <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ClipboardList style={{ width: 14, height: 14, color: '#ef4444' }} />
+          <ClipboardList style={{ width: 14, height: 14, color: 'var(--danger)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.openTasks')}</span>
           <span style={{
             marginLeft: 'auto', fontSize: 10, fontWeight: 700,
             padding: '1px 7px', borderRadius: 20,
-            background: 'var(--danger-soft)', color: '#ef4444',
+            background: 'var(--danger-soft)', color: 'var(--danger)',
           }}>
             {offeneTodos.length}
           </span>
@@ -372,7 +372,7 @@ export default function Dashboard() {
                   borderRadius: '50%', transition: 'all 0.15s ease',
                 }}
               >
-                <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
+                <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
               </button>
             </div>
           ))}
@@ -476,9 +476,9 @@ export default function Dashboard() {
     archiv: (
       <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
         <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Archive style={{ width: 14, height: 14, color: '#10b981' }} />
+          <Archive style={{ width: 14, height: 14, color: 'var(--success)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.sectorArchiv')}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'var(--success-soft)', color: '#34d399' }}>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'var(--success-soft)', color: 'var(--success-text)' }}>
             {archivedDocs.length}
           </span>
         </div>
@@ -494,7 +494,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.absender || '—'}</span>
                   <span style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'line-through', opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.handlung_beschreibung || '—'}</span>
                 </div>
-                <CheckCircle style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0 }} />
+                <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
               </div>
             ))}
           </div>
@@ -510,7 +510,7 @@ export default function Dashboard() {
     ausgaben: (
       <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
         <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <DollarSign style={{ width: 14, height: 14, color: '#fbbf24' }} />
+          <DollarSign style={{ width: 14, height: 14, color: 'var(--warning-text)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.sectorAusgaben')}</span>
         </div>
         {isFree ? (
@@ -557,7 +557,7 @@ export default function Dashboard() {
       {editMode && (
         <div style={{
           position: 'sticky', top: 56, zIndex: 40,
-          background: 'rgba(10, 15, 26, 0.9)',
+          background: 'var(--header-bg)',
           backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           borderBottom: '1px solid var(--border-glass)',
           padding: '8px 16px',
@@ -651,7 +651,7 @@ export default function Dashboard() {
                     {sector.icon} {t('dashboard.sector' + sector.id.charAt(0).toUpperCase() + sector.id.slice(1))}
                   </span>
                   {sector.locked && (
-                    <span style={{ fontSize: 12, color: '#fbbf24' }}>{t('dashboard.sectorUpgrade')}</span>
+                    <span style={{ fontSize: 12, color: 'var(--warning-text)' }}>{t('dashboard.sectorUpgrade')}</span>
                   )}
                 </div>
               ))
@@ -923,7 +923,7 @@ function DocumentCard({ doc, delay = 0 }) {
           {doc.status === 'analyse_laeuft' && (
             <span style={{
               fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500,
-              background: 'var(--warning-soft)', color: '#fbbf24',
+              background: 'var(--warning-soft)', color: 'var(--warning-text)',
               display: 'flex', alignItems: 'center', gap: 4,
             }}>
               <Loader2 style={{ width: 10, height: 10, animation: 'spin 0.8s linear infinite' }} /> {t('dashboard.analysisRunning')}
@@ -932,7 +932,7 @@ function DocumentCard({ doc, delay = 0 }) {
           {doc.status === 'fehler' && (
             <span style={{
               fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 500,
-              background: 'var(--danger-soft)', color: '#ef4444',
+              background: 'var(--danger-soft)', color: 'var(--danger)',
             }}>
               {t('dashboard.error')}
             </span>

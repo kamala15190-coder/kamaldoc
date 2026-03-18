@@ -173,81 +173,11 @@ export default function ProfilPage() {
       {/* Checkout Success Banner */}
       {searchParams.get('checkout') === 'success' && (
         <div className="glass-card animate-fade-in" style={{ padding: 14, display: 'flex', alignItems: 'center', gap: 10, border: '1px solid rgba(16,185,129,0.2)' }}>
-          <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#34d399' }}>{t('profile.checkoutSuccess')}</span>
+          <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success-text)' }}>{t('profile.checkoutSuccess')}</span>
         </div>
       )}
 
-      {/* Section: Appearance / Theme Toggle */}
-      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          {theme === 'dark' ? <Moon style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 16, height: 16, color: '#f59e0b' }} />}
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.appearance')}</h2>
-        </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>{t('profile.themeDesc')}</p>
-        <div
-          onClick={toggleTheme}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
-            background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
-            transition: 'all 0.2s ease',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {theme === 'dark' ? <Moon style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 18, height: 18, color: '#f59e0b' }} />}
-            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-              {theme === 'dark' ? t('profile.darkMode') : t('profile.lightMode')}
-            </span>
-          </div>
-          <div style={{
-            width: 44, height: 24, borderRadius: 12, position: 'relative',
-            background: theme === 'dark' ? 'var(--accent-solid)' : 'rgba(0,0,0,0.15)',
-            transition: 'background 0.3s ease',
-          }}>
-            <div style={{
-              width: 20, height: 20, borderRadius: 10, position: 'absolute', top: 2,
-              left: theme === 'dark' ? 22 : 2,
-              background: 'white',
-              transition: 'left 0.3s ease',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-            }} />
-          </div>
-        </div>
-      </div>
-
-
-      {/* Section: App Download */}
-      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <span style={{ fontSize: 16 }}>📱</span>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.installApp')}</h2>
-        </div>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 12px' }}>{t('profile.installAppDesc')}</p>
-        <a
-          href="https://api.schulbox.at/download/kamaldoc.apk"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '12px 16px', borderRadius: 10,
-            background: '#34a853', color: 'white',
-            textDecoration: 'none', marginBottom: 8,
-            fontWeight: 600, fontSize: 14,
-          }}
-        >
-          🤖 {t('profile.downloadAndroid')}
-        </a>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '12px 16px', borderRadius: 10,
-          background: 'var(--bg-glass)',
-          color: 'var(--text-muted)', fontSize: 14,
-          border: '1px solid var(--border-glass)',
-        }}>
-          🍎 {t('profile.iosComingSoon')}
-        </div>
-      </div>
       {/* Section: Subscription */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -299,8 +229,8 @@ export default function ProfilPage() {
 
         {subscription?.pending_plan && (
           <div style={{ marginBottom: 12, padding: '10px 12px', borderRadius: 10, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <AlertCircle style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: '#fbbf24' }}>
+            <AlertCircle style={{ width: 14, height: 14, color: 'var(--warning-text)', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: 'var(--warning-text)' }}>
               {t('profile.pendingDowngrade', {
                 date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '---',
                 plan: subscription.pending_plan.charAt(0).toUpperCase() + subscription.pending_plan.slice(1),
@@ -309,10 +239,10 @@ export default function ProfilPage() {
           </div>
         )}
 
-        {cancelSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.cancelledSuccess')}</span></div>}
-        {cancelError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span></div>}
-        {reactivateSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.reactivateSuccess')}</span></div>}
-        {reactivateError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span></div>}
+        {cancelSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>{t('profile.cancelledSuccess')}</span></div>}
+        {cancelError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{typeof cancelError === 'string' ? cancelError : t('profile.cancelFailed')}</span></div>}
+        {reactivateSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>{t('profile.reactivateSuccess')}</span></div>}
+        {reactivateError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span></div>}
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {isFree && (
@@ -333,7 +263,7 @@ export default function ProfilPage() {
           {!isFree && !subscription?.cancelled_at && (
             <button onClick={handleCancel} disabled={cancelling} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px',
-              background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
+              background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.2)',
               borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: cancelling ? 0.5 : 1,
             }}>
               {cancelling ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <XCircle style={{ width: 14, height: 14 }} />}
@@ -343,7 +273,7 @@ export default function ProfilPage() {
           {!isFree && subscription?.cancelled_at && (
             <button onClick={handleReactivate} disabled={reactivating} style={{
               display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 16px',
-              background: 'var(--success-soft)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)',
+              background: 'var(--success-soft)', color: 'var(--success)', border: '1px solid rgba(16,185,129,0.2)',
               borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: reactivating ? 0.5 : 1,
             }}>
               {reactivating ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle style={{ width: 14, height: 14 }} />}
@@ -353,7 +283,46 @@ export default function ProfilPage() {
         </div>
       </div>
 
-      {/* Section 1: Absenderdaten */}
+      {/* Section: Appearance / Theme Toggle */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          {theme === 'dark' ? <Moon style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 16, height: 16, color: 'var(--warning)' }} />}
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.appearance')}</h2>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>{t('profile.themeDesc')}</p>
+        <div
+          onClick={toggleTheme}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
+            background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {theme === 'dark' ? <Moon style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 18, height: 18, color: 'var(--warning)' }} />}
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {theme === 'dark' ? t('profile.darkMode') : t('profile.lightMode')}
+            </span>
+          </div>
+          <div style={{
+            width: 44, height: 24, borderRadius: 12, position: 'relative',
+            background: theme === 'dark' ? 'var(--accent-solid)' : 'rgba(0,0,0,0.15)',
+            transition: 'background 0.3s ease',
+          }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: 10, position: 'absolute', top: 2,
+              left: theme === 'dark' ? 22 : 2,
+              background: 'white',
+              transition: 'left 0.3s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            }} />
+          </div>
+        </div>
+      </div>
+
+
+            {/* Section 1: Absenderdaten */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>{t('profile.senderData')}</h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>{t('profile.senderDesc')}</p>
@@ -403,8 +372,8 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.saved')}</span></div>}
-        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{error}</span></div>}
+        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>{t('profile.saved')}</span></div>}
+        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{error}</span></div>}
 
         <button onClick={handleSave} disabled={saving} className="btn-accent" style={{
           width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,
@@ -433,8 +402,8 @@ export default function ProfilPage() {
           </div>
         </div>
 
-        {pwSuccess && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>{t('profile.passwordChanged')}</span></div>}
-        {pwError && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{pwError}</span></div>}
+        {pwSuccess && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>{t('profile.passwordChanged')}</span></div>}
+        {pwError && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{pwError}</span></div>}
 
         <button onClick={handlePasswordChange} disabled={pwSaving || !newPassword} className="btn-ghost" style={{
           width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,
@@ -449,8 +418,8 @@ export default function ProfilPage() {
       {/* Danger Zone */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16, border: '1px solid rgba(239,68,68,0.15)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <Trash2 style={{ width: 16, height: 16, color: '#ef4444' }} />
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#ef4444', margin: 0 }}>{t('profile.dangerZone')}</h2>
+          <Trash2 style={{ width: 16, height: 16, color: 'var(--danger)' }} />
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--danger)', margin: 0 }}>{t('profile.dangerZone')}</h2>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>
           {t('profile.deleteAccountDesc')}
@@ -479,7 +448,7 @@ export default function ProfilPage() {
         }}>
           <div className="glass-card animate-scale-in" style={{ padding: 24, width: '100%', maxWidth: 380 }}>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <h3 style={{ fontWeight: 700, fontSize: 18, color: '#ef4444', margin: '0 0 8px' }}>
+              <h3 style={{ fontWeight: 700, fontSize: 18, color: 'var(--danger)', margin: '0 0 8px' }}>
                 {t('profile.deleteAccountConfirm')}
               </h3>
             </div>
@@ -492,7 +461,7 @@ export default function ProfilPage() {
                 <li>{t('profile.deleteSubscription')}</li>
                 <li>{t('profile.deleteUserAccount')}</li>
               </ul>
-              <p style={{ marginTop: 12, fontWeight: 600, color: '#ef4444' }}>
+              <p style={{ marginTop: 12, fontWeight: 600, color: 'var(--danger)' }}>
                 {t('profile.deleteIrreversible')}
               </p>
             </div>
@@ -541,10 +510,10 @@ function UsageStat({ label, used, max, monthly }) {
         {used}{isUnlimited ? '' : `/${max}`}
       </div>
       {isUnlimited ? (
-        <div style={{ fontSize: 11, color: '#34d399', fontWeight: 600, marginTop: 2 }}>{t('profile.unlimited')}</div>
+        <div style={{ fontSize: 11, color: 'var(--success-text)', fontWeight: 600, marginTop: 2 }}>{t('profile.unlimited')}</div>
       ) : (
         <>
-          <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 6 }}>
+          <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--progress-track)', marginTop: 6 }}>
             <div style={{
               height: 4, borderRadius: 2, transition: 'all 0.3s ease',
               width: `${pct}%`,

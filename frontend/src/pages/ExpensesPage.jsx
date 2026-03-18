@@ -53,7 +53,7 @@ export default function ExpensesPage() {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
           <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
-            <DollarSign style={{ width: 18, height: 18, color: '#fbbf24' }} />
+            <DollarSign style={{ width: 18, height: 18, color: 'var(--warning-text)' }} />
           </div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
         </div>
@@ -134,7 +134,7 @@ export default function ExpensesPage() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
         <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
-          <DollarSign style={{ width: 18, height: 18, color: '#fbbf24' }} />
+          <DollarSign style={{ width: 18, height: 18, color: 'var(--warning-text)' }} />
         </div>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
@@ -229,7 +229,7 @@ export default function ExpensesPage() {
           <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ padding: 10, borderRadius: 12, background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(251,191,36,0.08))' }}>
-                <TrendingUp style={{ width: 24, height: 24, color: '#fbbf24' }} />
+                <TrendingUp style={{ width: 24, height: 24, color: 'var(--warning-text)' }} />
               </div>
               <div>
                 <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>{t('expenses.totalExpenses')}</p>

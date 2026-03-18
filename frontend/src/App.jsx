@@ -316,7 +316,7 @@ function TopHeader() {
               display: 'flex', alignItems: 'center', gap: 10,
               width: '100%', padding: '14px 16px', borderRadius: 12,
               background: 'var(--danger-soft)', border: 'none',
-              color: '#ef4444', fontSize: 15, fontWeight: 500,
+              color: 'var(--danger)', fontSize: 15, fontWeight: 500,
               cursor: 'pointer', transition: 'all 0.2s ease',
             }}
           >
@@ -489,7 +489,7 @@ function UpgradeButton({ mobile = false }) {
         padding: mobile ? '14px 16px' : '6px 12px',
         borderRadius: 12,
         background: 'var(--warning-soft)',
-        color: '#fbbf24',
+        color: 'var(--warning-text)',
         fontWeight: 600, fontSize: mobile ? 15 : 12,
         transition: 'all 0.2s ease',
       }}
@@ -518,12 +518,14 @@ function NativeStatusBar() {
       {loading ? (
         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>...</span>
       ) : isPaid ? (
-        <span style={{
-          fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
-          background: 'var(--accent-gradient)',
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          lineHeight: '30px',
-        }}>
+        <span
+          onClick={() => navigate('/pricing')}
+          style={{
+            fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
+            background: 'var(--accent-gradient)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            lineHeight: '30px', cursor: 'pointer',
+          }}>
           {t('pricing.proActive')}
         </span>
       ) : (

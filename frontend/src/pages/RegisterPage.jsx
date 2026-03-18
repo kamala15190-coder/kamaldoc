@@ -107,7 +107,7 @@ export default function RegisterPage() {
         <div style={{ width: '100%', maxWidth: 400 }}>
           <div className="glass-card animate-scale-in" style={{ padding: 32, textAlign: 'center' }}>
             <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--success-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-              <CheckCircle style={{ width: 28, height: 28, color: '#10b981' }} />
+              <CheckCircle style={{ width: 28, height: 28, color: 'var(--success)' }} />
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 10px' }}>
               {t('auth.registerSuccess')}
@@ -135,8 +135,8 @@ export default function RegisterPage() {
 
           {error && (
             <div style={{ marginBottom: 18, padding: '12px 14px', borderRadius: 10, background: 'var(--danger-soft)', border: '1px solid rgba(239,68,68,0.15)', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
-              <p style={{ fontSize: 13, color: '#fca5a5', margin: 0 }}>{error}</p>
+              <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13, color: 'var(--danger-text)', margin: 0 }}>{error}</p>
             </div>
           )}
 

@@ -221,11 +221,11 @@ export default function UploadPage() {
             padding: '10px 14px', borderRadius: 10,
             background: 'var(--success-soft)', border: '1px solid rgba(16,185,129,0.15)',
           }}>
-            <CheckCircle style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#34d399', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {t('upload.fileSelected', { name: selectedFile.name })}
             </span>
-            <span style={{ fontSize: 11, color: '#6ee7b7', flexShrink: 0 }}>({(selectedFile.size / 1024).toFixed(0)} KB)</span>
+            <span style={{ fontSize: 11, color: 'var(--success-text)', flexShrink: 0 }}>({(selectedFile.size / 1024).toFixed(0)} KB)</span>
           </div>
 
           {/* Preview */}
@@ -271,16 +271,16 @@ export default function UploadPage() {
           {/* Erfolg */}
           {uploadDone && (
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <CheckCircle style={{ width: 18, height: 18, color: '#10b981' }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#34d399' }}>{t('upload.uploadSuccess')}</span>
+              <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--success-text)' }}>{t('upload.uploadSuccess')}</span>
             </div>
           )}
 
           {/* Fehler */}
           {uploadError && (
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
-              <span style={{ fontSize: 13, color: '#fca5a5' }}>{uploadError}</span>
+              <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)' }} />
+              <span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{uploadError}</span>
             </div>
           )}
 
@@ -404,8 +404,8 @@ export default function UploadPage() {
           {/* Fehler */}
           {uploadError && (
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <AlertCircle style={{ width: 16, height: 16, color: '#ef4444' }} />
-              <span style={{ fontSize: 13, color: '#fca5a5' }}>{uploadError}</span>
+              <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)' }} />
+              <span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{uploadError}</span>
             </div>
           )}
         </>

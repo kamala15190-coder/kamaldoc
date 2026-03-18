@@ -74,9 +74,9 @@ export default function Einstellungen() {
 
       {isEmpty && (
         <div className="glass-card animate-fade-in" style={{ padding: 14, marginBottom: 14, display: 'flex', alignItems: 'flex-start', gap: 10, border: '1px solid rgba(245,158,11,0.15)' }}>
-          <User style={{ width: 18, height: 18, color: '#fbbf24', marginTop: 1, flexShrink: 0 }} />
+          <User style={{ width: 18, height: 18, color: 'var(--warning-text)', marginTop: 1, flexShrink: 0 }} />
           <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: '#fbbf24', margin: 0 }}>Absenderdaten fehlen</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--warning-text)', margin: 0 }}>Absenderdaten fehlen</p>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
               Bitte hinterlege deine Absenderdaten, damit sie automatisch in generierten Antwortbriefen verwendet werden.
             </p>
@@ -128,8 +128,8 @@ export default function Einstellungen() {
           </div>
         </div>
 
-        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: '#10b981' }} /><span style={{ fontSize: 13, color: '#34d399', fontWeight: 600 }}>Einstellungen gespeichert!</span></div>}
-        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: '#ef4444' }} /><span style={{ fontSize: 13, color: '#fca5a5' }}>{error}</span></div>}
+        {saved && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }} className="animate-fade-in"><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>Einstellungen gespeichert!</span></div>}
+        {error && <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{error}</span></div>}
 
         <button onClick={handleSave} disabled={saving} className="btn-accent" style={{
           width: '100%', marginTop: 14, padding: '12px 0', fontSize: 14, fontWeight: 600,

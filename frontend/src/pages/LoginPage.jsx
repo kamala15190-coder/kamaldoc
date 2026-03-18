@@ -9,7 +9,6 @@ import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
 
 const GOOGLE_CLIENT_ID = '246007067980-44qma6u29hu8eiimp7f1n5akqo3k0j3p.apps.googleusercontent.com'
 
-// SHA-256 hash helper for nonce
 async function sha256(plain) {
   const encoder = new TextEncoder()
   const data = encoder.encode(plain)
@@ -25,21 +24,16 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false)
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const [acceptAGB, setAcceptAGB] = useState(false)
+  const [emailFocused, setEmailFocused] = useState(false)
+  const [passwordFocused, setPasswordFocused] = useState(false)
   const nonceRef = useRef(null)
 
-  const canSubmit = acceptPrivacy && acceptTerms && acceptAGB
-
-  // Redirect if already authenticated (e.g. after OAuth callback)
   useEffect(() => {
     if (!authLoading && user) {
       navigate('/', { replace: true })
     }
   }, [user, authLoading, navigate])
 
-  // Handle Google ID token from GSI callback
   const handleGoogleCredential = useCallback(async (response) => {
     setError(null)
     setLoading(true)
@@ -62,15 +56,9 @@ export default function LoginPage() {
     e.preventDefault()
     setError(null)
     setLoading(true)
-
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
-
       navigate('/')
     } catch (err) {
       setError(err.message || t('auth.loginFailed'))
@@ -81,9 +69,7 @@ export default function LoginPage() {
 
   const handleGoogleLogin = async () => {
     setError(null)
-
     if (Capacitor.isNativePlatform()) {
-      // Native: use OAuth proxy with in-app browser
       setLoading(true)
       const loginUrl = `${API_BASE_URL}/auth/google/login?platform=android`
       import('@capacitor/browser').then(({ Browser }) => {
@@ -91,14 +77,10 @@ export default function LoginPage() {
       })
       return
     }
-
-    // Web: use Google Sign-In SDK (GSI) — no redirect, stays in PWA
     if (window.google?.accounts?.id) {
-      // Generate nonce: raw for Supabase, SHA-256 hashed for Google
       const rawNonce = crypto.randomUUID()
       nonceRef.current = rawNonce
       const hashedNonce = await sha256(rawNonce)
-
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
@@ -108,132 +90,131 @@ export default function LoginPage() {
       })
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          // One Tap was blocked (e.g. browser settings) — fall back to redirect
           window.location.href = `${API_BASE_URL}/auth/google/login?platform=web`
         }
       })
     } else {
-      // GSI library not loaded yet — fall back to redirect
       window.location.href = `${API_BASE_URL}/auth/google/login?platform=web`
     }
   }
 
   return (
     <div style={{
-      minHeight: '100vh', background: 'var(--bg-primary)',
+      minHeight: '100vh',
+      background: 'var(--bg-primary)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       padding: 20,
     }}>
-      <div style={{ width: '100%', maxWidth: 400 }} className="animate-fade-in-up">
+      <div style={{ width: '100%', maxWidth: 400 }} className="login-card-enter">
+        {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 40, objectFit: 'contain', margin: '0 auto 8px' }} />
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('common.appDesc')}</p>
         </div>
 
-        <div className="glass-card-strong" style={{ padding: 28, borderRadius: 20 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 24px' }}>{t('auth.login')}</h2>
-
+        {/* Card */}
+        <div className="glass-card-strong" style={{
+          padding: 28, borderRadius: 20,
+          boxShadow: 'var(--login-card-shadow)',
+        }}>
+          {/* Error */}
           {error && (
             <div style={{
               marginBottom: 20, padding: 14, borderRadius: 12,
-              background: 'var(--danger-soft)', border: '1px solid rgba(239,68,68,0.2)',
+              background: 'var(--danger-soft)', border: '1px solid var(--danger-border)',
               display: 'flex', alignItems: 'flex-start', gap: 10,
             }}>
-              <AlertCircle style={{ width: 18, height: 18, color: '#ef4444', flexShrink: 0, marginTop: 1 }} />
-              <p style={{ fontSize: 13, color: '#fca5a5', margin: 0 }}>{error}</p>
+              <AlertCircle style={{ width: 18, height: 18, color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13, color: 'var(--danger-text)', margin: 0 }}>{error}</p>
             </div>
           )}
 
           <form onSubmit={handleEmailLogin}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                {t('auth.email')}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Mail style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+            {/* Email field with floating label */}
+            <div style={{ marginBottom: 16, position: 'relative' }}>
+              <div style={{
+                position: 'relative',
+                borderRadius: 12,
+                border: `1px solid ${emailFocused ? 'var(--accent-solid)' : 'var(--border-glass-strong)'}`,
+                background: 'var(--bg-glass)',
+                transition: 'all 0.3s ease',
+                boxShadow: emailFocused ? '0 0 0 3px var(--accent-soft)' : 'none',
+              }}>
+                <Mail style={{
+                  position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                  width: 18, height: 18, color: emailFocused ? 'var(--accent-solid)' : 'var(--text-muted)',
+                  transition: 'color 0.3s ease',
+                }} />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-dark"
-                  style={{ paddingLeft: 42 }}
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
                   placeholder={t('auth.emailPlaceholder')}
                   required
                   disabled={loading}
+                  style={{
+                    width: '100%', padding: '14px 16px 14px 42px',
+                    background: 'transparent', border: 'none', outline: 'none',
+                    color: 'var(--text-primary)', fontSize: 15,
+                  }}
                 />
               </div>
             </div>
 
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                {t('auth.password')}
-              </label>
-              <div style={{ position: 'relative' }}>
-                <Lock style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', width: 18, height: 18, color: 'var(--text-muted)' }} />
+            {/* Password field */}
+            <div style={{ marginBottom: 8, position: 'relative' }}>
+              <div style={{
+                position: 'relative',
+                borderRadius: 12,
+                border: `1px solid ${passwordFocused ? 'var(--accent-solid)' : 'var(--border-glass-strong)'}`,
+                background: 'var(--bg-glass)',
+                transition: 'all 0.3s ease',
+                boxShadow: passwordFocused ? '0 0 0 3px var(--accent-soft)' : 'none',
+              }}>
+                <Lock style={{
+                  position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                  width: 18, height: 18, color: passwordFocused ? 'var(--accent-solid)' : 'var(--text-muted)',
+                  transition: 'color 0.3s ease',
+                }} />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-dark"
-                  style={{ paddingLeft: 42 }}
+                  onFocus={() => setPasswordFocused(true)}
+                  onBlur={() => setPasswordFocused(false)}
                   placeholder="••••••••"
                   required
                   disabled={loading}
+                  style={{
+                    width: '100%', padding: '14px 16px 14px 42px',
+                    background: 'transparent', border: 'none', outline: 'none',
+                    color: 'var(--text-primary)', fontSize: 15,
+                  }}
                 />
               </div>
             </div>
 
-            {/* Checkboxen */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
-                <input
-                  type="checkbox"
-                  checked={acceptPrivacy}
-                  onChange={(e) => setAcceptPrivacy(e.target.checked)}
-                  style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }}
-                />
-                <span>
-                  {t('auth.iHaveRead')}{' '}
-                  <Link to="/datenschutz" style={{ color: 'var(--accent-solid)', fontWeight: 600, textDecoration: 'none' }}>{t('auth.privacyPolicy')}</Link>
-                  {' '}{t('auth.readAndAccepted')}
-                </span>
-              </label>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
-                <input
-                  type="checkbox"
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                  style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }}
-                />
-                <span>
-                  {t('auth.iHaveRead')}{' '}
-                  <Link to="/nutzungsbedingungen" style={{ color: 'var(--accent-solid)', fontWeight: 600, textDecoration: 'none' }}>{t('auth.termsOfService')}</Link>
-                  {' '}{t('auth.readAndAccepted')}
-                </span>
-              </label>
-              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
-                <input
-                  type="checkbox"
-                  checked={acceptAGB}
-                  onChange={(e) => setAcceptAGB(e.target.checked)}
-                  style={{ marginTop: 2, accentColor: 'var(--accent-solid)' }}
-                />
-                <span>
-                  {t('auth.iHaveRead')}{' '}
-                  <Link to="/agb" style={{ color: 'var(--accent-solid)', fontWeight: 600, textDecoration: 'none' }}>{t('auth.agb')}</Link>
-                  {' '}{t('auth.readAndAccepted')}
-                </span>
-              </label>
+            {/* Forgot password link */}
+            <div style={{ textAlign: 'right', marginBottom: 20 }}>
+              <Link to="/forgot-password" style={{
+                fontSize: 12, color: 'var(--text-muted)', textDecoration: 'none',
+                transition: 'color 0.2s',
+              }}>
+                {t('auth.forgotPassword')}
+              </Link>
             </div>
 
+            {/* Login Button with shimmer */}
             <button
               type="submit"
-              disabled={loading || !canSubmit}
-              className="btn-accent"
+              disabled={loading}
+              className="btn-accent login-btn-shimmer"
               style={{
                 width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                opacity: (!canSubmit || loading) ? 0.5 : 1,
+                opacity: loading ? 0.7 : 1,
               }}
             >
               {loading ? (
@@ -247,23 +228,28 @@ export default function LoginPage() {
             </button>
           </form>
 
+          {/* Divider */}
           <div style={{ position: 'relative', margin: '24px 0' }}>
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-              <div style={{ width: '100%', height: 1, background: 'var(--border-glass)' }} />
+              <div style={{ width: '100%', height: 1, background: 'var(--border-glass-strong)' }} />
             </div>
             <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-              <span style={{ padding: '0 16px', background: 'var(--bg-glass-strong)', fontSize: 13, color: 'var(--text-muted)', borderRadius: 20 }}>{t('auth.or')}</span>
+              <span style={{
+                padding: '0 16px', background: 'var(--bg-glass-strong)',
+                fontSize: 13, color: 'var(--text-muted)', borderRadius: 20,
+              }}>{t('auth.or')}</span>
             </div>
           </div>
 
+          {/* Google Button */}
           <button
             onClick={handleGoogleLogin}
-            disabled={loading || !canSubmit}
+            disabled={loading}
             className="btn-ghost"
             style={{
               width: '100%', padding: '13px 0', fontSize: 14, fontWeight: 600,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              opacity: (!canSubmit || loading) ? 0.5 : 1,
+              opacity: loading ? 0.5 : 1,
             }}
           >
             <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24">
@@ -275,6 +261,7 @@ export default function LoginPage() {
             {t('auth.googleLogin')}
           </button>
 
+          {/* Register link */}
           <div style={{ marginTop: 24, textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
               {t('auth.noAccount')}{' '}
@@ -284,8 +271,48 @@ export default function LoginPage() {
             </p>
           </div>
         </div>
+
+        {/* Legal notice at the bottom */}
+        <p style={{
+          textAlign: 'center', fontSize: 11, color: 'var(--text-muted)',
+          marginTop: 20, lineHeight: 1.5, padding: '0 10px',
+        }}>
+          {t('auth.byContinuing')}{' '}
+          <Link to="/datenschutz" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>{t('auth.privacyPolicy')}</Link>,{' '}
+          <Link to="/nutzungsbedingungen" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>{t('auth.termsOfService')}</Link>{' '}
+          {t('auth.andThe')}{' '}
+          <Link to="/agb" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>{t('auth.agb')}</Link>.
+        </p>
       </div>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes loginCardEnter {
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes loginShimmer {
+          0% { left: -100%; }
+          100% { left: 200%; }
+        }
+        .login-card-enter {
+          animation: loginCardEnter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .login-btn-shimmer {
+          position: relative;
+          overflow: hidden;
+        }
+        .login-btn-shimmer::after {
+          content: '';
+          position: absolute;
+          top: 0; left: -100%; width: 60%; height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+          transition: none;
+        }
+        .login-btn-shimmer:hover::after {
+          animation: loginShimmer 0.8s ease-in-out;
+        }
+      `}</style>
     </div>
   )
 }

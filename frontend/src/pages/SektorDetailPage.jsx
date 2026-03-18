@@ -6,8 +6,8 @@ import { getDocuments } from '../api'
 
 const SEKTOR_CONFIG = {
   gesamt: { icon: FileText, color: 'var(--accent-solid)', bg: 'var(--accent-soft)', labelKey: 'dashboard.total' },
-  offen: { icon: AlertCircle, color: '#ef4444', bg: 'var(--danger-soft)', labelKey: 'dashboard.open' },
-  rechnungen: { icon: Receipt, color: '#fbbf24', bg: 'var(--warning-soft)', labelKey: 'dashboard.invoices' },
+  offen: { icon: AlertCircle, color: 'var(--danger)', bg: 'var(--danger-soft)', labelKey: 'dashboard.open' },
+  rechnungen: { icon: Receipt, color: 'var(--warning-text)', bg: 'var(--warning-soft)', labelKey: 'dashboard.invoices' },
   briefe: { icon: Mail, color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', labelKey: 'dashboard.letters' },
 }
 

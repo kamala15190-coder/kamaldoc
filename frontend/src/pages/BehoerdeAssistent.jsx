@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Landmark, Upload, Loader2, FileText, Copy, Check,
-  ChevronRight, AlertCircle, Globe, Scale, Shield
+  ChevronRight, AlertCircle, Globe, Scale, Shield, Share2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { uploadDocument, getDocuments, getDocument, explainDocument, getLegalAssessment, getContestableElements, generateObjection, getBehoerdenResults } from '../api';
@@ -182,6 +182,16 @@ export default function BehoerdeAssistent() {
     return cleaned.trimEnd();
   };
 
+
+  const shareText = async (text, title = 'KamalDoc') => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text });
+      } else {
+        window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
+      }
+    } catch (_) {}
+  };
   const selectDoc = async (doc) => {
     const full = await getDocument(doc.id);
     setSelectedDoc(full);
@@ -226,7 +236,7 @@ export default function BehoerdeAssistent() {
             {uploading ? t('behoerde.uploading') : t('behoerde.uploadButton')}
           </button>
         </div>
-        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#fca5a5' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
+        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--danger-text)' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
       </div>
 
       {selectedDoc && (
@@ -261,10 +271,15 @@ export default function BehoerdeAssistent() {
             <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
               <CollapsibleSection title={t('behoerde.explanationTitle')} icon={Landmark} level={1} defaultOpen={true}>
                 <div style={{ position: 'relative', padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                  <button onClick={handleCopy} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    {copied ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                  </button>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{erklaerung}</div>
+                  <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 4 }}>
+                    <button onClick={handleCopy} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      {copied ? <Check style={{ width: 14, height: 14, color: 'var(--success)' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                    </button>
+                    <button onClick={() => shareText(erklaerung, t('behoerde.explanationTitle'))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{erklaerung}</div>
                 </div>
               </CollapsibleSection>
             </div>
@@ -275,7 +290,7 @@ export default function BehoerdeAssistent() {
             <CollapsibleSection title={t('behoerde.legalAssessmentTitle')} icon={Scale} level={1} defaultOpen={!!legalAssessment}>
               <button onClick={handleLegalAssessment} disabled={assessingLegal} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
-                background: 'var(--warning-soft)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)',
+                background: 'var(--warning-soft)', color: 'var(--warning-text)', border: '1px solid rgba(245,158,11,0.2)',
                 borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: assessingLegal ? 0.5 : 1,
               }}>
                 {assessingLegal ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Scale style={{ width: 14, height: 14 }} />}
@@ -284,13 +299,18 @@ export default function BehoerdeAssistent() {
               {legalAssessment && (
                 <>
                   <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                    <button onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                      {copiedLegal ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                    </button>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{legalAssessment}</div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 4 }}>
+                      <button onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        {copiedLegal ? <Check style={{ width: 14, height: 14, color: 'var(--success)' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                      </button>
+                      <button onClick={() => shareText(legalAssessment, t('behoerde.legalAssessmentTitle'))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{legalAssessment}</div>
                   </div>
                   <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                    <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.legalDisclaimer')}</p>
+                    <p style={{ fontSize: 12, color: 'var(--warning-text)', margin: 0 }}>{t('behoerde.legalDisclaimer')}</p>
                   </div>
                 </>
               )}
@@ -302,7 +322,7 @@ export default function BehoerdeAssistent() {
             <CollapsibleSection title={t('behoerde.objectionTitle')} icon={Shield} level={1} defaultOpen={!!objectionLetter || contestableElements.length > 0}>
               <button onClick={handleContestableElements} disabled={loadingElements} style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
-                background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
+                background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid rgba(239,68,68,0.2)',
                 borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: loadingElements ? 0.5 : 1,
               }}>
                 {loadingElements ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Shield style={{ width: 14, height: 14 }} />}
@@ -366,13 +386,18 @@ export default function BehoerdeAssistent() {
               {objectionLetter && (
                 <>
                   <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                    <button onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                      {copiedObjection ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                    </button>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{objectionLetter}</div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 4 }}>
+                      <button onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        {copiedObjection ? <Check style={{ width: 14, height: 14, color: 'var(--success)' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                      </button>
+                      <button onClick={() => shareText(objectionLetter, t('behoerde.objectionTitle'))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{objectionLetter}</div>
                   </div>
                   <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                    <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.objectionDisclaimer')}</p>
+                    <p style={{ fontSize: 12, color: 'var(--warning-text)', margin: 0 }}>{t('behoerde.objectionDisclaimer')}</p>
                   </div>
                 </>
               )}
@@ -413,7 +438,7 @@ export default function BehoerdeAssistent() {
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.absender || doc.dateiname}</p>
                   {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</p>}
                 </div>
-                {doc.erklaerung && <Check style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0 }} />}
+                {doc.erklaerung && <Check style={{ width: 14, height: 14, color: 'var(--success)', flexShrink: 0 }} />}
                 <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
               </div>
             ))}

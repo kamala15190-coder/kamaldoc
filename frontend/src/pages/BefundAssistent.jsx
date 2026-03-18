@@ -1,8 +1,8 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Stethoscope, Upload, Loader2, FileText, Copy, Check,
-  ChevronRight, AlertCircle, Globe, ArrowRight
+  ChevronRight, AlertCircle, Globe, ArrowRight, Share2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateDocument } from '../api';
@@ -109,6 +109,16 @@ export default function BefundAssistent() {
     setTimeout(() => setCopiedTranslated(false), 2000);
   };
 
+
+  const shareText = async (text, title = 'KamalDoc') => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text });
+      } else {
+        window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
+      }
+    } catch (_) {}
+  };
   const selectDoc = async (doc) => {
     const full = await getDocument(doc.id);
     setSelectedDoc(full);
@@ -142,7 +152,7 @@ export default function BefundAssistent() {
             {uploading ? t('befund.uploading') : t('befund.uploadButton')}
           </button>
         </div>
-        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#fca5a5' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
+        {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--danger-text)' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
       </div>
 
       {selectedDoc && (
@@ -169,10 +179,15 @@ export default function BefundAssistent() {
               </button>
               {vereinfacht && (
                 <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                  <button onClick={handleCopySimple} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    {copiedSimple ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                  </button>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{vereinfacht}</div>
+                  <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 4 }}>
+                    <button onClick={handleCopySimple} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      {copiedSimple ? <Check style={{ width: 14, height: 14, color: 'var(--success)' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                    </button>
+                    <button onClick={() => shareText(vereinfacht, t('befund.step1Title'))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{vereinfacht}</div>
                 </div>
               )}
             </CollapsibleSection>
@@ -197,10 +212,15 @@ export default function BefundAssistent() {
                 </div>
                 {translated && (
                   <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                    <button onClick={handleCopyTranslated} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                      {copiedTranslated ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                    </button>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{translated}</div>
+                    <div style={{ position: 'absolute', top: 10, right: 10, display: 'flex', gap: 4 }}>
+                      <button onClick={handleCopyTranslated} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        {copiedTranslated ? <Check style={{ width: 14, height: 14, color: 'var(--success)' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                      </button>
+                      <button onClick={() => shareText(translated, t('befund.step2Title'))} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                        <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
+                      </button>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{translated}</div>
                   </div>
                 )}
               </CollapsibleSection>
@@ -241,7 +261,7 @@ export default function BefundAssistent() {
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.absender || doc.dateiname}</p>
                   {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</p>}
                 </div>
-                {doc.vereinfacht && <Check style={{ width: 14, height: 14, color: '#10b981', flexShrink: 0 }} />}
+                {doc.vereinfacht && <Check style={{ width: 14, height: 14, color: 'var(--success)', flexShrink: 0 }} />}
                 <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
               </div>
             ))}

@@ -92,12 +92,12 @@ export default function Archiv() {
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
         <div style={{ padding: 8, borderRadius: 10, background: 'var(--success-soft)' }}>
-          <Archive style={{ width: 18, height: 18, color: '#10b981' }} />
+          <Archive style={{ width: 18, height: 18, color: 'var(--success)' }} />
         </div>
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('archive.title')}</h1>
         <span style={{
           fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
-          background: 'var(--success-soft)', color: '#34d399',
+          background: 'var(--success-soft)', color: 'var(--success-text)',
         }}>
           {t('archive.doneCount', { count: docs.length })}
         </span>
@@ -127,7 +127,7 @@ export default function Archiv() {
                   {doc.handlung_beschreibung || '—'}
                 </p>
               </div>
-              <CheckCircle style={{ width: 18, height: 18, color: '#10b981', flexShrink: 0 }} />
+              <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)', flexShrink: 0 }} />
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 6 }}>
               {doc.kategorie && (
@@ -154,7 +154,7 @@ export default function Archiv() {
                 width: '100%', marginTop: 10, padding: '10px 0',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 fontSize: 13, fontWeight: 600,
-                background: 'var(--warning-soft)', color: '#fbbf24',
+                background: 'var(--warning-soft)', color: 'var(--warning-text)',
                 border: '1px solid rgba(245, 158, 11, 0.2)',
                 borderRadius: 10, cursor: 'pointer',
                 transition: 'all 0.2s ease',

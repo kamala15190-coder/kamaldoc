@@ -43,6 +43,7 @@ PLAN_LIMITS = {
     },
     "basic": {
         "documents_total": 50,
+        "documents_month": 50,
         "ki_analyses_month": 50,
         "behoerden_month": 10,
         "befund_month": 10,

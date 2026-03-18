@@ -36,7 +36,7 @@ const btnAccent = {
 const btnDanger = {
   display: 'flex', alignItems: 'center', gap: 4,
   padding: '6px 12px', borderRadius: 8, border: 'none',
-  background: 'var(--danger-soft)', color: '#ef4444',
+  background: 'var(--danger-soft)', color: 'var(--danger)',
   fontWeight: 600, fontSize: 11, cursor: 'pointer',
 }
 

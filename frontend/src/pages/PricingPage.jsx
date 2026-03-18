@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -110,7 +110,7 @@ export default function PricingPage() {
   const pendingPlan = subscription?.pending_plan;
 
   const getButtonBg = (planId, isPopular, isCurrent) => {
-    if (isCurrent) return { background: 'var(--success-soft)', color: '#34d399', border: '1px solid rgba(16,185,129,0.2)' };
+    if (isCurrent) return { background: 'var(--success-soft)', color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)' };
     if (isDowngrade(planId)) return { background: 'var(--bg-glass)', color: 'var(--text-muted)', border: '1px solid var(--border-glass)' };
     if (isPopular) return { background: 'var(--accent-solid)', color: '#fff', border: 'none' };
     return { background: 'var(--bg-glass)', color: 'var(--text-primary)', border: '1px solid var(--border-glass)' };
@@ -124,15 +124,15 @@ export default function PricingPage() {
       </div>
 
       {error && (
-        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#fca5a5', border: '1px solid rgba(239,68,68,0.15)' }}>{error}</div>
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: 'var(--danger-text)', border: '1px solid rgba(239,68,68,0.15)' }}>{error}</div>
       )}
       {success && (
-        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#34d399', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: 'var(--success-text)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
           <CheckCircle style={{ width: 14, height: 14 }} />{success}
         </div>
       )}
       {pendingPlan && (
-        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#fbbf24', border: '1px solid rgba(245,158,11,0.15)' }}>
+        <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: 'var(--warning-text)', border: '1px solid rgba(245,158,11,0.15)' }}>
           {t('profile.pendingDowngrade', { date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : 'â€”', plan: t(`pricing.${pendingPlan}`) })}
         </div>
       )}
@@ -167,7 +167,7 @@ export default function PricingPage() {
               <div style={{ marginBottom: 14, paddingTop: (isPopular || isCurrent) ? 4 : 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                   {plan.id === 'free' && <Lock style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />}
-                  {plan.id === 'basic' && <Zap style={{ width: 16, height: 16, color: '#fbbf24' }} />}
+                  {plan.id === 'basic' && <Zap style={{ width: 16, height: 16, color: 'var(--warning-text)' }} />}
                   {plan.id === 'pro' && <Rocket style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} />}
                   <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t(plan.nameKey)}</h2>
                 </div>
@@ -181,7 +181,7 @@ export default function PricingPage() {
                 {plan.features.map((feat, i) => (
                   <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
                     {feat.included ? (
-                      <Check style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0, marginTop: 1 }} />
+                      <Check style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0, marginTop: 1 }} />
                     ) : (
                       <X style={{ width: 16, height: 16, color: 'var(--text-muted)', opacity: 0.4, flexShrink: 0, marginTop: 1 }} />
                     )}
