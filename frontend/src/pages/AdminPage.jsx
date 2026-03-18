@@ -1,19 +1,73 @@
 import { useState, useEffect } from 'react'
-import { Shield, Mail, Save, Search, UserPlus, Trash2, Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Shield, Mail, Save, Search, UserPlus, Trash2, Loader2 } from 'lucide-react'
 import {
   getSupportEmail, updateSupportEmail,
   adminSearchUser, adminChangePlan,
   getAdminList, addAdmin, removeAdmin,
 } from '../api'
 
+const cardStyle = {
+  background: 'var(--bg-glass-strong)',
+  border: '1px solid var(--border-glass)',
+  borderRadius: 16,
+  padding: 24,
+  marginBottom: 20,
+}
+
+const inputStyle = {
+  flex: 1,
+  padding: '10px 14px',
+  borderRadius: 10,
+  border: '1px solid var(--border-glass)',
+  background: 'var(--bg-glass)',
+  color: 'var(--text-primary)',
+  fontSize: 13,
+  outline: 'none',
+}
+
+const btnAccent = {
+  display: 'flex', alignItems: 'center', gap: 6,
+  padding: '10px 18px', borderRadius: 10, border: 'none',
+  background: 'var(--accent-solid)', color: '#fff',
+  fontWeight: 600, fontSize: 13, cursor: 'pointer',
+  opacity: 1, transition: 'opacity 0.2s',
+}
+
+const btnDanger = {
+  display: 'flex', alignItems: 'center', gap: 4,
+  padding: '6px 12px', borderRadius: 8, border: 'none',
+  background: 'var(--danger-soft)', color: '#ef4444',
+  fontWeight: 600, fontSize: 11, cursor: 'pointer',
+}
+
+const btnGhost = {
+  ...btnAccent,
+  background: 'var(--bg-glass)',
+  border: '1px solid var(--border-glass)',
+  color: 'var(--text-primary)',
+}
+
+const sectionTitle = {
+  fontSize: 15, fontWeight: 600, color: 'var(--text-primary)',
+  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+}
+
+const msgStyle = (type) => ({
+  marginTop: 12, fontSize: 12, fontWeight: 500,
+  color: type === 'success' ? '#34d399' : '#ef4444',
+})
+
 export default function AdminPage() {
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-indigo-100 rounded-lg">
-          <Shield className="w-6 h-6 text-indigo-600" />
+    <div style={{ padding: '0 4px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+        <div style={{
+          width: 38, height: 38, borderRadius: 10,
+          background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Shield style={{ width: 20, height: 20, color: 'var(--accent-solid)' }} />
         </div>
-        <h1 className="text-2xl font-bold text-slate-900">Admin-Bereich</h1>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Admin-Bereich</h1>
       </div>
 
       <SupportEmailSection />
@@ -47,34 +101,24 @@ function SupportEmailSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-        <Mail className="w-5 h-5 text-slate-500" /> Support E-Mail
+    <div style={cardStyle}>
+      <h2 style={sectionTitle}>
+        <Mail style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> Support E-Mail
       </h2>
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+        <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
       ) : (
-        <div className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-            placeholder="support@example.com"
-          />
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer border-none text-sm"
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            style={inputStyle} placeholder="support@example.com" />
+          <button onClick={handleSave} disabled={saving}
+            style={{ ...btnAccent, opacity: saving ? 0.5 : 1 }}>
+            {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 14, height: 14 }} />}
             Speichern
           </button>
         </div>
       )}
-      {msg && (
-        <p className={`mt-3 text-sm ${msg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{msg.text}</p>
-      )}
+      {msg && <p style={msgStyle(msg.type)}>{msg.text}</p>}
     </div>
   )
 }
@@ -117,62 +161,56 @@ function ChangePlanSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-        <Search className="w-5 h-5 text-slate-500" /> User-Plan ändern
+    <div style={cardStyle}>
+      <h2 style={sectionTitle}>
+        <Search style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> User-Plan ändern
       </h2>
 
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <input
-          type="email"
-          value={searchEmail}
-          onChange={e => setSearchEmail(e.target.value)}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        <input type="email" value={searchEmail} onChange={e => setSearchEmail(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleSearch()}
-          className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-          placeholder="user@email.com"
-        />
-        <button
-          onClick={handleSearch}
-          disabled={searching || !searchEmail}
-          className="flex items-center gap-2 px-5 py-2.5 bg-slate-700 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors disabled:opacity-50 cursor-pointer border-none text-sm"
-        >
-          {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          style={inputStyle} placeholder="user@email.com" />
+        <button onClick={handleSearch} disabled={searching || !searchEmail}
+          style={{ ...btnGhost, opacity: (searching || !searchEmail) ? 0.5 : 1 }}>
+          {searching ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Search style={{ width: 14, height: 14 }} />}
           Suchen
         </button>
       </div>
 
       {user && (
-        <div className="bg-slate-50 rounded-lg p-4 space-y-3">
-          <p className="text-sm text-slate-700">
-            <strong>E-Mail:</strong> {user.email}<br />
-            <strong>User ID:</strong> <span className="font-mono text-xs">{user.user_id}</span><br />
-            <strong>Aktueller Plan:</strong> <span className="font-semibold capitalize">{user.plan}</span>
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <select
-              value={selectedPlan}
-              onChange={e => setSelectedPlan(e.target.value)}
-              className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg bg-white text-sm"
-            >
+        <div style={{
+          background: 'var(--bg-glass)', borderRadius: 12,
+          border: '1px solid var(--border-glass)', padding: 16,
+        }}>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 12 }}>
+            <strong style={{ color: 'var(--text-primary)' }}>E-Mail:</strong> {user.email}<br />
+            <strong style={{ color: 'var(--text-primary)' }}>User ID:</strong>{' '}
+            <span style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>{user.user_id}</span><br />
+            <strong style={{ color: 'var(--text-primary)' }}>Aktueller Plan:</strong>{' '}
+            <span style={{
+              padding: '2px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700,
+              background: user.plan === 'pro' ? 'var(--accent-soft)' : user.plan === 'basic' ? 'rgba(59,130,246,0.15)' : 'var(--bg-glass)',
+              color: user.plan === 'pro' ? 'var(--accent-solid)' : user.plan === 'basic' ? '#60a5fa' : 'var(--text-muted)',
+              textTransform: 'uppercase',
+            }}>{user.plan}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
+              style={{ ...inputStyle, minWidth: 120 }}>
               <option value="free">Free</option>
               <option value="basic">Basic</option>
               <option value="pro">Pro</option>
             </select>
-            <button
-              onClick={handleSave}
-              disabled={saving || selectedPlan === user.plan}
-              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 cursor-pointer border-none text-sm"
-            >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <button onClick={handleSave} disabled={saving || selectedPlan === user.plan}
+              style={{ ...btnAccent, opacity: (saving || selectedPlan === user.plan) ? 0.5 : 1 }}>
+              {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 14, height: 14 }} />}
               Speichern
             </button>
           </div>
         </div>
       )}
 
-      {msg && (
-        <p className={`mt-3 text-sm ${msg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{msg.text}</p>
-      )}
+      {msg && <p style={msgStyle(msg.type)}>{msg.text}</p>}
     </div>
   )
 }
@@ -223,32 +261,39 @@ function AdminManagementSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-      <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-        <Shield className="w-5 h-5 text-slate-500" /> Admin-Verwaltung
+    <div style={cardStyle}>
+      <h2 style={sectionTitle}>
+        <Shield style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> Admin-Verwaltung
       </h2>
 
       {loading ? (
-        <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+        <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
       ) : (
-        <div className="space-y-3 mb-4">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
           {admins.map(admin => (
-            <div key={admin.user_id} className="flex items-center justify-between bg-slate-50 rounded-lg px-4 py-3">
+            <div key={admin.user_id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              background: 'var(--bg-glass)', borderRadius: 10,
+              border: '1px solid var(--border-glass)', padding: '10px 14px',
+            }}>
               <div>
-                <p className="text-sm font-medium text-slate-800">
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   {admin.email || 'Unbekannt'}
                   {admin.is_permanent && (
-                    <span className="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">Permanent</span>
+                    <span style={{
+                      fontSize: 9, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                      background: 'var(--accent-soft)', color: 'var(--accent-solid)',
+                      textTransform: 'uppercase', letterSpacing: '0.05em',
+                    }}>Permanent</span>
                   )}
-                </p>
-                <p className="text-xs text-slate-500 font-mono">{admin.user_id}</p>
+                </div>
+                <div style={{ fontSize: 10, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 2 }}>
+                  {admin.user_id}
+                </div>
               </div>
               {!admin.is_permanent && (
-                <button
-                  onClick={() => handleRemove(admin.user_id)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-medium hover:bg-red-200 transition-colors cursor-pointer border-none"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Entfernen
+                <button onClick={() => handleRemove(admin.user_id)} style={btnDanger}>
+                  <Trash2 style={{ width: 12, height: 12 }} /> Entfernen
                 </button>
               )}
             </div>
@@ -256,28 +301,18 @@ function AdminManagementSection() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <input
-          type="email"
-          value={newEmail}
-          onChange={e => setNewEmail(e.target.value)}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
-          className="flex-1 px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-          placeholder="neue-admin@email.com"
-        />
-        <button
-          onClick={handleAdd}
-          disabled={adding || !newEmail}
-          className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:opacity-50 cursor-pointer border-none text-sm"
-        >
-          {adding ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+          style={inputStyle} placeholder="neue-admin@email.com" />
+        <button onClick={handleAdd} disabled={adding || !newEmail}
+          style={{ ...btnAccent, background: '#22c55e', opacity: (adding || !newEmail) ? 0.5 : 1 }}>
+          {adding ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <UserPlus style={{ width: 14, height: 14 }} />}
           Admin hinzufügen
         </button>
       </div>
 
-      {msg && (
-        <p className={`mt-3 text-sm ${msg.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>{msg.text}</p>
-      )}
+      {msg && <p style={msgStyle(msg.type)}>{msg.text}</p>}
     </div>
   )
 }

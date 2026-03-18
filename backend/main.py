@@ -44,6 +44,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://kamaldoc-flax.vercel.app",
+        "https://kdoc.at",
+        "https://www.kdoc.at",
         "https://api.kdoc.at",
         "http://localhost:5173",
         "http://100.77.198.89:5173",
