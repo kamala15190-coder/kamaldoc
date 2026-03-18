@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import {
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
 import { PlanLimitProvider } from './hooks/usePlanLimit.jsx';
+import { ThemeProvider, useTheme } from './hooks/useTheme.jsx';
 import { LANGUAGES, isRtl } from './languages';
 import { supabase } from './supabaseClient';
 import Dashboard from './pages/Dashboard';
@@ -107,7 +108,7 @@ function BottomTabBar() {
 
           if (isCenter) {
             return (
-              <Link key={path} to={path} style={{
+              <Link key={path} to={path} className="plus-button" style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 52, height: 52, borderRadius: 16,
                 background: 'var(--accent-gradient)',
@@ -185,7 +186,7 @@ function TopHeader() {
     <>
       <header style={{
         position: 'sticky', top: 0, zIndex: 40,
-        background: 'rgba(10, 15, 26, 0.8)',
+        background: 'var(--header-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--border-glass)',
@@ -501,18 +502,9 @@ function NativeStatusBar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
-        StatusBar.setBackgroundColor({ color: '#0a0f1a' }).catch(() => {});
-        StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
-      });
-    }
-  }, []);
-
   return (
     <div style={{
-      background: 'rgba(10, 15, 26, 0.8)',
+      background: 'var(--header-bg)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
       height: 30,
@@ -521,7 +513,7 @@ function NativeStatusBar() {
       lineHeight: 1,
     }}>
       {loading ? (
-        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>…</span>
+        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>...</span>
       ) : isPaid ? (
         <span style={{
           fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
@@ -693,15 +685,17 @@ function RtlWrapper({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <SubscriptionProvider>
-          <PlanLimitProvider>
-            <RtlWrapper>
-              <AppContent />
-            </RtlWrapper>
-          </PlanLimitProvider>
-        </SubscriptionProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <SubscriptionProvider>
+            <PlanLimitProvider>
+              <RtlWrapper>
+                <AppContent />
+              </RtlWrapper>
+            </PlanLimitProvider>
+          </SubscriptionProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

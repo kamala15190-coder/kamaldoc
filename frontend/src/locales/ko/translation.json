@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "영구 삭제",
                     "cancelButton":  "취소",
                     "nextReset":  "다음 초기화: {{date}}",
-                    "perMonth":  "/ 월"
+                    "perMonth":  "/ 월",
+                    "appearance":  "외관",
+                    "darkMode":  "다크 모드",
+                    "lightMode":  "라이트 모드",
+                    "themeDesc":  "라이트와 다크 디자인 간 전환",
+                    "systemTheme":  "시스템 테마",
+                    "thisMonth":  "이번 달",
+                    "monthlyReset":  "할당량이 매월 초기화됩니다"
                 },
     "categories":  {
                        "brief":  "편지",
@@ -370,7 +377,9 @@
                     "ki50":  "월 최대 50회 AI 분석",
                     "ki500":  "월 최대 500회 AI 분석",
                     "behoerde50":  "월 최대 50회 관청 어시스턴트",
-                    "befund50":  "월 최대 50회 의료 어시스턴트"
+                    "befund50":  "월 최대 50회 의료 어시스턴트",
+                    "freeMonthly":  "월 최대 10개 문서",
+                    "freeResets":  "할당량이 매월 초기화됩니다"
                 },
     "upgradeModal":  {
                          "limitReached":  "한도 도달",

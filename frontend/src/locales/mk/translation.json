@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Избриши засекогаш",
                     "cancelButton":  "Откажи",
                     "nextReset":  "Следно ресетирање: {{date}}",
-                    "perMonth":  "/ месец"
+                    "perMonth":  "/ месец",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Писмо",
@@ -370,7 +377,9 @@
                     "ki50":  "Макс. 50 AI анализи / месец",
                     "ki500":  "Макс. 500 AI анализи / месец",
                     "behoerde50":  "Макс. 50x Помошник за власти / месец",
-                    "befund50":  "Макс. 50x Медицински помошник / месец"
+                    "befund50":  "Макс. 50x Медицински помошник / месец",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Лимитот е достигнат",

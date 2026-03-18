@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Supprimer définitivement",
                     "cancelButton":  "Annuler",
                     "nextReset":  "Prochain réinitialisation : {{date}}",
-                    "perMonth":  "/ mois"
+                    "perMonth":  "/ mois",
+                    "appearance":  "Apparence",
+                    "darkMode":  "Mode sombre",
+                    "lightMode":  "Mode clair",
+                    "themeDesc":  "Basculez entre le design clair et sombre.",
+                    "systemTheme":  "Theme systeme",
+                    "thisMonth":  "ce mois-ci",
+                    "monthlyReset":  "Le quota est reinitialise mensuellement"
                 },
     "categories":  {
                        "brief":  "Lettre",
@@ -369,7 +376,9 @@
                     "ki50":  "Max. 50 analyses IA / mois",
                     "ki500":  "Max. 500 analyses IA / mois",
                     "behoerde50":  "Max. 50x Assistant autorités / mois",
-                    "befund50":  "Max. 50x Assistant médical / mois"
+                    "befund50":  "Max. 50x Assistant médical / mois",
+                    "freeMonthly":  "Max. 10 documents/mois",
+                    "freeResets":  "Le quota est reinitialise mensuellement"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limite atteinte",

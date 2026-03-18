@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Futa kabisa",
                     "cancelButton":  "Ghairi",
                     "nextReset":  "Upya ujao: {{date}}",
-                    "perMonth":  "/ mwezi"
+                    "perMonth":  "/ mwezi",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Barua",
@@ -370,7 +377,9 @@
                     "ki50":  "Hadi 50 uchambuzi wa AI / mwezi",
                     "ki500":  "Hadi 500 uchambuzi wa AI / mwezi",
                     "behoerde50":  "Hadi 50x Msaidizi wa mamlaka / mwezi",
-                    "befund50":  "Hadi 50x Msaidizi wa matibabu / mwezi"
+                    "befund50":  "Hadi 50x Msaidizi wa matibabu / mwezi",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Kikomo kimefikiwa",

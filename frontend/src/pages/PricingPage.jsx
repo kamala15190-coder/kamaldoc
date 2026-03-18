@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -133,7 +133,7 @@ export default function PricingPage() {
       )}
       {pendingPlan && (
         <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: '#fbbf24', border: '1px solid rgba(245,158,11,0.15)' }}>
-          {t('profile.pendingDowngrade', { date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—', plan: t(`pricing.${pendingPlan}`) })}
+          {t('profile.pendingDowngrade', { date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : 'â€”', plan: t(`pricing.${pendingPlan}`) })}
         </div>
       )}
 
@@ -172,7 +172,7 @@ export default function PricingPage() {
                   <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t(plan.nameKey)}</h2>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
-                  <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-primary)' }}>{plan.price}€</span>
+                  <span style={{ fontSize: 32, fontWeight: 800, color: 'var(--text-primary)' }}>{plan.price}â‚¬</span>
                   <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>/{t('pricing.month')}</span>
                 </div>
               </div>
@@ -220,3 +220,4 @@ export default function PricingPage() {
     </div>
   );
 }
+

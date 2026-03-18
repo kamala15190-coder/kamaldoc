@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Natrvalo odstrániť",
                     "cancelButton":  "Zrušiť",
                     "nextReset":  "Ďalší reset: {{date}}",
-                    "perMonth":  "/ mesiac"
+                    "perMonth":  "/ mesiac",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "List",
@@ -370,7 +377,9 @@
                     "ki50":  "Max. 50 AI analýz / mesiac",
                     "ki500":  "Max. 500 AI analýz / mesiac",
                     "behoerde50":  "Max. 50x Úradný asistent / mesiac",
-                    "befund50":  "Max. 50x Lekársky asistent / mesiac"
+                    "befund50":  "Max. 50x Lekársky asistent / mesiac",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limit dosiahnutý",

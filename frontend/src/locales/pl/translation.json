@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Usuń trwale",
                     "cancelButton":  "Anuluj",
                     "nextReset":  "Następny reset: {{date}}",
-                    "perMonth":  "/ miesiąc"
+                    "perMonth":  "/ miesiąc",
+                    "appearance":  "Wyglad",
+                    "darkMode":  "Tryb ciemny",
+                    "lightMode":  "Tryb jasny",
+                    "themeDesc":  "Przelaczaj miedzy jasnym a ciemnym designem.",
+                    "systemTheme":  "Motyw systemowy",
+                    "thisMonth":  "w tym miesiacu",
+                    "monthlyReset":  "Limit resetuje sie co miesiac"
                 },
     "categories":  {
                        "brief":  "List",
@@ -369,7 +376,9 @@
                     "ki50":  "Maks. 50 analiz AI / miesiąc",
                     "ki500":  "Maks. 500 analiz AI / miesiąc",
                     "behoerde50":  "Maks. 50x Asystent urzędowy / miesiąc",
-                    "befund50":  "Maks. 50x Asystent medyczny / miesiąc"
+                    "befund50":  "Maks. 50x Asystent medyczny / miesiąc",
+                    "freeMonthly":  "Maks. 10 dokumentow/miesiac",
+                    "freeResets":  "Limit resetuje sie co miesiac"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limit osiągnięty",

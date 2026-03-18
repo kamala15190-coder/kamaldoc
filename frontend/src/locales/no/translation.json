@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Slett permanent",
                     "cancelButton":  "Avbryt",
                     "nextReset":  "Neste tilbakestilling: {{date}}",
-                    "perMonth":  "/ måned"
+                    "perMonth":  "/ måned",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Brev",
@@ -370,7 +377,9 @@
                     "ki50":  "Maks. 50 AI analyser / måned",
                     "ki500":  "Maks. 500 AI analyser / måned",
                     "behoerde50":  "Maks. 50x Myndighetsassistent / måned",
-                    "befund50":  "Maks. 50x Medisinsk assistent / måned"
+                    "befund50":  "Maks. 50x Medisinsk assistent / måned",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Grense nådd",

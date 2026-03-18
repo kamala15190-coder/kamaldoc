@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Excluir permanentemente",
                     "cancelButton":  "Cancelar",
                     "nextReset":  "Próximo reset: {{date}}",
-                    "perMonth":  "/ mês"
+                    "perMonth":  "/ mês",
+                    "appearance":  "Aparencia",
+                    "darkMode":  "Modo escuro",
+                    "lightMode":  "Modo claro",
+                    "themeDesc":  "Alterne entre o design claro e escuro.",
+                    "systemTheme":  "Tema do sistema",
+                    "thisMonth":  "este mes",
+                    "monthlyReset":  "A cota e redefinida mensalmente"
                 },
     "categories":  {
                        "brief":  "Carta",
@@ -369,7 +376,9 @@
                     "ki50":  "Máx. 50 análises IA / mês",
                     "ki500":  "Máx. 500 análises IA / mês",
                     "behoerde50":  "Máx. 50x Assistente autoridades / mês",
-                    "befund50":  "Máx. 50x Assistente médico / mês"
+                    "befund50":  "Máx. 50x Assistente médico / mês",
+                    "freeMonthly":  "Max. 10 documentos/mes",
+                    "freeResets":  "A cota e redefinida mensalmente"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limite atingido",

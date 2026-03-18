@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Kalıcı olarak sil",
                     "cancelButton":  "İptal",
                     "nextReset":  "Sonraki sıfırlama: {{date}}",
-                    "perMonth":  "/ ay"
+                    "perMonth":  "/ ay",
+                    "appearance":  "Gorunum",
+                    "darkMode":  "Karanlik Mod",
+                    "lightMode":  "Aydinlik Mod",
+                    "themeDesc":  "Acik ve karanlik tasarim arasinda gecis yapin.",
+                    "systemTheme":  "Sistem Temasi",
+                    "thisMonth":  "bu ay",
+                    "monthlyReset":  "Kota aylik olarak sifirlanir"
                 },
     "categories":  {
                        "brief":  "Mektup",
@@ -369,7 +376,9 @@
                     "ki50":  "Maks. 50 AI analiz / ay",
                     "ki500":  "Maks. 500 AI analiz / ay",
                     "behoerde50":  "Maks. 50x Resmi asistan / ay",
-                    "befund50":  "Maks. 50x Tıbbi asistan / ay"
+                    "befund50":  "Maks. 50x Tıbbi asistan / ay",
+                    "freeMonthly":  "Maks. 10 belge/ay",
+                    "freeResets":  "Kota aylik olarak sifirlanir"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limite ulaşıldı",

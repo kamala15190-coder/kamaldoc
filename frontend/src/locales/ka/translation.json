@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "სამუდამოდ წაშლა",
                     "cancelButton":  "გაუქმება",
                     "nextReset":  "შემდეგი გადატვირთვა: {{date}}",
-                    "perMonth":  "/ თვე"
+                    "perMonth":  "/ თვე",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "წერილი",
@@ -370,7 +377,9 @@
                     "ki50":  "მაქს. 50 AI ანალიზი / თვე",
                     "ki500":  "მაქს. 500 AI ანალიზი / თვე",
                     "behoerde50":  "მაქს. 50x ორგანოების ასისტენტი / თვე",
-                    "befund50":  "მაქს. 50x სამედიცინო ასისტენტი / თვე"
+                    "befund50":  "მაქს. 50x სამედიცინო ასისტენტი / თვე",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "ლიმიტი მიღწეულია",

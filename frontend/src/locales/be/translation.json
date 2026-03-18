@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Выдаліць назаўжды",
                     "cancelButton":  "Адмяніць",
                     "nextReset":  "Наступны скід: {{date}}",
-                    "perMonth":  "/ месяц"
+                    "perMonth":  "/ месяц",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Ліст",
@@ -370,7 +377,9 @@
                     "ki50":  "Макс. 50 AI аналізаў / месяц",
                     "ki500":  "Макс. 500 AI аналізаў / месяц",
                     "behoerde50":  "Макс. 50x Дзяржасістэнт / месяц",
-                    "befund50":  "Макс. 50x Медasістэнт / месяц"
+                    "befund50":  "Макс. 50x Медasістэнт / месяц",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Ліміт дасягнуты",

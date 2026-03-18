@@ -1,6 +1,7 @@
-import i18n from 'i18next';
+﻿import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import { Capacitor } from '@capacitor/core';
 
 // Import all translation files
 import de from './locales/de/translation.json';
@@ -107,6 +108,8 @@ const resources = {
   he: { translation: he },
 };
 
+const SUPPORTED_LANGS = Object.keys(resources);
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
@@ -122,5 +125,17 @@ i18n
       lookupLocalStorage: 'kamaldoc_language',
     },
   });
+
+// Native platform: override with Capacitor Device language if no manual choice saved
+if (Capacitor.isNativePlatform() && !localStorage.getItem('kamaldoc_language')) {
+  import('@capacitor/device').then(({ Device }) => {
+    Device.getLanguageCode().then(({ value }) => {
+      const lang = (value || '').split('-')[0];
+      if (lang && SUPPORTED_LANGS.includes(lang)) {
+        i18n.changeLanguage(lang);
+      }
+    }).catch(() => {});
+  }).catch(() => {});
+}
 
 export default i18n;

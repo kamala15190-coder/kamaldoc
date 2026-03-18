@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Permanenteng tanggalin",
                     "cancelButton":  "Kanselahin",
                     "nextReset":  "Susunod na reset: {{date}}",
-                    "perMonth":  "/ buwan"
+                    "perMonth":  "/ buwan",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Liham",
@@ -370,7 +377,9 @@
                     "ki50":  "Max. 50 AI analisis / buwan",
                     "ki500":  "Max. 500 AI analisis / buwan",
                     "behoerde50":  "Max. 50x Katulong sa awtoridad / buwan",
-                    "befund50":  "Max. 50x Katulong medikal / buwan"
+                    "befund50":  "Max. 50x Katulong medikal / buwan",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Naabot na ang limitasyon",

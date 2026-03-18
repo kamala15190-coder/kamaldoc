@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Kustuta jäädavalt",
                     "cancelButton":  "Tühista",
                     "nextReset":  "Järgmine lähtestamine: {{date}}",
-                    "perMonth":  "/ kuu"
+                    "perMonth":  "/ kuu",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Kiri",
@@ -370,7 +377,9 @@
                     "ki50":  "Max. 50 AI analüüsi / kuu",
                     "ki500":  "Max. 500 AI analüüsi / kuu",
                     "behoerde50":  "Max. 50x Ametiassistent / kuu",
-                    "befund50":  "Max. 50x Meditsiiniassistent / kuu"
+                    "befund50":  "Max. 50x Meditsiiniassistent / kuu",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limiit saavutatud",

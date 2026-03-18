@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Obriši trajno",
                     "cancelButton":  "Odustani",
                     "nextReset":  "Sljedeći reset: {{date}}",
-                    "perMonth":  "/ mjesec"
+                    "perMonth":  "/ mjesec",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Pismo",
@@ -369,7 +376,9 @@
                     "ki50":  "Maks. 50 AI analiza / mjesec",
                     "ki500":  "Maks. 500 AI analiza / mjesec",
                     "behoerde50":  "Maks. 50x Pomoćnik za vlasti / mjesec",
-                    "befund50":  "Maks. 50x Medicinski pomoćnik / mjesec"
+                    "befund50":  "Maks. 50x Medicinski pomoćnik / mjesec",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limit dosegnut",

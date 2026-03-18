@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
-  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock
+  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock, Brain, MessageCircle, StickyNote, Zap
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +10,7 @@ import {
   generateReply, getReplies, downloadFile
 } from '../api';
 import AuthImage from '../components/AuthImage';
+import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
@@ -85,7 +86,7 @@ export default function DocumentDetail() {
     fetchReplies();
   }, [fetchDoc, fetchReplies]);
 
-  // Polling wenn Analyse läuft
+  // Polling wenn Analyse laeuft
   useEffect(() => {
     if (doc?.status === 'analyse_laeuft') {
       setPolling(true);
@@ -335,238 +336,245 @@ export default function DocumentDetail() {
             </div>
           ) : null}
 
-          {/* Extrahierte Daten */}
+          {/* KI-Analyse Section (Collapsible) */}
           <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>{t('document.documentData')}</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 16px' }}>
-              <Field label={t('document.category')} value={
-                doc.kategorie ? (
-                  <span className={KATEGORIE_BADGE[doc.kategorie] || KATEGORIE_BADGE.sonstiges}
-                    style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
-                    {t(`categories.${doc.kategorie}`, doc.kategorie)}
-                  </span>
-                ) : null
-              } />
-              <Field label={t('document.date')} value={doc.datum ? new Date(doc.datum).toLocaleDateString() : null} />
-              <Field label={t('document.sender')} value={doc.absender} />
-              <Field label={t('document.recipient')} value={doc.empfaenger} />
-              <Field label={t('document.amount')} value={doc.betrag != null ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : null} />
-              <Field label={t('document.due')} value={doc.faelligkeitsdatum ? new Date(doc.faelligkeitsdatum).toLocaleDateString() : null} />
-              <Field label={t('document.filename')} value={doc.dateiname} />
-              <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
-            </div>
-
-            {/* Deadline */}
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                <Clock style={{ width: 14, height: 14, color: '#fbbf24' }} />
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>{t('document.deadline')}</p>
+            <CollapsibleSection title={t('document.documentData')} icon={Brain} level={1} defaultOpen={true}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 16px' }}>
+                <Field label={t('document.category')} value={
+                  doc.kategorie ? (
+                    <span className={KATEGORIE_BADGE[doc.kategorie] || KATEGORIE_BADGE.sonstiges}
+                      style={{ fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>
+                      {t(`categories.${doc.kategorie}`, doc.kategorie)}
+                    </span>
+                  ) : null
+                } />
+                <Field label={t('document.date')} value={doc.datum ? new Date(doc.datum).toLocaleDateString() : null} />
+                <Field label={t('document.sender')} value={doc.absender} />
+                <Field label={t('document.recipient')} value={doc.empfaenger} />
+                <Field label={t('document.amount')} value={doc.betrag != null ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : null} />
+                <Field label={t('document.due')} value={doc.faelligkeitsdatum ? new Date(doc.faelligkeitsdatum).toLocaleDateString() : null} />
+                <Field label={t('document.filename')} value={doc.dateiname} />
+                <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  <input
-                    type="date"
-                    value={deadline}
-                    onChange={e => setDeadline(e.target.value)}
-                    className="input-dark"
-                    style={{ flex: 1, minWidth: 140, fontSize: 13 }}
-                  />
-                  <button
-                    onClick={async () => {
-                      setSavingDeadline(true);
-                      try {
-                        const updated = await updateDocument(id, { deadline: deadline || '' });
-                        setDoc(updated);
-                      } catch (err) { console.error(err); }
-                      finally { setSavingDeadline(false); }
-                    }}
-                    disabled={savingDeadline}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 4,
-                      padding: '8px 14px', fontSize: 12, fontWeight: 600,
-                      background: 'var(--warning-soft)', color: '#fbbf24',
-                      border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8,
-                      cursor: 'pointer', opacity: savingDeadline ? 0.5 : 1,
-                    }}
-                  >
-                    {savingDeadline ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 12, height: 12 }} />}
-                    {t('document.saveDeadline')}
-                  </button>
+
+              {/* Deadline */}
+              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+                  <Clock style={{ width: 14, height: 14, color: '#fbbf24' }} />
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>{t('document.deadline')}</p>
                 </div>
-                {deadline && (
-                  <button
-                    onClick={async () => {
-                      setDeadline('');
-                      setSavingDeadline(true);
-                      try {
-                        const updated = await updateDocument(id, { deadline: '' });
-                        setDoc(updated);
-                      } catch (err) { console.error(err); }
-                      finally { setSavingDeadline(false); }
-                    }}
-                    style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
-                  >
-                    {t('document.removeDeadline')}
-                  </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <input
+                      type="date"
+                      value={deadline}
+                      onChange={e => setDeadline(e.target.value)}
+                      className="input-dark"
+                      style={{ flex: 1, minWidth: 140, fontSize: 13 }}
+                    />
+                    <button
+                      onClick={async () => {
+                        setSavingDeadline(true);
+                        try {
+                          const updated = await updateDocument(id, { deadline: deadline || '' });
+                          setDoc(updated);
+                        } catch (err) { console.error(err); }
+                        finally { setSavingDeadline(false); }
+                      }}
+                      disabled={savingDeadline}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '8px 14px', fontSize: 12, fontWeight: 600,
+                        background: 'var(--warning-soft)', color: '#fbbf24',
+                        border: '1px solid rgba(245,158,11,0.2)', borderRadius: 8,
+                        cursor: 'pointer', opacity: savingDeadline ? 0.5 : 1,
+                      }}
+                    >
+                      {savingDeadline ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 12, height: 12 }} />}
+                      {t('document.saveDeadline')}
+                    </button>
+                  </div>
+                  {deadline && (
+                    <button
+                      onClick={async () => {
+                        setDeadline('');
+                        setSavingDeadline(true);
+                        try {
+                          const updated = await updateDocument(id, { deadline: '' });
+                          setDoc(updated);
+                        } catch (err) { console.error(err); }
+                        finally { setSavingDeadline(false); }
+                      }}
+                      style={{ fontSize: 12, color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      {t('document.removeDeadline')}
+                    </button>
+                  )}
+                </div>
+                {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
+                  <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, margin: '6px 0 0' }}>
+                    {t('document.deadlineSoon')}
+                  </p>
                 )}
+                {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
+                  <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: '6px 0 0' }}>
+                    {t('document.deadlineOverdue')}
+                  </p>
+                )}
+
+                {deadline && <ReminderSettings docId={id} currentDays={doc.reminder_days} onUpdate={(updated) => setDoc(updated)} />}
               </div>
-              {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
-                <p style={{ fontSize: 12, color: '#fbbf24', fontWeight: 600, margin: '6px 0 0' }}>
-                  ⚠️ {t('document.deadlineSoon')}
-                </p>
-              )}
-              {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
-                <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: '6px 0 0' }}>
-                  ⚠️ {t('document.deadlineOverdue')}
-                </p>
-              )}
 
-              {deadline && <ReminderSettings docId={id} currentDays={doc.reminder_days} onUpdate={(updated) => setDoc(updated)} />}
-            </div>
-
-            {doc.zusammenfassung && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.summary')}</p>
-                <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>{doc.zusammenfassung}</p>
-              </div>
-            )}
-
-            {(doc.kontakt_name || doc.kontakt_adresse || doc.kontakt_email || doc.kontakt_telefon) && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('document.contactData')}</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
-                  <Field label={t('document.name')} value={doc.kontakt_name} small />
-                  <Field label={t('document.email')} value={doc.kontakt_email} small />
-                  <Field label={t('document.address')} value={doc.kontakt_adresse} small />
-                  <Field label={t('document.phone')} value={doc.kontakt_telefon} small />
+              {doc.zusammenfassung && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.summary')}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>{doc.zusammenfassung}</p>
                 </div>
-              </div>
-            )}
-
-            {doc.volltext && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
-                <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.fulltext')}</p>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto', margin: 0 }}>{doc.volltext}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Notizen & Tags */}
-          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>{t('document.notesAndTags')}</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.notes')}</label>
-                <textarea
-                  rows={3}
-                  className="input-dark"
-                  style={{ resize: 'vertical', minHeight: 70 }}
-                  value={notizen}
-                  onChange={e => setNotizen(e.target.value)}
-                  placeholder={t('document.notesPlaceholder')}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.tags')}</label>
-                <input
-                  type="text"
-                  className="input-dark"
-                  value={tags}
-                  onChange={e => setTags(e.target.value)}
-                  placeholder={t('document.tagsPlaceholder')}
-                />
-              </div>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="btn-accent"
-                style={{
-                  width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  opacity: saving ? 0.5 : 1,
-                }}
-              >
-                {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
-                {t('document.save')}
-              </button>
-              {savedToast && (
-                <span style={{ fontSize: 13, color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <CheckCircle style={{ width: 14, height: 14 }} /> Gespeichert!
-                </span>
               )}
-            </div>
+
+              {(doc.kontakt_name || doc.kontakt_adresse || doc.kontakt_email || doc.kontakt_telefon) && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('document.contactData')}</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px' }}>
+                    <Field label={t('document.name')} value={doc.kontakt_name} small />
+                    <Field label={t('document.email')} value={doc.kontakt_email} small />
+                    <Field label={t('document.address')} value={doc.kontakt_adresse} small />
+                    <Field label={t('document.phone')} value={doc.kontakt_telefon} small />
+                  </div>
+                </div>
+              )}
+
+              {doc.volltext && (
+                <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border-glass)' }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: '0 0 4px' }}>{t('document.fulltext')}</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto', margin: 0 }}>{doc.volltext}</p>
+                </div>
+              )}
+            </CollapsibleSection>
           </div>
 
-          {/* Antwort generieren */}
+          {/* Generierte Antworten (Collapsible) */}
           {doc.status === 'analysiert' && (
             <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 14px' }}>
-                {{ brief: t('document.replyLetter'), rechnung: t('document.replyInvoice'), behoerde: t('document.replyAuthority') }[doc.kategorie] || t('document.replySection')}
-              </h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: replies.length > 0 ? 14 : 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
-                  <select
-                    value={replyLanguage}
-                    onChange={e => setReplyLanguage(e.target.value)}
-                    className="input-dark"
-                    style={{ flex: 1, fontSize: 13 }}
+              <CollapsibleSection
+                title={{ brief: t('document.replyLetter'), rechnung: t('document.replyInvoice'), behoerde: t('document.replyAuthority') }[doc.kategorie] || t('document.replySection')}
+                icon={MessageCircle}
+                level={1}
+                defaultOpen={false}
+                badge={replies.length > 0 ? `${replies.length}` : undefined}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: replies.length > 0 ? 14 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <select
+                      value={replyLanguage}
+                      onChange={e => setReplyLanguage(e.target.value)}
+                      className="input-dark"
+                      style={{ flex: 1, fontSize: 13 }}
+                    >
+                      {REPLY_LANGUAGES.map(lang => (
+                        <option key={lang.code} value={lang.code}>{lang.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleGenerateReply}
+                    disabled={generatingReply}
+                    className="btn-accent"
+                    style={{
+                      width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      opacity: generatingReply ? 0.5 : 1,
+                    }}
                   >
-                    {REPLY_LANGUAGES.map(lang => (
-                      <option key={lang.code} value={lang.code}>{lang.label}</option>
+                    {generatingReply ? (
+                      <><Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> {t('document.generating')}</>
+                    ) : (
+                      <><MessageSquare style={{ width: 16, height: 16 }} />
+                        {{ brief: t('document.generateReply'), rechnung: t('document.generateReplyInvoice'), behoerde: t('document.generateReplyAuthority') }[doc.kategorie] || t('document.generateReply')}
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {replies.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {replies.map((reply, idx) => (
+                      <div key={reply.id} style={{
+                        padding: 14, borderRadius: 12,
+                        background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
+                            {new Date(reply.erstellt_am).toLocaleString()}
+                          </p>
+                          <button
+                            onClick={() => handleCopy(reply.inhalt, idx)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 4,
+                              fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
+                              background: 'none', border: 'none', cursor: 'pointer',
+                            }}
+                          >
+                            <Copy style={{ width: 13, height: 13 }} />
+                            {copied === idx ? t('document.copied') : t('document.copy')}
+                          </button>
+                        </div>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0 }}>{reply.inhalt}</p>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                )}
+              </CollapsibleSection>
+            </div>
+          )}
+
+          {/* Notizen & Tags (Collapsible) */}
+          <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+            <CollapsibleSection title={t('document.notesAndTags')} icon={StickyNote} level={1} defaultOpen={false}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.notes')}</label>
+                  <textarea
+                    rows={3}
+                    className="input-dark"
+                    style={{ resize: 'vertical', minHeight: 70 }}
+                    value={notizen}
+                    onChange={e => setNotizen(e.target.value)}
+                    placeholder={t('document.notesPlaceholder')}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('document.tags')}</label>
+                  <input
+                    type="text"
+                    className="input-dark"
+                    value={tags}
+                    onChange={e => setTags(e.target.value)}
+                    placeholder={t('document.tagsPlaceholder')}
+                  />
                 </div>
                 <button
-                  onClick={handleGenerateReply}
-                  disabled={generatingReply}
+                  onClick={handleSave}
+                  disabled={saving}
                   className="btn-accent"
                   style={{
                     width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    opacity: generatingReply ? 0.5 : 1,
+                    opacity: saving ? 0.5 : 1,
                   }}
                 >
-                  {generatingReply ? (
-                    <><Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> {t('document.generating')}</>
-                  ) : (
-                    <><MessageSquare style={{ width: 16, height: 16 }} />
-                      {{ brief: t('document.generateReply'), rechnung: t('document.generateReplyInvoice'), behoerde: t('document.generateReplyAuthority') }[doc.kategorie] || t('document.generateReply')}
-                    </>
-                  )}
+                  {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
+                  {t('document.save')}
                 </button>
+                {savedToast && (
+                  <span style={{ fontSize: 13, color: '#34d399', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <CheckCircle style={{ width: 14, height: 14 }} /> Gespeichert!
+                  </span>
+                )}
               </div>
-
-              {replies.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {replies.map((reply, idx) => (
-                    <div key={reply.id} style={{
-                      padding: 14, borderRadius: 12,
-                      background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                        <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
-                          {new Date(reply.erstellt_am).toLocaleString()}
-                        </p>
-                        <button
-                          onClick={() => handleCopy(reply.inhalt, idx)}
-                          style={{
-                            display: 'flex', alignItems: 'center', gap: 4,
-                            fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
-                            background: 'none', border: 'none', cursor: 'pointer',
-                          }}
-                        >
-                          <Copy style={{ width: 13, height: 13 }} />
-                          {copied === idx ? t('document.copied') : t('document.copy')}
-                        </button>
-                      </div>
-                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0 }}>{reply.inhalt}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            </CollapsibleSection>
+          </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

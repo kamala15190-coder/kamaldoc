@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "ลบอย่างถาวร",
                     "cancelButton":  "ยกเลิก",
                     "nextReset":  "รีเซ็ตถัดไป: {{date}}",
-                    "perMonth":  "/ เดือน"
+                    "perMonth":  "/ เดือน",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "จดหมาย",
@@ -370,7 +377,9 @@
                     "ki50":  "สูงสุด 50 การวิเคราะห์ AI / เดือน",
                     "ki500":  "สูงสุด 500 การวิเคราะห์ AI / เดือน",
                     "behoerde50":  "สูงสุด 50x ผู้ช่วยหน่วยงาน / เดือน",
-                    "befund50":  "สูงสุด 50x ผู้ช่วยแพทย์ / เดือน"
+                    "befund50":  "สูงสุด 50x ผู้ช่วยแพทย์ / เดือน",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "ถึงขีดจำกัดแล้ว",

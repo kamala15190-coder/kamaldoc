@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Stethoscope, Upload, Loader2, FileText, Copy, Check,
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateDocument } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
 import { usePlanLimit } from '../hooks/usePlanLimit';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 export default function BefundAssistent() {
   const { t } = useTranslation();
@@ -90,7 +91,7 @@ export default function BefundAssistent() {
       const result = await translateDocument(selectedDoc.id, targetLang);
       setTranslated(result.translated);
     } catch (err) {
-      if (!handleApiError(err)) setError(err.message || 'Übersetzung fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Uebersetzung fehlgeschlagen');
     } finally {
       setTranslating(false);
     }
@@ -158,55 +159,51 @@ export default function BefundAssistent() {
             </div>
           </div>
 
-          {/* Step 1 */}
+          {/* Step 1: Simplify (Collapsible Level 1) */}
           <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', background: 'rgba(244,63,94,0.1)', color: '#fb7185', fontSize: 11, fontWeight: 700 }}>1</span>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('befund.step1Title')}</h3>
-            </div>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step1Desc')}</p>
-            <button onClick={handleSimplify} disabled={simplifying} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: simplifying ? 0.5 : 1 }}>
-              {simplifying ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Stethoscope style={{ width: 14, height: 14 }} />}
-              {simplifying ? t('befund.simplifying') : t('befund.simplifyButton')}
-            </button>
-            {vereinfacht && (
-              <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                <button onClick={handleCopySimple} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  {copiedSimple ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                </button>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{vereinfacht}</div>
-              </div>
-            )}
-          </div>
-
-          {/* Step 2 */}
-          {vereinfacht && (
-            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 22, height: 22, borderRadius: '50%', background: 'var(--accent-soft)', color: 'var(--accent-solid)', fontSize: 11, fontWeight: 700 }}>2</span>
-                <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('befund.step2Title')}</h3>
-              </div>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step2Desc')}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
-                  <select value={targetLang} onChange={e => setTargetLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
-                    {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
-                  </select>
-                </div>
-                <button onClick={handleTranslate} disabled={translating || targetLang === 'de'} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: (translating || targetLang === 'de') ? 0.5 : 1 }}>
-                  {translating ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Globe style={{ width: 14, height: 14 }} />}
-                  {translating ? t('befund.translating') : t('befund.translateButton')}
-                </button>
-              </div>
-              {translated && (
+            <CollapsibleSection title={t('befund.step1Title')} icon={Stethoscope} level={1} defaultOpen={true}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step1Desc')}</p>
+              <button onClick={handleSimplify} disabled={simplifying} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: simplifying ? 0.5 : 1 }}>
+                {simplifying ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Stethoscope style={{ width: 14, height: 14 }} />}
+                {simplifying ? t('befund.simplifying') : t('befund.simplifyButton')}
+              </button>
+              {vereinfacht && (
                 <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                  <button onClick={handleCopyTranslated} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    {copiedTranslated ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                  <button onClick={handleCopySimple} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    {copiedSimple ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
                   </button>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{translated}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{vereinfacht}</div>
                 </div>
               )}
+            </CollapsibleSection>
+          </div>
+
+          {/* Step 2: Translate (Collapsible Level 1) */}
+          {vereinfacht && (
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+              <CollapsibleSection title={t('befund.step2Title')} icon={Globe} level={1} defaultOpen={true}>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>{t('befund.step2Desc')}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <select value={targetLang} onChange={e => setTargetLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
+                      {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+                    </select>
+                  </div>
+                  <button onClick={handleTranslate} disabled={translating || targetLang === 'de'} className="btn-accent" style={{ padding: '10px 18px', fontSize: 13, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6, opacity: (translating || targetLang === 'de') ? 0.5 : 1 }}>
+                    {translating ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Globe style={{ width: 14, height: 14 }} />}
+                    {translating ? t('befund.translating') : t('befund.translateButton')}
+                  </button>
+                </div>
+                {translated && (
+                  <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                    <button onClick={handleCopyTranslated} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      {copiedTranslated ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                    </button>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{translated}</div>
+                  </div>
+                )}
+              </CollapsibleSection>
             </div>
           )}
         </div>

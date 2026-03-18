@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Eliminar permanentment",
                     "cancelButton":  "Cancel·lar",
                     "nextReset":  "Proper reinici: {{date}}",
-                    "perMonth":  "/ mes"
+                    "perMonth":  "/ mes",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Carta",
@@ -370,7 +377,9 @@
                     "ki50":  "Màx. 50 anàlisis IA / mes",
                     "ki500":  "Màx. 500 anàlisis IA / mes",
                     "behoerde50":  "Màx. 50x Assistent autoritat / mes",
-                    "befund50":  "Màx. 50x Assistent mèdic / mes"
+                    "befund50":  "Màx. 50x Assistent mèdic / mes",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Límit assolit",

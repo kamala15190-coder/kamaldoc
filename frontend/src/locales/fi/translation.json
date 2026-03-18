@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Poista pysyvästi",
                     "cancelButton":  "Peruuta",
                     "nextReset":  "Seuraava nollaus: {{date}}",
-                    "perMonth":  "/ kuukausi"
+                    "perMonth":  "/ kuukausi",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Kirje",
@@ -370,7 +377,9 @@
                     "ki50":  "Enint. 50 AI analyysiä / kuukausi",
                     "ki500":  "Enint. 500 AI analyysiä / kuukausi",
                     "behoerde50":  "Enint. 50x Viranomaisavustaja / kuukausi",
-                    "befund50":  "Enint. 50x Lääkäriavustaja / kuukausi"
+                    "befund50":  "Enint. 50x Lääkäriavustaja / kuukausi",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Raja saavutettu",

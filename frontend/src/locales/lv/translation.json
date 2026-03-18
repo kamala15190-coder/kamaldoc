@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Dzēst neatgriezeniski",
                     "cancelButton":  "Atcelt",
                     "nextReset":  "Nākamā atiestatīšana: {{date}}",
-                    "perMonth":  "/ mēnesī"
+                    "perMonth":  "/ mēnesī",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Vēstule",
@@ -370,7 +377,9 @@
                     "ki50":  "Maks. 50 AI analīzes / mēnesī",
                     "ki500":  "Maks. 500 AI analīzes / mēnesī",
                     "behoerde50":  "Maks. 50x Iestāžu asistents / mēnesī",
-                    "befund50":  "Maks. 50x Medicīniskais asistents / mēnesī"
+                    "befund50":  "Maks. 50x Medicīniskais asistents / mēnesī",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limits sasniegts",

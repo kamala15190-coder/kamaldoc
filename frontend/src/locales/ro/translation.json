@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Șterge permanent",
                     "cancelButton":  "Anulare",
                     "nextReset":  "Următoarea resetare: {{date}}",
-                    "perMonth":  "/ lună"
+                    "perMonth":  "/ lună",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Scrisoare",
@@ -369,7 +376,9 @@
                     "ki50":  "Max. 50 analize AI / lună",
                     "ki500":  "Max. 500 analize AI / lună",
                     "behoerde50":  "Max. 50x Asistent autorități / lună",
-                    "befund50":  "Max. 50x Asistent medical / lună"
+                    "befund50":  "Max. 50x Asistent medical / lună",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limită atinsă",

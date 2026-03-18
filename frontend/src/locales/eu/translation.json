@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Ezabatu betirako",
                     "cancelButton":  "Utzi",
                     "nextReset":  "Hurrengo berrezarpena: {{date}}",
-                    "perMonth":  "/ hilabete"
+                    "perMonth":  "/ hilabete",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Gutuna",
@@ -370,7 +377,9 @@
                     "ki50":  "Gehienez 50 AI analisi / hilabete",
                     "ki500":  "Gehienez 500 AI analisi / hilabete",
                     "behoerde50":  "Gehienez 50x Agintari laguntzaile / hilabete",
-                    "befund50":  "Gehienez 50x Mediku laguntzaile / hilabete"
+                    "befund50":  "Gehienez 50x Mediku laguntzaile / hilabete",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Muga iritsi da",

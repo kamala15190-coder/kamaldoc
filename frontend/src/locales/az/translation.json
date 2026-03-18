@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Tamamilə sil",
                     "cancelButton":  "Ləğv et",
                     "nextReset":  "Növbəti sıfırlama: {{date}}",
-                    "perMonth":  "/ ay"
+                    "perMonth":  "/ ay",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Məktub",
@@ -370,7 +377,9 @@
                     "ki50":  "Maks. 50 AI analiz / ay",
                     "ki500":  "Maks. 500 AI analiz / ay",
                     "behoerde50":  "Maks. 50x Rəsmi köməkçi / ay",
-                    "befund50":  "Maks. 50x Tibbi köməkçi / ay"
+                    "befund50":  "Maks. 50x Tibbi köməkçi / ay",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limit aşıldı",

@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Permanent verwijderen",
                     "cancelButton":  "Annuleren",
                     "nextReset":  "Volgende reset: {{date}}",
-                    "perMonth":  "/ maand"
+                    "perMonth":  "/ maand",
+                    "appearance":  "Uiterlijk",
+                    "darkMode":  "Donkere modus",
+                    "lightMode":  "Lichte modus",
+                    "themeDesc":  "Schakel tussen licht en donker ontwerp.",
+                    "systemTheme":  "Systeemthema",
+                    "thisMonth":  "deze maand",
+                    "monthlyReset":  "Quotum wordt maandelijks gereset"
                 },
     "categories":  {
                        "brief":  "Brief",
@@ -369,7 +376,9 @@
                     "ki50":  "Max. 50 AI analyses / maand",
                     "ki500":  "Max. 500 AI analyses / maand",
                     "behoerde50":  "Max. 50x Overheidsassistent / maand",
-                    "befund50":  "Max. 50x Medisch assistent / maand"
+                    "befund50":  "Max. 50x Medisch assistent / maand",
+                    "freeMonthly":  "Max. 10 documenten/maand",
+                    "freeResets":  "Quotum wordt maandelijks gereset"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limiet bereikt",

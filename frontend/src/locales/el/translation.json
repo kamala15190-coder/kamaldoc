@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Διαγραφή οριστικά",
                     "cancelButton":  "Ακύρωση",
                     "nextReset":  "Επόμενη επαναφορά: {{date}}",
-                    "perMonth":  "/ μήνα"
+                    "perMonth":  "/ μήνα",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Επιστολή",
@@ -370,7 +377,9 @@
                     "ki50":  "Μέγ. 50 AI αναλύσεις / μήνα",
                     "ki500":  "Μέγ. 500 AI αναλύσεις / μήνα",
                     "behoerde50":  "Μέγ. 50x Βοηθός αρχών / μήνα",
-                    "befund50":  "Μέγ. 50x Ιατρικός βοηθός / μήνα"
+                    "befund50":  "Μέγ. 50x Ιατρικός βοηθός / μήνα",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Όριο επιτεύχθηκε",

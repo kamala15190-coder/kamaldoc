@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle, Trash2 } from 'lucide-react';
+import { User, Save, Loader2, CheckCircle, AlertCircle, Lock, Zap, Rocket, CreditCard, XCircle, Trash2, Sun, Moon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubscription, deleteAccount } from '../api';
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
+import { useTheme } from '../hooks/useTheme';
 
 export default function ProfilPage() {
   const { t, i18n } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -176,6 +178,44 @@ export default function ProfilPage() {
         </div>
       )}
 
+      {/* Section: Appearance / Theme Toggle */}
+      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+          {theme === 'dark' ? <Moon style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 16, height: 16, color: '#f59e0b' }} />}
+          <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.appearance')}</h2>
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>{t('profile.themeDesc')}</p>
+        <div
+          onClick={toggleTheme}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
+            background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {theme === 'dark' ? <Moon style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 18, height: 18, color: '#f59e0b' }} />}
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+              {theme === 'dark' ? t('profile.darkMode') : t('profile.lightMode')}
+            </span>
+          </div>
+          <div style={{
+            width: 44, height: 24, borderRadius: 12, position: 'relative',
+            background: theme === 'dark' ? 'var(--accent-solid)' : 'rgba(0,0,0,0.15)',
+            transition: 'background 0.3s ease',
+          }}>
+            <div style={{
+              width: 20, height: 20, borderRadius: 10, position: 'absolute', top: 2,
+              left: theme === 'dark' ? 22 : 2,
+              background: 'white',
+              transition: 'left 0.3s ease',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+            }} />
+          </div>
+        </div>
+      </div>
+
       {/* Section: Subscription */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
@@ -205,10 +245,10 @@ export default function ProfilPage() {
         {usage && (
           <>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-              <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} />
-              <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_month || 0} max={limits.ki_analyses_month} />
-              <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} />
-              <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} />
+              <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} monthly={isFree} />
+              <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_month || 0} max={limits.ki_analyses_month} monthly={true} />
+              <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} monthly={!isFree || true} />
+              <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} monthly={!isFree || true} />
             </div>
             {usage.next_reset && (
               <div style={{
@@ -230,7 +270,7 @@ export default function ProfilPage() {
             <AlertCircle style={{ width: 14, height: 14, color: '#fbbf24', flexShrink: 0 }} />
             <span style={{ fontSize: 12, color: '#fbbf24' }}>
               {t('profile.pendingDowngrade', {
-                date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—',
+                date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '---',
                 plan: subscription.pending_plan.charAt(0).toUpperCase() + subscription.pending_plan.slice(1),
               })}
             </span>
@@ -343,7 +383,7 @@ export default function ProfilPage() {
         </button>
       </div>
 
-      {/* Section 2: Passwort ändern */}
+      {/* Section 2: Passwort aendern */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <Lock style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
@@ -353,11 +393,11 @@ export default function ProfilPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.newPassword')}</label>
-            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="••••••••" className="input-dark" />
+            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="--------" className="input-dark" />
           </div>
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4 }}>{t('profile.repeatPassword')}</label>
-            <input type="password" value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} placeholder="••••••••" className="input-dark" />
+            <input type="password" value={repeatPassword} onChange={e => setRepeatPassword(e.target.value)} placeholder="--------" className="input-dark" />
           </div>
         </div>
 
@@ -407,7 +447,6 @@ export default function ProfilPage() {
         }}>
           <div className="glass-card animate-scale-in" style={{ padding: 24, width: '100%', maxWidth: 380 }}>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
-              <div style={{ fontSize: 40, marginBottom: 8 }}>⚠️</div>
               <h3 style={{ fontWeight: 700, fontSize: 18, color: '#ef4444', margin: '0 0 8px' }}>
                 {t('profile.deleteAccountConfirm')}
               </h3>
@@ -457,7 +496,7 @@ export default function ProfilPage() {
   );
 }
 
-function UsageStat({ label, used, max }) {
+function UsageStat({ label, used, max, monthly }) {
   const { t } = useTranslation();
   const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
   const isUnlimited = max === null || max === undefined;
@@ -472,13 +511,16 @@ function UsageStat({ label, used, max }) {
       {isUnlimited ? (
         <div style={{ fontSize: 11, color: '#34d399', fontWeight: 600, marginTop: 2 }}>{t('profile.unlimited')}</div>
       ) : (
-        <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 6 }}>
-          <div style={{
-            height: 4, borderRadius: 2, transition: 'all 0.3s ease',
-            width: `${pct}%`,
-            background: isHigh ? '#ef4444' : 'var(--accent-solid)',
-          }} />
-        </div>
+        <>
+          <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', marginTop: 6 }}>
+            <div style={{
+              height: 4, borderRadius: 2, transition: 'all 0.3s ease',
+              width: `${pct}%`,
+              background: isHigh ? '#ef4444' : 'var(--accent-solid)',
+            }} />
+          </div>
+          {monthly && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 3 }}>{t('profile.perMonth')}</div>}
+        </>
       )}
     </div>
   );

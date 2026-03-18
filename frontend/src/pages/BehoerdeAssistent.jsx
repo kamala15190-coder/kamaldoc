@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Landmark, Upload, Loader2, FileText, Copy, Check,
@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { uploadDocument, getDocuments, getDocument, explainDocument, getLegalAssessment, getContestableElements, generateObjection, getBehoerdenResults } from '../api';
 import { REPLY_LANGUAGES } from '../languages';
 import { usePlanLimit } from '../hooks/usePlanLimit';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 export default function BehoerdeAssistent() {
   const { t } = useTranslation();
@@ -97,7 +98,7 @@ export default function BehoerdeAssistent() {
       const result = await explainDocument(selectedDoc.id, targetLang);
       setErklaerung(result.erklaerung);
     } catch (err) {
-      if (!handleApiError(err)) setError(err.message || 'Erklärung fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Erklaerung fehlgeschlagen');
     } finally {
       setExplaining(false);
     }
@@ -111,7 +112,7 @@ export default function BehoerdeAssistent() {
       const result = await getLegalAssessment(selectedDoc.id);
       setLegalAssessment(result.assessment);
     } catch (err) {
-      if (!handleApiError(err)) setError(err.message || 'Rechtseinschätzung fehlgeschlagen');
+      if (!handleApiError(err)) setError(err.message || 'Rechtseinschaetzung fehlgeschlagen');
     } finally {
       setAssessingLegal(false);
     }
@@ -255,130 +256,127 @@ export default function BehoerdeAssistent() {
             </div>
           </div>
 
-          {/* Explanation */}
+          {/* Explanation (Collapsible Level 1) */}
           {erklaerung && (
             <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('behoerde.explanationTitle')}</h3>
-              <div style={{ position: 'relative', padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                <button onClick={handleCopy} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  {copied ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                </button>
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{erklaerung}</div>
-              </div>
+              <CollapsibleSection title={t('behoerde.explanationTitle')} icon={Landmark} level={1} defaultOpen={true}>
+                <div style={{ position: 'relative', padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                  <button onClick={handleCopy} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                    {copied ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                  </button>
+                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{erklaerung}</div>
+                </div>
+              </CollapsibleSection>
             </div>
           )}
 
-          {/* Legal Assessment */}
+          {/* Legal Assessment (Collapsible Level 1) */}
           <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Scale style={{ width: 16, height: 16, color: '#fbbf24' }} />
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.legalAssessmentTitle')}</h3>
-            </div>
-            <button onClick={handleLegalAssessment} disabled={assessingLegal} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
-              background: 'var(--warning-soft)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)',
-              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: assessingLegal ? 0.5 : 1,
-            }}>
-              {assessingLegal ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Scale style={{ width: 14, height: 14 }} />}
-              {assessingLegal ? t('behoerde.analyzing') : t('behoerde.requestAssessment')}
-            </button>
-            {legalAssessment && (
-              <>
-                <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                  <button onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    {copiedLegal ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                  </button>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{legalAssessment}</div>
-                </div>
-                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                  <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.legalDisclaimer')}</p>
-                </div>
-              </>
-            )}
+            <CollapsibleSection title={t('behoerde.legalAssessmentTitle')} icon={Scale} level={1} defaultOpen={!!legalAssessment}>
+              <button onClick={handleLegalAssessment} disabled={assessingLegal} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
+                background: 'var(--warning-soft)', color: '#fbbf24', border: '1px solid rgba(245,158,11,0.2)',
+                borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: assessingLegal ? 0.5 : 1,
+              }}>
+                {assessingLegal ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Scale style={{ width: 14, height: 14 }} />}
+                {assessingLegal ? t('behoerde.analyzing') : t('behoerde.requestAssessment')}
+              </button>
+              {legalAssessment && (
+                <>
+                  <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                    <button onClick={() => { navigator.clipboard.writeText(legalAssessment); setCopiedLegal(true); setTimeout(() => setCopiedLegal(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      {copiedLegal ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                    </button>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{legalAssessment}</div>
+                  </div>
+                  <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                    <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.legalDisclaimer')}</p>
+                  </div>
+                </>
+              )}
+            </CollapsibleSection>
           </div>
 
-          {/* Objection */}
+          {/* Objection (Collapsible Level 1) */}
           <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Shield style={{ width: 16, height: 16, color: '#ef4444' }} />
-              <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{t('behoerde.objectionTitle')}</h3>
-            </div>
-            <button onClick={handleContestableElements} disabled={loadingElements} style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
-              background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
-              borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: loadingElements ? 0.5 : 1,
-            }}>
-              {loadingElements ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Shield style={{ width: 14, height: 14 }} />}
-              {loadingElements ? t('behoerde.analyzing') : t('behoerde.checkElements')}
-            </button>
+            <CollapsibleSection title={t('behoerde.objectionTitle')} icon={Shield} level={1} defaultOpen={!!objectionLetter || contestableElements.length > 0}>
+              <button onClick={handleContestableElements} disabled={loadingElements} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, padding: '10px 18px',
+                background: 'var(--danger-soft)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)',
+                borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: loadingElements ? 0.5 : 1,
+              }}>
+                {loadingElements ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Shield style={{ width: 14, height: 14 }} />}
+                {loadingElements ? t('behoerde.analyzing') : t('behoerde.checkElements')}
+              </button>
 
-            {contestableElements.length > 0 && (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {contestableElements.map(el => (
-                    <div
-                      key={el.id}
-                      onClick={() => toggleElement(el.id)}
-                      style={{
-                        position: 'relative', borderRadius: 10, padding: 14, cursor: 'pointer',
-                        transition: 'all 0.15s ease',
-                        background: selectedElements.has(el.id) ? 'var(--danger-soft)' : 'var(--bg-glass)',
-                        border: selectedElements.has(el.id) ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border-glass)',
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
-                        <div style={{ minWidth: 0, flex: 1 }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{el.element}</p>
-                          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0' }}>{el.description}</p>
-                          <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>{el.reason}</p>
+              {contestableElements.length > 0 && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {contestableElements.map(el => (
+                      <div
+                        key={el.id}
+                        onClick={() => toggleElement(el.id)}
+                        style={{
+                          position: 'relative', borderRadius: 10, padding: 14, cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          background: selectedElements.has(el.id) ? 'var(--danger-soft)' : 'var(--bg-glass)',
+                          border: selectedElements.has(el.id) ? '1px solid rgba(239,68,68,0.3)' : '1px solid var(--border-glass)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                          <div style={{ minWidth: 0, flex: 1 }}>
+                            <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>{el.element}</p>
+                            <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '4px 0 0' }}>{el.description}</p>
+                            <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '6px 0 0' }}>{el.reason}</p>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={selectedElements.has(el.id)}
+                            onChange={() => toggleElement(el.id)}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{ width: 18, height: 18, accentColor: '#ef4444', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}
+                          />
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={selectedElements.has(el.id)}
-                          onChange={() => toggleElement(el.id)}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ width: 18, height: 18, accentColor: '#ef4444', cursor: 'pointer', flexShrink: 0, marginTop: 2 }}
-                        />
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedElements.size > 0 && (
-                  <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
-                      <select value={objectionLang} onChange={e => setObjectionLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
-                        {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
-                      </select>
-                    </div>
-                    <button onClick={handleGenerateObjection} disabled={generatingObjection} style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 6,
-                      padding: '12px 20px', background: '#ef4444', color: 'white',
-                      border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                      opacity: generatingObjection ? 0.5 : 1,
-                    }}>
-                      {generatingObjection ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <FileText style={{ width: 14, height: 14 }} />}
-                      {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
-                    </button>
+                    ))}
                   </div>
-                )}
-              </div>
-            )}
 
-            {objectionLetter && (
-              <>
-                <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
-                  <button onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                    {copiedObjection ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
-                  </button>
-                  <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{objectionLetter}</div>
+                  {selectedElements.size > 0 && (
+                    <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                        <select value={objectionLang} onChange={e => setObjectionLang(e.target.value)} className="input-dark" style={{ flex: 1, fontSize: 13 }}>
+                          {REPLY_LANGUAGES.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+                        </select>
+                      </div>
+                      <button onClick={handleGenerateObjection} disabled={generatingObjection} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '12px 20px', background: '#ef4444', color: 'white',
+                        border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                        opacity: generatingObjection ? 0.5 : 1,
+                      }}>
+                        {generatingObjection ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <FileText style={{ width: 14, height: 14 }} />}
+                        {generatingObjection ? t('behoerde.generating') : t('behoerde.generateObjection', { count: selectedElements.size, plural: selectedElements.size > 1 ? 'e' : '' })}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                  <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.objectionDisclaimer')}</p>
-                </div>
-              </>
-            )}
+              )}
+
+              {objectionLetter && (
+                <>
+                  <div style={{ position: 'relative', marginTop: 14, padding: 14, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
+                    <button onClick={() => { navigator.clipboard.writeText(objectionLetter); setCopiedObjection(true); setTimeout(() => setCopiedObjection(false), 2000); }} style={{ position: 'absolute', top: 10, right: 10, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                      {copiedObjection ? <Check style={{ width: 14, height: 14, color: '#10b981' }} /> : <Copy style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />}
+                    </button>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 30 }}>{objectionLetter}</div>
+                  </div>
+                  <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.15)' }}>
+                    <p style={{ fontSize: 12, color: '#fbbf24', margin: 0 }}>{t('behoerde.objectionDisclaimer')}</p>
+                  </div>
+                </>
+              )}
+            </CollapsibleSection>
           </div>
         </div>
       )}

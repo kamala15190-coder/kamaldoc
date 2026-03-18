@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "स्थायी रूप से हटाएं",
                     "cancelButton":  "रद्द करें",
                     "nextReset":  "अगला रीसेट: {{date}}",
-                    "perMonth":  "/ माह"
+                    "perMonth":  "/ माह",
+                    "appearance":  "दिखावट",
+                    "darkMode":  "डार्क मोड",
+                    "lightMode":  "लाइट मोड",
+                    "themeDesc":  "लाइट और डार्क डिज़ाइन के बीच स्विच करें।",
+                    "systemTheme":  "सिस्टम थीम",
+                    "thisMonth":  "इस महीने",
+                    "monthlyReset":  "कोटा मासिक रूप से रीसेट होता है"
                 },
     "categories":  {
                        "brief":  "पत्र",
@@ -370,7 +377,9 @@
                     "ki50":  "अधिकतम 50 AI विश्लेषण / माह",
                     "ki500":  "अधिकतम 500 AI विश्लेषण / माह",
                     "behoerde50":  "अधिकतम 50x अधिकारी सहायक / माह",
-                    "befund50":  "अधिकतम 50x चिकित्सा सहायक / माह"
+                    "befund50":  "अधिकतम 50x चिकित्सा सहायक / माह",
+                    "freeMonthly":  "अधिकतम 10 दस्तावेज़/माह",
+                    "freeResets":  "कोटा मासिक रूप से रीसेट होता है"
                 },
     "upgradeModal":  {
                          "limitReached":  "सीमा पूरी हुई",

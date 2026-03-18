@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Біржола жою",
                     "cancelButton":  "Бас тарту",
                     "nextReset":  "Келесі қалпына келтіру: {{date}}",
-                    "perMonth":  "/ ай"
+                    "perMonth":  "/ ай",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Хат",
@@ -370,7 +377,9 @@
                     "ki50":  "Макс. 50 AI талдау / ай",
                     "ki500":  "Макс. 500 AI талдау / ай",
                     "behoerde50":  "Макс. 50x Билік көмekші / ай",
-                    "befund50":  "Макс. 50x Медициналık көмekші / ай"
+                    "befund50":  "Макс. 50x Медициналık көмekші / ай",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Шекке жетті",

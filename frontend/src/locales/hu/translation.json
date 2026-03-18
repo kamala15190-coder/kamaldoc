@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Véglegesen töröl",
                     "cancelButton":  "Mégse",
                     "nextReset":  "Következő visszaállítás: {{date}}",
-                    "perMonth":  "/ hónap"
+                    "perMonth":  "/ hónap",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Levél",
@@ -369,7 +376,9 @@
                     "ki50":  "Max. 50 AI elemzés / hónap",
                     "ki500":  "Max. 500 AI elemzés / hónap",
                     "behoerde50":  "Max. 50x Hatósági asszisztens / hónap",
-                    "befund50":  "Max. 50x Orvosi asszisztens / hónap"
+                    "befund50":  "Max. 50x Orvosi asszisztens / hónap",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Korlát elérve",

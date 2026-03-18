@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Elimina permanentemente",
                     "cancelButton":  "Annulla",
                     "nextReset":  "Prossimo reset: {{date}}",
-                    "perMonth":  "/ mese"
+                    "perMonth":  "/ mese",
+                    "appearance":  "Aspetto",
+                    "darkMode":  "Modalita scura",
+                    "lightMode":  "Modalita chiara",
+                    "themeDesc":  "Passa tra il design chiaro e scuro.",
+                    "systemTheme":  "Tema di sistema",
+                    "thisMonth":  "questo mese",
+                    "monthlyReset":  "La quota viene reimpostata mensilmente"
                 },
     "categories":  {
                        "brief":  "Lettera",
@@ -369,7 +376,9 @@
                     "ki50":  "Max. 50 analisi AI / mese",
                     "ki500":  "Max. 500 analisi AI / mese",
                     "behoerde50":  "Max. 50x Assistente autorità / mese",
-                    "befund50":  "Max. 50x Assistente medico / mese"
+                    "befund50":  "Max. 50x Assistente medico / mese",
+                    "freeMonthly":  "Max. 10 documenti/mese",
+                    "freeResets":  "La quota viene reimpostata mensilmente"
                 },
     "upgradeModal":  {
                          "limitReached":  "Limite raggiunto",

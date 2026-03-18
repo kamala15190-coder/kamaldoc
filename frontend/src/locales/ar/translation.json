@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "حذف نهائياً",
                     "cancelButton":  "إلغاء",
                     "nextReset":  "إعادة التعيين التالية: {{date}}",
-                    "perMonth":  "/ شهر"
+                    "perMonth":  "/ شهر",
+                    "appearance":  "المظهر",
+                    "darkMode":  "الوضع الداكن",
+                    "lightMode":  "الوضع الفاتح",
+                    "themeDesc":  "التبديل بين التصميم الفاتح والداكن.",
+                    "systemTheme":  "سمة النظام",
+                    "thisMonth":  "هذا الشهر",
+                    "monthlyReset":  "تتم إعادة تعيين الحصة شهريا"
                 },
     "categories":  {
                        "brief":  "رسالة",
@@ -369,7 +376,9 @@
                     "ki50":  "بحد أقصى 50 تحليل AI / شهر",
                     "ki500":  "بحد أقصى 500 تحليل AI / شهر",
                     "behoerde50":  "بحد أقصى 50x مساعد السلطات / شهر",
-                    "befund50":  "بحد أقصى 50x مساعد طبي / شهر"
+                    "befund50":  "بحد أقصى 50x مساعد طبي / شهر",
+                    "freeMonthly":  "10 مستندات/شهر كحد أقصى",
+                    "freeResets":  "تتم إعادة تعيين الحصة شهريا"
                 },
     "upgradeModal":  {
                          "limitReached":  "تم الوصول للحد",

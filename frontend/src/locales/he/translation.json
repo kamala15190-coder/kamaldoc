@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "מחק לצמיתות",
                     "cancelButton":  "ביטול",
                     "nextReset":  "איפוס הבא: {{date}}",
-                    "perMonth":  "/ חודש"
+                    "perMonth":  "/ חודש",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "מכתב",
@@ -370,7 +377,9 @@
                     "ki50":  "מקס. 50 ניתוחי AI / חודש",
                     "ki500":  "מקס. 500 ניתוחי AI / חודש",
                     "behoerde50":  "מקס. 50x עוזר רשויות / חודש",
-                    "befund50":  "מקס. 50x עוזר רפואי / חודש"
+                    "befund50":  "מקס. 50x עוזר רפואי / חודש",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "הגעת למגבלה",

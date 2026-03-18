@@ -1,4 +1,4 @@
-"""
+﻿"""
 KamalDoc Subscription System
 - Plan management (free/basic/pro)
 - Usage tracking & enforcement
@@ -30,10 +30,13 @@ if STRIPE_SECRET_KEY:
 PLAN_LIMITS = {
     "free": {
         "documents_total": 10,
+        "documents_month": 10,
         "ki_analyses_total": 10,
         "ki_analyses_month": 10,
         "behoerden_total": 2,
+        "behoerden_month": 2,
         "befund_total": 2,
+        "befund_month": 2,
         "expenses": False,
         "push_notifications": False,
         "reminder_options": [],
@@ -213,11 +216,12 @@ async def get_usage(user_id: str) -> dict:
             if last_date < boundary:
                 await db.execute(
                     """UPDATE usage_counters
-                       SET ki_analyses_month = 0, behoerden_month = 0, befund_month = 0, last_reset = ?
+                       SET documents_month = 0, ki_analyses_month = 0, behoerden_month = 0, befund_month = 0, last_reset = ?
                        WHERE user_id = ?""",
                     (now.strftime("%Y-%m-%d"), user_id),
                 )
                 await db.commit()
+                usage["documents_month"] = 0
                 usage["ki_analyses_month"] = 0
                 usage["behoerden_month"] = 0
                 usage["befund_month"] = 0
@@ -255,11 +259,28 @@ async def check_upload_limit(user_id: str):
     """Check if user can upload a document."""
     plan = await get_user_plan(user_id)
     limits = PLAN_LIMITS[plan]
+    usage = await get_usage(user_id)
+
+    # Check monthly limit (free plan)
+    max_month = limits.get("documents_month")
+    if max_month is not None:
+        current_month = usage.get("documents_month", 0)
+        if current_month >= max_month:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "UPLOAD_LIMIT",
+                    "message": f"Dokumenten-Monatslimit erreicht ({max_month}/Monat). Bitte upgraden.",
+                    "plan": plan,
+                    "limit": max_month,
+                    "used": current_month,
+                },
+            )
+
+    # Check total limit
     max_docs = limits["documents_total"]
     if max_docs is None:
         return  # unlimited
-
-    usage = await get_usage(user_id)
     if usage["documents_total"] >= max_docs:
         raise HTTPException(
             status_code=403,
@@ -297,7 +318,7 @@ async def check_analysis_limit(user_id: str):
 
 
 async def check_behoerden_limit(user_id: str):
-    """Check Behörden-Assistent limit."""
+    """Check BehÃ¶rden-Assistent limit."""
     plan = await get_user_plan(user_id)
     limits = PLAN_LIMITS[plan]
     usage = await get_usage(user_id)
@@ -309,7 +330,7 @@ async def check_behoerden_limit(user_id: str):
                 status_code=403,
                 detail={
                     "code": "BEHOERDEN_LIMIT",
-                    "message": f"Behörden-Assistent Limit erreicht ({max_total} gesamt). Bitte upgraden.",
+                    "message": f"BehÃ¶rden-Assistent Limit erreicht ({max_total} gesamt). Bitte upgraden.",
                     "plan": plan,
                     "limit": max_total,
                     "used": usage["behoerden_month"],
@@ -322,7 +343,7 @@ async def check_behoerden_limit(user_id: str):
                 status_code=403,
                 detail={
                     "code": "BEHOERDEN_LIMIT",
-                    "message": f"Behörden-Assistent Monatslimit erreicht ({max_month}/Monat).",
+                    "message": f"BehÃ¶rden-Assistent Monatslimit erreicht ({max_month}/Monat).",
                     "plan": plan,
                     "limit": max_month,
                     "used": usage["behoerden_month"],
@@ -372,7 +393,7 @@ async def check_expenses_access(user_id: str):
             status_code=403,
             detail={
                 "code": "EXPENSES_LOCKED",
-                "message": "Ausgaben-Dashboard ist ab Basic Plan verfügbar.",
+                "message": "Ausgaben-Dashboard ist ab Basic Plan verfÃ¼gbar.",
                 "plan": plan,
             },
         )
@@ -416,6 +437,7 @@ async def get_subscription_status(user_id: str) -> dict:
         },
         "usage": {
             "documents_total": usage["documents_total"],
+            "documents_month": usage.get("documents_month", 0),
             "ki_analyses_month": usage.get("ki_analyses_month", 0),
             "behoerden_used": usage["behoerden_month"],
             "befund_used": usage["befund_month"],
@@ -433,9 +455,9 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
     current = await get_user_plan(user_id)
 
     if target_plan not in PLAN_ORDER:
-        raise HTTPException(400, "Ungültiger Plan.")
+        raise HTTPException(400, "UngÃ¼ltiger Plan.")
     if PLAN_ORDER[target_plan] >= PLAN_ORDER[current]:
-        raise HTTPException(400, "Downgrade ist nur auf einen niedrigeren Plan möglich.")
+        raise HTTPException(400, "Downgrade ist nur auf einen niedrigeren Plan mÃ¶glich.")
 
     db = await get_db()
     try:
@@ -490,7 +512,7 @@ async def reactivate_subscription(user_id: str) -> dict:
         if not row or row["plan"] == "free":
             raise HTTPException(400, "Kein aktives Abo vorhanden.")
         if not row["cancelled_at"]:
-            raise HTTPException(400, "Abo ist nicht gekündigt.")
+            raise HTTPException(400, "Abo ist nicht gekÃ¼ndigt.")
 
         stripe_sub_id = row["stripe_subscription_id"]
         # Reactivate in Stripe (undo cancel_at_period_end)
@@ -525,7 +547,7 @@ async def create_checkout_session(user_id: str, plan: str) -> dict:
         raise HTTPException(400, "Stripe ist noch nicht konfiguriert.")
 
     if plan not in ("basic", "pro"):
-        raise HTTPException(400, "Ungültiger Plan. Nur 'basic' oder 'pro' möglich.")
+        raise HTTPException(400, "UngÃ¼ltiger Plan. Nur 'basic' oder 'pro' mÃ¶glich.")
 
     price_id = STRIPE_BASIC_PRICE_ID if plan == "basic" else STRIPE_PRO_PRICE_ID
 
@@ -564,7 +586,7 @@ async def create_checkout_session(user_id: str, plan: str) -> dict:
         cancel_url=f"{FRONTEND_URL}/pricing?checkout=cancel",
         metadata={"user_id": user_id, "plan": plan},
         custom_text={
-            "submit": {"message": "KamalDoc – Ihr Dokumenten-Assistent"},
+            "submit": {"message": "KamalDoc â€“ Ihr Dokumenten-Assistent"},
         },
     )
 
@@ -602,7 +624,7 @@ async def cancel_subscription(user_id: str) -> dict:
         await db.commit()
 
         return {
-            "message": "Abo gekündigt. Bleibt aktiv bis zum Ende der Laufzeit.",
+            "message": "Abo gekÃ¼ndigt. Bleibt aktiv bis zum Ende der Laufzeit.",
             "expires_at": row["expires_at"],
         }
     finally:
@@ -732,3 +754,6 @@ async def _handle_subscription_deleted(subscription):
             logger.info(f"Subscription deleted, downgraded: user={row['user_id']}")
     finally:
         await db.close()
+
+
+

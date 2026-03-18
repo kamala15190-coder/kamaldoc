@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Delays",
                     "cancelButton":  "Չdelays",
                     "nextReset":  "Հաջորդ վերակայում: {{date}}",
-                    "perMonth":  "/ ամիս"
+                    "perMonth":  "/ ամիս",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Նամակ",
@@ -370,7 +377,9 @@
                     "ki50":  "Առավdelays 50 AI վdelays / delays",
                     "ki500":  "Առdelays 500 AI / amas",
                     "behoerde50":  "Delays 50x / amas",
-                    "befund50":  "Delays 50x delays / amas"
+                    "befund50":  "Delays 50x delays / amas",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Սdelays",

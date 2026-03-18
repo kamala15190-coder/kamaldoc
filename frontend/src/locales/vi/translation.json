@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Xóa vĩnh viễn",
                     "cancelButton":  "Hủy",
                     "nextReset":  "Đặt lại tiếp theo: {{date}}",
-                    "perMonth":  "/ tháng"
+                    "perMonth":  "/ tháng",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Thư",
@@ -370,7 +377,9 @@
                     "ki50":  "Tối đa 50 phân tích AI / tháng",
                     "ki500":  "Tối đa 500 phân tích AI / tháng",
                     "behoerde50":  "Tối đa 50x Trợ lý cơ quan / tháng",
-                    "befund50":  "Tối đa 50x Trợ lý y tế / tháng"
+                    "befund50":  "Tối đa 50x Trợ lý y tế / tháng",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Đã đạt giới hạn",

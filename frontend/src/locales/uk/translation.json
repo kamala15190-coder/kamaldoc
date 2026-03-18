@@ -230,7 +230,14 @@
                     "confirmDeleteButton":  "Видалити назавжди",
                     "cancelButton":  "Скасувати",
                     "nextReset":  "Наступне скидання: {{date}}",
-                    "perMonth":  "/ місяць"
+                    "perMonth":  "/ місяць",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Лист",
@@ -369,7 +376,9 @@
                     "ki50":  "Макс. 50 AI аналізів / місяць",
                     "ki500":  "Макс. 500 AI аналізів / місяць",
                     "behoerde50":  "Макс. 50x Асистент відомств / місяць",
-                    "befund50":  "Макс. 50x Медасистент / місяць"
+                    "befund50":  "Макс. 50x Медасистент / місяць",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Ліміт досягнуто",

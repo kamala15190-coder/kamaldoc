@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import logging
 import os
 import smtplib
@@ -81,12 +81,12 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             or (request.client.host if request.client else "unknown")
         )
         now = time.time()
-        # Alte Einträge entfernen
+        # Alte EintrÃ¤ge entfernen
         self.requests[client_ip] = [
             t for t in self.requests[client_ip] if now - t < self.window_seconds
         ]
         if len(self.requests[client_ip]) >= self.max_requests:
-            # CORS-Header hinzufügen damit der Browser die Antwort nicht blockiert
+            # CORS-Header hinzufÃ¼gen damit der Browser die Antwort nicht blockiert
             origin = request.headers.get("origin", "")
             headers = {}
             if origin:
@@ -94,7 +94,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 headers["access-control-allow-credentials"] = "true"
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Too Many Requests – max 120 pro Minute"},
+                content={"detail": "Too Many Requests â€“ max 120 pro Minute"},
                 headers=headers,
             )
         self.requests[client_ip].append(now)
@@ -255,7 +255,7 @@ def row_to_dict(row) -> dict:
 
 async def run_analysis(doc_id: int, image_path: str):
     """Asynchrone LLM-Analyse im Hintergrund."""
-    logger.info(f"[Analyse] Starte Analyse für Dokument {doc_id}, Bild: {image_path}")
+    logger.info(f"[Analyse] Starte Analyse fÃ¼r Dokument {doc_id}, Bild: {image_path}")
     db = await get_db()
     try:
         result = await analyze_document(image_path)
@@ -265,7 +265,7 @@ async def run_analysis(doc_id: int, image_path: str):
         handlung_beschr = result.get("handlung_beschreibung")
 
         logger.info(f"[Analyse] Dokument {doc_id}: "
-                     f"handlung_erforderlich raw={handlung_erf_raw} ({type(handlung_erf_raw).__name__}) → DB={handlung_erf_int}, "
+                     f"handlung_erforderlich raw={handlung_erf_raw} ({type(handlung_erf_raw).__name__}) â†’ DB={handlung_erf_int}, "
                      f"handlung_beschreibung='{handlung_beschr}', "
                      f"kategorie='{result.get('kategorie')}', "
                      f"absender='{result.get('absender')}'")
@@ -347,12 +347,12 @@ async def run_analysis(doc_id: int, image_path: str):
                              item.get("subcategory"), abs(float(item.get("price", 0))), doc_date),
                         )
                     await db.commit()
-                    logger.info(f"[Analyse] {len(items)} expense items für Dokument {doc_id} gespeichert")
+                    logger.info(f"[Analyse] {len(items)} expense items fÃ¼r Dokument {doc_id} gespeichert")
             except Exception as ei_err:
                 logger.error(f"[Analyse] Expense item extraction failed for {doc_id}: {ei_err}")
 
     except Exception as e:
-        logger.error(f"[Analyse] FEHLER für Dokument {doc_id}: {e}", exc_info=True)
+        logger.error(f"[Analyse] FEHLER fÃ¼r Dokument {doc_id}: {e}", exc_info=True)
         await db.execute(
             "UPDATE documents SET status = 'fehler', analyse_fehler = ? WHERE id = ?",
             (str(e), doc_id),
@@ -381,7 +381,7 @@ async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
         await increment_usage(user_id, "ki_analyses_month")
         await increment_usage(user_id, "ki_analyses_total")
     except HTTPException:
-        # Limit reached — still run analysis for free tier (already uploaded)
+        # Limit reached â€” still run analysis for free tier (already uploaded)
         await run_analysis(doc_id, image_path)
 
 
@@ -393,7 +393,7 @@ async def upload_document(
     doc_type: str = Query("standard"),
     user_id: str = Depends(get_current_user)
 ):
-    # Plan enforcement: Upload-Limit prüfen
+    # Plan enforcement: Upload-Limit prÃ¼fen
     await check_upload_limit(user_id)
 
     ext = Path(file.filename).suffix.lower()
@@ -407,7 +407,7 @@ async def upload_document(
     with open(original_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
-    # Bild für Analyse vorbereiten
+    # Bild fÃ¼r Analyse vorbereiten
     if ext == ".pdf":
         image_name = f"{file_id}.jpg"
         image_path = ORIGINALS_DIR / image_name
@@ -432,7 +432,7 @@ async def upload_document(
     finally:
         await db.close()
 
-    # Usage counter erhöhen
+    # Usage counter erhÃ¶hen
     await increment_usage(user_id, "documents_total")
 
     # Analyse im Hintergrund starten (mit Limit-Check)
@@ -634,7 +634,7 @@ async def delete_document(doc_id: int, user_id: str = Depends(get_current_user))
         if not row:
             raise HTTPException(404, "Dokument nicht gefunden")
 
-        # Dateien löschen
+        # Dateien lÃ¶schen
         orig = ORIGINALS_DIR / row["originalpfad"]
         thumb = THUMBNAILS_DIR / row["thumbnailpfad"]
         if orig.exists():
@@ -646,7 +646,7 @@ async def delete_document(doc_id: int, user_id: str = Depends(get_current_user))
         await db.execute("DELETE FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
         await db.commit()
 
-        return {"message": "Dokument gelöscht"}
+        return {"message": "Dokument gelÃ¶scht"}
     finally:
         await db.close()
 
@@ -663,7 +663,7 @@ async def create_reply(doc_id: int, target_language: str = "de", user_id: str = 
 
         doc = row_to_dict(row)
 
-        # Einstellungen laden für Absenderdaten
+        # Einstellungen laden fÃ¼r Absenderdaten
         einstellungen = {}
         try:
             settings_cursor = await db.execute("SELECT key, value FROM user_einstellungen WHERE user_id = ?", (user_id,))
@@ -696,7 +696,7 @@ async def create_reply(doc_id: int, target_language: str = "de", user_id: str = 
 async def get_replies(doc_id: int, user_id: str = Depends(get_current_user)):
     db = await get_db()
     try:
-        # Prüfe ob Dokument dem User gehört
+        # PrÃ¼fe ob Dokument dem User gehÃ¶rt
         doc_cursor = await db.execute("SELECT id FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
         if not await doc_cursor.fetchone():
             raise HTTPException(404, "Dokument nicht gefunden")
@@ -764,8 +764,8 @@ async def get_expenses(
     month: Optional[int] = None,
     expense_category: Optional[str] = None,
 ):
-    """Ausgaben-Aggregation für Rechnungen."""
-    # Plan enforcement: Expenses nur für Basic/Pro
+    """Ausgaben-Aggregation fÃ¼r Rechnungen."""
+    # Plan enforcement: Expenses nur fÃ¼r Basic/Pro
     await check_expenses_access(user_id)
 
     query = """SELECT id, absender, betrag, datum, expense_category, zusammenfassung
@@ -994,14 +994,14 @@ async def get_expense_summary(
         await db.close()
 
 
-# --- Behörden-Assistent ---
+# --- BehÃ¶rden-Assistent ---
 
 @app.get("/api/documents/{doc_id}/behoerden-results")
 async def get_behoerden_results(
     doc_id: int,
     user_id: str = Depends(get_current_user),
 ):
-    """Gespeicherte Behörden-Ergebnisse abrufen."""
+    """Gespeicherte BehÃ¶rden-Ergebnisse abrufen."""
     db = await get_db()
     try:
         cursor = await db.execute(
@@ -1055,7 +1055,7 @@ async def explain_document(
     target_language: str = "de",
     user_id: str = Depends(get_current_user),
 ):
-    """Behördenschreiben in einfacher Sprache erklären."""
+    """BehÃ¶rdenschreiben in einfacher Sprache erklÃ¤ren."""
     await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
@@ -1075,7 +1075,7 @@ async def explain_document(
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
-        # Erklärung speichern
+        # ErklÃ¤rung speichern
         await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
         await _upsert_behoerden_result(db, doc_id, user_id, erklaerung=erklaerung)
 
@@ -1091,7 +1091,7 @@ async def legal_assessment_endpoint(
     doc_id: int,
     user_id: str = Depends(get_current_user),
 ):
-    """Unverbindliche Rechtseinschätzung eines Behördenschreibens."""
+    """Unverbindliche RechtseinschÃ¤tzung eines BehÃ¶rdenschreibens."""
     await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
@@ -1125,7 +1125,7 @@ async def contestable_elements_endpoint(
     doc_id: int,
     user_id: str = Depends(get_current_user),
 ):
-    """Anfechtbare Elemente eines Behördenschreibens identifizieren."""
+    """Anfechtbare Elemente eines BehÃ¶rdenschreibens identifizieren."""
     await check_analysis_limit(user_id)
     await check_behoerden_limit(user_id)
 
@@ -1167,7 +1167,7 @@ async def generate_objection_endpoint(
     selected_ids = data.get("selected_elements", [])
     target_language = data.get("target_language", "Deutsch")
     if not selected_ids:
-        raise HTTPException(400, "Keine Elemente ausgewählt")
+        raise HTTPException(400, "Keine Elemente ausgewÃ¤hlt")
 
     db = await get_db()
     try:
@@ -1252,7 +1252,7 @@ async def translate_document(
     target_language: str = "de",
     user_id: str = Depends(get_current_user),
 ):
-    """Vereinfachten Befund übersetzen (Instanz 2)."""
+    """Vereinfachten Befund Ã¼bersetzen (Instanz 2)."""
     await check_analysis_limit(user_id)
     await check_befund_limit(user_id)
     db = await get_db()
@@ -1271,7 +1271,7 @@ async def translate_document(
         except Exception as e:
             raise HTTPException(502, f"LLM-Fehler: {str(e)}")
 
-        # Übersetzung in befund_translations speichern
+        # Ãœbersetzung in befund_translations speichern
         await db.execute(
             "INSERT INTO befund_translations (document_id, target_language, translated_text) VALUES (?, ?, ?)",
             (doc_id, target_language, translated),
@@ -1326,7 +1326,7 @@ async def delete_account(user_id: str = Depends(get_current_user)):
             logger.error(f"Failed to delete Supabase user {user_id}: {e}")
 
         logger.info(f"Account deleted: user_id={user_id}")
-        return {"message": "Account gelöscht"}
+        return {"message": "Account gelÃ¶scht"}
     finally:
         await db.close()
 
@@ -1338,7 +1338,7 @@ async def register_push_token(
     data: dict,
     user_id: str = Depends(get_current_user),
 ):
-    """Push-Token registrieren für Deadline-Notifications."""
+    """Push-Token registrieren fÃ¼r Deadline-Notifications."""
     token = data.get("token")
     platform = data.get("platform", "android")
     if not token:
@@ -1398,7 +1398,7 @@ async def subscription_usage(user_id: str = Depends(get_current_user)):
 
 @app.post("/api/subscription/webhook")
 async def subscription_webhook(request: Request):
-    """Stripe webhook (no auth — verified via Stripe signature)."""
+    """Stripe webhook (no auth â€” verified via Stripe signature)."""
     return await handle_webhook(request)
 
 
@@ -1446,7 +1446,7 @@ async def support_ticket(data: dict, user_id: str = Depends(get_current_user)):
     message = data.get("message", "")
 
     if not email or "@" not in email:
-        raise HTTPException(400, "Gültige E-Mail-Adresse erforderlich.")
+        raise HTTPException(400, "GÃ¼ltige E-Mail-Adresse erforderlich.")
     if len(message) < 20:
         raise HTTPException(400, "Nachricht muss mindestens 20 Zeichen haben.")
 
@@ -1462,7 +1462,7 @@ async def support_ticket(data: dict, user_id: str = Depends(get_current_user)):
 
     subject = f"[KamalDoc Support] [{prio_label}] Ticket von {email}"
     body = (
-        f"Priorität: {prio_label}\n"
+        f"PrioritÃ¤t: {prio_label}\n"
         f"E-Mail: {email}\n"
         f"User ID: {user_id}\n"
         f"Zeitstempel: {timestamp}\n\n"
@@ -1606,7 +1606,7 @@ async def admin_set_support_email(data: dict, user_id: str = Depends(get_current
     await _require_admin(user_id)
     email = data.get("email", "").strip()
     if not email or "@" not in email:
-        raise HTTPException(400, "Gültige E-Mail erforderlich.")
+        raise HTTPException(400, "GÃ¼ltige E-Mail erforderlich.")
 
     db = await get_db()
     try:
@@ -1699,25 +1699,25 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     finally:
         await db.close()
 
-    logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}")
+    logger.info(f"[Admin] Plan fÃ¼r {email} ({target_id}) auf '{new_plan}' geÃ¤ndert von Admin {user_id}")
     return {"status": "ok", "email": email, "new_plan": new_plan}
 
 
 # --- Deadline-Checker Background Job ---
 
 async def deadline_checker_loop():
-    """Täglicher Hintergrund-Job: Prüft Deadlines und markiert fällige Dokumente."""
+    """TÃ¤glicher Hintergrund-Job: PrÃ¼ft Deadlines und markiert fÃ¤llige Dokumente."""
     while True:
         try:
             await check_deadlines()
         except Exception as e:
             logger.error(f"[Deadline-Checker] Fehler: {e}", exc_info=True)
-        # Alle 6 Stunden prüfen
+        # Alle 6 Stunden prÃ¼fen
         await asyncio.sleep(6 * 60 * 60)
 
 
 async def check_deadlines():
-    """Prüfe Dokumente mit Deadline basierend auf reminder_days pro Dokument."""
+    """PrÃ¼fe Dokumente mit Deadline basierend auf reminder_days pro Dokument."""
     from datetime import timedelta
     today = datetime.now().date()
 
@@ -1739,16 +1739,16 @@ async def check_deadlines():
             doc = row_to_dict(row)
             reminder_days = doc.get("reminder_days") or 3
 
-            # Prüfe ob User Push-Notifications haben darf
+            # PrÃ¼fe ob User Push-Notifications haben darf
             user_id = doc.get("user_id")
             try:
                 plan = await get_user_plan(user_id)
                 if not PLAN_LIMITS.get(plan, {}).get("push_notifications", False):
-                    continue  # Free user — keine Push
+                    continue  # Free user â€” keine Push
             except Exception:
                 continue
 
-            # Prüfe ob Deadline innerhalb des reminder_days Fensters liegt
+            # PrÃ¼fe ob Deadline innerhalb des reminder_days Fensters liegt
             try:
                 deadline_date = datetime.strptime(doc["deadline"][:10], "%Y-%m-%d").date()
                 warning_date = today + timedelta(days=reminder_days)
@@ -1757,18 +1757,18 @@ async def check_deadlines():
             except (ValueError, TypeError):
                 continue
 
-            logger.info(f"[Deadline-Checker] Deadline-Warnung für Dokument {doc['id']}: "
+            logger.info(f"[Deadline-Checker] Deadline-Warnung fÃ¼r Dokument {doc['id']}: "
                        f"{doc['absender']} - Deadline: {doc['deadline']} (reminder: {reminder_days}d)")
 
-            # Token für Push-Notifications des Dokument-Besitzers holen
+            # Token fÃ¼r Push-Notifications des Dokument-Besitzers holen
             token_cursor = await db.execute("SELECT token, platform FROM push_tokens WHERE user_id = ?", (user_id,))
             tokens = await token_cursor.fetchall()
 
             for t in tokens:
                 await send_push_notification(
                     token=t["token"],
-                    title=f"Deadline in Kürze: {doc.get('absender', 'Dokument')}",
-                    body=doc.get("handlung_beschreibung") or doc.get("zusammenfassung") or f"Fällig am {doc['deadline']}",
+                    title=f"Deadline in KÃ¼rze: {doc.get('absender', 'Dokument')}",
+                    body=doc.get("handlung_beschreibung") or doc.get("zusammenfassung") or f"FÃ¤llig am {doc['deadline']}",
                 )
 
             # Als benachrichtigt markieren
@@ -1784,5 +1784,6 @@ async def check_deadlines():
 async def send_push_notification(token: str, title: str, body: str):
     """Push-Notification via FCM senden (placeholder - needs Firebase setup)."""
     # TODO: Firebase Cloud Messaging Integration
-    # Für jetzt nur loggen - FCM Server Key muss in .env konfiguriert werden
-    logger.info(f"[Push] Würde senden an {token[:20]}...: {title} - {body}")
+    # FÃ¼r jetzt nur loggen - FCM Server Key muss in .env konfiguriert werden
+    logger.info(f"[Push] WÃ¼rde senden an {token[:20]}...: {title} - {body}")
+

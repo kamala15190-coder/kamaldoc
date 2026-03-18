@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Hapus permanen",
                     "cancelButton":  "Batal",
                     "nextReset":  "Reset berikutnya: {{date}}",
-                    "perMonth":  "/ bulan"
+                    "perMonth":  "/ bulan",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Surat",
@@ -370,7 +377,9 @@
                     "ki50":  "Maks. 50 analisis AI / bulan",
                     "ki500":  "Maks. 500 analisis AI / bulan",
                     "behoerde50":  "Maks. 50x Asisten otoritas / bulan",
-                    "befund50":  "Maks. 50x Asisten medis / bulan"
+                    "befund50":  "Maks. 50x Asisten medis / bulan",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Batas tercapai",

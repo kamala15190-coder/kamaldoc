@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "Radera permanent",
                     "cancelButton":  "Avbryt",
                     "nextReset":  "Nästa återställning: {{date}}",
-                    "perMonth":  "/ månad"
+                    "perMonth":  "/ månad",
+                    "appearance":  "Appearance",
+                    "darkMode":  "Dark Mode",
+                    "lightMode":  "Light Mode",
+                    "themeDesc":  "Switch between light and dark design.",
+                    "systemTheme":  "System Theme",
+                    "thisMonth":  "this month",
+                    "monthlyReset":  "Quota resets monthly"
                 },
     "categories":  {
                        "brief":  "Brev",
@@ -370,7 +377,9 @@
                     "ki50":  "Max. 50 AI analyser / månad",
                     "ki500":  "Max. 500 AI analyser / månad",
                     "behoerde50":  "Max. 50x Myndighetsassistent / månad",
-                    "befund50":  "Max. 50x Medicinsk assistent / månad"
+                    "befund50":  "Max. 50x Medicinsk assistent / månad",
+                    "freeMonthly":  "Max. 10 documents/month",
+                    "freeResets":  "Quota resets monthly"
                 },
     "upgradeModal":  {
                          "limitReached":  "Gräns uppnådd",

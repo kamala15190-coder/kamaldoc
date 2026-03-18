@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "永久删除",
                     "cancelButton":  "取消",
                     "nextReset":  "下次重置: {{date}}",
-                    "perMonth":  "/ 月"
+                    "perMonth":  "/ 月",
+                    "appearance":  "外观",
+                    "darkMode":  "深色模式",
+                    "lightMode":  "浅色模式",
+                    "themeDesc":  "在浅色和深色设计之间切换。",
+                    "systemTheme":  "系统主题",
+                    "thisMonth":  "本月",
+                    "monthlyReset":  "配额每月重置"
                 },
     "categories":  {
                        "brief":  "信件",
@@ -370,7 +377,9 @@
                     "ki50":  "每月最多50次AI分析",
                     "ki500":  "每月最多500次AI分析",
                     "behoerde50":  "每月最多50次政府助手",
-                    "befund50":  "每月最多50次医疗助手"
+                    "befund50":  "每月最多50次医疗助手",
+                    "freeMonthly":  "每月最多10个文档",
+                    "freeResets":  "配额每月重置"
                 },
     "upgradeModal":  {
                          "limitReached":  "已达上限",

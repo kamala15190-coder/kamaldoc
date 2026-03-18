@@ -231,7 +231,14 @@
                     "confirmDeleteButton":  "完全に削除",
                     "cancelButton":  "キャンセル",
                     "nextReset":  "次のリセット: {{date}}",
-                    "perMonth":  "/ 月"
+                    "perMonth":  "/ 月",
+                    "appearance":  "外観",
+                    "darkMode":  "ダークモード",
+                    "lightMode":  "ライトモード",
+                    "themeDesc":  "ライトとダークのデザインを切り替えます。",
+                    "systemTheme":  "システムテーマ",
+                    "thisMonth":  "今月",
+                    "monthlyReset":  "クォータは毎月リセットされます"
                 },
     "categories":  {
                        "brief":  "手紙",
@@ -370,7 +377,9 @@
                     "ki50":  "月50回までのAI分析",
                     "ki500":  "月500回までのAI分析",
                     "behoerde50":  "月50回までの官公庁アシスタント",
-                    "befund50":  "月50回までの医療アシスタント"
+                    "befund50":  "月50回までの医療アシスタント",
+                    "freeMonthly":  "最大10ドキュメント/月",
+                    "freeResets":  "クォータは毎月リセットされます"
                 },
     "upgradeModal":  {
                          "limitReached":  "上限に達しました",
