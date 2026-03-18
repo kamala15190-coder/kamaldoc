@@ -554,7 +554,7 @@ async def create_checkout_session(user_id: str, plan: str) -> dict:
         customer=customer_id,
         mode="subscription",
         line_items=[{"price": price_id, "quantity": 1}],
-        payment_method_types=["card", "amazon_pay"],
+        payment_method_types=["card", "paypal", "amazon_pay", "link"],
         payment_method_options={
             "card": {
                 "request_three_d_secure": "automatic",

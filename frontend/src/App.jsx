@@ -512,11 +512,13 @@ function NativeStatusBar() {
 
   return (
     <div style={{
-      background: 'linear-gradient(90deg, var(--bg-primary), var(--bg-secondary))',
-      minHeight: 28,
-      paddingTop: 'var(--safe-area-top)',
+      background: 'rgba(10, 15, 26, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      height: 30,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       flexShrink: 0,
+      lineHeight: 1,
     }}>
       {loading ? (
         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>…</span>
@@ -525,6 +527,7 @@ function NativeStatusBar() {
           fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
           background: 'var(--accent-gradient)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          lineHeight: '30px',
         }}>
           {t('pricing.proActive')}
         </span>

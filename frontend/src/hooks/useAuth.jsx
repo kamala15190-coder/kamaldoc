@@ -57,11 +57,18 @@ export const AuthProvider = ({ children }) => {
         const { data, error } = await supabase.auth.setSession(tokens)
         if (!error && data?.session) {
           handleSession(data.session)
-          // If this tab was opened by the PWA for OAuth, try to close it
+          // If opened by PWA for OAuth → close this Chrome tab
           const isPWA = window.matchMedia('(display-mode: standalone)').matches
             || window.matchMedia('(display-mode: fullscreen)').matches
             || window.navigator.standalone
           if (!isPWA) {
+            // Show "return to app" overlay in case window.close fails
+            document.body.innerHTML = '<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0f1a;color:#fff;font-family:Inter,system-ui,sans-serif;padding:20px;text-align:center">'
+              + '<div style="font-size:48px;margin-bottom:16px">✅</div>'
+              + '<h2 style="font-size:20px;font-weight:700;margin:0 0 8px">Login erfolgreich!</h2>'
+              + '<p style="font-size:14px;color:#94a3b8;margin:0 0 24px">Du kannst dieses Fenster schließen und zur <strong>KamalDoc App</strong> zurückkehren.</p>'
+              + '<button onclick="window.close()" style="padding:12px 32px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:600;font-size:14px;border:none;cursor:pointer">Fenster schließen</button>'
+              + '</div>'
             try { window.close() } catch (_) {}
           }
           return

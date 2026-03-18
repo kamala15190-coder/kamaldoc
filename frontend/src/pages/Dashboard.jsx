@@ -3,10 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, CheckCircle, ClipboardList,
-  Minus, Settings
+  Minus, Settings, Archive, DollarSign, Undo2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDocuments, updateDocument } from '../api';
+import { getDocuments, updateDocument, getExpenseSummary } from '../api';
 import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
@@ -99,7 +99,9 @@ export default function Dashboard() {
   const [sections, setSections] = useState(loadLayout);
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmHide, setConfirmHide] = useState(null);
-  const { isPaid } = useSubscription();
+  const [archivedDocs, setArchivedDocs] = useState([]);
+  const [expenseSummary, setExpenseSummary] = useState(null);
+  const { isPaid, isFree } = useSubscription();
 
   // Touch drag state
   const [touchDragging, setTouchDragging] = useState(null);
@@ -247,11 +249,30 @@ export default function Dashboard() {
     }
   };
 
+  const fetchArchived = async () => {
+    try {
+      const data = await getDocuments({ archiv: true });
+      setArchivedDocs((data.documents || data).slice(0, 5));
+    } catch (err) {
+      console.error('Fehler Archiv:', err);
+    }
+  };
+
+  const fetchExpenses = async () => {
+    if (isFree) return;
+    try {
+      const data = await getExpenseSummary({ year: new Date().getFullYear() });
+      setExpenseSummary(data);
+    } catch (_) {}
+  };
+
   const hasMore = !search && documents.length < totalDocs;
 
   useEffect(() => {
     fetchDocs();
     fetchTodos();
+    fetchArchived();
+    fetchExpenses();
   }, [kategorie]);
 
   useEffect(() => {
@@ -450,6 +471,75 @@ export default function Dashboard() {
           </>
         )}
       </>
+    ),
+
+    archiv: (
+      <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Archive style={{ width: 14, height: 14, color: '#10b981' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.sectorArchiv')}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'var(--success-soft)', color: '#34d399' }}>
+            {archivedDocs.length}
+          </span>
+        </div>
+        {archivedDocs.length === 0 ? (
+          <div style={{ padding: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>{t('archive.noItems')}</p>
+          </div>
+        ) : (
+          <div>
+            {archivedDocs.map((doc, idx) => (
+              <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px 8px 16px', borderBottom: idx < archivedDocs.length - 1 ? '1px solid var(--border-glass)' : 'none', cursor: 'pointer' }} onClick={() => navigate(`/documents/${doc.id}`)}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.absender || '—'}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', textDecoration: 'line-through', opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.handlung_beschreibung || '—'}</span>
+                </div>
+                <CheckCircle style={{ width: 16, height: 16, color: '#10b981', flexShrink: 0 }} />
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ padding: '8px 16px', borderTop: '1px solid var(--border-glass)' }}>
+          <Link to="/archiv" style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-solid)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            {t('archive.title')} <ChevronRight style={{ width: 14, height: 14 }} />
+          </Link>
+        </div>
+      </div>
+    ),
+
+    ausgaben: (
+      <div className="glass-card mb-5 overflow-hidden animate-fade-in-up">
+        <div style={{ padding: '10px 16px', borderBottom: '1px solid var(--border-glass)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <DollarSign style={{ width: 14, height: 14, color: '#fbbf24' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{t('dashboard.sectorAusgaben')}</span>
+        </div>
+        {isFree ? (
+          <div style={{ padding: 20, textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>{t('pricing.expensesLocked')}</p>
+            <Link to="/pricing" style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-solid)', textDecoration: 'none' }}>{t('upgradeModal.upgradeButton')}</Link>
+          </div>
+        ) : (
+          <div style={{ padding: 16 }}>
+            {expenseSummary ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date().getFullYear()}</span>
+                  <p style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '2px 0 0' }}>
+                    {Number(expenseSummary.total || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  </p>
+                </div>
+                <Link to="/ausgaben" style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-solid)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  {t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} />
+                </Link>
+              </div>
+            ) : (
+              <Link to="/ausgaben" style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-solid)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                {t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} />
+              </Link>
+            )}
+          </div>
+        )}
+      </div>
     ),
   };
 
