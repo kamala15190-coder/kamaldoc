@@ -442,9 +442,9 @@ export default function Dashboard() {
 
       {/* Greeting */}
       <div style={{ marginBottom: 20, animation: 'fadeUp 0.4s ease both', animationDelay: '0.03s' }}>
-        <div style={{ fontSize: 12, color: tc.textMuted, marginBottom: 2 }}>{dateStr}</div>
-        <div style={{ fontSize: 12, color: tc.textMuted }}>{timeGreeting}</div>
-        <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.8px', color: tc.text, lineHeight: 1.2, marginTop: 2 }}>{subline}</div>
+        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.30)', marginBottom: 2 }}>{dateStr}</div>
+        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.30)' }}>{timeGreeting}</div>
+        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.40)', lineHeight: 1.3, marginTop: 2 }}>{subline}</div>
       </div>
 
       {/* Edit mode toolbar */}
