@@ -391,7 +391,8 @@
                     "upgradeDesc":  "Available from the {{plan}} plan.",
                     "expensesLocked":  "Expenses Dashboard is available from Basic plan",
                     "upgradePlan":  "⚡ Upgrade Plan",
-                    "proActive":  "🚀 Pro Plan active",
+                    "basicActive":  "Basic Plan active",
+                 "proActive":  "🚀 Pro Plan active",
                     "freeMonthly":  "Max. 10 documents/month",
                     "freeResets":  "Quota resets monthly"
                 },

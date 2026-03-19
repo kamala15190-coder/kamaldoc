@@ -439,18 +439,6 @@ export default function Dashboard() {
         .tile-hover:hover { transform: scale(1.02); }
       `}</style>
 
-      {/* Status Pill */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16, animation: 'fadeUp 0.4s ease both' }}>
-        <div onClick={() => navigate('/pricing')} style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 14px', borderRadius: 20, cursor: 'pointer',
-          fontSize: 12, fontWeight: 600, letterSpacing: '0.02em',
-          background: isPaid ? (isDark ? 'rgba(99,89,255,0.15)' : 'rgba(99,89,255,0.08)') : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-          border: isPaid ? (isDark ? '0.5px solid rgba(99,89,255,0.25)' : '0.5px solid rgba(99,89,255,0.15)') : `0.5px solid ${tc.border}`,
-          color: isPaid ? (isDark ? 'rgba(167,139,250,0.9)' : '#6359FF') : tc.textMuted,
-        }}>
-          {isPaid ? '\u2726 ' : '\u26a1 '}{isPaid ? t('pricing.proActive') : t('pricing.upgradePlan')}
-        </div>
-      </div>
 
       {/* Greeting */}
       <div style={{ marginBottom: 20, animation: 'fadeUp 0.4s ease both', animationDelay: '0.03s' }}>

@@ -187,6 +187,8 @@ function TopHeader() {
     setMoreOpen(false);
   };
 
+  const { plan: currentPlan, isPro, isBasic, isFree, isPaid, loading: subLoading } = useSubscription();
+
   return (
     <>
       <header style={{
@@ -205,7 +207,21 @@ function TopHeader() {
             <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 30, objectFit: 'contain' }} />
           </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {!subLoading && (
+              <div onClick={() => navigate('/pricing')} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+                fontSize: 11, fontWeight: 600, letterSpacing: '0.02em', whiteSpace: 'nowrap',
+                background: isPro ? 'rgba(99,89,255,0.12)' : isBasic ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.05)',
+                border: isPro ? '0.5px solid rgba(99,89,255,0.25)' : isBasic ? '0.5px solid rgba(245,158,11,0.20)' : '0.5px solid var(--border-glass)',
+                color: isPro ? 'var(--accent-solid)' : isBasic ? 'var(--warning-text)' : 'var(--text-muted)',
+              }}>
+                {isPro && <Rocket style={{ width: 12, height: 12 }} />}
+                {isBasic && <Zap style={{ width: 12, height: 12 }} />}
+                {isFree && <Lock style={{ width: 12, height: 12 }} />}
+                {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : t('pricing.upgradePlan')}
+              </div>
+            )}
             <LanguageSwitcher />
             <button
               onClick={() => setMoreOpen(true)}
@@ -502,49 +518,6 @@ function UpgradeButton({ mobile = false }) {
   );
 }
 
-function NativeStatusBar() {
-  const { isPro, isPaid, loading } = useSubscription();
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  return (
-    <div style={{
-      background: 'var(--header-bg)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      height: 30,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
-      lineHeight: 1,
-    }}>
-      {loading ? (
-        <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>...</span>
-      ) : isPaid ? (
-        <span
-          onClick={() => navigate('/pricing')}
-          style={{
-            fontSize: 11, fontWeight: 600, letterSpacing: '0.05em',
-            background: 'var(--accent-gradient)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-            lineHeight: '30px', cursor: 'pointer',
-          }}>
-          {t('pricing.proActive')}
-        </span>
-      ) : (
-        <span
-          onClick={() => navigate('/pricing')}
-          style={{
-            fontSize: 11, fontWeight: 500, cursor: 'pointer',
-            color: 'var(--text-muted)',
-          }}
-        >
-          {t('pricing.upgradePlan')}
-        </span>
-      )}
-    </div>
-  );
-}
-
 function PWAInstallBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [show, setShow] = useState(false);
@@ -646,7 +619,6 @@ function AppContent() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <PWAInstallBanner />
-      {!isAuthPage && <NativeStatusBar />}
       {!isAuthPage && <TopHeader />}
       <main style={!isAuthPage ? {
         maxWidth: 500, margin: '0 auto',

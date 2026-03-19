@@ -414,7 +414,8 @@
                     "upgradeDesc":  "Verfügbar ab dem {{plan}} Plan.",
                     "expensesLocked":  "Ausgaben-Dashboard ist ab Basic Plan verfügbar",
                     "upgradePlan":  "⚡ Upgrade Plan",
-                    "proActive":  "🚀 Pro Plan aktiv",
+                    "basicActive":  "Basic Plan aktiv",
+                 "proActive":  "🚀 Pro Plan aktiv",
                     "freeMonthly":  "Max. 10 Dokumente/Monat",
                     "freeResets":  "Kontingent wird monatlich zurückgesetzt"
                 },
