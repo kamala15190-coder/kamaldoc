@@ -4,7 +4,7 @@ import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
-  Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield,
+  Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Lock,
   Plus, ChevronRight, Settings, Download
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
