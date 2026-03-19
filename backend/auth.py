@@ -9,9 +9,7 @@ from fastapi import HTTPException, Header
 logger = logging.getLogger(__name__)
 
 # Supabase Konfiguration
-SUPABASE_URL = os.getenv(
-    "SUPABASE_URL", "https://grbalaqdgdukzwumejfu.supabase.co"
-)
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
 JWKS_URL = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
 

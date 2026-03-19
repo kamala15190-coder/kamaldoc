@@ -13,12 +13,5 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:8000',
     },
-    hmr: {
-      // Feste WebSocket-Verbindung über den Server-Host
-      // Verhindert dass HMR auf Mobile einen Full-Page-Reload auslöst
-      protocol: 'ws',
-      host: '100.77.198.89',
-      port: 5173,
-    },
   },
 })

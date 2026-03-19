@@ -48,7 +48,6 @@ app.add_middleware(
         "https://www.kdoc.at",
         "https://api.kdoc.at",
         "http://localhost:5173",
-        "http://100.77.198.89:5173",
         "http://localhost",
         "https://localhost",
         "capacitor://localhost",
@@ -128,11 +127,25 @@ GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 
 
+# OAuth state store (in-memory, TTL 10 min)
+_oauth_states = {}
+
+def _cleanup_oauth_states():
+    """Remove expired OAuth states (older than 10 minutes)."""
+    now = time.time()
+    expired = [k for k, v in _oauth_states.items() if now - v["ts"] > 600]
+    for k in expired:
+        del _oauth_states[k]
+
+
 @app.get("/auth/google/login")
 async def google_login(platform: str = "web"):
     """Redirect user to Google OAuth with our own redirect_uri."""
     import secrets
-    state = f"{platform}:{secrets.token_urlsafe(32)}"
+    _cleanup_oauth_states()
+    token = secrets.token_urlsafe(32)
+    state = f"{platform}:{token}"
+    _oauth_states[token] = {"platform": platform, "ts": time.time()}
     params = {
         "client_id": GOOGLE_CLIENT_ID,
         "redirect_uri": f"{API_URL}/auth/google/callback",
@@ -156,10 +169,19 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
         logger.error(f"Google OAuth error: {error}")
         return RedirectResponse(url=f"{FRONTEND_URL}/login?error=google_auth_failed")
 
-    # Determine platform from state
+    # Verify OAuth state (CSRF protection)
     platform = "web"
-    if state.startswith("android:"):
-        platform = "android"
+    if ":" in state:
+        parts = state.split(":", 1)
+        platform = parts[0] if parts[0] in ("web", "android") else "web"
+        state_token = parts[1]
+        if state_token not in _oauth_states:
+            logger.warning(f"Invalid OAuth state token")
+            return RedirectResponse(url=f"{FRONTEND_URL}/login?error=invalid_state")
+        del _oauth_states[state_token]
+    else:
+        logger.warning("OAuth callback without valid state")
+        return RedirectResponse(url=f"{FRONTEND_URL}/login?error=missing_state")
 
     # 1. Exchange authorization code for tokens with Google
     try:
@@ -383,15 +405,19 @@ class DocumentUpdate(BaseModel):
 
 
 async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
-    """Wrapper: check analysis limit, then run analysis and increment counter."""
+    """Wrapper: check analysis limit, then run analysis and increment counter.
+    Initial upload analysis always runs (user already paid/used upload quota).
+    Only the usage counter increment is skipped if limit reached."""
     try:
         await check_analysis_limit(user_id)
-        await run_analysis(doc_id, image_path)
+    except HTTPException:
+        logger.info(f"[Analyse] KI-Limit erreicht für User {user_id}, Analyse läuft trotzdem (Upload-Analyse)")
+    await run_analysis(doc_id, image_path)
+    try:
         await increment_usage(user_id, "ki_analyses_month")
         await increment_usage(user_id, "ki_analyses_total")
-    except HTTPException:
-        # Limit reached — still run analysis for free tier (already uploaded)
-        await run_analysis(doc_id, image_path)
+    except Exception as e:
+        logger.error(f"[Analyse] Usage increment failed for {user_id}: {e}")
 
 
 # --- Routen ---
