@@ -31,6 +31,8 @@ import AGBPage from './pages/AGBPage';
 import SupportPage from './pages/SupportPage';
 import AdminPage from './pages/AdminPage';
 import SektorDetailPage from './pages/SektorDetailPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { checkAdmin } from './api';
 
 const TAB_ITEMS = [
@@ -639,7 +641,7 @@ function PWAInstallBanner() {
 
 function AppContent() {
   const location = useLocation();
-  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/forgot-password', '/reset-password'].includes(location.pathname);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -656,6 +658,8 @@ function AppContent() {
           <Route path="/datenschutz" element={<DatenschutzPage />} />
           <Route path="/nutzungsbedingungen" element={<NutzungsbedingungenPage />} />
           <Route path="/agb" element={<AGBPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/upload" element={<PrivateRoute><UploadPage /></PrivateRoute>} />
           <Route path="/ausgaben" element={<PrivateRoute><ExpensesPage /></PrivateRoute>} />
