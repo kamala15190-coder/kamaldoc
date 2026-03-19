@@ -240,8 +240,12 @@ async def get_usage(user_id: str) -> dict:
         await db.close()
 
 
+ALLOWED_USAGE_FIELDS = {"documents_total", "documents_month", "ki_analyses_total", "ki_analyses_month", "behoerden_month", "befund_month"}
+
 async def increment_usage(user_id: str, field: str, amount: int = 1):
     """Increment a usage counter."""
+    if field not in ALLOWED_USAGE_FIELDS:
+        raise ValueError(f"Invalid usage field: {field}")
     await ensure_usage(user_id)
     db = await get_db()
     try:

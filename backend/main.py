@@ -372,6 +372,15 @@ class DocumentUpdate(BaseModel):
     deadline: Optional[str] = None
     reminder_days: Optional[int] = None
 
+    def __init__(self, **data):
+        super().__init__(**data)
+        if self.notizen and len(self.notizen) > 10000:
+            raise ValueError("Notizen darf maximal 10.000 Zeichen haben")
+        if self.tags and len(self.tags) > 1000:
+            raise ValueError("Tags darf maximal 1.000 Zeichen haben")
+        if self.deadline and len(self.deadline) > 30:
+            raise ValueError("Ungültiges Deadline-Format")
+
 
 async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
     """Wrapper: check analysis limit, then run analysis and increment counter."""
@@ -395,6 +404,12 @@ async def upload_document(
 ):
     # Plan enforcement: Upload-Limit prüfen
     await check_upload_limit(user_id)
+
+    # File size limit: 20 MB
+    file_content = await file.read()
+    if len(file_content) > 20 * 1024 * 1024:
+        raise HTTPException(413, "Datei zu groß. Maximal 20 MB erlaubt.")
+    await file.seek(0)
 
     ext = Path(file.filename).suffix.lower()
     if ext not in (".jpg", ".jpeg", ".png", ".pdf"):
@@ -676,7 +691,8 @@ async def create_reply(doc_id: int, data: dict = None, target_language: str = "d
             hints = (data or {}).get("hints", "")
             reply_text = await generate_reply(doc, einstellungen, target_language, hints)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         cursor = await db.execute(
             "INSERT INTO antworten (document_id, inhalt) VALUES (?, ?)",
@@ -738,6 +754,8 @@ async def create_todo(doc_id: int, data: dict, user_id: str = Depends(get_curren
     text = data.get("text", "").strip()
     if not text:
         raise HTTPException(400, "Text darf nicht leer sein")
+    if len(text) > 2000:
+        raise HTTPException(400, "Text darf maximal 2.000 Zeichen haben")
     db = await get_db()
     try:
         doc_cursor = await db.execute("SELECT id FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -1146,7 +1164,8 @@ async def explain_document(
         try:
             erklaerung = await explain_authority_document(volltext, target_language)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         # Erklärung speichern
         await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
@@ -1183,7 +1202,8 @@ async def legal_assessment_endpoint(
         try:
             assessment = await legal_assessment(volltext, language)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         await _upsert_behoerden_result(db, doc_id, user_id, rechtseinschaetzung=assessment)
 
@@ -1218,7 +1238,8 @@ async def contestable_elements_endpoint(
         try:
             elements = await get_contestable_elements(volltext, language)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         import json as _json
         await _upsert_behoerden_result(db, doc_id, user_id, anfechtbare_elemente=_json.dumps(elements, ensure_ascii=False))
@@ -1273,7 +1294,8 @@ Telefon: {s.get('telefon', '')}"""
         try:
             letter = await generate_objection_letter(volltext, absender_daten, selected_text, target_language)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         await _upsert_behoerden_result(db, doc_id, user_id, widerspruchsschreiben=letter)
 
@@ -1309,7 +1331,8 @@ async def simplify_document(
         try:
             vereinfacht = await simplify_medical_report(volltext)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         await db.execute("UPDATE documents SET vereinfacht = ? WHERE id = ? AND user_id = ?", (vereinfacht, doc_id, user_id))
         await db.commit()
@@ -1344,7 +1367,8 @@ async def translate_document(
         try:
             translated = await translate_simplified_report(vereinfacht, target_language)
         except Exception as e:
-            raise HTTPException(502, f"LLM-Fehler: {str(e)}")
+            logger.error(f"LLM-Fehler: {e}", exc_info=True)
+            raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         # Übersetzung in befund_translations speichern
         await db.execute(
@@ -1367,16 +1391,27 @@ async def delete_account(user_id: str = Depends(get_current_user)):
     """Delete user account and all associated data."""
     db = await get_db()
     try:
-        # Delete user files from disk
-        cursor = await db.execute("SELECT dateiname FROM documents WHERE user_id = ?", (user_id,))
+        # Delete user files from disk (originals + thumbnails)
+        cursor = await db.execute("SELECT originalpfad, thumbnailpfad FROM documents WHERE user_id = ?", (user_id,))
         rows = await cursor.fetchall()
-        user_dir = DATA_DIR / user_id
-        if user_dir.exists():
-            shutil.rmtree(user_dir, ignore_errors=True)
+        for row in rows:
+            orig = ORIGINALS_DIR / row["originalpfad"]
+            if orig.exists():
+                os.remove(orig)
+            # PDF-converted image (same base, .jpg)
+            base = row["originalpfad"].rsplit(".", 1)[0]
+            converted = ORIGINALS_DIR / f"{base}.jpg"
+            if converted.exists() and str(converted) != str(orig):
+                os.remove(converted)
+            thumb = THUMBNAILS_DIR / row["thumbnailpfad"]
+            if thumb.exists():
+                os.remove(thumb)
 
-        # Delete document-linked rows (antworten, befund_translations use document_id FK)
+        # Delete document-linked rows
         await db.execute("DELETE FROM antworten WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
         await db.execute("DELETE FROM befund_translations WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
+        await db.execute("DELETE FROM behoerden_results WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
+        await db.execute("DELETE FROM todos WHERE user_id = ?", (user_id,))
         # Delete user-owned rows
         for table in ["documents", "expense_items", "push_tokens",
                        "user_einstellungen", "usage_counters", "subscriptions"]:
@@ -1524,6 +1559,8 @@ async def support_ticket(data: dict, user_id: str = Depends(get_current_user)):
         raise HTTPException(400, "Gültige E-Mail-Adresse erforderlich.")
     if len(message) < 20:
         raise HTTPException(400, "Nachricht muss mindestens 20 Zeichen haben.")
+    if len(message) > 5000:
+        raise HTTPException(400, "Nachricht darf maximal 5.000 Zeichen haben.")
 
     priority_labels = {
         "niedrig": "NIEDRIG",
