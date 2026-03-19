@@ -110,7 +110,14 @@
         "goodEvening": "Mirëmbrëmje",
         "documentsTotal": "Dokumente gjithsej",
         "thisWeek": "këtë javë",
-        "recentlyAdded": "Shtuar së fundmi"
+        "recentlyAdded": "Shtuar së fundmi",
+        "subline1": "Gëzohemi që të shohim 👋",
+        "subline2": "Mirësevjen përsëri ✨",
+        "subline3": "Gjithçka me një shikim 🚀",
+        "subline4": "Dokumentet tuaja presin 📄",
+        "subline5": "Le të jemi produktivë sot 💪",
+        "subline6": "Mirë i organizuar është gjysma e betejës 📋",
+        "subline7": "Zyra juaj dixhitale pret 🗂️"
     },
     "upload": {
         "title": "Ngarko dokument",

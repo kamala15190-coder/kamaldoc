@@ -110,7 +110,14 @@
         "goodEvening": "Dobrý večer",
         "documentsTotal": "Dokumentov celkom",
         "thisWeek": "tento týždeň",
-        "recentlyAdded": "Nedávno pridané"
+        "recentlyAdded": "Nedávno pridané",
+        "subline1": "Radi ťa vidíme 👋",
+        "subline2": "Vitaj späť ✨",
+        "subline3": "Všetko na prvý pohľad 🚀",
+        "subline4": "Vaše dokumenty čakajú 📄",
+        "subline5": "Dnes buďme produktívni 💪",
+        "subline6": "Dobre organizované je pol úspechu 📋",
+        "subline7": "Vaša digitálna kancelária čaká 🗂️"
     },
     "upload": {
         "title": "Nahrať dokument",

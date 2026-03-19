@@ -110,7 +110,14 @@
         "goodEvening": "Dober večer",
         "documentsTotal": "Skupaj dokumentov",
         "thisWeek": "ta teden",
-        "recentlyAdded": "Nedavno dodano"
+        "recentlyAdded": "Nedavno dodano",
+        "subline1": "Lepo te je videti 👋",
+        "subline2": "Dobrodošel nazaj ✨",
+        "subline3": "Vse na prvi pogled 🚀",
+        "subline4": "Vaši dokumenti čakajo 📄",
+        "subline5": "Danes bodimo produktivni 💪",
+        "subline6": "Dobra organizacija je pol uspeha 📋",
+        "subline7": "Vaša digitalna pisarna čaka 🗂️"
     },
     "upload": {
         "title": "Naloži dokument",

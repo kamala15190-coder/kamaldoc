@@ -110,7 +110,14 @@
         "goodEvening": "Chào buổi tối",
         "documentsTotal": "Tổng tài liệu",
         "thisWeek": "tuần này",
-        "recentlyAdded": "Thêm gần đây"
+        "recentlyAdded": "Thêm gần đây",
+        "subline1": "Vui được gặp bạn 👋",
+        "subline2": "Chào mừng bạn trở lại ✨",
+        "subline3": "Mọi thứ trong tầm mắt 🚀",
+        "subline4": "Tài liệu của bạn đang chờ 📄",
+        "subline5": "Hôm nay hãy năng suất 💪",
+        "subline6": "Tổ chức tốt là nửa thành công 📋",
+        "subline7": "Văn phòng số của bạn đang chờ 🗂️"
     },
     "upload": {
         "title": "Tải lên tài liệu",

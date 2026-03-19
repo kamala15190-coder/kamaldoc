@@ -110,7 +110,14 @@
         "sectorDocuments": "Documents",
         "sectorAusgaben": "Expenses Dashboard",
         "sectorArchiv": "Archive",
-        "customizeLayout": "Customize layout"
+        "customizeLayout": "Customize layout",
+        "subline1": "Nice to see you 👋",
+        "subline2": "Welcome back ✨",
+        "subline3": "Everything at a glance 🚀",
+        "subline4": "Your documents await 📄",
+        "subline5": "Let's be productive today 💪",
+        "subline6": "Well organized is half the battle 📋",
+        "subline7": "Your digital office awaits 🗂️"
     },
     "upload": {
         "title": "Upload Document",

@@ -110,7 +110,14 @@
         "goodEvening": "Bona nit",
         "documentsTotal": "Documents en total",
         "thisWeek": "aquesta setmana",
-        "recentlyAdded": "Afegits recentment"
+        "recentlyAdded": "Afegits recentment",
+        "subline1": "Encantat de veure't 👋",
+        "subline2": "Benvingut de nou ✨",
+        "subline3": "Tot d una ullada 🚀",
+        "subline4": "Els teus documents t esperen 📄",
+        "subline5": "Siguem productius avui 💪",
+        "subline6": "Ben organitzat és mig guanyat 📋",
+        "subline7": "La teva oficina digital t espera 🗂️"
     },
     "upload": {
         "title": "Pujar document",

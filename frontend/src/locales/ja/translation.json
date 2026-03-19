@@ -110,7 +110,14 @@
         "goodEvening": "こんばんは",
         "documentsTotal": "ドキュメント合計",
         "thisWeek": "今週",
-        "recentlyAdded": "最近追加"
+        "recentlyAdded": "最近追加",
+        "subline1": "お会いできて嬉しいです 👋",
+        "subline2": "おかえりなさい ✨",
+        "subline3": "すべてが一目で 🚀",
+        "subline4": "ドキュメントが待っています 📄",
+        "subline5": "今日も生産的に 💪",
+        "subline6": "整理整頓は成功の半分 📋",
+        "subline7": "デジタルオフィスが待っています 🗂️"
     },
     "upload": {
         "title": "ドキュメントをアップロード",

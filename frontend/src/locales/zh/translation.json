@@ -110,7 +110,14 @@
         "goodEvening": "晚上好",
         "documentsTotal": "文档总数",
         "thisWeek": "本周",
-        "recentlyAdded": "最近添加"
+        "recentlyAdded": "最近添加",
+        "subline1": "很高兴见到你 👋",
+        "subline2": "欢迎回来 ✨",
+        "subline3": "一目了然 🚀",
+        "subline4": "您的文档等待处理 📄",
+        "subline5": "今天要高效率 💪",
+        "subline6": "有条理就成功了一半 📋",
+        "subline7": "您的数字办公室等待您 🗂️"
     },
     "upload": {
         "title": "上传文档",

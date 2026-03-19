@@ -110,7 +110,14 @@
         "goodEvening": "Jó estét",
         "documentsTotal": "Összes dokumentum",
         "thisWeek": "ezen a héten",
-        "recentlyAdded": "Nemrég hozzáadva"
+        "recentlyAdded": "Nemrég hozzáadva",
+        "subline1": "Jó látni téged 👋",
+        "subline2": "Üdv újra ✨",
+        "subline3": "Minden egy pillantásra 🚀",
+        "subline4": "Dokumentumaid várnak 📄",
+        "subline5": "Ma legyünk produktívak 💪",
+        "subline6": "Jól szervezve fél siker 📋",
+        "subline7": "Digitális irodád vár 🗂️"
     },
     "upload": {
         "title": "Dokumentum feltöltése",

@@ -110,7 +110,14 @@
         "goodEvening": "İyi akşamlar",
         "documentsTotal": "Toplam belgeler",
         "thisWeek": "bu hafta",
-        "recentlyAdded": "Son eklenenler"
+        "recentlyAdded": "Son eklenenler",
+        "subline1": "Seni görmek güzel 👋",
+        "subline2": "Tekrar hoş geldin ✨",
+        "subline3": "Her şey bir bakışta 🚀",
+        "subline4": "Belgelerin seni bekliyor 📄",
+        "subline5": "Bugün verimli olalım 💪",
+        "subline6": "İyi organize olmak işin yarısı 📋",
+        "subline7": "Dijital ofisinin seni bekliyor 🗂️"
     },
     "upload": {
         "title": "Belge Yükle",

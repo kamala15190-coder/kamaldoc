@@ -224,9 +224,9 @@ export default function Dashboard() {
   // Greeting
   const hour = new Date().getHours();
   const timeGreeting = hour < 12 ? t('dashboard.goodMorning') : hour < 18 ? t('dashboard.goodAfternoon') : t('dashboard.goodEvening');
-  const sublines = i18n.language === 'en' ? SUBLINES_EN : SUBLINES_DE;
-  const subline = sublines[new Date().getDate() % sublines.length];
-  const dateStr = new Date().toLocaleDateString(i18n.language === 'en' ? 'en-US' : 'de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
+  const sublineKeys = ['subline1','subline2','subline3','subline4','subline5','subline6','subline7'];
+  const subline = t(`dashboard.${sublineKeys[new Date().getDate() % sublineKeys.length]}`);
+  const dateStr = new Date().toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
 
   // Computed
   const total = totalDocs;

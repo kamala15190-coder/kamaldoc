@@ -110,7 +110,14 @@
         "goodEvening": "Boa noite",
         "documentsTotal": "Documentos no total",
         "thisWeek": "esta semana",
-        "recentlyAdded": "Adicionados recentemente"
+        "recentlyAdded": "Adicionados recentemente",
+        "subline1": "Que bom te ver 👋",
+        "subline2": "Bem-vindo de volta ✨",
+        "subline3": "Tudo de relance 🚀",
+        "subline4": "Seus documentos aguardam 📄",
+        "subline5": "Hoje seremos produtivos 💪",
+        "subline6": "Bem organizado é meio caminho andado 📋",
+        "subline7": "Seu escritório digital aguarda 🗂️"
     },
     "upload": {
         "title": "Carregar documento",

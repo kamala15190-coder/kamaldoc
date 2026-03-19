@@ -110,7 +110,14 @@
         "goodEvening": "Tere õhtust",
         "documentsTotal": "Dokumente kokku",
         "thisWeek": "sel nädalal",
-        "recentlyAdded": "Hiljuti lisatud"
+        "recentlyAdded": "Hiljuti lisatud",
+        "subline1": "Tore sind näha 👋",
+        "subline2": "Tere tulemast tagasi ✨",
+        "subline3": "Kõik ühe pilguga 🚀",
+        "subline4": "Sinu dokumendid ootavad 📄",
+        "subline5": "Oleme täna produktiivsed 💪",
+        "subline6": "Hästi organiseeritud on pool võitu 📋",
+        "subline7": "Sinu digitaalne kontor ootab 🗂️"
     },
     "upload": {
         "title": "Laadi dokument üles",

@@ -110,7 +110,14 @@
         "goodEvening": "God aften",
         "documentsTotal": "Dokumenter i alt",
         "thisWeek": "denne uge",
-        "recentlyAdded": "Senest tilføjet"
+        "recentlyAdded": "Senest tilføjet",
+        "subline1": "Dejligt at se dig 👋",
+        "subline2": "Velkommen tilbage ✨",
+        "subline3": "Alt i et overblik 🚀",
+        "subline4": "Dine dokumenter venter 📄",
+        "subline5": "Lad os være produktive 💪",
+        "subline6": "Godt organiseret er halvdelen 📋",
+        "subline7": "Dit digitale kontor venter 🗂️"
     },
     "upload": {
         "title": "Upload dokument",

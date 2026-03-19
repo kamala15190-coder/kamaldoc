@@ -110,7 +110,14 @@
         "goodEvening": "Bonsoir",
         "documentsTotal": "Documents au total",
         "thisWeek": "cette semaine",
-        "recentlyAdded": "Ajoutés récemment"
+        "recentlyAdded": "Ajoutés récemment",
+        "subline1": "Ravi de te voir 👋",
+        "subline2": "Bon retour ✨",
+        "subline3": "Tout en un coup d œil 🚀",
+        "subline4": "Vos documents vous attendent 📄",
+        "subline5": "Soyons productifs aujourd'hui 💪",
+        "subline6": "Bien organisé, c est déjà gagné 📋",
+        "subline7": "Votre bureau numérique vous attend 🗂️"
     },
     "upload": {
         "title": "Télécharger un document",

@@ -110,7 +110,14 @@
         "goodEvening": "Labas vakaras",
         "documentsTotal": "Iš viso dokumentų",
         "thisWeek": "šią savaitę",
-        "recentlyAdded": "Neseniai pridėta"
+        "recentlyAdded": "Neseniai pridėta",
+        "subline1": "Malonu tave matyti 👋",
+        "subline2": "Sveiki sugrįžę ✨",
+        "subline3": "Viskas vienu žvilgsniu 🚀",
+        "subline4": "Jūsų dokumentai laukia 📄",
+        "subline5": "Būkime produktyvūs šiandien 💪",
+        "subline6": "Gerai organizuota – pusė sėkmės 📋",
+        "subline7": "Jūsų skaitmeninė raštinė laukia 🗂️"
     },
     "upload": {
         "title": "Įkelti dokumentą",

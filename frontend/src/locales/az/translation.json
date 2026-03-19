@@ -110,7 +110,14 @@
         "goodEvening": "Axşamınız xeyir",
         "documentsTotal": "Cəmi sənədlər",
         "thisWeek": "bu həftə",
-        "recentlyAdded": "Son əlavə edilənlər"
+        "recentlyAdded": "Son əlavə edilənlər",
+        "subline1": "Səni görmək xoşdur 👋",
+        "subline2": "Yenidən xoş gəldin ✨",
+        "subline3": "Hər şey bir baxışda 🚀",
+        "subline4": "Sənədlərin səni gözləyir 📄",
+        "subline5": "Bu gün məhsuldar olaq 💪",
+        "subline6": "Yaxşı təşkil olunmuş yarı qazanılmışdır 📋",
+        "subline7": "Rəqəmsal ofisiniz səni gözləyir 🗂️"
     },
     "upload": {
         "title": "Sənəd yüklə",
