@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useCallback, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -172,6 +172,8 @@ function TopHeader() {
   const [moreOpen, setMoreOpen] = useState(false);
   const isAdmin = useIsAdmin();
   const { signOut } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   useEffect(() => {
     setMoreOpen(false);
@@ -201,27 +203,39 @@ function TopHeader() {
       }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          height: 56, maxWidth: 500, margin: '0 auto',
+          height: 56, maxWidth: 500, margin: '0 auto', position: 'relative',
         }}>
           <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
             <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 30, objectFit: 'contain' }} />
           </Link>
 
+          {!subLoading && (
+            <div onClick={() => navigate('/pricing')} style={{
+              position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+              display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+              fontSize: 11, fontWeight: 600, letterSpacing: '0.02em', whiteSpace: 'nowrap',
+              background: isPro ? 'rgba(99,89,255,0.12)' : isBasic ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.05)',
+              border: isPro ? '0.5px solid rgba(99,89,255,0.25)' : isBasic ? '0.5px solid rgba(245,158,11,0.20)' : '0.5px solid var(--border-glass)',
+              color: isPro ? 'var(--accent-solid)' : isBasic ? 'var(--warning-text)' : 'var(--text-muted)',
+            }}>
+              {isDark ? (
+                <>
+                  {isPro && '🚀'}
+                  {isBasic && '⚡'}
+                  {isFree && '🔒'}
+                </>
+              ) : (
+                <>
+                  {isPro && <Rocket style={{ width: 12, height: 12 }} />}
+                  {isBasic && <Zap style={{ width: 12, height: 12 }} />}
+                  {isFree && <Lock style={{ width: 12, height: 12 }} />}
+                </>
+              )}
+              {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : t('pricing.upgradePlan')}
+            </div>
+          )}
+
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            {!subLoading && (
-              <div onClick={() => navigate('/pricing')} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
-                fontSize: 11, fontWeight: 600, letterSpacing: '0.02em', whiteSpace: 'nowrap',
-                background: isPro ? 'rgba(99,89,255,0.12)' : isBasic ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.05)',
-                border: isPro ? '0.5px solid rgba(99,89,255,0.25)' : isBasic ? '0.5px solid rgba(245,158,11,0.20)' : '0.5px solid var(--border-glass)',
-                color: isPro ? 'var(--accent-solid)' : isBasic ? 'var(--warning-text)' : 'var(--text-muted)',
-              }}>
-                {isPro && <Rocket style={{ width: 12, height: 12 }} />}
-                {isBasic && <Zap style={{ width: 12, height: 12 }} />}
-                {isFree && <Lock style={{ width: 12, height: 12 }} />}
-                {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : t('pricing.upgradePlan')}
-              </div>
-            )}
             <LanguageSwitcher />
             <button
               onClick={() => setMoreOpen(true)}

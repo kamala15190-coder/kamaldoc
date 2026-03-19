@@ -333,7 +333,7 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
     else:
         absender_info = "Verwende Platzhalter [IHR NAME] und [IHRE ADRESSE] für die eigenen Absenderdaten."
 
-    hints_text = f"\n\nZusätzliche Anweisungen vom User: {hints}" if hints else ""
+    hints_text = f"\n\n**WICHTIG - HÖCHSTE PRIORITÄT** Der Benutzer hat folgende Kontext-Hinweise/Anweisungen gegeben, die UNBEDINGT im Brief berücksichtigt und umgesetzt werden MÜSSEN:\n\"{hints}\"\n\nDiese Anweisungen haben Vorrang vor allen anderen Informationen. Der generierte Brief MUSS den Inhalt dieser Hinweise widerspiegeln." if hints else ""
     prompt = ANTWORT_PROMPT_TEMPLATE.format(
         absender=document.get("absender", "Unbekannt"),
         datum=document.get("datum", "Unbekannt"),

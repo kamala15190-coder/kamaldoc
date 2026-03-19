@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
@@ -401,7 +401,7 @@ export default function DocumentDetail() {
                   border: '1px solid var(--action-border)', borderRadius: 8,
                   marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
                 }}>
-                  <span style={{ fontSize: 16 }}>📋</span>
+                  <span style={{ fontSize: 16 }}>ðŸ“‹</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, color: 'var(--action-text)', fontWeight: 600 }}>
                       {t('document.aiDetectedTask')}
@@ -449,11 +449,11 @@ export default function DocumentDetail() {
                 />
                 <button onClick={addTodo}
                   style={{
-                    padding: '8px 12px', borderRadius: 8,
+                    padding: '5px 10px', borderRadius: 7,
                     backgroundColor: 'transparent',
                     border: '1px solid var(--accent-solid)',
                     color: 'var(--accent-solid)',
-                    cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                    cursor: 'pointer', fontSize: 12, fontWeight: 600,
                     whiteSpace: 'nowrap',
                   }}>
                   + {t('document.addTaskBtn')}
@@ -503,6 +503,9 @@ export default function DocumentDetail() {
                         try {
                           const updated = await updateDocument(id, { deadline: deadline || '' });
                           setDoc(updated);
+                          setDeadline(updated.deadline || '');
+                          setSavedToast(true);
+                          setTimeout(() => setSavedToast(false), 2500);
                         } catch (err) { console.error(err); }
                         finally { setSavingDeadline(false); }
                       }}

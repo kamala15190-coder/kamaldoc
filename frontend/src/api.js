@@ -1,4 +1,4 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { API_BASE_URL } from './config';
 import { supabase } from './supabaseClient';
 import { REPLY_LANGUAGES } from './languages';
@@ -7,7 +7,7 @@ const api = axios.create({
   baseURL: API_BASE_URL + '/api',
 });
 
-// Interceptor: Authorization Header mit Supabase JWT Token hinzufügen
+// Interceptor: Authorization Header mit Supabase JWT Token hinzufÃ¼gen
 api.interceptors.request.use(async (config) => {
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) {
@@ -110,9 +110,10 @@ export async function deleteDocument(id) {
   return data;
 }
 
-export async function generateReply(id, targetLanguage) {
+export async function generateReply(id, targetLanguage, hints) {
   const params = targetLanguage ? { target_language: targetLanguage } : {};
-  const { data } = await api.post(`/documents/${id}/reply`, null, { params });
+  const body = hints ? { hints } : null;
+  const { data } = await api.post(`/documents/${id}/reply`, body, { params });
   return data;
 }
 

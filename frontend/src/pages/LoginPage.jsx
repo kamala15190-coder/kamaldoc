@@ -229,16 +229,8 @@ export default function LoginPage() {
           </form>
 
           {/* Divider */}
-          <div style={{ position: 'relative', margin: '24px 0' }}>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center' }}>
-              <div style={{ width: '100%', height: 1, background: 'var(--border-glass-strong)' }} />
-            </div>
-            <div style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-              <span style={{
-                padding: '0 16px', background: 'var(--bg-glass-strong)',
-                fontSize: 13, color: 'var(--text-muted)', borderRadius: 20,
-              }}>{t('auth.or')}</span>
-            </div>
+          <div style={{ margin: '24px 0', display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: '100%', height: 1, background: 'var(--border-glass-strong)' }} />
           </div>
 
           {/* Google Button */}

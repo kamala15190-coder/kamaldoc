@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
+import { useTheme } from '../hooks/useTheme';
 import { createCheckout, downgradeSubscription } from '../api';
 
 const PLAN_ORDER = { free: 0, basic: 1, pro: 2 };
@@ -55,6 +56,8 @@ export default function PricingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { plan: currentPlan, subscription, refresh } = useSubscription();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -150,7 +153,7 @@ export default function PricingPage() {
               className="glass-card animate-fade-in-up"
               style={{
                 position: 'relative', padding: 20, display: 'flex', flexDirection: 'column',
-                border: isPopular && !isCurrent ? '1px solid var(--accent-solid)' : isCurrent ? '1px solid rgba(16,185,129,0.3)' : isPending ? '1px solid rgba(245,158,11,0.3)' : undefined,
+                border: isPopular && !isCurrent ? '1px solid var(--accent-solid)' : isCurrent ? '1px solid rgba(16,185,129,0.3)' : isPending ? '1px solid rgba(245,158,11,0.3)' : isDark ? undefined : '1px solid rgba(0,0,0,0.13)',
               }}
             >
               {isPopular && !isCurrent && (

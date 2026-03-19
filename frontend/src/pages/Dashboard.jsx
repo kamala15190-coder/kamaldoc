@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+﻿import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument, getExpenseSummary } from '../api';
 import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
+import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -49,7 +50,7 @@ const SUBLINES_EN = [
   "Your digital office awaits \ud83d\uddc2\ufe0f",
 ];
 
-const STORAGE_KEY = 'kamaldoc_dashboard_layout';
+const STORAGE_KEY_PREFIX = 'kamaldoc_dashboard_layout';
 const ALL_SECTORS = [
   { id: 'todos', label: 'Offene Aufgaben', icon: '\ud83d\udccb' },
   { id: 'stats', label: 'Statistik-Karten', icon: '\ud83d\udcca' },
@@ -60,14 +61,15 @@ const ALL_SECTORS = [
 ];
 const ALL_SECTION_IDS = ALL_SECTORS.map(s => s.id);
 const DEFAULT_SECTIONS = [
-  { id: 'todos', visible: true }, { id: 'stats', visible: true },
+  { id: 'stats', visible: true }, { id: 'todos', visible: true },
   { id: 'search', visible: true }, { id: 'documents', visible: true },
   { id: 'ausgaben', visible: false }, { id: 'archiv', visible: false },
 ];
 
-function loadLayout() {
+function loadLayout(userId) {
+  const key = userId ? `${STORAGE_KEY_PREFIX}_${userId}` : STORAGE_KEY_PREFIX;
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(key);
     if (stored) {
       const parsed = JSON.parse(stored);
       const ids = parsed.map(s => s.id);
@@ -77,13 +79,18 @@ function loadLayout() {
   } catch {}
   return DEFAULT_SECTIONS.map(s => ({ ...s }));
 }
-function saveLayout(sections) { localStorage.setItem(STORAGE_KEY, JSON.stringify(sections)); }
+function saveLayout(sections, userId) {
+  const key = userId ? `${STORAGE_KEY_PREFIX}_${userId}` : STORAGE_KEY_PREFIX;
+  localStorage.setItem(key, JSON.stringify(sections));
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const { user } = useAuth();
+  const userId = user?.id || '';
   const PAGE_SIZE = 20;
   const [documents, setDocuments] = useState([]);
   const [totalDocs, setTotalDocs] = useState(0);
@@ -94,7 +101,7 @@ export default function Dashboard() {
   const [kategorie, setKategorie] = useState('');
   const [dismissingIds, setDismissingIds] = useState(new Set());
   const [editMode, setEditMode] = useState(false);
-  const [sections, setSections] = useState(loadLayout);
+  const [sections, setSections] = useState(() => loadLayout(userId));
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmHide, setConfirmHide] = useState(null);
   const [archivedDocs, setArchivedDocs] = useState([]);
@@ -120,7 +127,7 @@ export default function Dashboard() {
         const oldIdx = prev.findIndex(s => s.id === active.id);
         const newIdx = prev.findIndex(s => s.id === over.id);
         const updated = arrayMove(prev, oldIdx, newIdx);
-        saveLayout(updated);
+        saveLayout(updated, userId);
         return updated;
       });
     }
@@ -148,16 +155,16 @@ export default function Dashboard() {
         const reordered = arrayMove(visIds, dragIdx, targetIdx);
         const hidden = prev.filter(s => !s.visible);
         const updated = [...reordered.map(id => ({ id, visible: true })), ...hidden];
-        saveLayout(updated);
+        saveLayout(updated, userId);
         return updated;
       });
     }
     setTouchDragging(null); setTouchOffsetY(0);
   }, [touchDragging, touchOffsetY, sections]);
 
-  const hideSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: false } : s); saveLayout(u); return u; }); setConfirmHide(null); };
-  const showSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: true } : s); saveLayout(u); return u; }); setShowAddModal(false); };
-  const resetLayout = () => { const d = DEFAULT_SECTIONS.map(s => ({ ...s })); setSections(d); saveLayout(d); };
+  const hideSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: false } : s); saveLayout(u, userId); return u; }); setConfirmHide(null); };
+  const showSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: true } : s); saveLayout(u, userId); return u; }); setShowAddModal(false); };
+  const resetLayout = () => { const d = DEFAULT_SECTIONS.map(s => ({ ...s })); setSections(d); saveLayout(d, userId); };
   const hiddenSections = sections.filter(s => !s.visible);
   const visibleSections = sections.filter(s => s.visible);
 
@@ -442,9 +449,9 @@ export default function Dashboard() {
 
       {/* Greeting */}
       <div style={{ marginBottom: 20, animation: 'fadeUp 0.4s ease both', animationDelay: '0.03s' }}>
-        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.30)', marginBottom: 2 }}>{dateStr}</div>
-        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.30)' }}>{timeGreeting}</div>
-        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.40)', lineHeight: 1.3, marginTop: 2 }}>{subline}</div>
+        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(44,44,46,0.55)', marginBottom: 2 }}>{dateStr}</div>
+        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(44,44,46,0.55)' }}>{timeGreeting}</div>
+        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: isDark ? '#f5f5f7' : '#2c2c2e', lineHeight: 1.3, marginTop: 2 }}>{subline}</div>
       </div>
 
       {/* Edit mode toolbar */}
