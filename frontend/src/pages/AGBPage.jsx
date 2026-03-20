@@ -81,27 +81,27 @@ export default function AGBPage() {
                 (4) Die Datenbank (Supabase) wird ebenfalls auf EU-Servern gehostet. Nutzerkonten, Metadaten und Verknüpfungen werden dort verwaltet.
               </p>
 
-              <h3 style={h3Style}>3.2 Kurzzeitige Datenübermittlung an KI-Dienste (together.ai)</h3>
+              <h3 style={h3Style}>3.2 Kurzzeitige Datenübermittlung an KI-Dienste (Mistral AI)</h3>
               <p style={{...pStyle, padding: '10px 14px', borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)'}}>
-                <strong style={{color: 'var(--accent-solid)'}}>WICHTIG – Drittlandübermittlung:</strong> Für die KI-gestützte Analyse, Zusammenfassung, Vereinfachung und Übersetzung von Dokumenten werden die relevanten Textinhalte <strong style={strongStyle}>kurzzeitig</strong> an den KI-Dienst <strong style={strongStyle}>together.ai</strong> (Together AI, Inc., San Francisco, USA) übermittelt.
+                <strong style={{color: 'var(--accent-solid)'}}>HINWEIS – Datenverarbeitung:</strong> Für die KI-gestützte Analyse, Zusammenfassung, Vereinfachung und Übersetzung von Dokumenten werden die relevanten Textinhalte <strong style={strongStyle}>kurzzeitig</strong> an den KI-Dienst <strong style={strongStyle}>Mistral AI</strong> (Mistral AI S.A.S., 15 rue des Halles, 75001 Paris, Frankreich) übermittelt.
               </p>
               <p style={pStyle}>
-                (1) <strong style={strongStyle}>Art der übermittelten Daten:</strong> Es werden ausschließlich die aus den Dokumenten extrahierten Textinhalte (OCR-Text) an together.ai gesendet — keine Originaldateien, keine Bilddaten, keine Kontodaten des Nutzers.
+                (1) <strong style={strongStyle}>Art der übermittelten Daten:</strong> Es werden ausschließlich die aus den Dokumenten extrahierten Textinhalte sowie Dokumentenbilder zur OCR-Verarbeitung an Mistral AI gesendet — keine Kontodaten des Nutzers.
               </p>
               <p style={pStyle}>
-                (2) <strong style={strongStyle}>Zweck der Übermittlung:</strong> Die Übermittlung dient ausschließlich der Verarbeitung durch ein KI-Sprachmodell (Large Language Model), um dem Nutzer folgende Funktionen bereitzustellen: Dokumentenanalyse und -kategorisierung, Textvereinfachung (z. B. medizinische Befunde), Übersetzung in andere Sprachen, Erkennung von Fristen und handlungsrelevanten Inhalten, Generierung von Antwortbriefen, behördliche Erklärungen und rechtliche Einschätzungen.
+                (2) <strong style={strongStyle}>Zweck der Übermittlung:</strong> Die Übermittlung dient ausschließlich der Verarbeitung durch KI-Sprachmodelle, um dem Nutzer folgende Funktionen bereitzustellen: Dokumentenextraktion (OCR), Analyse und Kategorisierung, Textvereinfachung (z. B. medizinische Befunde), Übersetzung in andere Sprachen, Erkennung von Fristen und handlungsrelevanten Inhalten, Generierung von Antwortbriefen, behördliche Erklärungen und rechtliche Einschätzungen.
               </p>
               <p style={pStyle}>
-                (3) <strong style={strongStyle}>Dauer der Verarbeitung:</strong> Die Daten werden von together.ai ausschließlich für die Dauer der jeweiligen API-Anfrage verarbeitet (typischerweise wenige Sekunden). Together.ai speichert laut deren Data Processing Agreement <strong style={strongStyle}>keine Nutzerdaten dauerhaft</strong> und verwendet diese nicht zum Training eigener Modelle.
+                (3) <strong style={strongStyle}>Dauer der Verarbeitung:</strong> Die Daten werden von Mistral AI ausschließlich für die Dauer der jeweiligen API-Anfrage verarbeitet (typischerweise wenige Sekunden). Mistral AI speichert laut deren Nutzungsbedingungen <strong style={strongStyle}>keine Nutzerdaten dauerhaft</strong> und verwendet diese nicht zum Training eigener Modelle.
               </p>
               <p style={pStyle}>
-                (4) <strong style={strongStyle}>Rechtsgrundlage:</strong> Die Übermittlung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung) sowie der ausdrücklichen Einwilligung des Nutzers gemäß Art. 49 Abs. 1 lit. a DSGVO für die Drittlandübermittlung in die USA. Der Nutzer willigt mit Akzeptanz dieser AGB in diese Übermittlung ein.
+                (4) <strong style={strongStyle}>Rechtsgrundlage:</strong> Die Übermittlung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung). Da Mistral AI seinen Sitz in Frankreich (EU) hat, erfolgt <strong style={strongStyle}>keine Drittlandübermittlung</strong> — die Datenverarbeitung bleibt vollständig innerhalb des Europäischen Wirtschaftsraums (EWR) und unterliegt der DSGVO.
               </p>
               <p style={pStyle}>
-                (5) <strong style={strongStyle}>Sicherheitsmaßnahmen:</strong> Die Kommunikation mit together.ai erfolgt ausschließlich über verschlüsselte HTTPS/TLS-Verbindungen. API-Schlüssel werden serverseitig gespeichert und niemals an den Client übermittelt.
+                (5) <strong style={strongStyle}>Sicherheitsmaßnahmen:</strong> Die Kommunikation mit Mistral AI erfolgt ausschließlich über verschlüsselte HTTPS/TLS-Verbindungen. API-Schlüssel werden serverseitig gespeichert und niemals an den Client übermittelt.
               </p>
               <p style={pStyle}>
-                (6) Der Nutzer hat jederzeit die Möglichkeit, auf die KI-Funktionen zu verzichten, indem er die entsprechenden Funktionen nicht nutzt. In diesem Fall werden keine Daten an together.ai übermittelt.
+                (6) Der Nutzer hat jederzeit die Möglichkeit, auf die KI-Funktionen zu verzichten, indem er die entsprechenden Funktionen nicht nutzt. In diesem Fall werden keine Daten an Mistral AI übermittelt.
               </p>
             </section>
 

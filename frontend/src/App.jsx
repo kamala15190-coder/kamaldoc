@@ -628,7 +628,7 @@ function PWAInstallBanner() {
 
 function AppContent() {
   const location = useLocation();
-  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/forgot-password', '/reset-password'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/agb', '/forgot-password', '/reset-password'].includes(location.pathname);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>

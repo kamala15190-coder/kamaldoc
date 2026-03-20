@@ -22,7 +22,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from database import DB_PATH, DATA_DIR, get_db, init_db
 from llm_service import (
-    analyze_document, check_together_status, generate_reply,
+    analyze_document, check_mistral_status, generate_reply,
     explain_authority_document, simplify_medical_report, translate_simplified_report,
     extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter
 )
@@ -864,11 +864,11 @@ async def save_einstellungen(data: dict, user_id: str = Depends(get_current_user
 
 @app.get("/api/status")
 async def get_status():
-    together_status = await check_together_status()
+    mistral_status = await check_mistral_status()
     return {
         "backend": "online",
         "datenbank": str(DB_PATH),
-        "together_ai": together_status,
+        "mistral_ai": mistral_status,
     }
 
 
