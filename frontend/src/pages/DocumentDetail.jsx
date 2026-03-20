@@ -401,7 +401,7 @@ export default function DocumentDetail() {
                   border: '1px solid var(--action-border)', borderRadius: 8,
                   marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8,
                 }}>
-                  <span style={{ fontSize: 16 }}>ðŸ“‹</span>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>[KI]</span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 11, color: 'var(--action-text)', fontWeight: 600 }}>
                       {t('document.aiDetectedTask')}
@@ -478,7 +478,7 @@ export default function DocumentDetail() {
                 <Field label={t('document.recipient')} value={doc.empfaenger} />
                 <Field label={t('document.amount')} value={doc.betrag != null ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : null} />
                 <Field label={t('document.due')} value={doc.faelligkeitsdatum ? new Date(doc.faelligkeitsdatum).toLocaleDateString() : null} />
-                <Field label={t('document.filename')} value={doc.dateiname} />
+                <Field label={t('document.filename')} value={doc.dateiname && doc.dateiname.length > 20 ? doc.dateiname.slice(0, 17) + '...' + doc.dateiname.slice(doc.dateiname.lastIndexOf('.')) : doc.dateiname} />
                 <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
               </div>
 

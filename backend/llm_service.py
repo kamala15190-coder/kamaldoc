@@ -6,6 +6,8 @@ from pathlib import Path
 from PIL import Image
 import io
 import logging
+import re as _re
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,8 +17,25 @@ logger = logging.getLogger(__name__)
 # Mistral AI API Configuration
 MISTRAL_BASE_URL = os.getenv("MISTRAL_BASE_URL", "https://api.mistral.ai/v1")
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
-MISTRAL_TEXT_MODEL = os.getenv("MISTRAL_TEXT_MODEL", "mistral-small-3.2-latest")
-MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-2512")
+MISTRAL_TEXT_MODEL = os.getenv("MISTRAL_TEXT_MODEL", "mistral-small-latest")
+MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
+
+# Global no-markdown instruction appended to all text prompts
+NO_MARKDOWN_RULE = """
+FORMATIERUNGSREGEL (STRIKT EINHALTEN):
+- Verwende KEIN Markdown: kein **, kein *, kein ###, kein ---, kein ```.
+- Schreibe fliessenden, gut lesbaren Klartext.
+- Verwende fuer Ueberschriften eine einfache Zeile mit Doppelpunkt, z.B. "Diagnose:"
+- Erklaere Fachbegriffe in Klammern, z.B. "Demyelinisierung (Schaedigung der Nervenhuellen)"
+- Verwende KEINE Emojis.
+- Wenn du ein Datum einsetzen musst, verwende das heutige Datum: {heute}
+"""
+
+def _build_system_msg():
+    """Build a system message with current date and no-markdown rule."""
+    heute = datetime.now().strftime("%d.%m.%Y")
+    return {"role": "system", "content": NO_MARKDOWN_RULE.replace("{heute}", heute)}
+
 
 ANALYSE_PROMPT = """Du bist ein Dokumenten-Analyse-System. Analysiere den folgenden extrahierten Dokumententext und extrahiere alle relevanten Informationen.
 
@@ -87,7 +106,9 @@ Weitere Regeln:
 - Erkenne die Sprache des Dokuments und setze "dokument_sprache" auf den ISO 639-1 Code
 - Alle Analyse-Texte (zusammenfassung, handlung_beschreibung) auf Deutsch
 - Nur valides JSON ausgeben, keine weiteren Zeichen
-- Kein Markdown, keine Erkl\u00e4rung, NUR das JSON-Objekt"""
+- Kein Markdown, keine Erkl\u00e4rung, NUR das JSON-Objekt
+- Verwende KEINE Emojis in den JSON-Werten (zusammenfassung, handlung_beschreibung, etc.)
+- Schreibe handlung_beschreibung als einfachen deutschen Klartext ohne Sonderzeichen"""
 
 ANTWORT_PROMPT_TEMPLATE = """Du bist ein Assistent, der Antwortbriefe verfasst.
 
@@ -107,7 +128,10 @@ Verfasse einen h\u00f6flichen, formellen Antwortbrief auf {target_language_name}
 4. Das aktuelle Datum verwenden
 5. KOMPLETT in {target_language_name} geschrieben sein
 
-Schreibe nur den Brieftext, keine Erkl\u00e4rungen."""
+Schreibe nur den Brieftext, keine Erkl\u00e4rungen.
+
+WICHTIG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext.
+Verwende KEINE Emojis. Wenn du ein Datum brauchst, das heutige Datum ist {heute}."""
 
 
 def normalize_image(image_path: str, max_size: int = 1920) -> bytes:
@@ -128,6 +152,23 @@ def normalize_image(image_path: str, max_size: int = 1920) -> bytes:
 
 def image_to_base64(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode("utf-8")
+
+
+
+def strip_markdown(text: str) -> str:
+    """Remove common markdown formatting as safety net."""
+    if not text:
+        return text
+    # Remove bold/italic markers
+    text = _re.sub(r'\*{1,3}(.+?)\*{1,3}', r'\1', text)
+    # Remove heading markers
+    text = _re.sub(r'^#{1,6}\s+', '', text, flags=_re.MULTILINE)
+    # Remove horizontal rules
+    text = _re.sub(r'^-{3,}$', '', text, flags=_re.MULTILINE)
+    text = _re.sub(r'^\*{3,}$', '', text, flags=_re.MULTILINE)
+    # Remove code fences (but keep content)
+    text = _re.sub(r'```[a-z]*\n?', '', text)
+    return text.strip()
 
 
 # --- Shared helper: call Mistral chat completions ---
@@ -164,7 +205,7 @@ async def _mistral_chat(messages: list, model: str = None, temperature: float = 
 # --- OCR via Mistral OCR model ---
 
 async def _mistral_ocr(image_path: str) -> str:
-    """Extract text from a document image using Mistral OCR model."""
+    """Extract text from a document image using Mistral OCR endpoint (/v1/ocr)."""
     if not MISTRAL_API_KEY:
         raise ValueError("MISTRAL_API_KEY Umgebungsvariable nicht gesetzt")
 
@@ -173,27 +214,15 @@ async def _mistral_ocr(image_path: str) -> str:
 
     payload = {
         "model": MISTRAL_OCR_MODEL,
-        "messages": [
-            {
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": "Extrahiere den vollst\u00e4ndigen Text aus diesem Dokument. Gib NUR den extrahierten Text zur\u00fcck, keine Erkl\u00e4rungen."},
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{b64}"
-                        },
-                    },
-                ],
-            }
-        ],
-        "temperature": 0.1,
-        "max_tokens": 8192,
+        "document": {
+            "type": "image_url",
+            "image_url": f"data:image/jpeg;base64,{b64}"
+        }
     }
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         resp = await client.post(
-            f"{MISTRAL_BASE_URL}/chat/completions",
+            f"{MISTRAL_BASE_URL}/ocr",
             headers={
                 "Authorization": f"Bearer {MISTRAL_API_KEY}",
                 "Content-Type": "application/json",
@@ -203,8 +232,13 @@ async def _mistral_ocr(image_path: str) -> str:
         resp.raise_for_status()
         data = resp.json()
 
-    ocr_text = data["choices"][0]["message"]["content"]
-    logger.info(f"[Mistral OCR] Extracted {len(ocr_text)} chars")
+    # OCR endpoint returns pages with markdown content
+    pages = data.get("pages", [])
+    ocr_text = "\n\n".join(p.get("markdown", "") for p in pages).strip()
+    if not ocr_text:
+        # Fallback: try top-level text field
+        ocr_text = data.get("text", "") or json.dumps(data)
+    logger.info(f"[Mistral OCR] Extracted {len(ocr_text)} chars from {len(pages)} pages")
     return ocr_text
 
 
@@ -246,6 +280,7 @@ async def analyze_document(image_path: str) -> dict:
 
     # Step 2: Analyze extracted text with text model
     messages = [
+        _build_system_msg(),
         {"role": "user", "content": f"{ANALYSE_PROMPT}\n\nDokumententext:\n---\n{ocr_text}\n---"}
     ]
     content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
@@ -310,7 +345,7 @@ async def extract_expense_items(volltext: str) -> list:
         return []
 
     try:
-        messages = [{"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}]
+        messages = [_build_system_msg(), {"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}]
         content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
 
         content = content.strip()
@@ -387,8 +422,11 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
         target_language_name=target_language_name,
     ) + hints_text
 
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.7, max_tokens=2048)
+    heute = datetime.now().strftime("%d.%m.%Y")
+    prompt = prompt.replace("{heute}", heute)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.7, max_tokens=2048)
+    return strip_markdown(result)
 
 
 # --- Beh\u00f6rden-Assistent ---
@@ -409,20 +447,23 @@ Deine Aufgabe:
 5. Strukturiere deine Erkl\u00e4rung mit klaren Abs\u00e4tzen.
 6. Antworte auf {target_language_name}.
 
-Schreibe NUR die Erkl\u00e4rung, keine Einleitung wie "Hier ist die Erkl\u00e4rung"."""
+Schreibe NUR die Erkl\u00e4rung, keine Einleitung wie "Hier ist die Erkl\u00e4rung".
+
+WICHTIG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen, fliessenden Klartext. Verwende fuer Ueberschriften einfache Zeilen mit Doppelpunkt. Verwende KEINE Emojis."""
 
 
 async def explain_authority_document(volltext: str, target_language: str = "de") -> str:
     """Beh\u00f6rdenschreiben in einfacher Sprache erkl\u00e4ren."""
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
     prompt = BEHOERDE_PROMPT.format(volltext=volltext, target_language_name=target_language_name)
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.3, max_tokens=3000)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.3, max_tokens=3000)
+    return strip_markdown(result)
 
 
 # --- Befund-Assistent ---
 
-BEFUND_SIMPLIFY_PROMPT = """Du bist ein medizinischer \u00dcbersetzer, der Arztbefunde und Laborberichte f\u00fcr Laien verst\u00e4ndlich macht.
+BEFUND_SIMPLIFY_PROMPT = """Du bist ein erfahrener Arzt, der einem Patienten seinen Befund in einfachen Worten erklaert. Dein Ton ist warm, verstaendlich und beruhigend.
 
 Hier ist der medizinische Text:
 
@@ -431,20 +472,21 @@ Hier ist der medizinische Text:
 ---
 
 Deine Aufgabe:
-1. \u00dcbersetze JEDEN medizinischen Fachbegriff in einfache Sprache.
-   Beispiele:
-   - "Abdomen" \u2192 "Bauch und Bauchbereich"
-   - "Thorax" \u2192 "Brustkorb"
-   - "Hepatomegalie" \u2192 "vergr\u00f6\u00dferte Leber"
-   - "Hypertonie" \u2192 "Bluthochdruck"
-   - "An\u00e4mie" \u2192 "Blutarmut (zu wenig rote Blutk\u00f6rperchen)"
-   - "Cholezystektomie" \u2192 "operative Entfernung der Gallenblase"
-2. Behalte die Struktur des Originals bei.
-3. Erkl\u00e4re Laborwerte: was sie messen und ob die Werte normal, erh\u00f6ht oder niedrig sind.
-4. Verwende kurze, klare S\u00e4tze.
-5. Schreibe auf Deutsch.
+1. Erklaere den gesamten Befund in einfacher, fliessender Sprache — so als wuerdest du einem Patienten gegenuebersitzen.
+2. Uebersetze JEDEN medizinischen Fachbegriff und schreibe die Erklaerung in Klammern dahinter.
+   Beispiele: "Demyelinisierung (Schaedigung der Nervenhuellen)", "Hypertonie (Bluthochdruck)", "Anaemie (Blutarmut, zu wenig rote Blutkoerperchen)"
+3. Erklaere Laborwerte: was sie messen und ob die Werte normal, erhoeht oder niedrig sind.
+4. Verwende kurze, klare Saetze und einen warmen, verstaendlichen Ton.
+5. Strukturiere den Text mit einfachen Ueberschriften gefolgt von Doppelpunkt, z.B. "Untersuchungsergebnisse:" — KEIN Markdown.
+6. Schreibe auf Deutsch.
 
-Schreibe NUR den vereinfachten Text, keine Einleitung."""
+FORMATIERUNG (STRIKT):
+- KEIN Markdown: kein **, kein *, kein ###, kein ---, kein ```
+- KEINE Emojis
+- Ueberschriften als einfache Zeile mit Doppelpunkt
+- Fliessender Klartext, gut lesbar auch ohne Formatierung
+
+Schreibe NUR den vereinfachten Text, keine Einleitung wie 'Hier ist die Vereinfachung'."""
 
 BEFUND_TRANSLATE_PROMPT = """\u00dcbersetze den folgenden vereinfachten medizinischen Text vollst\u00e4ndig in {target_language_name}.
 Behalte die Struktur und Formatierung bei. \u00dcbersetze ALLES, auch Erkl\u00e4rungen in Klammern.
@@ -454,14 +496,17 @@ Text:
 {text}
 ---
 
-Schreibe NUR die \u00dcbersetzung, nichts anderes."""
+Schreibe NUR die \u00dcbersetzung, nichts anderes.
+
+WICHTIG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext. Verwende KEINE Emojis."""
 
 
 async def simplify_medical_report(volltext: str) -> str:
     """Medizinischen Befund in einfache Sprache \u00fcbersetzen (Instanz 1)."""
     prompt = BEFUND_SIMPLIFY_PROMPT.format(volltext=volltext)
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.2, max_tokens=4000)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.2, max_tokens=4000)
+    return strip_markdown(result)
 
 
 async def translate_simplified_report(text: str, target_language: str = "de") -> str:
@@ -471,8 +516,9 @@ async def translate_simplified_report(text: str, target_language: str = "de") ->
 
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
     prompt = BEFUND_TRANSLATE_PROMPT.format(text=text, target_language_name=target_language_name)
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
+    return strip_markdown(result)
 
 
 # --- Beh\u00f6rden-Assistent: Rechtseinsch\u00e4tzung ---
@@ -491,14 +537,16 @@ Analysiere dieses Beh\u00f6rdenschreiben rechtlich:
 5. Was sind die empfohlenen n\u00e4chsten Schritte?
 
 Antworte auf Deutsch, klar und verst\u00e4ndlich.
-Strukturiere deine Antwort mit den \u00dcberschriften:
-## Rechtliche Einordnung
-## Rechte des Empf\u00e4ngers
-## Fristen
-## Relevante Gesetze
-## Empfohlene n\u00e4chste Schritte
+Strukturiere deine Antwort mit folgenden Abschnitten (als einfache Zeile mit Doppelpunkt, KEIN Markdown):
+Rechtliche Einordnung:
+Rechte des Empfaengers:
+Fristen:
+Relevante Gesetze:
+Empfohlene naechste Schritte:
 
-WICHTIG: Weise am Ende darauf hin, dass dies eine KI-Einsch\u00e4tzung ist und keine professionelle Rechtsberatung ersetzt."""
+WICHTIG: Weise am Ende darauf hin, dass dies eine KI-Einschaetzung ist und keine professionelle Rechtsberatung ersetzt.
+
+FORMATIERUNG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext. Verwende KEINE Emojis."""
 
 
 async def legal_assessment(volltext: str, language: str = "de") -> str:
@@ -507,8 +555,9 @@ async def legal_assessment(volltext: str, language: str = "de") -> str:
     prompt = LEGAL_ASSESSMENT_PROMPT.format(volltext=volltext)
     if language != "de":
         prompt += f"\n\nAntworte auf {lang_name}."
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
+    return strip_markdown(result)
 
 
 # --- Beh\u00f6rden-Assistent: Anfechtbare Elemente ---
@@ -542,7 +591,7 @@ async def get_contestable_elements(volltext: str, language: str = "de") -> list:
     if language != "de":
         prompt += f"\n\nAntworte auf {lang_name}, aber behalte das JSON-Format bei."
 
-    messages = [{"role": "user", "content": prompt}]
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     content = await _mistral_chat(messages, temperature=0.2, max_tokens=3000)
 
     import re
@@ -586,7 +635,9 @@ Schreibe das gesamte Widerspruchsschreiben auf {target_language}.
 
 WICHTIG: Gib NUR das fertige Widerspruchsschreiben aus. KEIN zus\u00e4tzlicher Text danach.
 KEINE Erkl\u00e4rungen, KEINE Meta-Kommentare, KEINE Hinweise wie "Bitte beachten Sie, dass...",
-KEIN Text nach der Gru\u00dfformel und Unterschriftszeile. Das Schreiben endet mit der Unterschriftszeile."""
+KEIN Text nach der Grussformel und Unterschriftszeile. Das Schreiben endet mit der Unterschriftszeile.
+
+FORMATIERUNG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext. Verwende KEINE Emojis."""
 
 
 async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str, target_language: str = "Deutsch") -> str:
@@ -597,5 +648,6 @@ async def generate_objection_letter(volltext: str, absender_daten: str, selected
         selected_elements=selected_elements,
         target_language=target_language,
     )
-    messages = [{"role": "user", "content": prompt}]
-    return await _mistral_chat(messages, temperature=0.3, max_tokens=5000)
+    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
+    result = await _mistral_chat(messages, temperature=0.3, max_tokens=5000)
+    return strip_markdown(result)
