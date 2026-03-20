@@ -460,6 +460,10 @@ async def explain_authority_document(volltext: str, target_language: str = "de")
     """Beh\u00f6rdenschreiben in einfacher Sprache erkl\u00e4ren."""
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
     prompt = BEHOERDE_PROMPT.format(volltext=volltext, target_language_name=target_language_name)
+    # Strong language override for non-German
+    if target_language != "de":
+        prompt += f"\n\nSPRACHE: Die gesamte Erklaerung MUSS vollstaendig in {target_language_name} verfasst sein. Kein einziges Wort auf Deutsch. Sprache: {target_language_name}."
+
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     result = await _mistral_chat(messages, temperature=0.3, max_tokens=3000)
     return strip_markdown(result)
@@ -520,6 +524,9 @@ async def translate_simplified_report(text: str, target_language: str = "de") ->
 
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
     prompt = BEFUND_TRANSLATE_PROMPT.format(text=text, target_language_name=target_language_name)
+    # Strong language override
+    prompt += f"\n\nSPRACHE: Der gesamte Text MUSS vollstaendig in {target_language_name} uebersetzt sein. Kein einziges Wort auf Deutsch. Sprache: {target_language_name}."
+
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     result = await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
     return strip_markdown(result)
@@ -558,7 +565,7 @@ async def legal_assessment(volltext: str, language: str = "de") -> str:
     lang_name = LANGUAGE_NAMES.get(language, "Deutsch")
     prompt = LEGAL_ASSESSMENT_PROMPT.format(volltext=volltext)
     if language != "de":
-        prompt += f"\n\nAntworte auf {lang_name}."
+        prompt += f"\n\nSPRACHE: Die gesamte Antwort MUSS vollstaendig in {lang_name} verfasst sein. Kein einziges Wort auf Deutsch. Sprache: {lang_name}."
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     result = await _mistral_chat(messages, temperature=0.3, max_tokens=4000)
     return strip_markdown(result)
@@ -594,6 +601,10 @@ async def get_contestable_elements(volltext: str, language: str = "de") -> list:
     prompt = CONTESTABLE_ELEMENTS_PROMPT.format(volltext=volltext)
     if language != "de":
         prompt += f"\n\nAntworte auf {lang_name}, aber behalte das JSON-Format bei."
+
+    # Strong language override for non-German
+    if language != "de":
+        prompt += f"\n\nSPRACHE: Schreibe die reason-Felder vollstaendig in {lang_name}. Sprache: {lang_name}."
 
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     content = await _mistral_chat(messages, temperature=0.2, max_tokens=3000)
@@ -652,6 +663,10 @@ async def generate_objection_letter(volltext: str, absender_daten: str, selected
         selected_elements=selected_elements,
         target_language=target_language,
     )
+    # Strong language override for non-German
+    if target_language != "Deutsch":
+        prompt += f"\n\nSPRACHE: Das gesamte Schreiben MUSS vollstaendig in {target_language} verfasst sein. Kein einziges Wort auf Deutsch. Sprache: {target_language}."
+
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     result = await _mistral_chat(messages, temperature=0.3, max_tokens=5000)
     return strip_markdown(result)
