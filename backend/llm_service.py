@@ -131,7 +131,7 @@ Verfasse einen h\u00f6flichen, formellen Antwortbrief auf {target_language_name}
 Schreibe nur den Brieftext, keine Erkl\u00e4rungen.
 
 WICHTIG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext.
-Verwende KEINE Emojis. Wenn du ein Datum brauchst, das heutige Datum ist {heute}."""
+Verwende KEINE Emojis. Wenn du ein Datum brauchst, das heutige Datum ist {{heute}}."""
 
 
 def normalize_image(image_path: str, max_size: int = 1920) -> bytes:
