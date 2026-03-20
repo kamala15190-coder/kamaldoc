@@ -424,6 +424,10 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
 
     heute = datetime.now().strftime("%d.%m.%Y")
     prompt = prompt.replace("{heute}", heute)
+    # Strong language override (models weight final instructions highest)
+    if target_language != "de":
+        prompt += f"\n\nSPRACHE: Der gesamte Brief MUSS vollstaendig in {target_language_name} verfasst sein. Kein einziges Wort auf Deutsch. Sprache: {target_language_name}."
+
     messages = [_build_system_msg(), {"role": "user", "content": prompt}]
     result = await _mistral_chat(messages, temperature=0.7, max_tokens=2048)
     return strip_markdown(result)
