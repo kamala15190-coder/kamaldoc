@@ -8,9 +8,9 @@ import App from './App.jsx'
 // StatusBar für Native-App konfigurieren
 if (Capacitor.isNativePlatform()) {
   import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
-    StatusBar.setBackgroundColor({ color: '#1F2937' }).catch(() => {})
+    StatusBar.setBackgroundColor({ color: '#00000000' }).catch(() => {})
     StatusBar.setStyle({ style: Style.Dark }).catch(() => {})
-    StatusBar.setOverlaysWebView({ overlay: false }).catch(() => {})
+    StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {})
   }).catch(() => {})
 }
 

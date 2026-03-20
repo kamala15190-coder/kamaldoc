@@ -200,6 +200,7 @@ function TopHeader() {
         WebkitBackdropFilter: 'blur(20px)',
         borderBottom: '1px solid var(--border-glass)',
         padding: '0 16px',
+        paddingTop: 'var(--safe-area-top)',
       }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -271,7 +272,8 @@ function TopHeader() {
       }}>
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: '1px solid var(--border-glass)',
+          padding: '16px 20px', paddingTop: 'calc(16px + var(--safe-area-top))',
+          borderBottom: '1px solid var(--border-glass)',
         }}>
           <span style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>{t('nav.menu')}</span>
           <button
@@ -340,7 +342,8 @@ function TopHeader() {
         </div>
 
         <div style={{
-          padding: '12px 16px 24px', borderTop: '1px solid var(--border-glass)',
+          padding: '12px 16px 24px', paddingBottom: 'calc(24px + var(--safe-area-bottom))',
+          borderTop: '1px solid var(--border-glass)',
         }}>
           <button
             onClick={handleLogout}
