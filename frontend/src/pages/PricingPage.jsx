@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
 import { createCheckout, downgradeSubscription } from '../api';
+import { Capacitor } from '@capacitor/core';
 
 const PLAN_ORDER = { free: 0, basic: 1, pro: 2 };
 
@@ -84,7 +85,12 @@ export default function PricingPage() {
       } else {
         const { checkout_url } = await createCheckout(planId);
         if (checkout_url) {
-          window.location.href = checkout_url;
+          if (Capacitor.isNativePlatform()) {
+            const { Browser } = await import('@capacitor/browser');
+            await Browser.open({ url: checkout_url });
+          } else {
+            window.location.href = checkout_url;
+          }
         } else {
           setError(t('pricing.stripeNotReady'));
         }

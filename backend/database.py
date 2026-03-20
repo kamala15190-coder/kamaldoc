@@ -159,6 +159,30 @@ async def init_db():
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
+
+            CREATE TABLE IF NOT EXISTS support_tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                subject TEXT NOT NULL DEFAULT '',
+                message TEXT NOT NULL,
+                priority TEXT DEFAULT 'mittel',
+                status TEXT DEFAULT 'erstellt',
+                screenshot_path TEXT,
+                admin_solution TEXT,
+                unread_user INTEGER DEFAULT 0,
+                unread_admin INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+
+            CREATE TABLE IF NOT EXISTS ticket_messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ticket_id INTEGER NOT NULL,
+                sender_type TEXT NOT NULL DEFAULT 'user',
+                message TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                FOREIGN KEY (ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE
+            );
             CREATE TABLE IF NOT EXISTS usage_counters (
                 user_id TEXT PRIMARY KEY,
                 documents_total INTEGER DEFAULT 0,

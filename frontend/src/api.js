@@ -168,7 +168,8 @@ export async function getSubscriptionStatus() {
 }
 
 export async function createCheckout(plan) {
-  const { data } = await api.post('/subscription/create-checkout', { plan });
+  const isAndroid = window.Capacitor?.isNativePlatform?.() || false;
+  const { data } = await api.post('/subscription/create-checkout', { plan, source: isAndroid ? 'android' : 'web' });
   return data;
 }
 
@@ -192,10 +193,62 @@ export async function getSubscriptionUsage() {
   return data;
 }
 
-// --- Support ---
+// --- Support Tickets ---
 
 export async function submitSupportTicket({ priority, email, message }) {
   const { data } = await api.post('/support/ticket', { priority, email, message });
+  return data;
+}
+
+export async function createTicket({ subject, message, priority }) {
+  const { data } = await api.post('/tickets', { subject, message, priority });
+  return data;
+}
+
+export async function getTickets() {
+  const { data } = await api.get('/tickets');
+  return data;
+}
+
+export async function getTicketUnreadCount() {
+  const { data } = await api.get('/tickets/unread-count');
+  return data;
+}
+
+export async function getTicket(ticketId) {
+  const { data } = await api.get(`/tickets/${ticketId}`);
+  return data;
+}
+
+export async function addTicketMessage(ticketId, message) {
+  const { data } = await api.post(`/tickets/${ticketId}/messages`, { message });
+  return data;
+}
+
+export async function acceptTicket(ticketId) {
+  const { data } = await api.post(`/tickets/${ticketId}/accept`);
+  return data;
+}
+
+// --- Admin Tickets ---
+
+export async function adminGetTickets() {
+  const { data } = await api.get('/admin/tickets');
+  return data;
+}
+
+export async function adminGetTicket(ticketId) {
+  const { data } = await api.get(`/admin/tickets/${ticketId}`);
+  return data;
+}
+
+export async function adminCloseTicket(ticketId, solution, status = 'bearbeitet') {
+  const { data } = await api.post(`/admin/tickets/${ticketId}/close`, { solution, status });
+  return data;
+}
+
+export async function adminAddTicketMessage(ticketId, message) {
+  const { data } = await api.post(`/admin/tickets/${ticketId}/message`, { message });
   return data;
 }
 

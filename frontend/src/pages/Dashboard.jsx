@@ -62,7 +62,7 @@ const ALL_SECTORS = [
 const ALL_SECTION_IDS = ALL_SECTORS.map(s => s.id);
 const DEFAULT_SECTIONS = [
   { id: 'stats', visible: true }, { id: 'todos', visible: true },
-  { id: 'search', visible: true }, { id: 'documents', visible: true },
+  { id: 'search', visible: false }, { id: 'documents', visible: false },
   { id: 'ausgaben', visible: false }, { id: 'archiv', visible: false },
 ];
 
@@ -243,12 +243,13 @@ export default function Dashboard() {
   const sectionContent = {
     stats: (
       <div style={{ animation: 'scaleIn 0.4s ease both', animationDelay: '0.05s' }}>
-        <div style={{ ...glassCard, background: tc.heroBg, border: `0.5px solid ${tc.heroBorder}`, padding: 20, marginBottom: 12 }}>
+        <div onClick={() => navigate('/dokumente')} style={{ ...glassCard, background: tc.heroBg, border: `0.5px solid ${tc.heroBorder}`, padding: 20, marginBottom: 12, cursor: 'pointer', transition: 'transform 0.15s ease' }} className="tile-hover">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontSize: 12, color: tc.textMuted, marginBottom: 4 }}>{t('dashboard.documentsTotal')}</div>
               <div style={{ fontSize: 44, fontWeight: 800, color: '#6359FF', lineHeight: 1, letterSpacing: '-1px' }}>{total}</div>
               {thisWeekCount > 0 && <div style={{ fontSize: 12, color: '#6359FF', marginTop: 6, fontWeight: 500 }}>+{thisWeekCount} {t('dashboard.thisWeek')}</div>}
+              <div style={{ fontSize: 11, color: '#6359FF', marginTop: 6, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>{t('dashboard.showAll', 'Alle anzeigen')} <ChevronRight style={{ width: 12, height: 12 }} /></div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
               <div style={{ textAlign: 'right' }}>

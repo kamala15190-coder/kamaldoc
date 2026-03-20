@@ -348,7 +348,7 @@ export default function UploadPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <button
                   onClick={openCamera}
-                  className="btn-accent"
+                  className="btn-accent camera-glass-btn"
                   style={{
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     gap: 8, padding: 20, borderRadius: 16, minHeight: 100,

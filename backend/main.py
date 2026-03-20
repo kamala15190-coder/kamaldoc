@@ -1504,7 +1504,8 @@ async def subscription_status(user_id: str = Depends(get_current_user)):
 async def subscription_create_checkout(data: dict, user_id: str = Depends(get_current_user)):
     """Create Stripe checkout session."""
     plan = data.get("plan")
-    return await create_checkout_session(user_id, plan)
+    source = data.get("source", "web")
+    return await create_checkout_session(user_id, plan, source=source)
 
 
 @app.post("/api/subscription/cancel")
@@ -1924,6 +1925,297 @@ async def send_push_notification(token: str, title: str, body: str):
     # TODO: Firebase Cloud Messaging Integration
     # Für jetzt nur loggen - FCM Server Key muss in .env konfiguriert werden
     logger.info(f"[Push] Würde senden an {token[:20]}...: {title} - {body}")
+
+
+
+
+# --- Support Ticket System ---
+
+@app.post("/api/tickets")
+async def create_ticket(data: dict, user_id: str = Depends(get_current_user)):
+    """Create a support ticket."""
+    message = data.get("message", "")
+    priority = data.get("priority", "mittel")
+    subject = data.get("subject", "")
+    if len(message) < 10:
+        raise HTTPException(400, "Nachricht muss mindestens 10 Zeichen haben.")
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            """INSERT INTO support_tickets (user_id, subject, message, priority, status, unread_admin)
+               VALUES (?, ?, ?, ?, 'erstellt', 1)""",
+            (user_id, subject, message, priority),
+        )
+        ticket_id = cursor.lastrowid
+        # Add initial message
+        await db.execute(
+            "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'user', ?)",
+            (ticket_id, message),
+        )
+        await db.commit()
+
+        # Notify admins
+        admin_cursor = await db.execute("SELECT user_id FROM admins")
+        admin_rows = await admin_cursor.fetchall()
+        for admin in admin_rows:
+            t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (admin["user_id"],))
+            tokens = await t_cursor.fetchall()
+            for t in tokens:
+                await send_push_notification(t["token"], "Neues Support-Ticket", f"Priorität: {priority} — {subject or message[:60]}")
+
+        return {"status": "ok", "ticket_id": ticket_id}
+    finally:
+        await db.close()
+
+
+@app.get("/api/tickets")
+async def list_tickets(user_id: str = Depends(get_current_user)):
+    """List user's tickets."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT id, subject, message, priority, status, unread_user, created_at, updated_at FROM support_tickets WHERE user_id = ? ORDER BY updated_at DESC",
+            (user_id,),
+        )
+        rows = await cursor.fetchall()
+        return {"tickets": [dict(r) for r in rows]}
+    finally:
+        await db.close()
+
+
+@app.get("/api/tickets/unread-count")
+async def tickets_unread_count(user_id: str = Depends(get_current_user)):
+    """Count tickets with unread updates for this user."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT COUNT(*) as cnt FROM support_tickets WHERE user_id = ? AND unread_user = 1",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        return {"count": row["cnt"] if row else 0}
+    finally:
+        await db.close()
+
+
+@app.get("/api/tickets/{ticket_id}")
+async def get_ticket(ticket_id: int, user_id: str = Depends(get_current_user)):
+    """Get ticket detail with messages."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM support_tickets WHERE id = ? AND user_id = ?",
+            (ticket_id, user_id),
+        )
+        ticket = await cursor.fetchone()
+        if not ticket:
+            raise HTTPException(404, "Ticket nicht gefunden.")
+
+        # Mark as read
+        await db.execute("UPDATE support_tickets SET unread_user = 0 WHERE id = ?", (ticket_id,))
+        await db.commit()
+
+        msg_cursor = await db.execute(
+            "SELECT id, sender_type, message, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
+            (ticket_id,),
+        )
+        messages = await msg_cursor.fetchall()
+        return {"ticket": dict(ticket), "messages": [dict(m) for m in messages]}
+    finally:
+        await db.close()
+
+
+@app.post("/api/tickets/{ticket_id}/messages")
+async def add_ticket_message(ticket_id: int, data: dict, user_id: str = Depends(get_current_user)):
+    """User adds a message to their ticket."""
+    message = data.get("message", "")
+    if not message.strip():
+        raise HTTPException(400, "Nachricht darf nicht leer sein.")
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM support_tickets WHERE id = ? AND user_id = ?",
+            (ticket_id, user_id),
+        )
+        ticket = await cursor.fetchone()
+        if not ticket:
+            raise HTTPException(404, "Ticket nicht gefunden.")
+        if ticket["status"] == "abgeschlossen":
+            raise HTTPException(400, "Ticket ist bereits abgeschlossen.")
+
+        await db.execute(
+            "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'user', ?)",
+            (ticket_id, message),
+        )
+        # If ticket was 'bearbeitet', move back to 'in bearbeitung'
+        new_status = "in bearbeitung" if ticket["status"] == "bearbeitet" else ticket["status"]
+        await db.execute(
+            "UPDATE support_tickets SET status = ?, unread_admin = 1, updated_at = datetime('now','localtime') WHERE id = ?",
+            (new_status, ticket_id),
+        )
+        await db.commit()
+
+        # Notify admins if status changed
+        if new_status != ticket["status"]:
+            admin_cursor = await db.execute("SELECT user_id FROM admins")
+            for admin in await admin_cursor.fetchall():
+                t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (admin["user_id"],))
+                for t in await t_cursor.fetchall():
+                    await send_push_notification(t["token"], "Ticket-Antwort", f"User hat auf Ticket #{ticket_id} geantwortet")
+
+        return {"status": "ok"}
+    finally:
+        await db.close()
+
+
+@app.post("/api/tickets/{ticket_id}/accept")
+async def accept_ticket(ticket_id: int, user_id: str = Depends(get_current_user)):
+    """User accepts admin solution — sets status to abgeschlossen."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT * FROM support_tickets WHERE id = ? AND user_id = ? AND status = 'bearbeitet'",
+            (ticket_id, user_id),
+        )
+        ticket = await cursor.fetchone()
+        if not ticket:
+            raise HTTPException(404, "Ticket nicht gefunden oder nicht im Status 'bearbeitet'.")
+
+        await db.execute(
+            "UPDATE support_tickets SET status = 'abgeschlossen', updated_at = datetime('now','localtime') WHERE id = ?",
+            (ticket_id,),
+        )
+        await db.commit()
+        return {"status": "ok"}
+    finally:
+        await db.close()
+
+
+# --- Admin Ticket API ---
+
+@app.get("/api/admin/tickets")
+async def admin_list_tickets(user_id: str = Depends(get_current_user)):
+    """Admin: list all tickets."""
+    db = await get_db()
+    try:
+        is_admin = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        if not await is_admin.fetchone():
+            raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+        cursor = await db.execute(
+            "SELECT id, user_id, subject, message, priority, status, unread_admin, created_at, updated_at FROM support_tickets ORDER BY CASE status WHEN 'erstellt' THEN 0 WHEN 'in bearbeitung' THEN 1 WHEN 'bearbeitet' THEN 2 ELSE 3 END, updated_at DESC"
+        )
+        rows = await cursor.fetchall()
+        return {"tickets": [dict(r) for r in rows]}
+    finally:
+        await db.close()
+
+
+@app.get("/api/admin/tickets/{ticket_id}")
+async def admin_get_ticket(ticket_id: int, user_id: str = Depends(get_current_user)):
+    """Admin: get ticket detail."""
+    db = await get_db()
+    try:
+        is_admin = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        if not await is_admin.fetchone():
+            raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+        cursor = await db.execute("SELECT * FROM support_tickets WHERE id = ?", (ticket_id,))
+        ticket = await cursor.fetchone()
+        if not ticket:
+            raise HTTPException(404, "Ticket nicht gefunden.")
+
+        # Mark as read by admin
+        await db.execute("UPDATE support_tickets SET unread_admin = 0 WHERE id = ?", (ticket_id,))
+        await db.commit()
+
+        msg_cursor = await db.execute(
+            "SELECT id, sender_type, message, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
+            (ticket_id,),
+        )
+        messages = await msg_cursor.fetchall()
+        return {"ticket": dict(ticket), "messages": [dict(m) for m in messages]}
+    finally:
+        await db.close()
+
+
+@app.post("/api/admin/tickets/{ticket_id}/close")
+async def admin_close_ticket(ticket_id: int, data: dict, user_id: str = Depends(get_current_user)):
+    """Admin closes ticket — sets status to 'bearbeitet', adds solution."""
+    db = await get_db()
+    try:
+        is_admin = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        if not await is_admin.fetchone():
+            raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+        solution = data.get("solution", "")
+        status = data.get("status", "bearbeitet")
+        if status not in ("erstellt", "in bearbeitung", "bearbeitet", "abgeschlossen"):
+            raise HTTPException(400, "Ungültiger Status.")
+
+        await db.execute(
+            "UPDATE support_tickets SET status = ?, admin_solution = ?, unread_user = 1, updated_at = datetime('now','localtime') WHERE id = ?",
+            (status, solution, ticket_id),
+        )
+
+        # Add solution as admin message
+        if solution:
+            await db.execute(
+                "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'admin', ?)",
+                (ticket_id, solution),
+            )
+
+        await db.commit()
+
+        # Push notification to user
+        ticket_cursor = await db.execute("SELECT user_id FROM support_tickets WHERE id = ?", (ticket_id,))
+        ticket = await ticket_cursor.fetchone()
+        if ticket:
+            t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (ticket["user_id"],))
+            for t in await t_cursor.fetchall():
+                await send_push_notification(t["token"], "Ticket aktualisiert", f"Dein Support-Ticket #{ticket_id} wurde bearbeitet.")
+
+        return {"status": "ok"}
+    finally:
+        await db.close()
+
+
+@app.post("/api/admin/tickets/{ticket_id}/message")
+async def admin_add_message(ticket_id: int, data: dict, user_id: str = Depends(get_current_user)):
+    """Admin adds a message to a ticket."""
+    db = await get_db()
+    try:
+        is_admin = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        if not await is_admin.fetchone():
+            raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+        message = data.get("message", "")
+        if not message.strip():
+            raise HTTPException(400, "Nachricht darf nicht leer sein.")
+
+        await db.execute(
+            "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'admin', ?)",
+            (ticket_id, message),
+        )
+        await db.execute(
+            "UPDATE support_tickets SET unread_user = 1, updated_at = datetime('now','localtime') WHERE id = ?",
+            (ticket_id,),
+        )
+        await db.commit()
+
+        # Push notification to user
+        ticket_cursor = await db.execute("SELECT user_id FROM support_tickets WHERE id = ?", (ticket_id,))
+        ticket = await ticket_cursor.fetchone()
+        if ticket:
+            t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (ticket["user_id"],))
+            for t in await t_cursor.fetchall():
+                await send_push_notification(t["token"], "Neue Nachricht", f"Admin hat auf Ticket #{ticket_id} geantwortet.")
+
+        return {"status": "ok"}
+    finally:
+        await db.close()
 
 
 @app.get("/download/kamaldoc.apk")

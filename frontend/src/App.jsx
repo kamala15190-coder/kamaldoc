@@ -31,9 +31,10 @@ import AGBPage from './pages/AGBPage';
 import SupportPage from './pages/SupportPage';
 import AdminPage from './pages/AdminPage';
 import SektorDetailPage from './pages/SektorDetailPage';
+import DokumenteListe from './pages/DokumenteListe';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
-import { checkAdmin } from './api';
+import { checkAdmin, getTicketUnreadCount } from './api';
 
 const TAB_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -172,8 +173,10 @@ function TopHeader() {
   const [moreOpen, setMoreOpen] = useState(false);
   const isAdmin = useIsAdmin();
   const { signOut } = useAuth();
+  const { user } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  const [ticketBadge, setTicketBadge] = useState(0);
 
   useEffect(() => {
     setMoreOpen(false);
@@ -183,6 +186,14 @@ function TopHeader() {
     document.body.style.overflow = moreOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [moreOpen]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchBadge = () => getTicketUnreadCount().then(d => setTicketBadge(d.count || 0)).catch(() => {});
+    fetchBadge();
+    const iv = setInterval(fetchBadge, 30000);
+    return () => clearInterval(iv);
+  }, [user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -241,12 +252,14 @@ function TopHeader() {
             <button
               onClick={() => setMoreOpen(true)}
               style={{
+                position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 36, height: 36, borderRadius: 10,
                 background: 'transparent', border: 'none', cursor: 'pointer',
               }}
             >
               <Menu style={{ width: 20, height: 20, color: 'var(--text-secondary)' }} />
+              {ticketBadge > 0 && <span style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: '#FF5F6D' }} />}
             </button>
           </div>
         </div>
@@ -293,7 +306,7 @@ function TopHeader() {
             <Link
               key={path}
               to={path}
-              onClick={() => setMoreOpen(false)}
+              onClick={() => { setMoreOpen(false); if (path === '/support') setTicketBadge(0); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
                 padding: '14px 16px', borderRadius: 12, textDecoration: 'none',
@@ -303,7 +316,19 @@ function TopHeader() {
                 transition: 'all 0.2s ease',
               }}
             >
-              <Icon style={{ width: 20, height: 20, opacity: 0.8 }} />
+              <div style={{ position: 'relative' }}>
+                <Icon style={{ width: 20, height: 20, opacity: 0.8 }} />
+                {path === '/support' && ticketBadge > 0 && (
+                  <span style={{
+                    position: 'absolute', top: -4, right: -6,
+                    minWidth: 14, height: 14, borderRadius: 7,
+                    background: '#FF5F6D', color: '#fff',
+                    fontSize: 9, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: '0 3px',
+                  }}>{ticketBadge}</span>
+                )}
+              </div>
               <span style={{ fontSize: 15, fontWeight: 500 }}>{t(labelKey)}</span>
               <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
             </Link>
@@ -660,6 +685,7 @@ function AppContent() {
           <Route path="/documents/:id" element={<PrivateRoute><DocumentDetail /></PrivateRoute>} />
           <Route path="/support" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
+          <Route path="/dokumente" element={<PrivateRoute><DokumenteListe /></PrivateRoute>} />
           <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
       </main>

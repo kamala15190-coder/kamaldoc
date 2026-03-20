@@ -60,8 +60,24 @@ export default function DocumentDetail() {
   const [shared, setShared] = useState(null);
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
-  const [savedToast, setSavedToast] = useState(false);
-  const { handleApiError } = usePlanLimit();
+  const [savedToast, setSavedToast] = useState({ message: '', visible: false, fading: false });
+  const showToast = (msg) => {
+    setSavedToast({ message: msg, visible: true, fading: false });
+    setTimeout(() => setSavedToast(prev => ({ ...prev, fading: true })), 3000);
+    setTimeout(() => setSavedToast({ message: '', visible: false, fading: false }), 3300);
+  };
+  // Listen for reminder save toast
+  useEffect(() => {
+    const handler = (e) => {
+      const days = e.detail?.days;
+      if (days === null || days === 0) showToast('Erinnerung deaktiviert');
+      else showToast(`Erinnerung ${days} Tag${days > 1 ? 'e' : ''} vorher gespeichert`);
+    };
+    window.addEventListener('reminder-saved', handler);
+    return () => window.removeEventListener('reminder-saved', handler);
+  }, []);
+
+  const { handleApiError} = usePlanLimit();
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -124,8 +140,7 @@ export default function DocumentDetail() {
     try {
       const updated = await updateDocument(id, { notizen, tags });
       setDoc(updated);
-      setSavedToast(true);
-      setTimeout(() => setSavedToast(false), 2500);
+      showToast('Gespeichert!');
     } catch (err) {
       console.error(err);
     } finally {
@@ -504,8 +519,7 @@ export default function DocumentDetail() {
                           const updated = await updateDocument(id, { deadline: deadline || '' });
                           setDoc(updated);
                           setDeadline(updated.deadline || '');
-                          setSavedToast(true);
-                          setTimeout(() => setSavedToast(false), 2500);
+                          showToast(`Deadline gespeichert: ${new Date(updated.deadline).toLocaleDateString('de-DE')}`);
                         } catch (err) { console.error(err); }
                         finally { setSavingDeadline(false); }
                       }}
@@ -521,23 +535,29 @@ export default function DocumentDetail() {
                       {savingDeadline ? <Loader2 style={{ width: 12, height: 12, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 12, height: 12 }} />}
                       {t('document.saveDeadline')}
                     </button>
+                    {deadline && (
+                      <button
+                        onClick={async () => {
+                          setDeadline('');
+                          setSavingDeadline(true);
+                          try {
+                            const updated = await updateDocument(id, { deadline: '' });
+                            setDoc(updated);
+                          } catch (err) { console.error(err); }
+                          finally { setSavingDeadline(false); }
+                        }}
+                        title={t('document.removeDeadline')}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          width: 28, height: 28, borderRadius: 6,
+                          background: 'var(--danger-soft)', border: 'none', cursor: 'pointer',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <Trash2 style={{ width: 13, height: 13, color: 'var(--danger)' }} />
+                      </button>
+                    )}
                   </div>
-                  {deadline && (
-                    <button
-                      onClick={async () => {
-                        setDeadline('');
-                        setSavingDeadline(true);
-                        try {
-                          const updated = await updateDocument(id, { deadline: '' });
-                          setDoc(updated);
-                        } catch (err) { console.error(err); }
-                        finally { setSavingDeadline(false); }
-                      }}
-                      style={{ fontSize: 12, color: 'var(--danger)', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
-                    >
-                      {t('document.removeDeadline')}
-                    </button>
-                  )}
                 </div>
                 {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
                   <p style={{ fontSize: 12, color: 'var(--warning-text)', fontWeight: 600, margin: '6px 0 0' }}>
@@ -721,15 +741,32 @@ export default function DocumentDetail() {
                   {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 16, height: 16 }} />}
                   {t('document.save')}
                 </button>
-                {savedToast && (
-                  <span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <CheckCircle style={{ width: 14, height: 14 }} /> Gespeichert!
+                {savedToast.visible && (
+                  <span style={{
+                    fontSize: 13, color: 'var(--success-text)', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    animation: savedToast.fading ? 'toastFadeOut 0.3s ease forwards' : 'toastFadeIn 0.3s ease forwards',
+                  }}>
+                    <CheckCircle style={{ width: 14, height: 14 }} /> {savedToast.message}
                   </span>
                 )}
               </div>
             </CollapsibleSection>
           </div>
       </div>
+      {/* Global confirmation toast */}
+      {savedToast.visible && (
+        <div style={{
+          position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)',
+          zIndex: 100, padding: '10px 20px', borderRadius: 12,
+          background: 'rgba(16,185,129,0.95)', color: '#fff',
+          fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
+          boxShadow: '0 4px 20px rgba(16,185,129,0.3)',
+          animation: savedToast.fading ? 'toastFadeOut 0.3s ease forwards' : 'toastFadeIn 0.3s ease forwards',
+        }}>
+          <CheckCircle style={{ width: 14, height: 14 }} /> {savedToast.message}
+        </div>
+      )}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
@@ -770,6 +807,8 @@ function ReminderSettings({ docId, currentDays, onUpdate }) {
     try {
       const updated = await updateDocument(docId, { reminder_days: val === null ? 0 : val });
       if (onUpdate) onUpdate(updated);
+      // Dispatch toast event for parent
+      window.dispatchEvent(new CustomEvent('reminder-saved', { detail: { days: val } }));
     } catch (err) { console.error(err); }
     finally { setSaving(false); }
   };

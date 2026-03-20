@@ -546,7 +546,7 @@ async def reactivate_subscription(user_id: str) -> dict:
 
 # --- Stripe Checkout ---
 
-async def create_checkout_session(user_id: str, plan: str) -> dict:
+async def create_checkout_session(user_id: str, plan: str, source: str = "web") -> dict:
     """Create Stripe Checkout Session for Basic or Pro plan."""
     if not STRIPE_SECRET_KEY or STRIPE_SECRET_KEY == "sk_test_PLACEHOLDER":
         raise HTTPException(400, "Stripe ist noch nicht konfiguriert.")
@@ -587,8 +587,8 @@ async def create_checkout_session(user_id: str, plan: str) -> dict:
                 "request_three_d_secure": "automatic",
             },
         },
-        success_url=f"{FRONTEND_URL}/profil?checkout=success",
-        cancel_url=f"{FRONTEND_URL}/pricing?checkout=cancel",
+        success_url=f"at.kamaldoc.app://checkout-success" if source == "android" else f"{FRONTEND_URL}/profil?checkout=success",
+        cancel_url=f"at.kamaldoc.app://checkout-cancel" if source == "android" else f"{FRONTEND_URL}/pricing?checkout=cancel",
         metadata={"user_id": user_id, "plan": plan},
         custom_text={
             "submit": {"message": "KamalDoc – Ihr Dokumenten-Assistent"},

@@ -442,3 +442,64 @@ html, body, #root {
   transform: translateY(-8px) scale(0.95) !important;
   transition: transform 0.1s ease;
 }
+/* ===== CAMERA GLASS BUTTON ===== */
+
+@keyframes cameraGlassShine {
+  0% { transform: translateX(-120%) rotate(0deg); }
+  100% { transform: translateX(120%) rotate(0deg); }
+}
+
+@keyframes cameraGlassPulse {
+  0%, 100% { box-shadow: 0 4px 15px rgba(139, 92, 246, 0.25); }
+  50% { box-shadow: 0 4px 24px rgba(139, 92, 246, 0.45); }
+}
+
+.camera-glass-btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(139,92,246,0.85), rgba(99,102,241,0.9)) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  animation: cameraGlassPulse 3s ease-in-out infinite;
+}
+
+.camera-glass-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 250%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.04) 38%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.15) 55%,
+    rgba(255, 255, 255, 0.04) 62%,
+    transparent 70%
+  );
+  animation: cameraGlassShine 4s ease-in-out infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.camera-glass-btn:active {
+  transform: scale(0.96) !important;
+  transition: transform 0.1s ease;
+}
+
+/* ===== CONFIRMATION TOAST ===== */
+
+@keyframes toastFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastFadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
+}
+

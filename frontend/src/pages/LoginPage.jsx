@@ -74,6 +74,11 @@ export default function LoginPage() {
       const loginUrl = `${API_BASE_URL}/auth/google/login?platform=android`
       import('@capacitor/browser').then(({ Browser }) => {
         Browser.open({ url: loginUrl })
+        // Reset loading when user closes browser without completing login
+        const listener = Browser.addListener('browserFinished', () => {
+          setLoading(false)
+          listener.then(h => h.remove()).catch(() => {})
+        })
       })
       return
     }
