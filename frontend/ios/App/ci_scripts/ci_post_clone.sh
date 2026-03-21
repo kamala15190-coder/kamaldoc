@@ -1,17 +1,19 @@
 #!/bin/sh
 set -e
 
-echo "Current directory: $(pwd)"
-echo "CI_PRIMARY_REPOSITORY_PATH: $CI_PRIMARY_REPOSITORY_PATH"
+# Install Homebrew if not available
+if ! command -v brew &> /dev/null; then
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
 
-# Navigate to frontend root
+# Install Node.js via Homebrew
+brew install node
+
+# Navigate to frontend
 cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
 
-echo "Now in: $(pwd)"
-echo "Files here: $(ls)"
-
-# Install npm dependencies
+# Install dependencies
 npm install
 
-# Sync Capacitor iOS
+# Sync Capacitor
 npx cap sync ios
