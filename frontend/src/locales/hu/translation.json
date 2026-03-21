@@ -117,8 +117,7 @@
         "subline4": "Dokumentumaid várnak 📄",
         "subline5": "Ma legyünk produktívak 💪",
         "subline6": "Jól szervezve fél siker 📋",
-        "subline7": "Digitális irodád vár 🗂️",
-        "manualTask": "Kézi feladat"
+        "subline7": "Digitális irodád vár 🗂️"
     },
     "upload": {
         "title": "Dokumentum feltöltése",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Hozzáadás",
         "replyHintsLabel": "Kontextus tippek (opcionális)",
         "replyHintsPlaceholder": "pl. Legyen udvarias, hivatkozzon az 5. bekezdésre...",
-        "share": "Megosztás",
-        "translateSection": "Dokumentum fordítása",
-        "translateBtn": "Fordítás",
-        "translatingDoc": "Fordítás folyamatban…"
+        "share": "Megosztás"
     },
     "archive": {
         "title": "Archívum",

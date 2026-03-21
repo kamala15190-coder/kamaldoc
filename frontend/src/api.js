@@ -145,21 +145,6 @@ export async function deleteTodo(todoId) {
   return data;
 }
 
-export async function getOpenTodos() {
-  const { data } = await api.get('/todos/open');
-  return data;
-}
-
-export async function translateDocumentVolltext(docId, targetLanguage) {
-  const { data } = await api.post(`/documents/${docId}/translate-volltext`, { target_language: targetLanguage });
-  return data;
-}
-
-export async function getDocumentTranslations(docId) {
-  const { data } = await api.get(`/documents/${docId}/translations`);
-  return data;
-}
-
 export async function getStatus() {
   const { data } = await api.get('/status');
   return data;

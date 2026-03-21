@@ -47,5 +47,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>KamalDoc benötigt Zugriff auf deine Kamera um Dokumente zu scannen.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KamalDoc benötigt Zugriff auf deine Fotos um Dokumente hochzuladen.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>KamalDoc benötigt Zugriff um gescannte Dokumente in deiner Fotobibliothek zu speichern.</string>
 </dict>
 </plist>

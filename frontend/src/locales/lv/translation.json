@@ -117,8 +117,7 @@
         "subline4": "Jūsu dokumenti gaida 📄",
         "subline5": "Būsim produktīvi šodien 💪",
         "subline6": "Labi organizēts ir puse panākumu 📋",
-        "subline7": "Jūsu digitālais birojs gaida 🗂️",
-        "manualTask": "Manuāls uzdevums"
+        "subline7": "Jūsu digitālais birojs gaida 🗂️"
     },
     "upload": {
         "title": "Augšupielādēt dokumentu",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Pievienot",
         "replyHintsLabel": "Konteksta norādes (neobligāti)",
         "replyHintsPlaceholder": "piem. Lūdzu, esiet pieklājīgs, atsaucieties uz 5. punktu...",
-        "share": "Dalīties",
-        "translateSection": "Tulkot dokumentu",
-        "translateBtn": "Tulkot",
-        "translatingDoc": "Tulko…"
+        "share": "Dalīties"
     },
     "archive": {
         "title": "Arhīvs",

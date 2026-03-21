@@ -117,8 +117,7 @@
         "subline4": "Dokumen Anda menunggu 📄",
         "subline5": "Mari produktif hari ini 💪",
         "subline6": "Terorganisir dengan baik adalah setengah kemenangan 📋",
-        "subline7": "Kantor digital Anda menunggu 🗂️",
-        "manualTask": "Tugas manual"
+        "subline7": "Kantor digital Anda menunggu 🗂️"
     },
     "upload": {
         "title": "Unggah dokumen",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Tambah",
         "replyHintsLabel": "Petunjuk konteks (opsional)",
         "replyHintsPlaceholder": "mis. Mohon sopan, rujuk ke paragraf 5...",
-        "share": "Bagikan",
-        "translateSection": "Terjemahkan dokumen",
-        "translateBtn": "Terjemahkan",
-        "translatingDoc": "Menerjemahkan…"
+        "share": "Bagikan"
     },
     "archive": {
         "title": "Arsip",

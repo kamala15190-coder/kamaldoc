@@ -117,8 +117,7 @@
         "subline4": "Tài liệu của bạn đang chờ 📄",
         "subline5": "Hôm nay hãy năng suất 💪",
         "subline6": "Tổ chức tốt là nửa thành công 📋",
-        "subline7": "Văn phòng số của bạn đang chờ 🗂️",
-        "manualTask": "Nhiệm vụ thủ công"
+        "subline7": "Văn phòng số của bạn đang chờ 🗂️"
     },
     "upload": {
         "title": "Tải lên tài liệu",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Thêm",
         "replyHintsLabel": "Gợi ý ngữ cảnh (tùy chọn)",
         "replyHintsPlaceholder": "vd. Hãy lịch sự, tham chiếu đoạn 5...",
-        "share": "Chia sẻ",
-        "translateSection": "Dịch tài liệu",
-        "translateBtn": "Dịch",
-        "translatingDoc": "Đang dịch…"
+        "share": "Chia sẻ"
     },
     "archive": {
         "title": "Lưu trữ",

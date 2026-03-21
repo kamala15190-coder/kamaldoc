@@ -117,8 +117,7 @@
         "subline4": "Twoje dokumenty czekają 📄",
         "subline5": "Bądźmy dziś produktywni 💪",
         "subline6": "Dobrze zorganizowany to połowa sukcesu 📋",
-        "subline7": "Twoje cyfrowe biuro czeka 🗂️",
-        "manualTask": "Zadanie ręczne"
+        "subline7": "Twoje cyfrowe biuro czeka 🗂️"
     },
     "upload": {
         "title": "Prześlij dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Wskazówki kontekstowe (opcjonalne)",
         "replyHintsPlaceholder": "np. Proszę grzecznie, odwołaj się do paragrafu 5...",
-        "share": "Udostępnij",
-        "translateSection": "Przetłumacz dokument",
-        "translateBtn": "Przetłumacz",
-        "translatingDoc": "Tłumaczenie…"
+        "share": "Udostępnij"
     },
     "archive": {
         "title": "Archiwum",

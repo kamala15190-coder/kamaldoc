@@ -117,8 +117,7 @@
         "subline4": "Documentele tale așteaptă 📄",
         "subline5": "Hai să fim productivi azi 💪",
         "subline6": "Bine organizat e jumătate de bătălie 📋",
-        "subline7": "Biroul tău digital te așteaptă 🗂️",
-        "manualTask": "Sarcină manuală"
+        "subline7": "Biroul tău digital te așteaptă 🗂️"
     },
     "upload": {
         "title": "Încarcă document",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Adaugă",
         "replyHintsLabel": "Indicii de context (opțional)",
         "replyHintsPlaceholder": "ex. Fii politicos, referă-te la paragraful 5...",
-        "share": "Partajează",
-        "translateSection": "Traduce documentul",
-        "translateBtn": "Traduce",
-        "translatingDoc": "Se traduce…"
+        "share": "Partajează"
     },
     "archive": {
         "title": "Arhivă",

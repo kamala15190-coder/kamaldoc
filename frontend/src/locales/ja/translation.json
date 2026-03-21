@@ -117,8 +117,7 @@
         "subline4": "ドキュメントが待っています 📄",
         "subline5": "今日も生産的に 💪",
         "subline6": "整理整頓は成功の半分 📋",
-        "subline7": "デジタルオフィスが待っています 🗂️",
-        "manualTask": "手動タスク"
+        "subline7": "デジタルオフィスが待っています 🗂️"
     },
     "upload": {
         "title": "ドキュメントをアップロード",
@@ -209,10 +208,7 @@
         "addTaskBtn": "追加",
         "replyHintsLabel": "コンテキストヒント（任意）",
         "replyHintsPlaceholder": "例：丁寧に、第5項を参照して...",
-        "share": "共有",
-        "translateSection": "ドキュメントを翻訳",
-        "translateBtn": "翻訳",
-        "translatingDoc": "翻訳中…"
+        "share": "共有"
     },
     "archive": {
         "title": "アーカイブ",

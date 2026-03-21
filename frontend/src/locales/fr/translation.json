@@ -117,8 +117,7 @@
         "subline4": "Vos documents vous attendent 📄",
         "subline5": "Soyons productifs aujourd'hui 💪",
         "subline6": "Bien organisé, c est déjà gagné 📋",
-        "subline7": "Votre bureau numérique vous attend 🗂️",
-        "manualTask": "Tâche manuelle"
+        "subline7": "Votre bureau numérique vous attend 🗂️"
     },
     "upload": {
         "title": "Télécharger un document",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Ajouter",
         "replyHintsLabel": "Indices contextuels (optionnel)",
         "replyHintsPlaceholder": "ex. Soyez poli, faites référence au paragraphe 5...",
-        "share": "Partager",
-        "translateSection": "Traduire le document",
-        "translateBtn": "Traduire",
-        "translatingDoc": "Traduction en cours…"
+        "share": "Partager"
     },
     "archive": {
         "title": "Archives",

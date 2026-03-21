@@ -117,8 +117,7 @@
         "subline4": "Jou dokumente wag 📄",
         "subline5": "Kom ons wees produktief 💪",
         "subline6": "Goed georganiseer is half gewen 📋",
-        "subline7": "Jou digitale kantoor wag 🗂️",
-        "manualTask": "Handmatige taak"
+        "subline7": "Jou digitale kantoor wag 🗂️"
     },
     "upload": {
         "title": "Laai dokument op",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Voeg by",
         "replyHintsLabel": "Kontekswenke (opsioneel)",
         "replyHintsPlaceholder": "bv. Wees asseblief beleefd, verwys na paragraaf 5...",
-        "share": "Deel",
-        "translateSection": "Vertaal dokument",
-        "translateBtn": "Vertaal",
-        "translatingDoc": "Vertaal…"
+        "share": "Deel"
     },
     "archive": {
         "title": "Argief",

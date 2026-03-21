@@ -117,8 +117,7 @@
         "subline4": "您的文档等待处理 📄",
         "subline5": "今天要高效率 💪",
         "subline6": "有条理就成功了一半 📋",
-        "subline7": "您的数字办公室等待您 🗂️",
-        "manualTask": "手动任务"
+        "subline7": "您的数字办公室等待您 🗂️"
     },
     "upload": {
         "title": "上传文档",
@@ -209,10 +208,7 @@
         "addTaskBtn": "添加",
         "replyHintsLabel": "上下文提示（可选）",
         "replyHintsPlaceholder": "例如：请礼貌用语，参考第5段...",
-        "share": "分享",
-        "translateSection": "翻译文档",
-        "translateBtn": "翻译",
-        "translatingDoc": "正在翻译…"
+        "share": "分享"
     },
     "archive": {
         "title": "归档",

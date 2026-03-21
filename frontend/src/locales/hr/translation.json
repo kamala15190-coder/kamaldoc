@@ -117,8 +117,7 @@
         "subline4": "Vaši dokumenti čekaju 📄",
         "subline5": "Budimo produktivni danas 💪",
         "subline6": "Dobro organizirano je pola posla 📋",
-        "subline7": "Vaš digitalni ured čeka 🗂️",
-        "manualTask": "Ručni zadatak"
+        "subline7": "Vaš digitalni ured čeka 🗂️"
     },
     "upload": {
         "title": "Učitaj dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Kontekstualni savjeti (neobvezno)",
         "replyHintsPlaceholder": "npr. Budite ljubazni, pozovite se na stavak 5...",
-        "share": "Podijeli",
-        "translateSection": "Prevedi dokument",
-        "translateBtn": "Prevedi",
-        "translatingDoc": "Prevođenje…"
+        "share": "Podijeli"
     },
     "archive": {
         "title": "Arhiva",

@@ -117,8 +117,7 @@
         "subline4": "Dine dokumenter venter 📄",
         "subline5": "Lad os være produktive 💪",
         "subline6": "Godt organiseret er halvdelen 📋",
-        "subline7": "Dit digitale kontor venter 🗂️",
-        "manualTask": "Manuel opgave"
+        "subline7": "Dit digitale kontor venter 🗂️"
     },
     "upload": {
         "title": "Upload dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Tilføj",
         "replyHintsLabel": "Konteksttip (valgfrit)",
         "replyHintsPlaceholder": "f.eks. Vær venlig, henvis til paragraf 5...",
-        "share": "Del",
-        "translateSection": "Oversæt dokument",
-        "translateBtn": "Oversæt",
-        "translatingDoc": "Oversætter…"
+        "share": "Del"
     },
     "archive": {
         "title": "Arkiv",

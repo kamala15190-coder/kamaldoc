@@ -25,8 +25,7 @@ from llm_service import (
     analyze_document, analyze_document_from_text, ocr_image,
     check_mistral_status, generate_reply,
     explain_authority_document, simplify_medical_report, translate_simplified_report,
-    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter,
-    translate_document_text
+    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter
 )
 from auth import get_current_user
 from subscription import (
@@ -878,86 +877,6 @@ async def delete_todo(todo_id: int, user_id: str = Depends(get_current_user)):
         await db.execute("DELETE FROM todos WHERE id = ?", (todo_id,))
         await db.commit()
         return {"ok": True}
-    finally:
-        await db.close()
-
-
-# --- Open todos across all documents ---
-
-@app.get("/api/todos/open")
-async def get_open_todos(user_id: str = Depends(get_current_user)):
-    """Return all undone manual todos across all documents for the current user."""
-    db = await get_db()
-    try:
-        cursor = await db.execute(
-            """SELECT t.id, t.document_id, t.text, t.done, t.created_at,
-                      d.dateiname, d.absender, d.kategorie
-               FROM todos t
-               JOIN documents d ON d.id = t.document_id
-               WHERE t.user_id = ? AND t.done = 0
-               ORDER BY t.created_at DESC""",
-            (user_id,),
-        )
-        rows = await cursor.fetchall()
-        return [dict(r) for r in rows]
-    finally:
-        await db.close()
-
-
-# --- Document translation ---
-
-@app.post("/api/documents/{doc_id}/translate-volltext")
-async def translate_volltext(doc_id: int, data: dict, user_id: str = Depends(get_current_user)):
-    """Translate document volltext to target language."""
-    await check_analysis_limit(user_id)
-    target_language = data.get("target_language", "en")
-    db = await get_db()
-    try:
-        cursor = await db.execute(
-            "SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id)
-        )
-        row = await cursor.fetchone()
-        if not row:
-            raise HTTPException(404, "Dokument nicht gefunden")
-        volltext = row["volltext"]
-        if not volltext:
-            raise HTTPException(400, "Kein Volltext vorhanden")
-
-        # Check if translation already exists
-        existing = await db.execute(
-            "SELECT translated_text FROM document_translations WHERE document_id = ? AND target_language = ?",
-            (doc_id, target_language),
-        )
-        ex_row = await existing.fetchone()
-        if ex_row:
-            return {"translated": ex_row["translated_text"], "target_language": target_language, "cached": True}
-
-        translated = await translate_document_text(volltext, target_language)
-
-        await db.execute(
-            "INSERT INTO document_translations (document_id, target_language, translated_text) VALUES (?, ?, ?)",
-            (doc_id, target_language, translated),
-        )
-        await db.commit()
-        await increment_usage(user_id, "ki_analyses_month")
-        await increment_usage(user_id, "ki_analyses_total")
-
-        return {"translated": translated, "target_language": target_language, "cached": False}
-    finally:
-        await db.close()
-
-
-@app.get("/api/documents/{doc_id}/translations")
-async def get_document_translations(doc_id: int, user_id: str = Depends(get_current_user)):
-    """Get all existing translations for a document."""
-    db = await get_db()
-    try:
-        cursor = await db.execute(
-            "SELECT id, target_language, translated_text, created_at FROM document_translations WHERE document_id = ? ORDER BY created_at DESC",
-            (doc_id,),
-        )
-        rows = await cursor.fetchall()
-        return [dict(r) for r in rows]
     finally:
         await db.close()
 

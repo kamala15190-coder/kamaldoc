@@ -117,8 +117,7 @@
         "subline4": "Deine Dokumente warten 📄",
         "subline5": "Heute wird produktiv 💪",
         "subline6": "Gut organisiert ist halb gewonnen 📋",
-        "subline7": "Dein digitales Büro wartet 🗂️",
-        "manualTask": "Eigene Aufgabe"
+        "subline7": "Dein digitales Büro wartet 🗂️"
     },
     "upload": {
         "title": "Dokument hochladen",
@@ -209,10 +208,7 @@
         "reminder3": "3 Tage vorher",
         "reminder1": "1 Tag vorher",
         "reminderNone": "Keine Erinnerung",
-        "reminderFreeLocked": "Push-Notifications ab Basic Plan",
-        "translateSection": "Dokument übersetzen",
-        "translateBtn": "Übersetzen",
-        "translatingDoc": "Wird übersetzt…"
+        "reminderFreeLocked": "Push-Notifications ab Basic Plan"
     },
     "archive": {
         "title": "Archiv",

@@ -548,36 +548,7 @@ async def translate_simplified_report(text: str, target_language: str = "de") ->
     return strip_markdown(result)
 
 
-# --- Dokumentübersetzung ---
-
-DOCUMENT_TRANSLATE_PROMPT = """Übersetze den folgenden Dokumenttext vollständig in {target_language_name}.
-Behalte die Struktur und Formatierung bei. Übersetze ALLES.
-
-Text:
----
-{text}
----
-
-Schreibe NUR die Übersetzung, nichts anderes.
-
-WICHTIG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext. Verwende KEINE Emojis."""
-
-
-async def translate_document_text(text: str, target_language: str = "de") -> str:
-    """Dokument-Volltext in Zielsprache übersetzen."""
-    if target_language == "de":
-        return text
-
-    target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
-    prompt = DOCUMENT_TRANSLATE_PROMPT.format(text=text, target_language_name=target_language_name)
-    prompt += f"\n\nSPRACHE: Der gesamte Text MUSS vollständig in {target_language_name} übersetzt sein. Kein einziges Wort auf Deutsch. Sprache: {target_language_name}."
-
-    messages = [_build_system_msg(), {"role": "user", "content": prompt}]
-    result = await _mistral_chat(messages, temperature=0.3, max_tokens=6000)
-    return strip_markdown(result)
-
-
-# --- Behörden-Assistent: Rechtseinschätzung ---
+# --- Beh\u00f6rden-Assistent: Rechtseinsch\u00e4tzung ---
 
 LEGAL_ASSESSMENT_PROMPT = """Du bist ein rechtlicher Assistent f\u00fcr \u00d6sterreich, Deutschland und die Schweiz.
 Analysiere dieses Beh\u00f6rdenschreiben rechtlich:

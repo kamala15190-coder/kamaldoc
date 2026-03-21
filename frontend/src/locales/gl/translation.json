@@ -117,8 +117,7 @@
         "subline4": "Os teus documentos agardan 📄",
         "subline5": "Sexamos produtivos hoxe 💪",
         "subline6": "Ben organizado é medio gañado 📋",
-        "subline7": "A túa oficina dixital agarda 🗂️",
-        "manualTask": "Tarefa manual"
+        "subline7": "A túa oficina dixital agarda 🗂️"
     },
     "upload": {
         "title": "Subir documento",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Engadir",
         "replyHintsLabel": "Pistas de contexto (opcional)",
         "replyHintsPlaceholder": "p.ex. Por favor sexa amable, refírase ao parágrafo 5...",
-        "share": "Compartir",
-        "translateSection": "Traducir documento",
-        "translateBtn": "Traducir",
-        "translatingDoc": "Traducindo…"
+        "share": "Compartir"
     },
     "archive": {
         "title": "Arquivo",

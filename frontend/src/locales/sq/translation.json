@@ -117,8 +117,7 @@
         "subline4": "Dokumentet tuaja presin 📄",
         "subline5": "Le të jemi produktivë sot 💪",
         "subline6": "Mirë i organizuar është gjysma e betejës 📋",
-        "subline7": "Zyra juaj dixhitale pret 🗂️",
-        "manualTask": "Detyrë manuale"
+        "subline7": "Zyra juaj dixhitale pret 🗂️"
     },
     "upload": {
         "title": "Ngarko dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Shto",
         "replyHintsLabel": "Sugjerime konteksti (opsionale)",
         "replyHintsPlaceholder": "p.sh. Ju lutem jini të sjellshëm, referojuni paragrafit 5...",
-        "share": "Ndaj",
-        "translateSection": "Përkthe dokumentin",
-        "translateBtn": "Përkthe",
-        "translatingDoc": "Po përkthehet…"
+        "share": "Ndaj"
     },
     "archive": {
         "title": "Arkiva",

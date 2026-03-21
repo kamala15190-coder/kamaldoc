@@ -117,8 +117,7 @@
         "subline4": "Seus documentos aguardam 📄",
         "subline5": "Hoje seremos produtivos 💪",
         "subline6": "Bem organizado é meio caminho andado 📋",
-        "subline7": "Seu escritório digital aguarda 🗂️",
-        "manualTask": "Tarefa manual"
+        "subline7": "Seu escritório digital aguarda 🗂️"
     },
     "upload": {
         "title": "Carregar documento",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Adicionar",
         "replyHintsLabel": "Dicas de contexto (opcional)",
         "replyHintsPlaceholder": "ex. Por favor seja educado, refira-se ao parágrafo 5...",
-        "share": "Compartilhar",
-        "translateSection": "Traduzir documento",
-        "translateBtn": "Traduzir",
-        "translatingDoc": "Traduzindo…"
+        "share": "Compartilhar"
     },
     "archive": {
         "title": "Arquivo",

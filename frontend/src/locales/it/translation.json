@@ -117,8 +117,7 @@
         "subline4": "I tuoi documenti ti aspettano 📄",
         "subline5": "Oggi saremo produttivi 💪",
         "subline6": "Ben organizzato è metà della vittoria 📋",
-        "subline7": "Il tuo ufficio digitale ti aspetta 🗂️",
-        "manualTask": "Attività manuale"
+        "subline7": "Il tuo ufficio digitale ti aspetta 🗂️"
     },
     "upload": {
         "title": "Carica documento",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Aggiungi",
         "replyHintsLabel": "Suggerimenti di contesto (opzionale)",
         "replyHintsPlaceholder": "es. Per favore sii gentile, fai riferimento al paragrafo 5...",
-        "share": "Condividi",
-        "translateSection": "Traduci documento",
-        "translateBtn": "Traduci",
-        "translatingDoc": "Traduzione in corso…"
+        "share": "Condividi"
     },
     "archive": {
         "title": "Archivio",

@@ -117,8 +117,7 @@
         "subline4": "문서가 기다리고 있어요 📄",
         "subline5": "오늘은 생산적으로 💪",
         "subline6": "잘 정리하면 반은 성공 📋",
-        "subline7": "디지털 사무실이 기다립니다 🗂️",
-        "manualTask": "수동 작업"
+        "subline7": "디지털 사무실이 기다립니다 🗂️"
     },
     "upload": {
         "title": "문서 업로드",
@@ -209,10 +208,7 @@
         "addTaskBtn": "추가",
         "replyHintsLabel": "컨텍스트 힌트 (선택사항)",
         "replyHintsPlaceholder": "예: 정중하게, 5항을 참조하여...",
-        "share": "공유",
-        "translateSection": "문서 번역",
-        "translateBtn": "번역",
-        "translatingDoc": "번역 중…"
+        "share": "공유"
     },
     "archive": {
         "title": "보관함",

@@ -117,8 +117,7 @@
         "subline4": "Els teus documents t esperen 📄",
         "subline5": "Siguem productius avui 💪",
         "subline6": "Ben organitzat és mig guanyat 📋",
-        "subline7": "La teva oficina digital t espera 🗂️",
-        "manualTask": "Tasca manual"
+        "subline7": "La teva oficina digital t espera 🗂️"
     },
     "upload": {
         "title": "Pujar document",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Afegeix",
         "replyHintsLabel": "Pistes de context (opcional)",
         "replyHintsPlaceholder": "p.ex. Si us plau sigues amable, refereix-te al paràgraf 5...",
-        "share": "Comparteix",
-        "translateSection": "Traduir document",
-        "translateBtn": "Traduir",
-        "translatingDoc": "Traduint…"
+        "share": "Comparteix"
     },
     "archive": {
         "title": "Arxiu",

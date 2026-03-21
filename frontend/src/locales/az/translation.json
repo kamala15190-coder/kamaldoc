@@ -117,8 +117,7 @@
         "subline4": "Sənədlərin səni gözləyir 📄",
         "subline5": "Bu gün məhsuldar olaq 💪",
         "subline6": "Yaxşı təşkil olunmuş yarı qazanılmışdır 📋",
-        "subline7": "Rəqəmsal ofisiniz səni gözləyir 🗂️",
-        "manualTask": "Əl ilə tapşırıq"
+        "subline7": "Rəqəmsal ofisiniz səni gözləyir 🗂️"
     },
     "upload": {
         "title": "Sənəd yüklə",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Əlavə et",
         "replyHintsLabel": "Kontekst ipucları (ixtiyari)",
         "replyHintsPlaceholder": "məs. Zəhmət olmasa nəzakətli olun, 5-ci paraqrafa istinad edin...",
-        "share": "Paylaş",
-        "translateSection": "Sənədi tərcümə et",
-        "translateBtn": "Tərcümə et",
-        "translatingDoc": "Tərcümə olunur…"
+        "share": "Paylaş"
     },
     "archive": {
         "title": "Arxiv",

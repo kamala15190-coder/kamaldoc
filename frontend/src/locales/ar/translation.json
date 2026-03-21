@@ -117,8 +117,7 @@
         "subline4": "مستنداتك في انتظارك 📄",
         "subline5": "لنكن منتجين اليوم 💪",
         "subline6": "التنظيم الجيد نصف النجاح 📋",
-        "subline7": "مكتبك الرقمي في انتظارك 🗂️",
-        "manualTask": "مهمة يدوية"
+        "subline7": "مكتبك الرقمي في انتظارك 🗂️"
     },
     "upload": {
         "title": "رفع مستند",
@@ -209,10 +208,7 @@
         "addTaskBtn": "إضافة",
         "replyHintsLabel": "تلميحات السياق (اختياري)",
         "replyHintsPlaceholder": "مثال: يرجى أن تكون مهذبًا، أشر إلى الفقرة 5...",
-        "share": "مشاركة",
-        "translateSection": "ترجمة المستند",
-        "translateBtn": "ترجمة",
-        "translatingDoc": "جارٍ الترجمة…"
+        "share": "مشاركة"
     },
     "archive": {
         "title": "الأرشيف",

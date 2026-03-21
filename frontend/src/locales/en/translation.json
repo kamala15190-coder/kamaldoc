@@ -117,8 +117,7 @@
         "subline4": "Your documents await 📄",
         "subline5": "Let's be productive today 💪",
         "subline6": "Well organized is half the battle 📋",
-        "subline7": "Your digital office awaits 🗂️",
-        "manualTask": "Manual task"
+        "subline7": "Your digital office awaits 🗂️"
     },
     "upload": {
         "title": "Upload Document",
@@ -209,10 +208,7 @@
         "reminder3": "3 days before",
         "reminder1": "1 day before",
         "reminderNone": "No reminder",
-        "reminderFreeLocked": "Push notifications from Basic plan",
-        "translateSection": "Translate document",
-        "translateBtn": "Translate",
-        "translatingDoc": "Translating…"
+        "reminderFreeLocked": "Push notifications from Basic plan"
     },
     "archive": {
         "title": "Archive",

@@ -117,8 +117,7 @@
         "subline4": "Your documents await 📄",
         "subline5": "Let's be productive today 💪",
         "subline6": "Well organized is half the battle 📋",
-        "subline7": "Your digital office awaits 🗂️",
-        "manualTask": "Ձեռքով առաջադրանք"
+        "subline7": "Your digital office awaits 🗂️"
     },
     "upload": {
         "title": "Բեռնել փաստաթուղթ",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Add",
         "replyHintsLabel": "Context hints (optional)",
         "replyHintsPlaceholder": "e.g. Please be polite, refer to paragraph 5...",
-        "share": "Share",
-        "translateSection": "Թարգմանել փաստաթղթը",
-        "translateBtn": "Թարգմանել",
-        "translatingDoc": "Թարգմանվում է…"
+        "share": "Share"
     },
     "archive": {
         "title": "Արխիվ",

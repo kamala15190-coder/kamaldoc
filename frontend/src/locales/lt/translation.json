@@ -117,8 +117,7 @@
         "subline4": "Jūsų dokumentai laukia 📄",
         "subline5": "Būkime produktyvūs šiandien 💪",
         "subline6": "Gerai organizuota – pusė sėkmės 📋",
-        "subline7": "Jūsų skaitmeninė raštinė laukia 🗂️",
-        "manualTask": "Rankinė užduotis"
+        "subline7": "Jūsų skaitmeninė raštinė laukia 🗂️"
     },
     "upload": {
         "title": "Įkelti dokumentą",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Pridėti",
         "replyHintsLabel": "Konteksto užuominos (neprivaloma)",
         "replyHintsPlaceholder": "pvz. Prašome mandagiai, nurodykite 5 pastraipą...",
-        "share": "Dalintis",
-        "translateSection": "Versti dokumentą",
-        "translateBtn": "Versti",
-        "translatingDoc": "Verčiama…"
+        "share": "Dalintis"
     },
     "archive": {
         "title": "Archyvas",

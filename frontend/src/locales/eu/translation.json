@@ -117,8 +117,7 @@
         "subline4": "Zure dokumentuak zain daude 📄",
         "subline5": "Gaur emankorrak izan gaitezen 💪",
         "subline6": "Ondo antolatuta erdia irabazita da 📋",
-        "subline7": "Zure bulego digitala zain dago 🗂️",
-        "manualTask": "Eskuzko zeregina"
+        "subline7": "Zure bulego digitala zain dago 🗂️"
     },
     "upload": {
         "title": "Dokumentua igo",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Gehitu",
         "replyHintsLabel": "Testuinguru-argibideak (aukerakoa)",
         "replyHintsPlaceholder": "adib. Mesedez, eutsi ondo, aipatu 5. paragrafoa...",
-        "share": "Partekatu",
-        "translateSection": "Dokumentua itzuli",
-        "translateBtn": "Itzuli",
-        "translatingDoc": "Itzultzen…"
+        "share": "Partekatu"
     },
     "archive": {
         "title": "Artxiboa",

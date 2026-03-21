@@ -117,8 +117,7 @@
         "subline4": "Asiakirjasi odottavat 📄",
         "subline5": "Olkaamme tuottavia tänään 💪",
         "subline6": "Hyvin järjestetty on puoli voittoa 📋",
-        "subline7": "Digitaalinen toimistosi odottaa 🗂️",
-        "manualTask": "Manuaalinen tehtävä"
+        "subline7": "Digitaalinen toimistosi odottaa 🗂️"
     },
     "upload": {
         "title": "Lataa asiakirja",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Lisää",
         "replyHintsLabel": "Kontekstivihjeet (valinnainen)",
         "replyHintsPlaceholder": "esim. Ole kohtelias, viittaa kohtaan 5...",
-        "share": "Jaa",
-        "translateSection": "Käännä asiakirja",
-        "translateBtn": "Käännä",
-        "translatingDoc": "Käännetään…"
+        "share": "Jaa"
     },
     "archive": {
         "title": "Arkisto",

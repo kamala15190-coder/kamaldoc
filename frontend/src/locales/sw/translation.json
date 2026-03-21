@@ -117,8 +117,7 @@
         "subline4": "Nyaraka zako zinakungoja 📄",
         "subline5": "Tuwe na tija leo 💪",
         "subline6": "Kupanga vizuri ni nusu ya mafanikio 📋",
-        "subline7": "Ofisi yako ya kidijitali inakungoja 🗂️",
-        "manualTask": "Kazi ya mikono"
+        "subline7": "Ofisi yako ya kidijitali inakungoja 🗂️"
     },
     "upload": {
         "title": "Pakia hati",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Ongeza",
         "replyHintsLabel": "Vidokezo vya muktadha (hiari)",
         "replyHintsPlaceholder": "mf. Tafadhali kuwa na adabu, rejelea aya ya 5...",
-        "share": "Shiriki",
-        "translateSection": "Tafsiri hati",
-        "translateBtn": "Tafsiri",
-        "translatingDoc": "Inatafsiri…"
+        "share": "Shiriki"
     },
     "archive": {
         "title": "Kumbukumbu",

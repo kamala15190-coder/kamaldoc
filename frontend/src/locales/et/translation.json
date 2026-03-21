@@ -117,8 +117,7 @@
         "subline4": "Sinu dokumendid ootavad 📄",
         "subline5": "Oleme täna produktiivsed 💪",
         "subline6": "Hästi organiseeritud on pool võitu 📋",
-        "subline7": "Sinu digitaalne kontor ootab 🗂️",
-        "manualTask": "Käsitsi ülesanne"
+        "subline7": "Sinu digitaalne kontor ootab 🗂️"
     },
     "upload": {
         "title": "Laadi dokument üles",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Lisa",
         "replyHintsLabel": "Konteksti vihjed (valikuline)",
         "replyHintsPlaceholder": "nt. Palun viisakalt, viidake lõigule 5...",
-        "share": "Jaga",
-        "translateSection": "Tõlgi dokument",
-        "translateBtn": "Tõlgi",
-        "translatingDoc": "Tõlkimine…"
+        "share": "Jaga"
     },
     "archive": {
         "title": "Arhiiv",

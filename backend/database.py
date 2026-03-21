@@ -101,15 +101,6 @@ async def init_db():
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
 
-            CREATE TABLE IF NOT EXISTS document_translations (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                document_id INTEGER NOT NULL,
-                target_language TEXT NOT NULL,
-                translated_text TEXT NOT NULL,
-                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
-            );
-
             CREATE TABLE IF NOT EXISTS behoerden_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER NOT NULL,

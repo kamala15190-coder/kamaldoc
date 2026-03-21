@@ -117,8 +117,7 @@
         "subline4": "Vaše dokumenty čekají 📄",
         "subline5": "Dnes buďme produktivní 💪",
         "subline6": "Dobře organizováno je půl úspěchu 📋",
-        "subline7": "Vaše digitální kancelář čeká 🗂️",
-        "manualTask": "Ruční úkol"
+        "subline7": "Vaše digitální kancelář čeká 🗂️"
     },
     "upload": {
         "title": "Nahrát dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Přidat",
         "replyHintsLabel": "Kontextové nápovědy (volitelné)",
         "replyHintsPlaceholder": "např. Buďte zdvořilí, odkazujte na odstavec 5...",
-        "share": "Sdílet",
-        "translateSection": "Přeložit dokument",
-        "translateBtn": "Přeložit",
-        "translatingDoc": "Překládání…"
+        "share": "Sdílet"
     },
     "archive": {
         "title": "Archiv",

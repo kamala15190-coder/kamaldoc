@@ -117,8 +117,7 @@
         "subline4": "Belgelerin seni bekliyor 📄",
         "subline5": "Bugün verimli olalım 💪",
         "subline6": "İyi organize olmak işin yarısı 📋",
-        "subline7": "Dijital ofisinin seni bekliyor 🗂️",
-        "manualTask": "Manuel görev"
+        "subline7": "Dijital ofisinin seni bekliyor 🗂️"
     },
     "upload": {
         "title": "Belge Yükle",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Ekle",
         "replyHintsLabel": "Bağlam ipuçları (isteğe bağlı)",
         "replyHintsPlaceholder": "ör. Lütfen kibar olun, 5. paragrafa değinin...",
-        "share": "Paylaş",
-        "translateSection": "Belgeyi çevir",
-        "translateBtn": "Çevir",
-        "translatingDoc": "Çevriliyor…"
+        "share": "Paylaş"
     },
     "archive": {
         "title": "Arşiv",

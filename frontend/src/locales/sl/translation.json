@@ -117,8 +117,7 @@
         "subline4": "Vaši dokumenti čakajo 📄",
         "subline5": "Danes bodimo produktivni 💪",
         "subline6": "Dobra organizacija je pol uspeha 📋",
-        "subline7": "Vaša digitalna pisarna čaka 🗂️",
-        "manualTask": "Ročna naloga"
+        "subline7": "Vaša digitalna pisarna čaka 🗂️"
     },
     "upload": {
         "title": "Naloži dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Kontekstni namigi (neobvezno)",
         "replyHintsPlaceholder": "npr. Bodite vljudni, sklicujte se na odstavek 5...",
-        "share": "Deli",
-        "translateSection": "Prevedi dokument",
-        "translateBtn": "Prevedi",
-        "translatingDoc": "Prevajanje…"
+        "share": "Deli"
     },
     "archive": {
         "title": "Arhiv",

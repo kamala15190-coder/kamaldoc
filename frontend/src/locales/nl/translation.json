@@ -117,8 +117,7 @@
         "subline4": "Je documenten wachten 📄",
         "subline5": "Laten we productief zijn 💪",
         "subline6": "Goed georganiseerd is het halve werk 📋",
-        "subline7": "Je digitale kantoor wacht 🗂️",
-        "manualTask": "Handmatige taak"
+        "subline7": "Je digitale kantoor wacht 🗂️"
     },
     "upload": {
         "title": "Document uploaden",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Toevoegen",
         "replyHintsLabel": "Contexthints (optioneel)",
         "replyHintsPlaceholder": "bijv. Wees beleefd, verwijs naar paragraaf 5...",
-        "share": "Delen",
-        "translateSection": "Document vertalen",
-        "translateBtn": "Vertalen",
-        "translatingDoc": "Vertalen…"
+        "share": "Delen"
     },
     "archive": {
         "title": "Archief",

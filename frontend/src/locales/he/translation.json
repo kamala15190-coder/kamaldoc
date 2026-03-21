@@ -117,8 +117,7 @@
         "subline4": "המסמכים שלך מחכים 📄",
         "subline5": "בואו נהיה פרודוקטיביים היום 💪",
         "subline6": "ארגון טוב הוא חצי הקרב 📋",
-        "subline7": "המשרד הדיגיטלי שלך מחכה 🗂️",
-        "manualTask": "משימה ידנית"
+        "subline7": "המשרד הדיגיטלי שלך מחכה 🗂️"
     },
     "upload": {
         "title": "העלאת מסמך",
@@ -209,10 +208,7 @@
         "addTaskBtn": "הוסף",
         "replyHintsLabel": "רמזי הקשר (אופציונלי)",
         "replyHintsPlaceholder": "לדוגמה: נא להיות מנומס, להתייחס לסעיף 5...",
-        "share": "שתף",
-        "translateSection": "תרגם מסמך",
-        "translateBtn": "תרגם",
-        "translatingDoc": "מתרגם…"
+        "share": "שתף"
     },
     "archive": {
         "title": "ארכיון",

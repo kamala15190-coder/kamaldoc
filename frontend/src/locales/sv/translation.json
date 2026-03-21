@@ -117,8 +117,7 @@
         "subline4": "Dina dokument väntar 📄",
         "subline5": "Låt oss vara produktiva 💪",
         "subline6": "Välorganiserat är halva jobbet 📋",
-        "subline7": "Ditt digitala kontor väntar 🗂️",
-        "manualTask": "Manuell uppgift"
+        "subline7": "Ditt digitala kontor väntar 🗂️"
     },
     "upload": {
         "title": "Ladda upp dokument",
@@ -209,10 +208,7 @@
         "addTaskBtn": "Lägg till",
         "replyHintsLabel": "Kontextledtrådar (valfritt)",
         "replyHintsPlaceholder": "t.ex. Var vänlig, hänvisa till paragraf 5...",
-        "share": "Dela",
-        "translateSection": "Översätt dokument",
-        "translateBtn": "Översätt",
-        "translatingDoc": "Översätter…"
+        "share": "Dela"
     },
     "archive": {
         "title": "Arkiv",
