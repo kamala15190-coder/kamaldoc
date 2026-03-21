@@ -1,13 +1,16 @@
 #!/bin/sh
 set -e
 
-# Install Homebrew if not available
-if ! command -v brew &> /dev/null; then
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-fi
+# Install Node.js directly via nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 
-# Install Node.js via Homebrew
-brew install node
+# Load nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+# Install and use Node.js LTS
+nvm install --lts
+nvm use --lts
 
 # Navigate to frontend
 cd "$CI_PRIMARY_REPOSITORY_PATH/frontend"
