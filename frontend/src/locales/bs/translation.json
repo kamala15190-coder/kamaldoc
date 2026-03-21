@@ -117,7 +117,8 @@
         "subline4": "Vaši dokumenti čekaju 📄",
         "subline5": "Budimo produktivni danas 💪",
         "subline6": "Dobro organizirano je pola posla 📋",
-        "subline7": "Vaš digitalni ured čeka 🗂️"
+        "subline7": "Vaš digitalni ured čeka 🗂️",
+        "manualTask": "Ručni zadatak"
     },
     "upload": {
         "title": "Učitaj dokument",
@@ -132,7 +133,16 @@
         "gallery": "Iz galerije",
         "cameraButton": "Kamera",
         "galleryButton": "Galerija",
-        "onlyAllowed": "Dozvoljeni su samo JPG, PNG ili PDF."
+        "onlyAllowed": "Dozvoljeni su samo JPG, PNG ili PDF.",
+        "scanTitle": "Skeniraj dokument",
+        "page": "Stranica",
+        "noPages": "Nema stranica",
+        "retake": "Ponovi",
+        "delete": "Obriši",
+        "addPage": "Dodaj stranicu",
+        "finish": "Gotovo",
+        "buildingPdf": "Kreiranje PDF...",
+        "pageCount": "{{count}} stranica"
     },
     "document": {
         "back": "Nazad",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Kontekstualni savjeti (opcionalno)",
         "replyHintsPlaceholder": "npr. Budite ljubazni, pozovite se na stav 5...",
-        "share": "Podijeli"
+        "share": "Podijeli",
+        "translateSection": "Prevedi dokument",
+        "translateBtn": "Prevedi",
+        "translatingDoc": "Prevodi se…"
     },
     "archive": {
         "title": "Arhiva",
@@ -450,6 +463,31 @@
         "successTitle": "Tiket kreiran!",
         "successDesc": "Vaš tiket je uspješno kreiran. Javit ćemo vam se uskoro!",
         "newTicket": "Novi tiket",
-        "sendError": "Greška pri slanju tiketa."
+        "sendError": "Greška pri slanju tiketa.",
+        "newTicketBtn": "Novi tiket",
+        "noTickets": "Nema tiketa",
+        "createFirst": "Kreiraj prvi tiket",
+        "subject": "Naslov",
+        "subjectPlaceholder": "Kratak opis (opcionalno)",
+        "descriptionLabel": "Opis",
+        "minCharsTicket": "(min. 10 znakova)",
+        "descPlaceholder": "Opišite svoj problem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Kreiranje...",
+        "createButton": "Kreiraj tiket",
+        "createError": "Greška pri kreiranju",
+        "statusCreated": "Kreiran",
+        "statusInProgress": "U obradi",
+        "statusResolved": "Riješen",
+        "statusClosed": "Zatvoren",
+        "solutionFrom": "Rješenje od podrške:",
+        "acceptSolution": "Prihvati rješenje",
+        "writeMessage": "Napišite poruku...",
+        "ticketClosedMsg": "Tiket zatvoren",
+        "you": "Ti",
+        "supportTeam": "Podrška",
+        "attachFile": "Priloži datoteku",
+        "fileAttached": "Datoteka priložena",
+        "back": "Nazad"
     }
 }

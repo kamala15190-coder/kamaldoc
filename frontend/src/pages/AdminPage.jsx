@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Shield, Mail, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ArrowLeft, Send, CheckCircle } from 'lucide-react'
+import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip } from 'lucide-react'
 import {
-  getSupportEmail, updateSupportEmail,
   adminSearchUser, adminChangePlan,
   getAdminList, addAdmin, removeAdmin,
-  adminGetTickets, adminGetTicket, adminCloseTicket, adminAddTicketMessage,
+  adminGetTickets, adminGetTicket, adminCloseTicket, adminAddTicketMessage, adminDeleteTicket,
+  fetchTicketFileUrl,
 } from '../api'
 
 const cardStyle = {
@@ -72,55 +72,8 @@ export default function AdminPage() {
       </div>
 
       <TicketManagementSection />
-      <SupportEmailSection />
       <ChangePlanSection />
       <AdminManagementSection />
-    </div>
-  )
-}
-
-function SupportEmailSection() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [msg, setMsg] = useState(null)
-
-  useEffect(() => {
-    getSupportEmail().then(d => { setEmail(d.email); setLoading(false) }).catch(() => setLoading(false))
-  }, [])
-
-  const handleSave = async () => {
-    setSaving(true)
-    setMsg(null)
-    try {
-      await updateSupportEmail(email)
-      setMsg({ type: 'success', text: 'Support E-Mail gespeichert.' })
-    } catch (err) {
-      setMsg({ type: 'error', text: err?.response?.data?.detail || 'Fehler beim Speichern.' })
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div style={cardStyle}>
-      <h2 style={sectionTitle}>
-        <Mail style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> Support E-Mail
-      </h2>
-      {loading ? (
-        <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
-      ) : (
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-            style={inputStyle} placeholder="support@example.com" />
-          <button onClick={handleSave} disabled={saving}
-            style={{ ...btnAccent, opacity: saving ? 0.5 : 1 }}>
-            {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 14, height: 14 }} />}
-            Speichern
-          </button>
-        </div>
-      )}
-      {msg && <p style={msgStyle(msg.type)}>{msg.text}</p>}
     </div>
   )
 }
@@ -335,11 +288,13 @@ function TicketManagementSection() {
   const [selected, setSelected] = useState(null)
   const [messages, setMessages] = useState([])
   const [solution, setSolution] = useState('')
-  const [newStatus, setNewStatus] = useState('')
+  const [newStatus, setNewStatus] = useState('bearbeitet')
   const [saving, setSaving] = useState(false)
   const [newMsg, setNewMsg] = useState('')
   const [sendingMsg, setSendingMsg] = useState(false)
   const [msg, setMsg] = useState(null)
+  const [deleting, setDeleting] = useState(false)
+  const [closedOpen, setClosedOpen] = useState(false)
 
   const fetchTickets = async () => {
     try {
@@ -357,7 +312,7 @@ function TicketManagementSection() {
       setSelected(data.ticket)
       setMessages(data.messages || [])
       setSolution(data.ticket.admin_solution || '')
-      setNewStatus(data.ticket.status)
+      setNewStatus('bearbeitet')
       setMsg(null)
       fetchTickets()
     } catch (err) { console.error(err) }
@@ -384,6 +339,18 @@ function TicketManagementSection() {
       openTicket(selected.id)
     } catch (err) { console.error(err) }
     finally { setSendingMsg(false) }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Ticket und alle zugehörigen Nachrichten/Dateien wirklich endgültig löschen?')) return
+    setDeleting(true)
+    try {
+      await adminDeleteTicket(selected.id)
+      setSelected(null)
+      fetchTickets()
+    } catch (err) {
+      setMsg({ type: 'error', text: err?.response?.data?.detail || 'Fehler beim Löschen.' })
+    } finally { setDeleting(false) }
   }
 
   if (selected) {
@@ -420,6 +387,20 @@ function TicketManagementSection() {
               }}>
                 <p style={{ fontSize: 10, fontWeight: 600, color: isAdmin ? '#10B981' : '#6359FF', margin: '0 0 2px' }}>{isAdmin ? 'Admin' : 'User'}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-primary)', margin: 0, whiteSpace: 'pre-wrap' }}>{m.message}</p>
+                {m.file_url && (
+                  <button onClick={async () => {
+                    try {
+                      const blobUrl = await fetchTicketFileUrl(m.file_url)
+                      window.open(blobUrl, '_blank')
+                    } catch (e) { console.error('File fetch failed', e) }
+                  }} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4,
+                    fontSize: 11, color: 'var(--accent-solid)', background: 'none',
+                    border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
+                  }}>
+                    <Paperclip style={{ width: 11, height: 11 }} /> {m.file_name || 'Anhang'}
+                  </button>
+                )}
                 <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0', textAlign: 'right' }}>{new Date(m.created_at).toLocaleString('de-DE')}</p>
               </div>
             )
@@ -442,10 +423,16 @@ function TicketManagementSection() {
             </select>
           </div>
           <textarea value={solution} onChange={e => setSolution(e.target.value)} style={{ ...inputStyle, width: '100%', minHeight: 60, resize: 'vertical', marginBottom: 10, boxSizing: 'border-box' }} placeholder="Lösung / Antwort an User (wird als Solution angezeigt)..." />
-          <button onClick={handleClose} disabled={saving} style={{ ...btnAccent, opacity: saving ? 0.5 : 1 }}>
-            {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle style={{ width: 14, height: 14 }} />}
-            Status aktualisieren
-          </button>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button onClick={handleClose} disabled={saving} style={{ ...btnAccent, opacity: saving ? 0.5 : 1 }}>
+              {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle style={{ width: 14, height: 14 }} />}
+              Status aktualisieren
+            </button>
+            <button onClick={handleDelete} disabled={deleting} style={{ ...btnDanger, padding: '10px 14px', fontSize: 12, opacity: deleting ? 0.5 : 1 }}>
+              {deleting ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Trash2 style={{ width: 14, height: 14 }} />}
+              Ticket löschen
+            </button>
+          </div>
           {msg && <p style={msgStyle(msg.type)}>{msg.text}</p>}
         </div>
       </div>
@@ -462,35 +449,67 @@ function TicketManagementSection() {
         <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
       ) : tickets.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Keine Tickets vorhanden.</p>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {tickets.map(ticket => {
-            const st = STATUS_COLORS[ticket.status] || STATUS_COLORS['erstellt']
-            return (
-              <div key={ticket.id} onClick={() => openTicket(ticket.id)} style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10,
-                background: 'var(--bg-glass)', border: ticket.unread_admin ? '1px solid #F59E0B' : '1px solid var(--border-glass)',
-                cursor: 'pointer', transition: 'background 0.15s',
-              }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      #{ticket.id} — {ticket.subject || ticket.message.slice(0, 40)}
-                    </span>
-                    {ticket.unread_admin === 1 && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />}
+      ) : (() => {
+        const activeTickets = tickets.filter(t => t.status !== 'abgeschlossen')
+        const closedTickets = tickets.filter(t => t.status === 'abgeschlossen')
+        return (
+          <>
+            {/* Active tickets */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {activeTickets.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Keine offenen Tickets.</p>}
+              {activeTickets.map(ticket => <TicketRow key={ticket.id} ticket={ticket} onOpen={openTicket} />)}
+            </div>
+
+            {/* Closed tickets — collapsible */}
+            {closedTickets.length > 0 && (
+              <div style={{ marginTop: 14 }}>
+                <button onClick={() => setClosedOpen(p => !p)} style={{
+                  display: 'flex', alignItems: 'center', gap: 6, width: '100%',
+                  padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-glass)',
+                  background: 'var(--bg-glass)', cursor: 'pointer', color: 'var(--text-secondary)',
+                  fontSize: 12, fontWeight: 600,
+                }}>
+                  {closedOpen
+                    ? <ChevronDown style={{ width: 14, height: 14 }} />
+                    : <ChevronRight style={{ width: 14, height: 14 }} />}
+                  Abgeschlossene Tickets ({closedTickets.length})
+                </button>
+                {closedOpen && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 6 }}>
+                    {closedTickets.map(ticket => <TicketRow key={ticket.id} ticket={ticket} onOpen={openTicket} />)}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
-                    <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{ticket.priority}</span>
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{new Date(ticket.updated_at).toLocaleDateString('de-DE')}</span>
-                  </div>
-                </div>
-                <ChevronRight style={{ width: 12, height: 12, color: 'var(--text-muted)', flexShrink: 0 }} />
+                )}
               </div>
-            )
-          })}
+            )}
+          </>
+        )
+      })()}
+    </div>
+  )
+}
+
+function TicketRow({ ticket, onOpen }) {
+  const st = STATUS_COLORS[ticket.status] || STATUS_COLORS['erstellt']
+  return (
+    <div onClick={() => onOpen(ticket.id)} style={{
+      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10,
+      background: 'var(--bg-glass)', border: ticket.unread_admin ? '1px solid #F59E0B' : '1px solid var(--border-glass)',
+      cursor: 'pointer', transition: 'background 0.15s',
+    }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            #{ticket.id} — {ticket.subject || (ticket.message || '').slice(0, 40)}
+          </span>
+          {ticket.unread_admin === 1 && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#F59E0B', flexShrink: 0 }} />}
         </div>
-      )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+          <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{ticket.priority}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{new Date(ticket.updated_at).toLocaleDateString('de-DE')}</span>
+        </div>
+      </div>
+      <ChevronRight style={{ width: 12, height: 12, color: 'var(--text-muted)', flexShrink: 0 }} />
     </div>
   )
 }

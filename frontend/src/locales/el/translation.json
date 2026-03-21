@@ -117,7 +117,8 @@
         "subline4": "Τα έγγραφά σας περιμένουν 📄",
         "subline5": "Ας είμαστε παραγωγικοί 💪",
         "subline6": "Καλά οργανωμένο, μισή νίκη 📋",
-        "subline7": "Το ψηφιακό σας γραφείο περιμένει 🗂️"
+        "subline7": "Το ψηφιακό σας γραφείο περιμένει 🗂️",
+        "manualTask": "Χειροκίνητη εργασία"
     },
     "upload": {
         "title": "Μεταφόρτωση εγγράφου",
@@ -132,7 +133,16 @@
         "gallery": "Από τη γκαλερί",
         "cameraButton": "Κάμερα",
         "galleryButton": "Γκαλερί",
-        "onlyAllowed": "Επιτρέπονται μόνο JPG, PNG ή PDF."
+        "onlyAllowed": "Επιτρέπονται μόνο JPG, PNG ή PDF.",
+        "scanTitle": "Σάρωση εγγράφου",
+        "page": "Σελίδα",
+        "noPages": "Χωρίς σελίδες",
+        "retake": "Επανάληψη",
+        "delete": "Διαγραφή",
+        "addPage": "Προσθήκη σελίδας",
+        "finish": "Τέλος",
+        "buildingPdf": "Δημιουργία PDF...",
+        "pageCount": "{{count}} σελίδες"
     },
     "document": {
         "back": "Πίσω",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Προσθήκη",
         "replyHintsLabel": "Υποδείξεις πλαισίου (προαιρετικό)",
         "replyHintsPlaceholder": "π.χ. Να είστε ευγενικοί, αναφερθείτε στην παράγραφο 5...",
-        "share": "Κοινοποίηση"
+        "share": "Κοινοποίηση",
+        "translateSection": "Μετάφραση εγγράφου",
+        "translateBtn": "Μετάφραση",
+        "translatingDoc": "Μεταφράζεται…"
     },
     "archive": {
         "title": "Αρχείο",
@@ -450,6 +463,31 @@
         "successTitle": "Εισιτήριο δημιουργήθηκε!",
         "successDesc": "Το εισιτήριό σας δημιουργήθηκε. Θα απαντήσουμε σύντομα!",
         "newTicket": "Νέο εισιτήριο",
-        "sendError": "Σφάλμα αποστολής εισιτηρίου."
+        "sendError": "Σφάλμα αποστολής εισιτηρίου.",
+        "newTicketBtn": "Νέο αίτημα",
+        "noTickets": "Δεν υπάρχουν αιτήματα",
+        "createFirst": "Δημιουργία πρώτου αιτήματος",
+        "subject": "Θέμα",
+        "subjectPlaceholder": "Σύντομη περιγραφή (προαιρετικό)",
+        "descriptionLabel": "Περιγραφή",
+        "minCharsTicket": "(ελάχ. 10 χαρακτήρες)",
+        "descPlaceholder": "Περιγράψτε το πρόβλημά σας...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Δημιουργία...",
+        "createButton": "Δημιουργία αιτήματος",
+        "createError": "Σφάλμα δημιουργίας",
+        "statusCreated": "Δημιουργήθηκε",
+        "statusInProgress": "Σε εξέλιξη",
+        "statusResolved": "Επιλύθηκε",
+        "statusClosed": "Κλειστό",
+        "solutionFrom": "Λύση από την υποστήριξη:",
+        "acceptSolution": "Αποδοχή λύσης",
+        "writeMessage": "Γράψτε μήνυμα...",
+        "ticketClosedMsg": "Αίτημα κλειστό",
+        "you": "Εσύ",
+        "supportTeam": "Υποστήριξη",
+        "attachFile": "Επισύναψη αρχείου",
+        "fileAttached": "Αρχείο επισυνάφθηκε",
+        "back": "Πίσω"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "مستنداتك في انتظارك 📄",
         "subline5": "لنكن منتجين اليوم 💪",
         "subline6": "التنظيم الجيد نصف النجاح 📋",
-        "subline7": "مكتبك الرقمي في انتظارك 🗂️"
+        "subline7": "مكتبك الرقمي في انتظارك 🗂️",
+        "manualTask": "مهمة يدوية"
     },
     "upload": {
         "title": "رفع مستند",
@@ -132,7 +133,16 @@
         "gallery": "من المعرض",
         "cameraButton": "الكاميرا",
         "galleryButton": "المعرض",
-        "onlyAllowed": "مسموح فقط بـ JPG أو PNG أو PDF."
+        "onlyAllowed": "مسموح فقط بـ JPG أو PNG أو PDF.",
+        "scanTitle": "مسح المستند",
+        "page": "صفحة",
+        "noPages": "لا صفحات",
+        "retake": "إعادة التصوير",
+        "delete": "حذف",
+        "addPage": "إضافة صفحة",
+        "finish": "تم",
+        "buildingPdf": "جارٍ إنشاء PDF...",
+        "pageCount": "{{count}} صفحات"
     },
     "document": {
         "back": "رجوع",
@@ -199,7 +209,10 @@
         "addTaskBtn": "إضافة",
         "replyHintsLabel": "تلميحات السياق (اختياري)",
         "replyHintsPlaceholder": "مثال: يرجى أن تكون مهذبًا، أشر إلى الفقرة 5...",
-        "share": "مشاركة"
+        "share": "مشاركة",
+        "translateSection": "ترجمة المستند",
+        "translateBtn": "ترجمة",
+        "translatingDoc": "جارٍ الترجمة…"
     },
     "archive": {
         "title": "الأرشيف",
@@ -450,6 +463,31 @@
         "successTitle": "تم إنشاء التذكرة!",
         "successDesc": "تم إنشاء تذكرتك بنجاح. سنعود إليك قريباً!",
         "newTicket": "تذكرة جديدة",
-        "sendError": "خطأ في إرسال التذكرة."
+        "sendError": "خطأ في إرسال التذكرة.",
+        "newTicketBtn": "تذكرة جديدة",
+        "noTickets": "لا توجد تذاكر بعد",
+        "createFirst": "إنشاء أول تذكرة",
+        "subject": "الموضوع",
+        "subjectPlaceholder": "وصف مختصر (اختياري)",
+        "descriptionLabel": "الوصف",
+        "minCharsTicket": "(الحد الأدنى 10 أحرف)",
+        "descPlaceholder": "صف مشكلتك...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "جارٍ الإنشاء...",
+        "createButton": "إنشاء تذكرة",
+        "createError": "خطأ في إنشاء التذكرة",
+        "statusCreated": "تم الإنشاء",
+        "statusInProgress": "قيد المعالجة",
+        "statusResolved": "تم الحل",
+        "statusClosed": "مغلق",
+        "solutionFrom": "الحل من الدعم:",
+        "acceptSolution": "قبول الحل",
+        "writeMessage": "اكتب رسالة...",
+        "ticketClosedMsg": "التذكرة مغلقة",
+        "you": "أنت",
+        "supportTeam": "الدعم",
+        "attachFile": "إرفاق ملف",
+        "fileAttached": "تم إرفاق الملف",
+        "back": "رجوع"
     }
 }

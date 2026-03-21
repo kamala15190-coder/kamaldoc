@@ -117,7 +117,8 @@
         "subline4": "Құжаттарыңыз күтуде 📄",
         "subline5": "Бүгін өнімді болайық 💪",
         "subline6": "Жақсы ұйымдастыру — табыстың жартысы 📋",
-        "subline7": "Сандық кеңсеңіз күтуде 🗂️"
+        "subline7": "Сандық кеңсеңіз күтуде 🗂️",
+        "manualTask": "Қолмен тапсырма"
     },
     "upload": {
         "title": "Құжатты жүктеу",
@@ -132,7 +133,16 @@
         "gallery": "Галереядан",
         "cameraButton": "Камера",
         "galleryButton": "Галерея",
-        "onlyAllowed": "Тек JPG, PNG немесе PDF рұқсат етіледі."
+        "onlyAllowed": "Тек JPG, PNG немесе PDF рұқсат етіледі.",
+        "scanTitle": "Құжатты сканерлеу",
+        "page": "Бет",
+        "noPages": "Беттер жоқ",
+        "retake": "Қайта түсіру",
+        "delete": "Жою",
+        "addPage": "Бет қосу",
+        "finish": "Дайын",
+        "buildingPdf": "PDF құрылуда...",
+        "pageCount": "{{count}} бет"
     },
     "document": {
         "back": "Артқа",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Қосу",
         "replyHintsLabel": "Контекст кеңестері (міндетті емес)",
         "replyHintsPlaceholder": "мыс. Сыпайы болыңыз, 5-тармаққа сілтеме жасаңыз...",
-        "share": "Бөлісу"
+        "share": "Бөлісу",
+        "translateSection": "Құжатты аудару",
+        "translateBtn": "Аудару",
+        "translatingDoc": "Аударылуда…"
     },
     "archive": {
         "title": "Мұрағат",
@@ -450,6 +463,31 @@
         "successTitle": "Билет жасалды!",
         "successDesc": "Билетіңіз сәтті жасалды. Жақын арада жауап береміз!",
         "newTicket": "Жаңа билет",
-        "sendError": "Билетті жіберу қатесі."
+        "sendError": "Билетті жіберу қатесі.",
+        "newTicketBtn": "Жаңа тикет",
+        "noTickets": "Тикеттер жоқ",
+        "createFirst": "Алғашқы тикетті жасаңыз",
+        "subject": "Тақырып",
+        "subjectPlaceholder": "Қысқа сипаттама (міндетті емес)",
+        "descriptionLabel": "Сипаттама",
+        "minCharsTicket": "(кем дегенде 10 таңба)",
+        "descPlaceholder": "Мәселеңізді сипаттаңыз...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Жасалуда...",
+        "createButton": "Тикет жасау",
+        "createError": "Жасау қатесі",
+        "statusCreated": "Жасалды",
+        "statusInProgress": "Өңделуде",
+        "statusResolved": "Шешілді",
+        "statusClosed": "Жабылды",
+        "solutionFrom": "Қолдау шешімі:",
+        "acceptSolution": "Шешімді қабылдау",
+        "writeMessage": "Хабарлама жазыңыз...",
+        "ticketClosedMsg": "Тикет жабылды",
+        "you": "Сіз",
+        "supportTeam": "Қолдау",
+        "attachFile": "Файл тіркеу",
+        "fileAttached": "Файл тіркелді",
+        "back": "Артқа"
     }
 }

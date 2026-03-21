@@ -117,7 +117,8 @@
         "subline4": "Naghihintay ang iyong mga dokumento 📄",
         "subline5": "Maging produktibo tayo ngayon 💪",
         "subline6": "Maayos na organisado ay kalahating tagumpay 📋",
-        "subline7": "Naghihintay ang iyong digital na opisina 🗂️"
+        "subline7": "Naghihintay ang iyong digital na opisina 🗂️",
+        "manualTask": "Manu-manong gawain"
     },
     "upload": {
         "title": "Mag-upload ng dokumento",
@@ -132,7 +133,16 @@
         "gallery": "Mula sa gallery",
         "cameraButton": "Camera",
         "galleryButton": "Gallery",
-        "onlyAllowed": "JPG, PNG o PDF lang ang pinapayagan."
+        "onlyAllowed": "JPG, PNG o PDF lang ang pinapayagan.",
+        "scanTitle": "I-scan ang dokumento",
+        "page": "Pahina",
+        "noPages": "Walang pahina",
+        "retake": "Kunan muli",
+        "delete": "Tanggalin",
+        "addPage": "Magdagdag ng pahina",
+        "finish": "Tapos",
+        "buildingPdf": "Ginagawa ang PDF...",
+        "pageCount": "{{count}} pahina"
     },
     "document": {
         "back": "Bumalik",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Idagdag",
         "replyHintsLabel": "Mga pahiwatig sa konteksto (opsyonal)",
         "replyHintsPlaceholder": "hal. Maging magalang, sumangguni sa talata 5...",
-        "share": "Ibahagi"
+        "share": "Ibahagi",
+        "translateSection": "Isalin ang dokumento",
+        "translateBtn": "Isalin",
+        "translatingDoc": "Isinasalin…"
     },
     "archive": {
         "title": "Arkibo",
@@ -450,6 +463,31 @@
         "successTitle": "Nalikha ang tiket!",
         "successDesc": "Matagumpay na nalikha ang iyong tiket. Sasagutin ka namin sa lalong madaling panahon!",
         "newTicket": "Bagong tiket",
-        "sendError": "Error sa pagpapadala ng tiket."
+        "sendError": "Error sa pagpapadala ng tiket.",
+        "newTicketBtn": "Bagong ticket",
+        "noTickets": "Wala pang ticket",
+        "createFirst": "Gumawa ng unang ticket",
+        "subject": "Paksa",
+        "subjectPlaceholder": "Maikling paglalarawan (opsyonal)",
+        "descriptionLabel": "Paglalarawan",
+        "minCharsTicket": "(min. 10 character)",
+        "descPlaceholder": "Ilarawan ang iyong problema...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Ginagawa...",
+        "createButton": "Gumawa ng ticket",
+        "createError": "Error sa paggawa",
+        "statusCreated": "Nagawa",
+        "statusInProgress": "Isinasagawa",
+        "statusResolved": "Nalutas",
+        "statusClosed": "Sarado",
+        "solutionFrom": "Solusyon mula sa suporta:",
+        "acceptSolution": "Tanggapin ang solusyon",
+        "writeMessage": "Sumulat ng mensahe...",
+        "ticketClosedMsg": "Ticket sarado",
+        "you": "Ikaw",
+        "supportTeam": "Suporta",
+        "attachFile": "Maglakip ng file",
+        "fileAttached": "Nakalakip ang file",
+        "back": "Bumalik"
     }
 }

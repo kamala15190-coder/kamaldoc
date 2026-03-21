@@ -117,7 +117,8 @@
         "subline4": "Dokumentene dine venter 📄",
         "subline5": "La oss være produktive 💪",
         "subline6": "Godt organisert er halve jobben 📋",
-        "subline7": "Ditt digitale kontor venter 🗂️"
+        "subline7": "Ditt digitale kontor venter 🗂️",
+        "manualTask": "Manuell oppgave"
     },
     "upload": {
         "title": "Last opp dokument",
@@ -132,7 +133,16 @@
         "gallery": "Fra galleri",
         "cameraButton": "Kamera",
         "galleryButton": "Galleri",
-        "onlyAllowed": "Kun JPG, PNG eller PDF tillatt."
+        "onlyAllowed": "Kun JPG, PNG eller PDF tillatt.",
+        "scanTitle": "Skann dokument",
+        "page": "Side",
+        "noPages": "Ingen sider",
+        "retake": "Ta på nytt",
+        "delete": "Slett",
+        "addPage": "Legg til side",
+        "finish": "Ferdig",
+        "buildingPdf": "Lager PDF...",
+        "pageCount": "{{count}} sider"
     },
     "document": {
         "back": "Tilbake",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Legg til",
         "replyHintsLabel": "Konteksttips (valgfritt)",
         "replyHintsPlaceholder": "f.eks. Vær høflig, referer til paragraf 5...",
-        "share": "Del"
+        "share": "Del",
+        "translateSection": "Oversett dokument",
+        "translateBtn": "Oversett",
+        "translatingDoc": "Oversetter…"
     },
     "archive": {
         "title": "Arkiv",
@@ -450,6 +463,31 @@
         "successTitle": "Billett opprettet!",
         "successDesc": "Billetten din er opprettet. Vi svarer snart!",
         "newTicket": "Ny billett",
-        "sendError": "Feil ved sending av billett."
+        "sendError": "Feil ved sending av billett.",
+        "newTicketBtn": "Ny sak",
+        "noTickets": "Ingen saker ennå",
+        "createFirst": "Opprett første sak",
+        "subject": "Emne",
+        "subjectPlaceholder": "Kort beskrivelse (valgfritt)",
+        "descriptionLabel": "Beskrivelse",
+        "minCharsTicket": "(min. 10 tegn)",
+        "descPlaceholder": "Beskriv problemet ditt...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Oppretter...",
+        "createButton": "Opprett sak",
+        "createError": "Feil ved opprettelse",
+        "statusCreated": "Opprettet",
+        "statusInProgress": "Under behandling",
+        "statusResolved": "Løst",
+        "statusClosed": "Lukket",
+        "solutionFrom": "Løsning fra support:",
+        "acceptSolution": "Godta løsning",
+        "writeMessage": "Skriv en melding...",
+        "ticketClosedMsg": "Sak lukket",
+        "you": "Du",
+        "supportTeam": "Support",
+        "attachFile": "Legg ved fil",
+        "fileAttached": "Fil vedlagt",
+        "back": "Tilbake"
     }
 }

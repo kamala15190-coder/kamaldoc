@@ -117,7 +117,8 @@
         "subline4": "Tus documentos te esperan 📄",
         "subline5": "Hoy seremos productivos 💪",
         "subline6": "Bien organizado es medio ganado 📋",
-        "subline7": "Tu oficina digital te espera 🗂️"
+        "subline7": "Tu oficina digital te espera 🗂️",
+        "manualTask": "Tarea manual"
     },
     "upload": {
         "title": "Subir documento",
@@ -132,7 +133,16 @@
         "gallery": "Desde galería",
         "cameraButton": "Cámara",
         "galleryButton": "Galería",
-        "onlyAllowed": "Solo se permiten JPG, PNG o PDF."
+        "onlyAllowed": "Solo se permiten JPG, PNG o PDF.",
+        "scanTitle": "Escanear documento",
+        "page": "Página",
+        "noPages": "Sin páginas",
+        "retake": "Repetir",
+        "delete": "Eliminar",
+        "addPage": "Añadir página",
+        "finish": "Listo",
+        "buildingPdf": "Creando PDF...",
+        "pageCount": "{{count}} páginas"
     },
     "document": {
         "back": "Atrás",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Añadir",
         "replyHintsLabel": "Pistas de contexto (opcional)",
         "replyHintsPlaceholder": "p.ej. Por favor sea amable, refiérase al párrafo 5...",
-        "share": "Compartir"
+        "share": "Compartir",
+        "translateSection": "Traducir documento",
+        "translateBtn": "Traducir",
+        "translatingDoc": "Traduciendo…"
     },
     "archive": {
         "title": "Archivo",
@@ -450,6 +463,31 @@
         "successTitle": "¡Ticket creado!",
         "successDesc": "Tu ticket se ha creado con éxito. ¡Te responderemos pronto!",
         "newTicket": "Nuevo ticket",
-        "sendError": "Error al enviar el ticket."
+        "sendError": "Error al enviar el ticket.",
+        "newTicketBtn": "Nuevo ticket",
+        "noTickets": "Aún no hay tickets",
+        "createFirst": "Crear primer ticket",
+        "subject": "Asunto",
+        "subjectPlaceholder": "Breve descripción (opcional)",
+        "descriptionLabel": "Descripción",
+        "minCharsTicket": "(mín. 10 caracteres)",
+        "descPlaceholder": "Describe tu problema...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Creando...",
+        "createButton": "Crear ticket",
+        "createError": "Error al crear el ticket",
+        "statusCreated": "Creado",
+        "statusInProgress": "En proceso",
+        "statusResolved": "Resuelto",
+        "statusClosed": "Cerrado",
+        "solutionFrom": "Solución del soporte:",
+        "acceptSolution": "Aceptar solución",
+        "writeMessage": "Escribe un mensaje...",
+        "ticketClosedMsg": "Ticket cerrado",
+        "you": "Tú",
+        "supportTeam": "Soporte",
+        "attachFile": "Adjuntar archivo",
+        "fileAttached": "Archivo adjuntado",
+        "back": "Volver"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Nyaraka zako zinakungoja 📄",
         "subline5": "Tuwe na tija leo 💪",
         "subline6": "Kupanga vizuri ni nusu ya mafanikio 📋",
-        "subline7": "Ofisi yako ya kidijitali inakungoja 🗂️"
+        "subline7": "Ofisi yako ya kidijitali inakungoja 🗂️",
+        "manualTask": "Kazi ya mikono"
     },
     "upload": {
         "title": "Pakia hati",
@@ -132,7 +133,16 @@
         "gallery": "Kutoka galeri",
         "cameraButton": "Kamera",
         "galleryButton": "Galeri",
-        "onlyAllowed": "JPG, PNG au PDF pekee ndizo zinazoruhusiwa."
+        "onlyAllowed": "JPG, PNG au PDF pekee ndizo zinazoruhusiwa.",
+        "scanTitle": "Changanua hati",
+        "page": "Ukurasa",
+        "noPages": "Hakuna kurasa",
+        "retake": "Rudia",
+        "delete": "Futa",
+        "addPage": "Ongeza ukurasa",
+        "finish": "Tayari",
+        "buildingPdf": "Kuunda PDF...",
+        "pageCount": "kurasa {{count}}"
     },
     "document": {
         "back": "Rudi",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Ongeza",
         "replyHintsLabel": "Vidokezo vya muktadha (hiari)",
         "replyHintsPlaceholder": "mf. Tafadhali kuwa na adabu, rejelea aya ya 5...",
-        "share": "Shiriki"
+        "share": "Shiriki",
+        "translateSection": "Tafsiri hati",
+        "translateBtn": "Tafsiri",
+        "translatingDoc": "Inatafsiri…"
     },
     "archive": {
         "title": "Kumbukumbu",
@@ -450,6 +463,31 @@
         "successTitle": "Tiketi imetengenezwa!",
         "successDesc": "Tiketi yako imetengenezwa. Tutajibu hivi karibuni!",
         "newTicket": "Tiketi mpya",
-        "sendError": "Hitilafu wakati wa kutuma tiketi."
+        "sendError": "Hitilafu wakati wa kutuma tiketi.",
+        "newTicketBtn": "Tiketi mpya",
+        "noTickets": "Hakuna tiketi bado",
+        "createFirst": "Unda tiketi ya kwanza",
+        "subject": "Mada",
+        "subjectPlaceholder": "Maelezo mafupi (hiari)",
+        "descriptionLabel": "Maelezo",
+        "minCharsTicket": "(angalau herufi 10)",
+        "descPlaceholder": "Eleza tatizo lako...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Inaunda...",
+        "createButton": "Unda tiketi",
+        "createError": "Hitilafu kuunda",
+        "statusCreated": "Imeundwa",
+        "statusInProgress": "Inashughulikiwa",
+        "statusResolved": "Imetatuliwa",
+        "statusClosed": "Imefungwa",
+        "solutionFrom": "Suluhisho kutoka msaada:",
+        "acceptSolution": "Kubali suluhisho",
+        "writeMessage": "Andika ujumbe...",
+        "ticketClosedMsg": "Tiketi imefungwa",
+        "you": "Wewe",
+        "supportTeam": "Msaada",
+        "attachFile": "Ambatisha faili",
+        "fileAttached": "Faili imeambatishwa",
+        "back": "Rudi"
     }
 }

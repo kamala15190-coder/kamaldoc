@@ -117,7 +117,8 @@
         "subline4": "Sənədlərin səni gözləyir 📄",
         "subline5": "Bu gün məhsuldar olaq 💪",
         "subline6": "Yaxşı təşkil olunmuş yarı qazanılmışdır 📋",
-        "subline7": "Rəqəmsal ofisiniz səni gözləyir 🗂️"
+        "subline7": "Rəqəmsal ofisiniz səni gözləyir 🗂️",
+        "manualTask": "Əl ilə tapşırıq"
     },
     "upload": {
         "title": "Sənəd yüklə",
@@ -132,7 +133,16 @@
         "gallery": "Qalereyadan",
         "cameraButton": "Kamera",
         "galleryButton": "Qalereya",
-        "onlyAllowed": "Yalnız JPG, PNG və ya PDF icazə verilir."
+        "onlyAllowed": "Yalnız JPG, PNG və ya PDF icazə verilir.",
+        "scanTitle": "Sənədi skan et",
+        "page": "Səhifə",
+        "noPages": "Səhifə yoxdur",
+        "retake": "Yenidən çək",
+        "delete": "Sil",
+        "addPage": "Səhifə əlavə et",
+        "finish": "Hazır",
+        "buildingPdf": "PDF yaradılır...",
+        "pageCount": "{{count}} səhifə"
     },
     "document": {
         "back": "Geri",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Əlavə et",
         "replyHintsLabel": "Kontekst ipucları (ixtiyari)",
         "replyHintsPlaceholder": "məs. Zəhmət olmasa nəzakətli olun, 5-ci paraqrafa istinad edin...",
-        "share": "Paylaş"
+        "share": "Paylaş",
+        "translateSection": "Sənədi tərcümə et",
+        "translateBtn": "Tərcümə et",
+        "translatingDoc": "Tərcümə olunur…"
     },
     "archive": {
         "title": "Arxiv",
@@ -450,6 +463,31 @@
         "successTitle": "Bilet yaradıldı!",
         "successDesc": "Biletiniz uğurla yaradıldı. Tezliklə cavab verəcəyik!",
         "newTicket": "Yeni bilet",
-        "sendError": "Bilet göndərərkən xəta."
+        "sendError": "Bilet göndərərkən xəta.",
+        "newTicketBtn": "Yeni bilet",
+        "noTickets": "Hələ bilet yoxdur",
+        "createFirst": "İlk bileti yarat",
+        "subject": "Mövzu",
+        "subjectPlaceholder": "Qısa təsvir (isteğe bağlı)",
+        "descriptionLabel": "Təsvir",
+        "minCharsTicket": "(min. 10 simvol)",
+        "descPlaceholder": "Probleminizi təsvir edin...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Yaradılır...",
+        "createButton": "Bilet yarat",
+        "createError": "Yaratma xətası",
+        "statusCreated": "Yaradıldı",
+        "statusInProgress": "İcrada",
+        "statusResolved": "Həll edildi",
+        "statusClosed": "Bağlandı",
+        "solutionFrom": "Dəstəkdən həll:",
+        "acceptSolution": "Həlli qəbul et",
+        "writeMessage": "Mesaj yazın...",
+        "ticketClosedMsg": "Bilet bağlandı",
+        "you": "Siz",
+        "supportTeam": "Dəstək",
+        "attachFile": "Fayl əlavə et",
+        "fileAttached": "Fayl əlavə edildi",
+        "back": "Geri"
     }
 }

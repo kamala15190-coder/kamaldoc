@@ -117,7 +117,8 @@
         "subline4": "Els teus documents t esperen 📄",
         "subline5": "Siguem productius avui 💪",
         "subline6": "Ben organitzat és mig guanyat 📋",
-        "subline7": "La teva oficina digital t espera 🗂️"
+        "subline7": "La teva oficina digital t espera 🗂️",
+        "manualTask": "Tasca manual"
     },
     "upload": {
         "title": "Pujar document",
@@ -132,7 +133,16 @@
         "gallery": "Des de la galeria",
         "cameraButton": "Càmera",
         "galleryButton": "Galeria",
-        "onlyAllowed": "Només es permeten JPG, PNG o PDF."
+        "onlyAllowed": "Només es permeten JPG, PNG o PDF.",
+        "scanTitle": "Escanejar document",
+        "page": "Pàgina",
+        "noPages": "Sense pàgines",
+        "retake": "Repetir",
+        "delete": "Eliminar",
+        "addPage": "Afegir pàgina",
+        "finish": "Fet",
+        "buildingPdf": "Creant PDF...",
+        "pageCount": "{{count}} pàgines"
     },
     "document": {
         "back": "Enrere",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Afegeix",
         "replyHintsLabel": "Pistes de context (opcional)",
         "replyHintsPlaceholder": "p.ex. Si us plau sigues amable, refereix-te al paràgraf 5...",
-        "share": "Comparteix"
+        "share": "Comparteix",
+        "translateSection": "Traduir document",
+        "translateBtn": "Traduir",
+        "translatingDoc": "Traduint…"
     },
     "archive": {
         "title": "Arxiu",
@@ -450,6 +463,31 @@
         "successTitle": "Tiquet creat!",
         "successDesc": "El vostre tiquet s'ha creat amb èxit. Us respondrem aviat!",
         "newTicket": "Nou tiquet",
-        "sendError": "Error en enviar el tiquet."
+        "sendError": "Error en enviar el tiquet.",
+        "newTicketBtn": "Nou tiquet",
+        "noTickets": "Cap tiquet encara",
+        "createFirst": "Crear primer tiquet",
+        "subject": "Assumpte",
+        "subjectPlaceholder": "Breu descripció (opcional)",
+        "descriptionLabel": "Descripció",
+        "minCharsTicket": "(mín. 10 caràcters)",
+        "descPlaceholder": "Descriu el teu problema...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Creant...",
+        "createButton": "Crear tiquet",
+        "createError": "Error en crear",
+        "statusCreated": "Creat",
+        "statusInProgress": "En curs",
+        "statusResolved": "Resolt",
+        "statusClosed": "Tancat",
+        "solutionFrom": "Solució del suport:",
+        "acceptSolution": "Acceptar solució",
+        "writeMessage": "Escriu un missatge...",
+        "ticketClosedMsg": "Tiquet tancat",
+        "you": "Tu",
+        "supportTeam": "Suport",
+        "attachFile": "Adjuntar fitxer",
+        "fileAttached": "Fitxer adjuntat",
+        "back": "Enrere"
     }
 }

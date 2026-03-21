@@ -117,7 +117,8 @@
         "subline4": "Your documents await 📄",
         "subline5": "Let's be productive today 💪",
         "subline6": "Well organized is half the battle 📋",
-        "subline7": "Your digital office awaits 🗂️"
+        "subline7": "Your digital office awaits 🗂️",
+        "manualTask": "Manual task"
     },
     "upload": {
         "title": "Upload Document",
@@ -132,7 +133,16 @@
         "gallery": "From gallery",
         "cameraButton": "Camera",
         "galleryButton": "Gallery",
-        "onlyAllowed": "Only JPG, PNG or PDF allowed."
+        "onlyAllowed": "Only JPG, PNG or PDF allowed.",
+        "scanTitle": "Scan document",
+        "page": "Page",
+        "noPages": "No pages",
+        "retake": "Retake",
+        "delete": "Delete",
+        "addPage": "Add page",
+        "finish": "Done",
+        "buildingPdf": "Building PDF...",
+        "pageCount": "{{count}} pages"
     },
     "document": {
         "back": "Back",
@@ -199,7 +209,10 @@
         "reminder3": "3 days before",
         "reminder1": "1 day before",
         "reminderNone": "No reminder",
-        "reminderFreeLocked": "Push notifications from Basic plan"
+        "reminderFreeLocked": "Push notifications from Basic plan",
+        "translateSection": "Translate document",
+        "translateBtn": "Translate",
+        "translatingDoc": "Translating…"
     },
     "archive": {
         "title": "Archive",
@@ -450,6 +463,31 @@
         "successTitle": "Ticket created!",
         "successDesc": "Your ticket was successfully created. We will get back to you soon!",
         "newTicket": "New ticket",
-        "sendError": "Error sending the ticket."
+        "sendError": "Error sending the ticket.",
+        "newTicketBtn": "New Ticket",
+        "noTickets": "No tickets yet",
+        "createFirst": "Create first ticket",
+        "subject": "Subject",
+        "subjectPlaceholder": "Short description (optional)",
+        "descriptionLabel": "Description",
+        "minCharsTicket": "(min. 10 characters)",
+        "descPlaceholder": "Describe your problem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Creating...",
+        "createButton": "Create ticket",
+        "createError": "Error creating ticket",
+        "statusCreated": "Created",
+        "statusInProgress": "In progress",
+        "statusResolved": "Resolved",
+        "statusClosed": "Closed",
+        "solutionFrom": "Solution from support:",
+        "acceptSolution": "Accept solution",
+        "writeMessage": "Write a message...",
+        "ticketClosedMsg": "Ticket closed",
+        "you": "You",
+        "supportTeam": "Support",
+        "attachFile": "Attach file",
+        "fileAttached": "File attached",
+        "back": "Back"
     }
 }

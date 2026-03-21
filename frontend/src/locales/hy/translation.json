@@ -117,7 +117,8 @@
         "subline4": "Your documents await 📄",
         "subline5": "Let's be productive today 💪",
         "subline6": "Well organized is half the battle 📋",
-        "subline7": "Your digital office awaits 🗂️"
+        "subline7": "Your digital office awaits 🗂️",
+        "manualTask": "Ձեռքով առաջադրանք"
     },
     "upload": {
         "title": "Բեռնել փաստաթուղթ",
@@ -132,7 +133,16 @@
         "gallery": "Պատկերասրահից",
         "cameraButton": "Տեսախցիկ",
         "galleryButton": "Պատկերասրահ",
-        "onlyAllowed": "Թույլատրվում է միայն JPG, PNG կամ PDF։"
+        "onlyAllowed": "Թույլատրվում է միայն JPG, PNG կամ PDF։",
+        "scanTitle": "Scan document",
+        "page": "Page",
+        "noPages": "No pages",
+        "retake": "Retake",
+        "delete": "Delete",
+        "addPage": "Add page",
+        "finish": "Done",
+        "buildingPdf": "Building PDF...",
+        "pageCount": "{{count}} pages"
     },
     "document": {
         "back": "Հետ",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Add",
         "replyHintsLabel": "Context hints (optional)",
         "replyHintsPlaceholder": "e.g. Please be polite, refer to paragraph 5...",
-        "share": "Share"
+        "share": "Share",
+        "translateSection": "Թարգմանել փաստաթղթը",
+        "translateBtn": "Թարգմանել",
+        "translatingDoc": "Թարգմանվում է…"
     },
     "archive": {
         "title": "Արխիվ",
@@ -450,6 +463,31 @@
         "successTitle": "Delays!",
         "successDesc": "Delays!",
         "newTicket": "Delays",
-        "sendError": "Delays."
+        "sendError": "Delays.",
+        "newTicketBtn": "Նոdelays տdelays",
+        "noTickets": "Delays",
+        "createFirst": "New ticket",
+        "subject": "Subject",
+        "subjectPlaceholder": "Short description",
+        "descriptionLabel": "Description",
+        "minCharsTicket": "(min. 10)",
+        "descPlaceholder": "Describe...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Creating...",
+        "createButton": "Create ticket",
+        "createError": "Error",
+        "statusCreated": "Created",
+        "statusInProgress": "In progress",
+        "statusResolved": "Resolved",
+        "statusClosed": "Closed",
+        "solutionFrom": "Solution:",
+        "acceptSolution": "Accept",
+        "writeMessage": "Write message...",
+        "ticketClosedMsg": "Ticket closed",
+        "you": "You",
+        "supportTeam": "Support",
+        "attachFile": "Attach file",
+        "fileAttached": "File attached",
+        "back": "Back"
     }
 }

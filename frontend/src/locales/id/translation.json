@@ -117,7 +117,8 @@
         "subline4": "Dokumen Anda menunggu 📄",
         "subline5": "Mari produktif hari ini 💪",
         "subline6": "Terorganisir dengan baik adalah setengah kemenangan 📋",
-        "subline7": "Kantor digital Anda menunggu 🗂️"
+        "subline7": "Kantor digital Anda menunggu 🗂️",
+        "manualTask": "Tugas manual"
     },
     "upload": {
         "title": "Unggah dokumen",
@@ -132,7 +133,16 @@
         "gallery": "Dari galeri",
         "cameraButton": "Kamera",
         "galleryButton": "Galeri",
-        "onlyAllowed": "Hanya JPG, PNG atau PDF yang diizinkan."
+        "onlyAllowed": "Hanya JPG, PNG atau PDF yang diizinkan.",
+        "scanTitle": "Pindai dokumen",
+        "page": "Halaman",
+        "noPages": "Tidak ada halaman",
+        "retake": "Ulangi",
+        "delete": "Hapus",
+        "addPage": "Tambah halaman",
+        "finish": "Selesai",
+        "buildingPdf": "Membuat PDF...",
+        "pageCount": "{{count}} halaman"
     },
     "document": {
         "back": "Kembali",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Tambah",
         "replyHintsLabel": "Petunjuk konteks (opsional)",
         "replyHintsPlaceholder": "mis. Mohon sopan, rujuk ke paragraf 5...",
-        "share": "Bagikan"
+        "share": "Bagikan",
+        "translateSection": "Terjemahkan dokumen",
+        "translateBtn": "Terjemahkan",
+        "translatingDoc": "Menerjemahkan…"
     },
     "archive": {
         "title": "Arsip",
@@ -450,6 +463,31 @@
         "successTitle": "Tiket dibuat!",
         "successDesc": "Tiket Anda berhasil dibuat. Kami akan segera membalas!",
         "newTicket": "Tiket baru",
-        "sendError": "Gagal mengirim tiket."
+        "sendError": "Gagal mengirim tiket.",
+        "newTicketBtn": "Tiket baru",
+        "noTickets": "Belum ada tiket",
+        "createFirst": "Buat tiket pertama",
+        "subject": "Subjek",
+        "subjectPlaceholder": "Deskripsi singkat (opsional)",
+        "descriptionLabel": "Deskripsi",
+        "minCharsTicket": "(min. 10 karakter)",
+        "descPlaceholder": "Jelaskan masalah Anda...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Membuat...",
+        "createButton": "Buat tiket",
+        "createError": "Gagal membuat",
+        "statusCreated": "Dibuat",
+        "statusInProgress": "Diproses",
+        "statusResolved": "Diselesaikan",
+        "statusClosed": "Ditutup",
+        "solutionFrom": "Solusi dari dukungan:",
+        "acceptSolution": "Terima solusi",
+        "writeMessage": "Tulis pesan...",
+        "ticketClosedMsg": "Tiket ditutup",
+        "you": "Anda",
+        "supportTeam": "Dukungan",
+        "attachFile": "Lampirkan file",
+        "fileAttached": "File terlampir",
+        "back": "Kembali"
     }
 }

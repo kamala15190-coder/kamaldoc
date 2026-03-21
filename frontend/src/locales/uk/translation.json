@@ -117,7 +117,8 @@
         "subline4": "Ваші документи чекають 📄",
         "subline5": "Будьмо продуктивні сьогодні 💪",
         "subline6": "Добре організовано — половина справи 📋",
-        "subline7": "Ваш цифровий офіс чекає 🗂️"
+        "subline7": "Ваш цифровий офіс чекає 🗂️",
+        "manualTask": "Ручне завдання"
     },
     "upload": {
         "title": "Завантажити документ",
@@ -132,7 +133,16 @@
         "gallery": "З галереї",
         "cameraButton": "Камера",
         "galleryButton": "Галерея",
-        "onlyAllowed": "Дозволено лише JPG, PNG або PDF."
+        "onlyAllowed": "Дозволено лише JPG, PNG або PDF.",
+        "scanTitle": "Сканувати документ",
+        "page": "Сторінка",
+        "noPages": "Немає сторінок",
+        "retake": "Перезняти",
+        "delete": "Видалити",
+        "addPage": "Додати сторінку",
+        "finish": "Готово",
+        "buildingPdf": "Створення PDF...",
+        "pageCount": "{{count}} сторінок"
     },
     "document": {
         "back": "Назад",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Додати",
         "replyHintsLabel": "Контекстні підказки (необов язково)",
         "replyHintsPlaceholder": "напр. Будь ласка ввічливо, посилайтесь на пункт 5...",
-        "share": "Поділитися"
+        "share": "Поділитися",
+        "translateSection": "Перекласти документ",
+        "translateBtn": "Перекласти",
+        "translatingDoc": "Перекладається…"
     },
     "archive": {
         "title": "Архів",
@@ -450,6 +463,31 @@
         "successTitle": "Запит створено!",
         "successDesc": "Ваш запит успішно створено. Ми скоро зв'яжемося з вами!",
         "newTicket": "Новий запит",
-        "sendError": "Помилка при надсиланні запиту."
+        "sendError": "Помилка при надсиланні запиту.",
+        "newTicketBtn": "Новий тікет",
+        "noTickets": "Тікетів ще немає",
+        "createFirst": "Створити перший тікет",
+        "subject": "Тема",
+        "subjectPlaceholder": "Короткий опис (необов'язково)",
+        "descriptionLabel": "Опис",
+        "minCharsTicket": "(мін. 10 символів)",
+        "descPlaceholder": "Опишіть вашу проблему...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Створення...",
+        "createButton": "Створити тікет",
+        "createError": "Помилка створення",
+        "statusCreated": "Створено",
+        "statusInProgress": "В обробці",
+        "statusResolved": "Вирішено",
+        "statusClosed": "Закрито",
+        "solutionFrom": "Рішення від підтримки:",
+        "acceptSolution": "Прийняти рішення",
+        "writeMessage": "Написати повідомлення...",
+        "ticketClosedMsg": "Тікет закрито",
+        "you": "Ви",
+        "supportTeam": "Підтримка",
+        "attachFile": "Прикріпити файл",
+        "fileAttached": "Файл прикріплено",
+        "back": "Назад"
     }
 }

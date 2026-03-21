@@ -117,7 +117,8 @@
         "subline4": "Jūsu dokumenti gaida 📄",
         "subline5": "Būsim produktīvi šodien 💪",
         "subline6": "Labi organizēts ir puse panākumu 📋",
-        "subline7": "Jūsu digitālais birojs gaida 🗂️"
+        "subline7": "Jūsu digitālais birojs gaida 🗂️",
+        "manualTask": "Manuāls uzdevums"
     },
     "upload": {
         "title": "Augšupielādēt dokumentu",
@@ -132,7 +133,16 @@
         "gallery": "No galerijas",
         "cameraButton": "Kamera",
         "galleryButton": "Galerija",
-        "onlyAllowed": "Atļauts tikai JPG, PNG vai PDF."
+        "onlyAllowed": "Atļauts tikai JPG, PNG vai PDF.",
+        "scanTitle": "Skenēt dokumentu",
+        "page": "Lapa",
+        "noPages": "Nav lapu",
+        "retake": "Atkārtot",
+        "delete": "Dzēst",
+        "addPage": "Pievienot lapu",
+        "finish": "Gatavs",
+        "buildingPdf": "Veido PDF...",
+        "pageCount": "{{count}} lapas"
     },
     "document": {
         "back": "Atpakaļ",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Pievienot",
         "replyHintsLabel": "Konteksta norādes (neobligāti)",
         "replyHintsPlaceholder": "piem. Lūdzu, esiet pieklājīgs, atsaucieties uz 5. punktu...",
-        "share": "Dalīties"
+        "share": "Dalīties",
+        "translateSection": "Tulkot dokumentu",
+        "translateBtn": "Tulkot",
+        "translatingDoc": "Tulko…"
     },
     "archive": {
         "title": "Arhīvs",
@@ -450,6 +463,31 @@
         "successTitle": "Biļete izveidota!",
         "successDesc": "Jūsu biļete ir izveidota. Mēs drīz atbildēsim!",
         "newTicket": "Jauna biļete",
-        "sendError": "Kļūda sūtot biļeti."
+        "sendError": "Kļūda sūtot biļeti.",
+        "newTicketBtn": "Jauns pieteikums",
+        "noTickets": "Vēl nav pieteikumu",
+        "createFirst": "Izveidot pirmo pieteikumu",
+        "subject": "Tēma",
+        "subjectPlaceholder": "Īss apraksts (neobligāti)",
+        "descriptionLabel": "Apraksts",
+        "minCharsTicket": "(min. 10 rakstzīmes)",
+        "descPlaceholder": "Aprakstiet savu problēmu...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Veido...",
+        "createButton": "Izveidot pieteikumu",
+        "createError": "Kļūda veidojot",
+        "statusCreated": "Izveidots",
+        "statusInProgress": "Apstrādē",
+        "statusResolved": "Atrisināts",
+        "statusClosed": "Slēgts",
+        "solutionFrom": "Risinājums no atbalsta:",
+        "acceptSolution": "Pieņemt risinājumu",
+        "writeMessage": "Rakstīt ziņu...",
+        "ticketClosedMsg": "Pieteikums slēgts",
+        "you": "Tu",
+        "supportTeam": "Atbalsts",
+        "attachFile": "Pievienot failu",
+        "fileAttached": "Fails pievienots",
+        "back": "Atpakaļ"
     }
 }

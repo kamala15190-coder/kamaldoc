@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 import fitz  # PyMuPDF
-from fastapi import FastAPI, File, HTTPException, UploadFile, Depends, Query, Request
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from PIL import Image
@@ -22,9 +22,11 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from database import DB_PATH, DATA_DIR, get_db, init_db
 from llm_service import (
-    analyze_document, check_mistral_status, generate_reply,
+    analyze_document, analyze_document_from_text, ocr_image,
+    check_mistral_status, generate_reply,
     explain_authority_document, simplify_medical_report, translate_simplified_report,
-    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter
+    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter,
+    translate_document_text
 )
 from auth import get_current_user
 from subscription import (
@@ -275,12 +277,64 @@ def row_to_dict(row) -> dict:
     return dict(row)
 
 
+def pdf_page_count(pdf_path: str) -> int:
+    """Return the number of pages in a PDF."""
+    doc = fitz.open(pdf_path)
+    count = doc.page_count
+    doc.close()
+    return count
+
+
+def pdf_page_to_image(pdf_path: str, page_idx: int, output_path: str) -> str:
+    """Extract a single page from a PDF as JPEG."""
+    doc = fitz.open(pdf_path)
+    page = doc[page_idx]
+    pix = page.get_pixmap(dpi=200)
+    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+    img.save(output_path, format="JPEG", quality=90)
+    doc.close()
+    return output_path
+
+
 async def run_analysis(doc_id: int, image_path: str):
     """Asynchrone LLM-Analyse im Hintergrund."""
     logger.info(f"[Analyse] Starte Analyse für Dokument {doc_id}, Bild: {image_path}")
     db = await get_db()
     try:
-        result = await analyze_document(image_path)
+        # Look up original file to handle multi-page PDFs
+        cursor = await db.execute(
+            "SELECT originalpfad, dateityp FROM documents WHERE id = ?", (doc_id,)
+        )
+        doc_row = await cursor.fetchone()
+        original_path = str(ORIGINALS_DIR / doc_row["originalpfad"]) if doc_row else None
+        file_type = doc_row["dateityp"] if doc_row else ""
+
+        if file_type == "pdf" and original_path and os.path.exists(original_path):
+            num_pages = pdf_page_count(original_path)
+            logger.info(f"[Analyse] PDF mit {num_pages} Seiten erkannt: {original_path}")
+            if num_pages > 1:
+                # Multi-page PDF: OCR each page separately, combine text
+                all_ocr_texts = []
+                for i in range(num_pages):
+                    page_img_path = str(ORIGINALS_DIR / f"{Path(original_path).stem}_page{i}.jpg")
+                    pdf_page_to_image(original_path, i, page_img_path)
+                    page_text = await ocr_image(page_img_path)
+                    all_ocr_texts.append(f"--- Seite {i+1} ---\n{page_text}")
+                    logger.info(f"[Analyse] Seite {i+1}/{num_pages} OCR: {len(page_text)} Zeichen")
+                    # Clean up temp page image
+                    try:
+                        os.remove(page_img_path)
+                    except OSError:
+                        pass
+                combined_ocr = "\n\n".join(all_ocr_texts)
+                logger.info(f"[Analyse] Gesamt-OCR für {num_pages} Seiten: {len(combined_ocr)} Zeichen")
+                result = await analyze_document_from_text(combined_ocr)
+            else:
+                # Single-page PDF: use existing image
+                result = await analyze_document(image_path)
+        else:
+            # Image file: single-page OCR as before
+            result = await analyze_document(image_path)
 
         handlung_erf_raw = result.get("handlung_erforderlich")
         handlung_erf_int = 1 if handlung_erf_raw else 0
@@ -824,6 +878,86 @@ async def delete_todo(todo_id: int, user_id: str = Depends(get_current_user)):
         await db.execute("DELETE FROM todos WHERE id = ?", (todo_id,))
         await db.commit()
         return {"ok": True}
+    finally:
+        await db.close()
+
+
+# --- Open todos across all documents ---
+
+@app.get("/api/todos/open")
+async def get_open_todos(user_id: str = Depends(get_current_user)):
+    """Return all undone manual todos across all documents for the current user."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            """SELECT t.id, t.document_id, t.text, t.done, t.created_at,
+                      d.dateiname, d.absender, d.kategorie
+               FROM todos t
+               JOIN documents d ON d.id = t.document_id
+               WHERE t.user_id = ? AND t.done = 0
+               ORDER BY t.created_at DESC""",
+            (user_id,),
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        await db.close()
+
+
+# --- Document translation ---
+
+@app.post("/api/documents/{doc_id}/translate-volltext")
+async def translate_volltext(doc_id: int, data: dict, user_id: str = Depends(get_current_user)):
+    """Translate document volltext to target language."""
+    await check_analysis_limit(user_id)
+    target_language = data.get("target_language", "en")
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT volltext FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id)
+        )
+        row = await cursor.fetchone()
+        if not row:
+            raise HTTPException(404, "Dokument nicht gefunden")
+        volltext = row["volltext"]
+        if not volltext:
+            raise HTTPException(400, "Kein Volltext vorhanden")
+
+        # Check if translation already exists
+        existing = await db.execute(
+            "SELECT translated_text FROM document_translations WHERE document_id = ? AND target_language = ?",
+            (doc_id, target_language),
+        )
+        ex_row = await existing.fetchone()
+        if ex_row:
+            return {"translated": ex_row["translated_text"], "target_language": target_language, "cached": True}
+
+        translated = await translate_document_text(volltext, target_language)
+
+        await db.execute(
+            "INSERT INTO document_translations (document_id, target_language, translated_text) VALUES (?, ?, ?)",
+            (doc_id, target_language, translated),
+        )
+        await db.commit()
+        await increment_usage(user_id, "ki_analyses_month")
+        await increment_usage(user_id, "ki_analyses_total")
+
+        return {"translated": translated, "target_language": target_language, "cached": False}
+    finally:
+        await db.close()
+
+
+@app.get("/api/documents/{doc_id}/translations")
+async def get_document_translations(doc_id: int, user_id: str = Depends(get_current_user)):
+    """Get all existing translations for a document."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT id, target_language, translated_text, created_at FROM document_translations WHERE document_id = ? ORDER BY created_at DESC",
+            (doc_id,),
+        )
+        rows = await cursor.fetchall()
+        return [dict(r) for r in rows]
     finally:
         await db.close()
 
@@ -1547,7 +1681,7 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "office@kdoc.at")
 
-PERMANENT_ADMIN = "e9ce1e31-9a52-4f43-97ca-7e3a8137b40c"
+PERMANENT_ADMIN = "c300e58e-9a45-4f3d-90db-705e8083e976"
 
 
 async def _get_support_email():
@@ -1931,14 +2065,36 @@ async def send_push_notification(token: str, title: str, body: str):
 
 # --- Support Ticket System ---
 
+TICKET_FILES_DIR = DATA_DIR / "ticket_files"
+TICKET_FILES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+async def _save_ticket_file(file: UploadFile) -> tuple:
+    """Save uploaded ticket file, return (file_name, file_path)."""
+    ext = Path(file.filename).suffix or '.bin'
+    safe_name = f"{uuid.uuid4().hex}{ext}"
+    dest = TICKET_FILES_DIR / safe_name
+    content = await file.read()
+    with open(dest, 'wb') as f:
+        f.write(content)
+    return (file.filename, safe_name)
+
+
 @app.post("/api/tickets")
-async def create_ticket(data: dict, user_id: str = Depends(get_current_user)):
-    """Create a support ticket."""
-    message = data.get("message", "")
-    priority = data.get("priority", "mittel")
-    subject = data.get("subject", "")
+async def create_ticket(
+    message: str = Form(...),
+    priority: str = Form("mittel"),
+    subject: str = Form(""),
+    file: UploadFile = File(None),
+    user_id: str = Depends(get_current_user),
+):
+    """Create a support ticket (multipart form)."""
     if len(message) < 10:
         raise HTTPException(400, "Nachricht muss mindestens 10 Zeichen haben.")
+
+    file_name, file_path = None, None
+    if file and file.filename:
+        file_name, file_path = await _save_ticket_file(file)
 
     db = await get_db()
     try:
@@ -1948,10 +2104,9 @@ async def create_ticket(data: dict, user_id: str = Depends(get_current_user)):
             (user_id, subject, message, priority),
         )
         ticket_id = cursor.lastrowid
-        # Add initial message
         await db.execute(
-            "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'user', ?)",
-            (ticket_id, message),
+            "INSERT INTO ticket_messages (ticket_id, sender_type, message, file_name, file_path) VALUES (?, 'user', ?, ?, ?)",
+            (ticket_id, message, file_name, file_path),
         )
         await db.commit()
 
@@ -2017,21 +2172,35 @@ async def get_ticket(ticket_id: int, user_id: str = Depends(get_current_user)):
         await db.commit()
 
         msg_cursor = await db.execute(
-            "SELECT id, sender_type, message, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
+            "SELECT id, sender_type, message, file_name, file_path, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
             (ticket_id,),
         )
-        messages = await msg_cursor.fetchall()
-        return {"ticket": dict(ticket), "messages": [dict(m) for m in messages]}
+        messages = []
+        for m in await msg_cursor.fetchall():
+            md = dict(m)
+            if md.get("file_path"):
+                md["file_url"] = f"/api/tickets/files/{md['file_path']}"
+            messages.append(md)
+        return {"ticket": dict(ticket), "messages": messages}
     finally:
         await db.close()
 
 
 @app.post("/api/tickets/{ticket_id}/messages")
-async def add_ticket_message(ticket_id: int, data: dict, user_id: str = Depends(get_current_user)):
-    """User adds a message to their ticket."""
-    message = data.get("message", "")
-    if not message.strip():
-        raise HTTPException(400, "Nachricht darf nicht leer sein.")
+async def add_ticket_message(
+    ticket_id: int,
+    message: str = Form(""),
+    file: UploadFile = File(None),
+    user_id: str = Depends(get_current_user),
+):
+    """User adds a message to their ticket (multipart form)."""
+    has_file = file and file.filename
+    if not message.strip() and not has_file:
+        raise HTTPException(400, "Nachricht oder Datei erforderlich.")
+
+    file_name, file_path = None, None
+    if has_file:
+        file_name, file_path = await _save_ticket_file(file)
 
     db = await get_db()
     try:
@@ -2046,8 +2215,8 @@ async def add_ticket_message(ticket_id: int, data: dict, user_id: str = Depends(
             raise HTTPException(400, "Ticket ist bereits abgeschlossen.")
 
         await db.execute(
-            "INSERT INTO ticket_messages (ticket_id, sender_type, message) VALUES (?, 'user', ?)",
-            (ticket_id, message),
+            "INSERT INTO ticket_messages (ticket_id, sender_type, message, file_name, file_path) VALUES (?, 'user', ?, ?, ?)",
+            (ticket_id, message, file_name, file_path),
         )
         # If ticket was 'bearbeitet', move back to 'in bearbeitung'
         new_status = "in bearbeitung" if ticket["status"] == "bearbeitet" else ticket["status"]
@@ -2093,6 +2262,33 @@ async def accept_ticket(ticket_id: int, user_id: str = Depends(get_current_user)
         await db.close()
 
 
+@app.get("/api/tickets/files/{filename}")
+async def get_ticket_file(filename: str, user_id: str = Depends(get_current_user)):
+    """Serve a ticket attachment file. Accessible by ticket owner or any admin."""
+    fpath = TICKET_FILES_DIR / filename
+    if not fpath.exists():
+        raise HTTPException(404, "Datei nicht gefunden.")
+    # Verify: user owns a ticket with this file OR user is admin
+    db = await get_db()
+    try:
+        # Check if admin
+        admin_check = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        is_admin = await admin_check.fetchone()
+        if not is_admin:
+            # Check if user owns the ticket that has this file
+            owner_check = await db.execute(
+                """SELECT 1 FROM ticket_messages tm
+                   JOIN support_tickets st ON tm.ticket_id = st.id
+                   WHERE tm.file_path = ? AND st.user_id = ?""",
+                (filename, user_id),
+            )
+            if not await owner_check.fetchone():
+                raise HTTPException(403, "Kein Zugriff auf diese Datei.")
+    finally:
+        await db.close()
+    return FileResponse(str(fpath), filename=filename)
+
+
 # --- Admin Ticket API ---
 
 @app.get("/api/admin/tickets")
@@ -2132,11 +2328,16 @@ async def admin_get_ticket(ticket_id: int, user_id: str = Depends(get_current_us
         await db.commit()
 
         msg_cursor = await db.execute(
-            "SELECT id, sender_type, message, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
+            "SELECT id, sender_type, message, file_name, file_path, created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY created_at ASC",
             (ticket_id,),
         )
-        messages = await msg_cursor.fetchall()
-        return {"ticket": dict(ticket), "messages": [dict(m) for m in messages]}
+        messages = []
+        for m in await msg_cursor.fetchall():
+            md = dict(m)
+            if md.get("file_path"):
+                md["file_url"] = f"/api/tickets/files/{md['file_path']}"
+            messages.append(md)
+        return {"ticket": dict(ticket), "messages": messages}
     finally:
         await db.close()
 
@@ -2213,6 +2414,38 @@ async def admin_add_message(ticket_id: int, data: dict, user_id: str = Depends(g
             for t in await t_cursor.fetchall():
                 await send_push_notification(t["token"], "Neue Nachricht", f"Admin hat auf Ticket #{ticket_id} geantwortet.")
 
+        return {"status": "ok"}
+    finally:
+        await db.close()
+
+
+@app.delete("/api/admin/tickets/{ticket_id}")
+async def admin_delete_ticket(ticket_id: int, user_id: str = Depends(get_current_user)):
+    """Admin deletes a ticket and all associated messages and files."""
+    db = await get_db()
+    try:
+        is_admin = await db.execute("SELECT 1 FROM admins WHERE user_id = ?", (user_id,))
+        if not await is_admin.fetchone():
+            raise HTTPException(403, "Nur Admins haben Zugriff.")
+
+        ticket = await db.execute("SELECT id FROM support_tickets WHERE id = ?", (ticket_id,))
+        if not await ticket.fetchone():
+            raise HTTPException(404, "Ticket nicht gefunden.")
+
+        # Delete associated files from disk
+        file_cursor = await db.execute(
+            "SELECT file_path FROM ticket_messages WHERE ticket_id = ? AND file_path IS NOT NULL",
+            (ticket_id,),
+        )
+        for row in await file_cursor.fetchall():
+            fpath = TICKET_FILES_DIR / row["file_path"]
+            if fpath.exists():
+                fpath.unlink()
+
+        # Delete messages then ticket
+        await db.execute("DELETE FROM ticket_messages WHERE ticket_id = ?", (ticket_id,))
+        await db.execute("DELETE FROM support_tickets WHERE id = ?", (ticket_id,))
+        await db.commit()
         return {"status": "ok"}
     finally:
         await db.close()

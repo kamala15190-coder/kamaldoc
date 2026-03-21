@@ -117,7 +117,8 @@
         "subline4": "Dina dokument väntar 📄",
         "subline5": "Låt oss vara produktiva 💪",
         "subline6": "Välorganiserat är halva jobbet 📋",
-        "subline7": "Ditt digitala kontor väntar 🗂️"
+        "subline7": "Ditt digitala kontor väntar 🗂️",
+        "manualTask": "Manuell uppgift"
     },
     "upload": {
         "title": "Ladda upp dokument",
@@ -132,7 +133,16 @@
         "gallery": "Från galleri",
         "cameraButton": "Kamera",
         "galleryButton": "Galleri",
-        "onlyAllowed": "Endast JPG, PNG eller PDF tillåtet."
+        "onlyAllowed": "Endast JPG, PNG eller PDF tillåtet.",
+        "scanTitle": "Skanna dokument",
+        "page": "Sida",
+        "noPages": "Inga sidor",
+        "retake": "Ta om",
+        "delete": "Radera",
+        "addPage": "Lägg till sida",
+        "finish": "Klar",
+        "buildingPdf": "Skapar PDF...",
+        "pageCount": "{{count}} sidor"
     },
     "document": {
         "back": "Tillbaka",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Lägg till",
         "replyHintsLabel": "Kontextledtrådar (valfritt)",
         "replyHintsPlaceholder": "t.ex. Var vänlig, hänvisa till paragraf 5...",
-        "share": "Dela"
+        "share": "Dela",
+        "translateSection": "Översätt dokument",
+        "translateBtn": "Översätt",
+        "translatingDoc": "Översätter…"
     },
     "archive": {
         "title": "Arkiv",
@@ -450,6 +463,31 @@
         "successTitle": "Ärende skapat!",
         "successDesc": "Ditt ärende har skapats. Vi svarar snart!",
         "newTicket": "Nytt ärende",
-        "sendError": "Fel vid skickande av ärende."
+        "sendError": "Fel vid skickande av ärende.",
+        "newTicketBtn": "Nytt ärende",
+        "noTickets": "Inga ärenden ännu",
+        "createFirst": "Skapa första ärendet",
+        "subject": "Ämne",
+        "subjectPlaceholder": "Kort beskrivning (valfritt)",
+        "descriptionLabel": "Beskrivning",
+        "minCharsTicket": "(min. 10 tecken)",
+        "descPlaceholder": "Beskriv ditt problem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Skapar...",
+        "createButton": "Skapa ärende",
+        "createError": "Fel vid skapande",
+        "statusCreated": "Skapad",
+        "statusInProgress": "Pågående",
+        "statusResolved": "Löst",
+        "statusClosed": "Stängt",
+        "solutionFrom": "Lösning från support:",
+        "acceptSolution": "Acceptera lösning",
+        "writeMessage": "Skriv ett meddelande...",
+        "ticketClosedMsg": "Ärende stängt",
+        "you": "Du",
+        "supportTeam": "Support",
+        "attachFile": "Bifoga fil",
+        "fileAttached": "Fil bifogad",
+        "back": "Tillbaka"
     }
 }

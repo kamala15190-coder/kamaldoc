@@ -101,6 +101,15 @@ async def init_db():
                 FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS document_translations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER NOT NULL,
+                target_language TEXT NOT NULL,
+                translated_text TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+                FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+            );
+
             CREATE TABLE IF NOT EXISTS behoerden_results (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER NOT NULL,
@@ -135,7 +144,7 @@ async def init_db():
                 value TEXT
             );
 
-            INSERT OR IGNORE INTO admins (user_id) VALUES ('e9ce1e31-9a52-4f43-97ca-7e3a8137b40c');
+            INSERT OR IGNORE INTO admins (user_id) VALUES ('c300e58e-9a45-4f3d-90db-705e8083e976');
             INSERT OR IGNORE INTO settings (key, value) VALUES ('support_email', 'a.kamal.vb@gmail.com');
 
             CREATE TABLE IF NOT EXISTS subscriptions (
@@ -180,6 +189,8 @@ async def init_db():
                 ticket_id INTEGER NOT NULL,
                 sender_type TEXT NOT NULL DEFAULT 'user',
                 message TEXT NOT NULL,
+                file_name TEXT,
+                file_path TEXT,
                 created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 FOREIGN KEY (ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE
             );

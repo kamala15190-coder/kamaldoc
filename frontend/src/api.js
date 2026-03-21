@@ -145,6 +145,21 @@ export async function deleteTodo(todoId) {
   return data;
 }
 
+export async function getOpenTodos() {
+  const { data } = await api.get('/todos/open');
+  return data;
+}
+
+export async function translateDocumentVolltext(docId, targetLanguage) {
+  const { data } = await api.post(`/documents/${docId}/translate-volltext`, { target_language: targetLanguage });
+  return data;
+}
+
+export async function getDocumentTranslations(docId) {
+  const { data } = await api.get(`/documents/${docId}/translations`);
+  return data;
+}
+
 export async function getStatus() {
   const { data } = await api.get('/status');
   return data;
@@ -200,8 +215,13 @@ export async function submitSupportTicket({ priority, email, message }) {
   return data;
 }
 
-export async function createTicket({ subject, message, priority }) {
-  const { data } = await api.post('/tickets', { subject, message, priority });
+export async function createTicket({ subject, message, priority, file }) {
+  const formData = new FormData();
+  formData.append('subject', subject || '');
+  formData.append('message', message);
+  formData.append('priority', priority);
+  if (file) formData.append('file', file);
+  const { data } = await api.post('/tickets', formData);
   return data;
 }
 
@@ -220,8 +240,11 @@ export async function getTicket(ticketId) {
   return data;
 }
 
-export async function addTicketMessage(ticketId, message) {
-  const { data } = await api.post(`/tickets/${ticketId}/messages`, { message });
+export async function addTicketMessage(ticketId, message, file) {
+  const formData = new FormData();
+  formData.append('message', message || '');
+  if (file) formData.append('file', file);
+  const { data } = await api.post(`/tickets/${ticketId}/messages`, formData);
   return data;
 }
 
@@ -250,6 +273,19 @@ export async function adminCloseTicket(ticketId, solution, status = 'bearbeitet'
 export async function adminAddTicketMessage(ticketId, message) {
   const { data } = await api.post(`/admin/tickets/${ticketId}/message`, { message });
   return data;
+}
+
+export async function adminDeleteTicket(ticketId) {
+  const { data } = await api.delete(`/admin/tickets/${ticketId}`);
+  return data;
+}
+
+// --- Ticket file (authenticated blob fetch) ---
+
+export async function fetchTicketFileUrl(fileUrl) {
+  const url = fileUrl.startsWith('/') ? fileUrl : `/tickets/files/${fileUrl}`;
+  const resp = await api.get(url, { responseType: 'blob' });
+  return URL.createObjectURL(resp.data);
 }
 
 // --- Admin ---

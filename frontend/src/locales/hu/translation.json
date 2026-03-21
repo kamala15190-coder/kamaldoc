@@ -117,7 +117,8 @@
         "subline4": "Dokumentumaid várnak 📄",
         "subline5": "Ma legyünk produktívak 💪",
         "subline6": "Jól szervezve fél siker 📋",
-        "subline7": "Digitális irodád vár 🗂️"
+        "subline7": "Digitális irodád vár 🗂️",
+        "manualTask": "Kézi feladat"
     },
     "upload": {
         "title": "Dokumentum feltöltése",
@@ -132,7 +133,16 @@
         "gallery": "Galériából",
         "cameraButton": "Kamera",
         "galleryButton": "Galéria",
-        "onlyAllowed": "Csak JPG, PNG vagy PDF engedélyezett."
+        "onlyAllowed": "Csak JPG, PNG vagy PDF engedélyezett.",
+        "scanTitle": "Dokumentum szkennelés",
+        "page": "Oldal",
+        "noPages": "Nincs oldal",
+        "retake": "Újra",
+        "delete": "Törlés",
+        "addPage": "Oldal hozzáadása",
+        "finish": "Kész",
+        "buildingPdf": "PDF létrehozása...",
+        "pageCount": "{{count}} oldal"
     },
     "document": {
         "back": "Vissza",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Hozzáadás",
         "replyHintsLabel": "Kontextus tippek (opcionális)",
         "replyHintsPlaceholder": "pl. Legyen udvarias, hivatkozzon az 5. bekezdésre...",
-        "share": "Megosztás"
+        "share": "Megosztás",
+        "translateSection": "Dokumentum fordítása",
+        "translateBtn": "Fordítás",
+        "translatingDoc": "Fordítás folyamatban…"
     },
     "archive": {
         "title": "Archívum",
@@ -450,6 +463,31 @@
         "successTitle": "Jegy létrehozva!",
         "successDesc": "Jegye sikeresen létrehozva. Hamarosan jelentkezünk!",
         "newTicket": "Új jegy",
-        "sendError": "Hiba a jegy küldésekor."
+        "sendError": "Hiba a jegy küldésekor.",
+        "newTicketBtn": "Új jegy",
+        "noTickets": "Még nincsenek jegyek",
+        "createFirst": "Első jegy létrehozása",
+        "subject": "Tárgy",
+        "subjectPlaceholder": "Rövid leírás (opcionális)",
+        "descriptionLabel": "Leírás",
+        "minCharsTicket": "(min. 10 karakter)",
+        "descPlaceholder": "Írd le a problémádat...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Létrehozás...",
+        "createButton": "Jegy létrehozása",
+        "createError": "Hiba a létrehozáskor",
+        "statusCreated": "Létrehozva",
+        "statusInProgress": "Folyamatban",
+        "statusResolved": "Megoldva",
+        "statusClosed": "Lezárva",
+        "solutionFrom": "Megoldás a támogatástól:",
+        "acceptSolution": "Megoldás elfogadása",
+        "writeMessage": "Írj üzenetet...",
+        "ticketClosedMsg": "Jegy lezárva",
+        "you": "Te",
+        "supportTeam": "Támogatás",
+        "attachFile": "Fájl csatolása",
+        "fileAttached": "Fájl csatolva",
+        "back": "Vissza"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Jou dokumente wag 📄",
         "subline5": "Kom ons wees produktief 💪",
         "subline6": "Goed georganiseer is half gewen 📋",
-        "subline7": "Jou digitale kantoor wag 🗂️"
+        "subline7": "Jou digitale kantoor wag 🗂️",
+        "manualTask": "Handmatige taak"
     },
     "upload": {
         "title": "Laai dokument op",
@@ -132,7 +133,16 @@
         "gallery": "Uit galery",
         "cameraButton": "Kamera",
         "galleryButton": "Galery",
-        "onlyAllowed": "Slegs JPG, PNG of PDF toegelaat."
+        "onlyAllowed": "Slegs JPG, PNG of PDF toegelaat.",
+        "scanTitle": "Skandeer dokument",
+        "page": "Bladsy",
+        "noPages": "Geen bladsye",
+        "retake": "Herdoen",
+        "delete": "Verwyder",
+        "addPage": "Voeg bladsy by",
+        "finish": "Klaar",
+        "buildingPdf": "Skep PDF...",
+        "pageCount": "{{count}} bladsye"
     },
     "document": {
         "back": "Terug",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Voeg by",
         "replyHintsLabel": "Kontekswenke (opsioneel)",
         "replyHintsPlaceholder": "bv. Wees asseblief beleefd, verwys na paragraaf 5...",
-        "share": "Deel"
+        "share": "Deel",
+        "translateSection": "Vertaal dokument",
+        "translateBtn": "Vertaal",
+        "translatingDoc": "Vertaal…"
     },
     "archive": {
         "title": "Argief",
@@ -450,6 +463,31 @@
         "successTitle": "Kaartjie geskep!",
         "successDesc": "Jou kaartjie is suksesvol geskep. Ons sal binnekort reageer!",
         "newTicket": "Nuwe kaartjie",
-        "sendError": "Fout met stuur van kaartjie."
+        "sendError": "Fout met stuur van kaartjie.",
+        "newTicketBtn": "Nuwe kaartjie",
+        "noTickets": "Nog geen kaartjies",
+        "createFirst": "Skep eerste kaartjie",
+        "subject": "Onderwerp",
+        "subjectPlaceholder": "Kort beskrywing (opsioneel)",
+        "descriptionLabel": "Beskrywing",
+        "minCharsTicket": "(min. 10 karakters)",
+        "descPlaceholder": "Beskryf jou probleem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Skep...",
+        "createButton": "Skep kaartjie",
+        "createError": "Fout met skepping",
+        "statusCreated": "Geskep",
+        "statusInProgress": "Besig",
+        "statusResolved": "Opgelos",
+        "statusClosed": "Gesluit",
+        "solutionFrom": "Oplossing van ondersteuning:",
+        "acceptSolution": "Aanvaar oplossing",
+        "writeMessage": "Skryf 'n boodskap...",
+        "ticketClosedMsg": "Kaartjie gesluit",
+        "you": "Jy",
+        "supportTeam": "Ondersteuning",
+        "attachFile": "Heg lêer aan",
+        "fileAttached": "Lêer aangeheg",
+        "back": "Terug"
     }
 }

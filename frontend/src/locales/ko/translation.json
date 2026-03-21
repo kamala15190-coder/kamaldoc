@@ -117,7 +117,8 @@
         "subline4": "문서가 기다리고 있어요 📄",
         "subline5": "오늘은 생산적으로 💪",
         "subline6": "잘 정리하면 반은 성공 📋",
-        "subline7": "디지털 사무실이 기다립니다 🗂️"
+        "subline7": "디지털 사무실이 기다립니다 🗂️",
+        "manualTask": "수동 작업"
     },
     "upload": {
         "title": "문서 업로드",
@@ -132,7 +133,16 @@
         "gallery": "갤러리에서",
         "cameraButton": "카메라",
         "galleryButton": "갤러리",
-        "onlyAllowed": "JPG, PNG 또는 PDF만 허용됩니다."
+        "onlyAllowed": "JPG, PNG 또는 PDF만 허용됩니다.",
+        "scanTitle": "문서 스캔",
+        "page": "페이지",
+        "noPages": "페이지 없음",
+        "retake": "재촬영",
+        "delete": "삭제",
+        "addPage": "페이지 추가",
+        "finish": "완료",
+        "buildingPdf": "PDF 생성 중...",
+        "pageCount": "{{count}} 페이지"
     },
     "document": {
         "back": "뒤로",
@@ -199,7 +209,10 @@
         "addTaskBtn": "추가",
         "replyHintsLabel": "컨텍스트 힌트 (선택사항)",
         "replyHintsPlaceholder": "예: 정중하게, 5항을 참조하여...",
-        "share": "공유"
+        "share": "공유",
+        "translateSection": "문서 번역",
+        "translateBtn": "번역",
+        "translatingDoc": "번역 중…"
     },
     "archive": {
         "title": "보관함",
@@ -450,6 +463,31 @@
         "successTitle": "티켓 생성됨!",
         "successDesc": "티켓이 성공적으로 생성되었습니다. 곧 답변드리겠습니다!",
         "newTicket": "새 티켓",
-        "sendError": "티켓 전송 오류."
+        "sendError": "티켓 전송 오류.",
+        "newTicketBtn": "새 티켓",
+        "noTickets": "아직 티켓이 없습니다",
+        "createFirst": "첫 번째 티켓 만들기",
+        "subject": "제목",
+        "subjectPlaceholder": "간단한 설명 (선택사항)",
+        "descriptionLabel": "설명",
+        "minCharsTicket": "(최소 10자)",
+        "descPlaceholder": "문제를 설명하세요...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "생성 중...",
+        "createButton": "티켓 만들기",
+        "createError": "생성 오류",
+        "statusCreated": "생성됨",
+        "statusInProgress": "처리 중",
+        "statusResolved": "해결됨",
+        "statusClosed": "종료됨",
+        "solutionFrom": "지원팀 솔루션:",
+        "acceptSolution": "솔루션 수락",
+        "writeMessage": "메시지 입력...",
+        "ticketClosedMsg": "티켓 종료됨",
+        "you": "나",
+        "supportTeam": "지원",
+        "attachFile": "파일 첨부",
+        "fileAttached": "파일 첨부됨",
+        "back": "뒤로"
     }
 }

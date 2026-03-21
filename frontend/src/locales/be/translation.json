@@ -117,7 +117,8 @@
         "subline4": "Вашы дакументы чакаюць 📄",
         "subline5": "Будзем прадуктыўнымі сёння 💪",
         "subline6": "Добра арганізацыя — палова поспеху 📋",
-        "subline7": "Ваш лічбавы офіс чакае 🗂️"
+        "subline7": "Ваш лічбавы офіс чакае 🗂️",
+        "manualTask": "Ручная задача"
     },
     "upload": {
         "title": "Загрузіць дакумент",
@@ -132,7 +133,16 @@
         "gallery": "З галерэі",
         "cameraButton": "Камера",
         "galleryButton": "Галерэя",
-        "onlyAllowed": "Дазволены толькі JPG, PNG або PDF."
+        "onlyAllowed": "Дазволены толькі JPG, PNG або PDF.",
+        "scanTitle": "Сканаваць дакумент",
+        "page": "Старонка",
+        "noPages": "Няма старонак",
+        "retake": "Паўтарыць",
+        "delete": "Выдаліць",
+        "addPage": "Дадаць старонку",
+        "finish": "Гатова",
+        "buildingPdf": "Стварэнне PDF...",
+        "pageCount": "{{count}} старонак"
     },
     "document": {
         "back": "Назад",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Дадаць",
         "replyHintsLabel": "Кантэкстныя падказкі (неабавязкова)",
         "replyHintsPlaceholder": "напр. Калі ласка ветліва, спасылайцеся на пункт 5...",
-        "share": "Падзяліцца"
+        "share": "Падзяліцца",
+        "translateSection": "Перакласці дакумент",
+        "translateBtn": "Перакласці",
+        "translatingDoc": "Перакладаецца…"
     },
     "archive": {
         "title": "Архіў",
@@ -450,6 +463,31 @@
         "successTitle": "Білет створаны!",
         "successDesc": "Ваш білет паспяхова створаны. Мы хутка адкажам!",
         "newTicket": "Новы білет",
-        "sendError": "Памылка адпраўкі білета."
+        "sendError": "Памылка адпраўкі білета.",
+        "newTicketBtn": "Новы тыкет",
+        "noTickets": "Тыкетаў пакуль няма",
+        "createFirst": "Стварыць першы тыкет",
+        "subject": "Тэма",
+        "subjectPlaceholder": "Кароткае апісанне (неабавязкова)",
+        "descriptionLabel": "Апісанне",
+        "minCharsTicket": "(мін. 10 знакаў)",
+        "descPlaceholder": "Апішыце вашу праблему...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Стварэнне...",
+        "createButton": "Стварыць тыкет",
+        "createError": "Памылка стварэння",
+        "statusCreated": "Створаны",
+        "statusInProgress": "У працэсе",
+        "statusResolved": "Вырашаны",
+        "statusClosed": "Зачынены",
+        "solutionFrom": "Рашэнне ад падтрымкі:",
+        "acceptSolution": "Прыняць рашэнне",
+        "writeMessage": "Напісаць паведамленне...",
+        "ticketClosedMsg": "Тыкет зачынены",
+        "you": "Вы",
+        "supportTeam": "Падтрымка",
+        "attachFile": "Прыкласці файл",
+        "fileAttached": "Файл прыкладзены",
+        "back": "Назад"
     }
 }

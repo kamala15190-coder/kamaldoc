@@ -117,7 +117,8 @@
         "subline4": "Twoje dokumenty czekają 📄",
         "subline5": "Bądźmy dziś produktywni 💪",
         "subline6": "Dobrze zorganizowany to połowa sukcesu 📋",
-        "subline7": "Twoje cyfrowe biuro czeka 🗂️"
+        "subline7": "Twoje cyfrowe biuro czeka 🗂️",
+        "manualTask": "Zadanie ręczne"
     },
     "upload": {
         "title": "Prześlij dokument",
@@ -132,7 +133,16 @@
         "gallery": "Z galerii",
         "cameraButton": "Aparat",
         "galleryButton": "Galeria",
-        "onlyAllowed": "Dozwolone tylko JPG, PNG lub PDF."
+        "onlyAllowed": "Dozwolone tylko JPG, PNG lub PDF.",
+        "scanTitle": "Skanuj dokument",
+        "page": "Strona",
+        "noPages": "Brak stron",
+        "retake": "Ponów",
+        "delete": "Usuń",
+        "addPage": "Dodaj stronę",
+        "finish": "Gotowe",
+        "buildingPdf": "Tworzenie PDF...",
+        "pageCount": "{{count}} stron"
     },
     "document": {
         "back": "Wstecz",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Wskazówki kontekstowe (opcjonalne)",
         "replyHintsPlaceholder": "np. Proszę grzecznie, odwołaj się do paragrafu 5...",
-        "share": "Udostępnij"
+        "share": "Udostępnij",
+        "translateSection": "Przetłumacz dokument",
+        "translateBtn": "Przetłumacz",
+        "translatingDoc": "Tłumaczenie…"
     },
     "archive": {
         "title": "Archiwum",
@@ -450,6 +463,31 @@
         "successTitle": "Zgłoszenie utworzone!",
         "successDesc": "Twoje zgłoszenie zostało pomyślnie utworzone. Wkrótce się z Tobą skontaktujemy!",
         "newTicket": "Nowe zgłoszenie",
-        "sendError": "Błąd podczas wysyłania zgłoszenia."
+        "sendError": "Błąd podczas wysyłania zgłoszenia.",
+        "newTicketBtn": "Nowy bilet",
+        "noTickets": "Brak biletów",
+        "createFirst": "Utwórz pierwszy bilet",
+        "subject": "Temat",
+        "subjectPlaceholder": "Krótki opis (opcjonalnie)",
+        "descriptionLabel": "Opis",
+        "minCharsTicket": "(min. 10 znaków)",
+        "descPlaceholder": "Opisz swój problem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Tworzenie...",
+        "createButton": "Utwórz bilet",
+        "createError": "Błąd tworzenia",
+        "statusCreated": "Utworzony",
+        "statusInProgress": "W trakcie",
+        "statusResolved": "Rozwiązany",
+        "statusClosed": "Zamknięty",
+        "solutionFrom": "Rozwiązanie od wsparcia:",
+        "acceptSolution": "Zaakceptuj rozwiązanie",
+        "writeMessage": "Napisz wiadomość...",
+        "ticketClosedMsg": "Bilet zamknięty",
+        "you": "Ty",
+        "supportTeam": "Wsparcie",
+        "attachFile": "Załącz plik",
+        "fileAttached": "Plik załączony",
+        "back": "Wstecz"
     }
 }

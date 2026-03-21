@@ -117,7 +117,8 @@
         "subline4": "ドキュメントが待っています 📄",
         "subline5": "今日も生産的に 💪",
         "subline6": "整理整頓は成功の半分 📋",
-        "subline7": "デジタルオフィスが待っています 🗂️"
+        "subline7": "デジタルオフィスが待っています 🗂️",
+        "manualTask": "手動タスク"
     },
     "upload": {
         "title": "ドキュメントをアップロード",
@@ -132,7 +133,16 @@
         "gallery": "ギャラリーから",
         "cameraButton": "カメラ",
         "galleryButton": "ギャラリー",
-        "onlyAllowed": "JPG、PNGまたはPDFのみ対応。"
+        "onlyAllowed": "JPG、PNGまたはPDFのみ対応。",
+        "scanTitle": "ドキュメントをスキャン",
+        "page": "ページ",
+        "noPages": "ページなし",
+        "retake": "撮り直し",
+        "delete": "削除",
+        "addPage": "ページを追加",
+        "finish": "完了",
+        "buildingPdf": "PDF作成中...",
+        "pageCount": "{{count}} ページ"
     },
     "document": {
         "back": "戻る",
@@ -199,7 +209,10 @@
         "addTaskBtn": "追加",
         "replyHintsLabel": "コンテキストヒント（任意）",
         "replyHintsPlaceholder": "例：丁寧に、第5項を参照して...",
-        "share": "共有"
+        "share": "共有",
+        "translateSection": "ドキュメントを翻訳",
+        "translateBtn": "翻訳",
+        "translatingDoc": "翻訳中…"
     },
     "archive": {
         "title": "アーカイブ",
@@ -450,6 +463,31 @@
         "successTitle": "チケット作成完了！",
         "successDesc": "チケットが作成されました。まもなくご連絡いたします！",
         "newTicket": "新しいチケット",
-        "sendError": "チケット送信エラー。"
+        "sendError": "チケット送信エラー。",
+        "newTicketBtn": "新しいチケット",
+        "noTickets": "チケットはまだありません",
+        "createFirst": "最初のチケットを作成",
+        "subject": "件名",
+        "subjectPlaceholder": "簡単な説明（任意）",
+        "descriptionLabel": "説明",
+        "minCharsTicket": "（最低10文字）",
+        "descPlaceholder": "問題を説明してください...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "作成中...",
+        "createButton": "チケット作成",
+        "createError": "作成エラー",
+        "statusCreated": "作成済み",
+        "statusInProgress": "対応中",
+        "statusResolved": "解決済み",
+        "statusClosed": "完了",
+        "solutionFrom": "サポートからの解決策：",
+        "acceptSolution": "解決策を承認",
+        "writeMessage": "メッセージを入力...",
+        "ticketClosedMsg": "チケット完了",
+        "you": "あなた",
+        "supportTeam": "サポート",
+        "attachFile": "ファイルを添付",
+        "fileAttached": "ファイル添付済み",
+        "back": "戻る"
     }
 }

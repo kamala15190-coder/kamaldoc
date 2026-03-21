@@ -117,7 +117,8 @@
         "subline4": "Вашите документи чекаат 📄",
         "subline5": "Да бидеме продуктивни денес 💪",
         "subline6": "Добро организирано е половина успех 📋",
-        "subline7": "Вашата дигитална канцеларија чека 🗂️"
+        "subline7": "Вашата дигитална канцеларија чека 🗂️",
+        "manualTask": "Рачна задача"
     },
     "upload": {
         "title": "Прикачи документ",
@@ -132,7 +133,16 @@
         "gallery": "Од галерија",
         "cameraButton": "Камера",
         "galleryButton": "Галерија",
-        "onlyAllowed": "Дозволени се само JPG, PNG или PDF."
+        "onlyAllowed": "Дозволени се само JPG, PNG или PDF.",
+        "scanTitle": "Скенирај документ",
+        "page": "Страница",
+        "noPages": "Нема страници",
+        "retake": "Повтори",
+        "delete": "Избриши",
+        "addPage": "Додади страница",
+        "finish": "Готово",
+        "buildingPdf": "Се креира PDF...",
+        "pageCount": "{{count}} страници"
     },
     "document": {
         "back": "Назад",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Додади",
         "replyHintsLabel": "Контекстуални совети (опционално)",
         "replyHintsPlaceholder": "пр. Ве молиме бидете учтиви, повикајте се на параграф 5...",
-        "share": "Сподели"
+        "share": "Сподели",
+        "translateSection": "Преведи документ",
+        "translateBtn": "Преведи",
+        "translatingDoc": "Се преведува…"
     },
     "archive": {
         "title": "Архива",
@@ -450,6 +463,31 @@
         "successTitle": "Тикетот е креиран!",
         "successDesc": "Вашиот тикет е успешно креиран. Ќе ви одговориме наскоро!",
         "newTicket": "Нов тикет",
-        "sendError": "Грешка при испраќање тикет."
+        "sendError": "Грешка при испраќање тикет.",
+        "newTicketBtn": "Нов тикет",
+        "noTickets": "Нема тикети",
+        "createFirst": "Креирај прв тикет",
+        "subject": "Тема",
+        "subjectPlaceholder": "Краток опис (опционо)",
+        "descriptionLabel": "Опис",
+        "minCharsTicket": "(мин. 10 знаци)",
+        "descPlaceholder": "Опишете го вашиот проблем...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Се креира...",
+        "createButton": "Креирај тикет",
+        "createError": "Грешка при креирање",
+        "statusCreated": "Креиран",
+        "statusInProgress": "Во обработка",
+        "statusResolved": "Решен",
+        "statusClosed": "Затворен",
+        "solutionFrom": "Решение од поддршка:",
+        "acceptSolution": "Прифати решение",
+        "writeMessage": "Напишете порака...",
+        "ticketClosedMsg": "Тикетот е затворен",
+        "you": "Ти",
+        "supportTeam": "Поддршка",
+        "attachFile": "Прикачи датотека",
+        "fileAttached": "Датотеката е прикачена",
+        "back": "Назад"
     }
 }

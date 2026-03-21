@@ -117,7 +117,8 @@
         "subline4": "Sinu dokumendid ootavad 📄",
         "subline5": "Oleme täna produktiivsed 💪",
         "subline6": "Hästi organiseeritud on pool võitu 📋",
-        "subline7": "Sinu digitaalne kontor ootab 🗂️"
+        "subline7": "Sinu digitaalne kontor ootab 🗂️",
+        "manualTask": "Käsitsi ülesanne"
     },
     "upload": {
         "title": "Laadi dokument üles",
@@ -132,7 +133,16 @@
         "gallery": "Galeriist",
         "cameraButton": "Kaamera",
         "galleryButton": "Galerii",
-        "onlyAllowed": "Lubatud ainult JPG, PNG või PDF."
+        "onlyAllowed": "Lubatud ainult JPG, PNG või PDF.",
+        "scanTitle": "Skaneeri dokument",
+        "page": "Lehekülg",
+        "noPages": "Lehekülgi pole",
+        "retake": "Uuesti",
+        "delete": "Kustuta",
+        "addPage": "Lisa lehekülg",
+        "finish": "Valmis",
+        "buildingPdf": "PDF loomine...",
+        "pageCount": "{{count}} lehekülge"
     },
     "document": {
         "back": "Tagasi",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Lisa",
         "replyHintsLabel": "Konteksti vihjed (valikuline)",
         "replyHintsPlaceholder": "nt. Palun viisakalt, viidake lõigule 5...",
-        "share": "Jaga"
+        "share": "Jaga",
+        "translateSection": "Tõlgi dokument",
+        "translateBtn": "Tõlgi",
+        "translatingDoc": "Tõlkimine…"
     },
     "archive": {
         "title": "Arhiiv",
@@ -450,6 +463,31 @@
         "successTitle": "Pilet loodud!",
         "successDesc": "Teie pilet on loodud. Vastame peagi!",
         "newTicket": "Uus pilet",
-        "sendError": "Viga pileti saatmisel."
+        "sendError": "Viga pileti saatmisel.",
+        "newTicketBtn": "Uus pilet",
+        "noTickets": "Pileteid veel ei ole",
+        "createFirst": "Loo esimene pilet",
+        "subject": "Teema",
+        "subjectPlaceholder": "Lühikirjeldus (valikuline)",
+        "descriptionLabel": "Kirjeldus",
+        "minCharsTicket": "(min. 10 tähemärki)",
+        "descPlaceholder": "Kirjelda oma probleemi...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Loomine...",
+        "createButton": "Loo pilet",
+        "createError": "Viga loomisel",
+        "statusCreated": "Loodud",
+        "statusInProgress": "Töös",
+        "statusResolved": "Lahendatud",
+        "statusClosed": "Suletud",
+        "solutionFrom": "Lahendus toelt:",
+        "acceptSolution": "Nõustu lahendusega",
+        "writeMessage": "Kirjuta sõnum...",
+        "ticketClosedMsg": "Pilet suletud",
+        "you": "Sina",
+        "supportTeam": "Tugi",
+        "attachFile": "Lisa fail",
+        "fileAttached": "Fail lisatud",
+        "back": "Tagasi"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Vaši dokumenti čakajo 📄",
         "subline5": "Danes bodimo produktivni 💪",
         "subline6": "Dobra organizacija je pol uspeha 📋",
-        "subline7": "Vaša digitalna pisarna čaka 🗂️"
+        "subline7": "Vaša digitalna pisarna čaka 🗂️",
+        "manualTask": "Ročna naloga"
     },
     "upload": {
         "title": "Naloži dokument",
@@ -132,7 +133,16 @@
         "gallery": "Iz galerije",
         "cameraButton": "Kamera",
         "galleryButton": "Galerija",
-        "onlyAllowed": "Dovoljeni so samo JPG, PNG ali PDF."
+        "onlyAllowed": "Dovoljeni so samo JPG, PNG ali PDF.",
+        "scanTitle": "Skeniraj dokument",
+        "page": "Stran",
+        "noPages": "Ni strani",
+        "retake": "Ponovi",
+        "delete": "Izbriši",
+        "addPage": "Dodaj stran",
+        "finish": "Končano",
+        "buildingPdf": "Ustvarjanje PDF...",
+        "pageCount": "{{count}} strani"
     },
     "document": {
         "back": "Nazaj",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Dodaj",
         "replyHintsLabel": "Kontekstni namigi (neobvezno)",
         "replyHintsPlaceholder": "npr. Bodite vljudni, sklicujte se na odstavek 5...",
-        "share": "Deli"
+        "share": "Deli",
+        "translateSection": "Prevedi dokument",
+        "translateBtn": "Prevedi",
+        "translatingDoc": "Prevajanje…"
     },
     "archive": {
         "title": "Arhiv",
@@ -450,6 +463,31 @@
         "successTitle": "Zahtevek ustvarjen!",
         "successDesc": "Vaš zahtevek je bil ustvarjen. Kmalu vam odgovorimo!",
         "newTicket": "Nov zahtevek",
-        "sendError": "Napaka pri pošiljanju zahtevka."
+        "sendError": "Napaka pri pošiljanju zahtevka.",
+        "newTicketBtn": "Nova zahteva",
+        "noTickets": "Ni zahtev",
+        "createFirst": "Ustvari prvo zahtevo",
+        "subject": "Zadeva",
+        "subjectPlaceholder": "Kratek opis (neobvezno)",
+        "descriptionLabel": "Opis",
+        "minCharsTicket": "(min. 10 znakov)",
+        "descPlaceholder": "Opišite svojo težavo...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Ustvarjanje...",
+        "createButton": "Ustvari zahtevo",
+        "createError": "Napaka pri ustvarjanju",
+        "statusCreated": "Ustvarjeno",
+        "statusInProgress": "V obdelavi",
+        "statusResolved": "Rešeno",
+        "statusClosed": "Zaprto",
+        "solutionFrom": "Rešitev podpore:",
+        "acceptSolution": "Sprejmi rešitev",
+        "writeMessage": "Napišite sporočilo...",
+        "ticketClosedMsg": "Zahteva zaprta",
+        "you": "Ti",
+        "supportTeam": "Podpora",
+        "attachFile": "Priloži datoteko",
+        "fileAttached": "Datoteka priložena",
+        "back": "Nazaj"
     }
 }

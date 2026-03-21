@@ -117,7 +117,8 @@
         "subline4": "Vos documents vous attendent 📄",
         "subline5": "Soyons productifs aujourd'hui 💪",
         "subline6": "Bien organisé, c est déjà gagné 📋",
-        "subline7": "Votre bureau numérique vous attend 🗂️"
+        "subline7": "Votre bureau numérique vous attend 🗂️",
+        "manualTask": "Tâche manuelle"
     },
     "upload": {
         "title": "Télécharger un document",
@@ -132,7 +133,16 @@
         "gallery": "Depuis la galerie",
         "cameraButton": "Caméra",
         "galleryButton": "Galerie",
-        "onlyAllowed": "Seuls JPG, PNG ou PDF sont autorisés."
+        "onlyAllowed": "Seuls JPG, PNG ou PDF sont autorisés.",
+        "scanTitle": "Scanner un document",
+        "page": "Page",
+        "noPages": "Aucune page",
+        "retake": "Reprendre",
+        "delete": "Supprimer",
+        "addPage": "Ajouter une page",
+        "finish": "Terminé",
+        "buildingPdf": "Création du PDF...",
+        "pageCount": "{{count}} pages"
     },
     "document": {
         "back": "Retour",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Ajouter",
         "replyHintsLabel": "Indices contextuels (optionnel)",
         "replyHintsPlaceholder": "ex. Soyez poli, faites référence au paragraphe 5...",
-        "share": "Partager"
+        "share": "Partager",
+        "translateSection": "Traduire le document",
+        "translateBtn": "Traduire",
+        "translatingDoc": "Traduction en cours…"
     },
     "archive": {
         "title": "Archives",
@@ -450,6 +463,31 @@
         "successTitle": "Ticket créé !",
         "successDesc": "Votre ticket a été créé avec succès. Nous vous répondrons bientôt !",
         "newTicket": "Nouveau ticket",
-        "sendError": "Erreur lors de l'envoi du ticket."
+        "sendError": "Erreur lors de l'envoi du ticket.",
+        "newTicketBtn": "Nouveau ticket",
+        "noTickets": "Aucun ticket pour le moment",
+        "createFirst": "Créer le premier ticket",
+        "subject": "Objet",
+        "subjectPlaceholder": "Brève description (optionnel)",
+        "descriptionLabel": "Description",
+        "minCharsTicket": "(min. 10 caractères)",
+        "descPlaceholder": "Décrivez votre problème...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Création en cours...",
+        "createButton": "Créer le ticket",
+        "createError": "Erreur lors de la création",
+        "statusCreated": "Créé",
+        "statusInProgress": "En cours",
+        "statusResolved": "Résolu",
+        "statusClosed": "Fermé",
+        "solutionFrom": "Solution du support :",
+        "acceptSolution": "Accepter la solution",
+        "writeMessage": "Écrire un message...",
+        "ticketClosedMsg": "Ticket fermé",
+        "you": "Vous",
+        "supportTeam": "Support",
+        "attachFile": "Joindre un fichier",
+        "fileAttached": "Fichier joint",
+        "back": "Retour"
     }
 }

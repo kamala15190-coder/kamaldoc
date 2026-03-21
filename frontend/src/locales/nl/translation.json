@@ -117,7 +117,8 @@
         "subline4": "Je documenten wachten 📄",
         "subline5": "Laten we productief zijn 💪",
         "subline6": "Goed georganiseerd is het halve werk 📋",
-        "subline7": "Je digitale kantoor wacht 🗂️"
+        "subline7": "Je digitale kantoor wacht 🗂️",
+        "manualTask": "Handmatige taak"
     },
     "upload": {
         "title": "Document uploaden",
@@ -132,7 +133,16 @@
         "gallery": "Uit galerij",
         "cameraButton": "Camera",
         "galleryButton": "Galerij",
-        "onlyAllowed": "Alleen JPG, PNG of PDF toegestaan."
+        "onlyAllowed": "Alleen JPG, PNG of PDF toegestaan.",
+        "scanTitle": "Document scannen",
+        "page": "Pagina",
+        "noPages": "Geen pagina's",
+        "retake": "Opnieuw",
+        "delete": "Verwijderen",
+        "addPage": "Pagina toevoegen",
+        "finish": "Klaar",
+        "buildingPdf": "PDF maken...",
+        "pageCount": "{{count}} pagina's"
     },
     "document": {
         "back": "Terug",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Toevoegen",
         "replyHintsLabel": "Contexthints (optioneel)",
         "replyHintsPlaceholder": "bijv. Wees beleefd, verwijs naar paragraaf 5...",
-        "share": "Delen"
+        "share": "Delen",
+        "translateSection": "Document vertalen",
+        "translateBtn": "Vertalen",
+        "translatingDoc": "Vertalen…"
     },
     "archive": {
         "title": "Archief",
@@ -450,6 +463,31 @@
         "successTitle": "Ticket aangemaakt!",
         "successDesc": "Uw ticket is succesvol aangemaakt. We nemen snel contact met u op!",
         "newTicket": "Nieuw ticket",
-        "sendError": "Fout bij het verzenden van het ticket."
+        "sendError": "Fout bij het verzenden van het ticket.",
+        "newTicketBtn": "Nieuw ticket",
+        "noTickets": "Nog geen tickets",
+        "createFirst": "Eerste ticket aanmaken",
+        "subject": "Onderwerp",
+        "subjectPlaceholder": "Korte beschrijving (optioneel)",
+        "descriptionLabel": "Beschrijving",
+        "minCharsTicket": "(min. 10 tekens)",
+        "descPlaceholder": "Beschrijf je probleem...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Aanmaken...",
+        "createButton": "Ticket aanmaken",
+        "createError": "Fout bij aanmaken",
+        "statusCreated": "Aangemaakt",
+        "statusInProgress": "In behandeling",
+        "statusResolved": "Opgelost",
+        "statusClosed": "Gesloten",
+        "solutionFrom": "Oplossing van support:",
+        "acceptSolution": "Oplossing accepteren",
+        "writeMessage": "Schrijf een bericht...",
+        "ticketClosedMsg": "Ticket gesloten",
+        "you": "Jij",
+        "supportTeam": "Support",
+        "attachFile": "Bestand bijvoegen",
+        "fileAttached": "Bestand bijgevoegd",
+        "back": "Terug"
     }
 }

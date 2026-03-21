@@ -117,7 +117,8 @@
         "subline4": "Documentele tale așteaptă 📄",
         "subline5": "Hai să fim productivi azi 💪",
         "subline6": "Bine organizat e jumătate de bătălie 📋",
-        "subline7": "Biroul tău digital te așteaptă 🗂️"
+        "subline7": "Biroul tău digital te așteaptă 🗂️",
+        "manualTask": "Sarcină manuală"
     },
     "upload": {
         "title": "Încarcă document",
@@ -132,7 +133,16 @@
         "gallery": "Din galerie",
         "cameraButton": "Cameră",
         "galleryButton": "Galerie",
-        "onlyAllowed": "Doar JPG, PNG sau PDF sunt permise."
+        "onlyAllowed": "Doar JPG, PNG sau PDF sunt permise.",
+        "scanTitle": "Scanează document",
+        "page": "Pagină",
+        "noPages": "Nicio pagină",
+        "retake": "Reia",
+        "delete": "Șterge",
+        "addPage": "Adaugă pagină",
+        "finish": "Gata",
+        "buildingPdf": "Creare PDF...",
+        "pageCount": "{{count}} pagini"
     },
     "document": {
         "back": "Înapoi",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Adaugă",
         "replyHintsLabel": "Indicii de context (opțional)",
         "replyHintsPlaceholder": "ex. Fii politicos, referă-te la paragraful 5...",
-        "share": "Partajează"
+        "share": "Partajează",
+        "translateSection": "Traduce documentul",
+        "translateBtn": "Traduce",
+        "translatingDoc": "Se traduce…"
     },
     "archive": {
         "title": "Arhivă",
@@ -450,6 +463,31 @@
         "successTitle": "Tichet creat!",
         "successDesc": "Tichetul a fost creat cu succes. Vă vom contacta în curând!",
         "newTicket": "Tichet nou",
-        "sendError": "Eroare la trimiterea tichetului."
+        "sendError": "Eroare la trimiterea tichetului.",
+        "newTicketBtn": "Tichet nou",
+        "noTickets": "Niciun tichet încă",
+        "createFirst": "Creează primul tichet",
+        "subject": "Subiect",
+        "subjectPlaceholder": "Descriere scurtă (opțional)",
+        "descriptionLabel": "Descriere",
+        "minCharsTicket": "(min. 10 caractere)",
+        "descPlaceholder": "Descrie problema ta...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Se creează...",
+        "createButton": "Creează tichet",
+        "createError": "Eroare la creare",
+        "statusCreated": "Creat",
+        "statusInProgress": "În lucru",
+        "statusResolved": "Rezolvat",
+        "statusClosed": "Închis",
+        "solutionFrom": "Soluție de la suport:",
+        "acceptSolution": "Acceptă soluția",
+        "writeMessage": "Scrie un mesaj...",
+        "ticketClosedMsg": "Tichet închis",
+        "you": "Tu",
+        "supportTeam": "Suport",
+        "attachFile": "Atașează fișier",
+        "fileAttached": "Fișier atașat",
+        "back": "Înapoi"
     }
 }

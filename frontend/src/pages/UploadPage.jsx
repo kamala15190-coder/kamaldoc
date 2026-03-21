@@ -153,7 +153,7 @@ export default function UploadPage() {
     return new File([array], filename, { type: mime });
   };
 
-  // Kamera öffnen — Capacitor native auf Mobile, HTML fallback auf Web
+  // Kamera öffnen — direkt Kamera starten, dann zu /scan mit Bild
   const openCamera = async () => {
     if (Capacitor.isNativePlatform()) {
       try {
@@ -161,41 +161,51 @@ export default function UploadPage() {
         const photo = await CapCamera.getPhoto({
           resultType: CameraResultType.DataUrl,
           source: CameraSource.Camera,
-          quality: 90,
+          quality: 92,
         });
         if (photo.dataUrl) {
-          const file = dataUrlToFile(photo.dataUrl, `photo_${Date.now()}.jpg`);
-          selectFile(file);
+          navigate('/scan', { state: { initialPages: [{ type: 'image', dataUrl: photo.dataUrl }], source: 'camera' } });
         }
       } catch (err) {
         console.error('[KamalDoc] Camera error:', err);
       }
-    } else {
-      const el = cameraInputRef.current;
-      if (el) { el.value = ''; el.click(); }
+      return;
     }
+    if (isMobile) {
+      // Mobile web: open camera via capture input, then navigate
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.capture = 'environment';
+      input.onchange = async (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            navigate('/scan', { state: { initialPages: [{ type: 'image', dataUrl: reader.result }], source: 'camera' } });
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+      return;
+    }
+    const el = cameraInputRef.current;
+    if (el) { el.value = ''; el.click(); }
   };
 
   const openGallery = async () => {
     if (Capacitor.isNativePlatform()) {
-      try {
-        const { Camera: CapCamera, CameraResultType, CameraSource } = await import('@capacitor/camera');
-        const photo = await CapCamera.getPhoto({
-          resultType: CameraResultType.DataUrl,
-          source: CameraSource.Photos,
-          quality: 90,
-        });
-        if (photo.dataUrl) {
-          const file = dataUrlToFile(photo.dataUrl, `gallery_${Date.now()}.jpg`);
-          selectFile(file);
-        }
-      } catch (err) {
-        console.error('[KamalDoc] Gallery error:', err);
-      }
-    } else {
-      const el = galleryInputRef.current;
-      if (el) { el.value = ''; el.click(); }
+      // Native: use multi-select file input to pick from gallery
+      navigate('/scan', { state: { openGallery: true } });
+      return;
     }
+    if (isMobile) {
+      navigate('/scan', { state: { openGallery: true } });
+      return;
+    }
+    const el = galleryInputRef.current;
+    if (el) { el.value = ''; el.click(); }
   };
 
   const openFileDialog = () => {
@@ -384,7 +394,7 @@ export default function UploadPage() {
                 }}
               >
                 <FileText style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-                <span style={{ color: 'var(--text-secondary)' }}>PDF / {t('upload.fileTypes')}</span>
+                <span style={{ color: 'var(--text-secondary)' }}>{t('upload.document', 'Dokument')} / {t('upload.fileTypes')}</span>
               </button>
             </div>
           )}
@@ -412,7 +422,7 @@ export default function UploadPage() {
       )}
 
       {/* Hidden file inputs */}
-      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
+      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" multiple style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
       <input ref={cameraInputRef} type="file" accept="image/jpeg,image/png" capture="environment" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
       <input ref={galleryInputRef} type="file" accept="image/*,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

@@ -34,6 +34,7 @@ import SektorDetailPage from './pages/SektorDetailPage';
 import DokumenteListe from './pages/DokumenteListe';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ScanPreviewPage from './pages/ScanPreviewPage';
 import { checkAdmin, getTicketUnreadCount } from './api';
 
 const TAB_ITEMS = [
@@ -686,6 +687,7 @@ function AppContent() {
           <Route path="/support" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
           <Route path="/dokumente" element={<PrivateRoute><DokumenteListe /></PrivateRoute>} />
+          <Route path="/scan" element={<PrivateRoute><ScanPreviewPage /></PrivateRoute>} />
           <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
       </main>

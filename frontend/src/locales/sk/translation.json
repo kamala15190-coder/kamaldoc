@@ -117,7 +117,8 @@
         "subline4": "Vaše dokumenty čakajú 📄",
         "subline5": "Dnes buďme produktívni 💪",
         "subline6": "Dobre organizované je pol úspechu 📋",
-        "subline7": "Vaša digitálna kancelária čaká 🗂️"
+        "subline7": "Vaša digitálna kancelária čaká 🗂️",
+        "manualTask": "Ručná úloha"
     },
     "upload": {
         "title": "Nahrať dokument",
@@ -132,7 +133,16 @@
         "gallery": "Z galérie",
         "cameraButton": "Fotoaparát",
         "galleryButton": "Galéria",
-        "onlyAllowed": "Povolené sú len JPG, PNG alebo PDF."
+        "onlyAllowed": "Povolené sú len JPG, PNG alebo PDF.",
+        "scanTitle": "Skenovať dokument",
+        "page": "Strana",
+        "noPages": "Žiadne strany",
+        "retake": "Znova",
+        "delete": "Vymazať",
+        "addPage": "Pridať stranu",
+        "finish": "Hotovo",
+        "buildingPdf": "Vytváranie PDF...",
+        "pageCount": "{{count}} strán"
     },
     "document": {
         "back": "Späť",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Pridať",
         "replyHintsLabel": "Kontextové nápovedy (voliteľné)",
         "replyHintsPlaceholder": "napr. Buďte zdvorilí, odkazujte na odsek 5...",
-        "share": "Zdieľať"
+        "share": "Zdieľať",
+        "translateSection": "Preložiť dokument",
+        "translateBtn": "Preložiť",
+        "translatingDoc": "Prebieha preklad…"
     },
     "archive": {
         "title": "Archív",
@@ -450,6 +463,31 @@
         "successTitle": "Lístok vytvorený!",
         "successDesc": "Váš lístok bol úspešne vytvorený. Čoskoro odpovieme!",
         "newTicket": "Nový lístok",
-        "sendError": "Chyba pri odosielaní lístka."
+        "sendError": "Chyba pri odosielaní lístka.",
+        "newTicketBtn": "Nový tiket",
+        "noTickets": "Žiadne tikety",
+        "createFirst": "Vytvoriť prvý tiket",
+        "subject": "Predmet",
+        "subjectPlaceholder": "Krátky popis (voliteľné)",
+        "descriptionLabel": "Popis",
+        "minCharsTicket": "(min. 10 znakov)",
+        "descPlaceholder": "Opíšte svoj problém...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Vytváranie...",
+        "createButton": "Vytvoriť tiket",
+        "createError": "Chyba pri vytváraní",
+        "statusCreated": "Vytvorený",
+        "statusInProgress": "Spracováva sa",
+        "statusResolved": "Vyriešený",
+        "statusClosed": "Uzavretý",
+        "solutionFrom": "Riešenie od podpory:",
+        "acceptSolution": "Prijať riešenie",
+        "writeMessage": "Napíšte správu...",
+        "ticketClosedMsg": "Tiket uzavretý",
+        "you": "Ty",
+        "supportTeam": "Podpora",
+        "attachFile": "Pripojiť súbor",
+        "fileAttached": "Súbor pripojený",
+        "back": "Späť"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Belgelerin seni bekliyor 📄",
         "subline5": "Bugün verimli olalım 💪",
         "subline6": "İyi organize olmak işin yarısı 📋",
-        "subline7": "Dijital ofisinin seni bekliyor 🗂️"
+        "subline7": "Dijital ofisinin seni bekliyor 🗂️",
+        "manualTask": "Manuel görev"
     },
     "upload": {
         "title": "Belge Yükle",
@@ -132,7 +133,16 @@
         "gallery": "Galeriden",
         "cameraButton": "Kamera",
         "galleryButton": "Galeri",
-        "onlyAllowed": "Sadece JPG, PNG veya PDF izin verilir."
+        "onlyAllowed": "Sadece JPG, PNG veya PDF izin verilir.",
+        "scanTitle": "Belge tara",
+        "page": "Sayfa",
+        "noPages": "Sayfa yok",
+        "retake": "Yeniden çek",
+        "delete": "Sil",
+        "addPage": "Sayfa ekle",
+        "finish": "Bitti",
+        "buildingPdf": "PDF oluşturuluyor...",
+        "pageCount": "{{count}} sayfa"
     },
     "document": {
         "back": "Geri",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Ekle",
         "replyHintsLabel": "Bağlam ipuçları (isteğe bağlı)",
         "replyHintsPlaceholder": "ör. Lütfen kibar olun, 5. paragrafa değinin...",
-        "share": "Paylaş"
+        "share": "Paylaş",
+        "translateSection": "Belgeyi çevir",
+        "translateBtn": "Çevir",
+        "translatingDoc": "Çevriliyor…"
     },
     "archive": {
         "title": "Arşiv",
@@ -450,6 +463,31 @@
         "successTitle": "Talep oluşturuldu!",
         "successDesc": "Destek talebiniz başarıyla oluşturuldu. En kısa sürede size dönüş yapacağız!",
         "newTicket": "Yeni talep",
-        "sendError": "Talep gönderilirken hata oluştu."
+        "sendError": "Talep gönderilirken hata oluştu.",
+        "newTicketBtn": "Yeni bilet",
+        "noTickets": "Henüz bilet yok",
+        "createFirst": "İlk bileti oluştur",
+        "subject": "Konu",
+        "subjectPlaceholder": "Kısa açıklama (opsiyonel)",
+        "descriptionLabel": "Açıklama",
+        "minCharsTicket": "(min. 10 karakter)",
+        "descPlaceholder": "Sorununuzu açıklayın...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Oluşturuluyor...",
+        "createButton": "Bilet oluştur",
+        "createError": "Oluşturma hatası",
+        "statusCreated": "Oluşturuldu",
+        "statusInProgress": "İşleniyor",
+        "statusResolved": "Çözüldü",
+        "statusClosed": "Kapatıldı",
+        "solutionFrom": "Destek çözümü:",
+        "acceptSolution": "Çözümü kabul et",
+        "writeMessage": "Mesaj yazın...",
+        "ticketClosedMsg": "Bilet kapatıldı",
+        "you": "Sen",
+        "supportTeam": "Destek",
+        "attachFile": "Dosya ekle",
+        "fileAttached": "Dosya eklendi",
+        "back": "Geri"
     }
 }

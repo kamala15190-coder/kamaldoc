@@ -117,7 +117,8 @@
         "subline4": "Vaše dokumenty čekají 📄",
         "subline5": "Dnes buďme produktivní 💪",
         "subline6": "Dobře organizováno je půl úspěchu 📋",
-        "subline7": "Vaše digitální kancelář čeká 🗂️"
+        "subline7": "Vaše digitální kancelář čeká 🗂️",
+        "manualTask": "Ruční úkol"
     },
     "upload": {
         "title": "Nahrát dokument",
@@ -132,7 +133,16 @@
         "gallery": "Z galerie",
         "cameraButton": "Fotoaparát",
         "galleryButton": "Galerie",
-        "onlyAllowed": "Povoleny pouze JPG, PNG nebo PDF."
+        "onlyAllowed": "Povoleny pouze JPG, PNG nebo PDF.",
+        "scanTitle": "Skenovat dokument",
+        "page": "Strana",
+        "noPages": "Žádné strany",
+        "retake": "Znovu",
+        "delete": "Smazat",
+        "addPage": "Přidat stranu",
+        "finish": "Hotovo",
+        "buildingPdf": "Vytváření PDF...",
+        "pageCount": "{{count}} stran"
     },
     "document": {
         "back": "Zpět",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Přidat",
         "replyHintsLabel": "Kontextové nápovědy (volitelné)",
         "replyHintsPlaceholder": "např. Buďte zdvořilí, odkazujte na odstavec 5...",
-        "share": "Sdílet"
+        "share": "Sdílet",
+        "translateSection": "Přeložit dokument",
+        "translateBtn": "Přeložit",
+        "translatingDoc": "Překládání…"
     },
     "archive": {
         "title": "Archiv",
@@ -450,6 +463,31 @@
         "successTitle": "Lístek vytvořen!",
         "successDesc": "Váš lístek byl úspěšně vytvořen. Brzy se ozveme!",
         "newTicket": "Nový lístek",
-        "sendError": "Chyba při odesílání lístku."
+        "sendError": "Chyba při odesílání lístku.",
+        "newTicketBtn": "Nový tiket",
+        "noTickets": "Žádné tikety",
+        "createFirst": "Vytvořit první tiket",
+        "subject": "Předmět",
+        "subjectPlaceholder": "Krátký popis (volitelné)",
+        "descriptionLabel": "Popis",
+        "minCharsTicket": "(min. 10 znaků)",
+        "descPlaceholder": "Popište svůj problém...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Vytváření...",
+        "createButton": "Vytvořit tiket",
+        "createError": "Chyba při vytváření",
+        "statusCreated": "Vytvořen",
+        "statusInProgress": "Zpracovává se",
+        "statusResolved": "Vyřešen",
+        "statusClosed": "Uzavřen",
+        "solutionFrom": "Řešení od podpory:",
+        "acceptSolution": "Přijmout řešení",
+        "writeMessage": "Napište zprávu...",
+        "ticketClosedMsg": "Tiket uzavřen",
+        "you": "Ty",
+        "supportTeam": "Podpora",
+        "attachFile": "Připojit soubor",
+        "fileAttached": "Soubor připojen",
+        "back": "Zpět"
     }
 }

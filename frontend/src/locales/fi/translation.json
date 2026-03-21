@@ -117,7 +117,8 @@
         "subline4": "Asiakirjasi odottavat 📄",
         "subline5": "Olkaamme tuottavia tänään 💪",
         "subline6": "Hyvin järjestetty on puoli voittoa 📋",
-        "subline7": "Digitaalinen toimistosi odottaa 🗂️"
+        "subline7": "Digitaalinen toimistosi odottaa 🗂️",
+        "manualTask": "Manuaalinen tehtävä"
     },
     "upload": {
         "title": "Lataa asiakirja",
@@ -132,7 +133,16 @@
         "gallery": "Galleriasta",
         "cameraButton": "Kamera",
         "galleryButton": "Galleria",
-        "onlyAllowed": "Vain JPG, PNG tai PDF sallittu."
+        "onlyAllowed": "Vain JPG, PNG tai PDF sallittu.",
+        "scanTitle": "Skannaa asiakirja",
+        "page": "Sivu",
+        "noPages": "Ei sivuja",
+        "retake": "Uudelleen",
+        "delete": "Poista",
+        "addPage": "Lisää sivu",
+        "finish": "Valmis",
+        "buildingPdf": "Luodaan PDF...",
+        "pageCount": "{{count}} sivua"
     },
     "document": {
         "back": "Takaisin",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Lisää",
         "replyHintsLabel": "Kontekstivihjeet (valinnainen)",
         "replyHintsPlaceholder": "esim. Ole kohtelias, viittaa kohtaan 5...",
-        "share": "Jaa"
+        "share": "Jaa",
+        "translateSection": "Käännä asiakirja",
+        "translateBtn": "Käännä",
+        "translatingDoc": "Käännetään…"
     },
     "archive": {
         "title": "Arkisto",
@@ -450,6 +463,31 @@
         "successTitle": "Tiketti luotu!",
         "successDesc": "Tikettisi on luotu. Vastaamme pian!",
         "newTicket": "Uusi tiketti",
-        "sendError": "Virhe tiketin lähetyksessä."
+        "sendError": "Virhe tiketin lähetyksessä.",
+        "newTicketBtn": "Uusi tiketti",
+        "noTickets": "Ei tikettejä vielä",
+        "createFirst": "Luo ensimmäinen tiketti",
+        "subject": "Aihe",
+        "subjectPlaceholder": "Lyhyt kuvaus (valinnainen)",
+        "descriptionLabel": "Kuvaus",
+        "minCharsTicket": "(väh. 10 merkkiä)",
+        "descPlaceholder": "Kuvaile ongelmasi...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Luodaan...",
+        "createButton": "Luo tiketti",
+        "createError": "Virhe luotaessa",
+        "statusCreated": "Luotu",
+        "statusInProgress": "Käsittelyssä",
+        "statusResolved": "Ratkaistu",
+        "statusClosed": "Suljettu",
+        "solutionFrom": "Ratkaisu tuelta:",
+        "acceptSolution": "Hyväksy ratkaisu",
+        "writeMessage": "Kirjoita viesti...",
+        "ticketClosedMsg": "Tiketti suljettu",
+        "you": "Sinä",
+        "supportTeam": "Tuki",
+        "attachFile": "Liitä tiedosto",
+        "fileAttached": "Tiedosto liitetty",
+        "back": "Takaisin"
     }
 }

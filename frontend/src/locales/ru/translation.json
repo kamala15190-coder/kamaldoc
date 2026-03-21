@@ -117,7 +117,8 @@
         "subline4": "Ваши документы ждут 📄",
         "subline5": "Сегодня будем продуктивны 💪",
         "subline6": "Хорошая организация — половина успеха 📋",
-        "subline7": "Ваш цифровой офис ждёт 🗂️"
+        "subline7": "Ваш цифровой офис ждёт 🗂️",
+        "manualTask": "Ручная задача"
     },
     "upload": {
         "title": "Загрузить документ",
@@ -132,7 +133,16 @@
         "gallery": "Из галереи",
         "cameraButton": "Камера",
         "galleryButton": "Галерея",
-        "onlyAllowed": "Допускаются только JPG, PNG или PDF."
+        "onlyAllowed": "Допускаются только JPG, PNG или PDF.",
+        "scanTitle": "Сканировать документ",
+        "page": "Страница",
+        "noPages": "Нет страниц",
+        "retake": "Переснять",
+        "delete": "Удалить",
+        "addPage": "Добавить страницу",
+        "finish": "Готово",
+        "buildingPdf": "Создание PDF...",
+        "pageCount": "{{count}} страниц"
     },
     "document": {
         "back": "Назад",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Добавить",
         "replyHintsLabel": "Контекстные подсказки (необязательно)",
         "replyHintsPlaceholder": "напр. Пожалуйста, вежливо, ссылайтесь на параграф 5...",
-        "share": "Поделиться"
+        "share": "Поделиться",
+        "translateSection": "Перевести документ",
+        "translateBtn": "Перевести",
+        "translatingDoc": "Перевод…"
     },
     "archive": {
         "title": "Архив",
@@ -450,6 +463,31 @@
         "successTitle": "Обращение создано!",
         "successDesc": "Ваше обращение успешно создано. Мы скоро свяжемся с вами!",
         "newTicket": "Новое обращение",
-        "sendError": "Ошибка при отправке обращения."
+        "sendError": "Ошибка при отправке обращения.",
+        "newTicketBtn": "Новый тикет",
+        "noTickets": "Тикетов пока нет",
+        "createFirst": "Создать первый тикет",
+        "subject": "Тема",
+        "subjectPlaceholder": "Краткое описание (необязательно)",
+        "descriptionLabel": "Описание",
+        "minCharsTicket": "(мин. 10 символов)",
+        "descPlaceholder": "Опишите вашу проблему...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Создание...",
+        "createButton": "Создать тикет",
+        "createError": "Ошибка создания",
+        "statusCreated": "Создан",
+        "statusInProgress": "В обработке",
+        "statusResolved": "Решён",
+        "statusClosed": "Закрыт",
+        "solutionFrom": "Решение от поддержки:",
+        "acceptSolution": "Принять решение",
+        "writeMessage": "Написать сообщение...",
+        "ticketClosedMsg": "Тикет закрыт",
+        "you": "Вы",
+        "supportTeam": "Поддержка",
+        "attachFile": "Прикрепить файл",
+        "fileAttached": "Файл прикреплён",
+        "back": "Назад"
     }
 }

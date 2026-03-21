@@ -117,7 +117,8 @@
         "subline4": "Dokumentet tuaja presin 📄",
         "subline5": "Le të jemi produktivë sot 💪",
         "subline6": "Mirë i organizuar është gjysma e betejës 📋",
-        "subline7": "Zyra juaj dixhitale pret 🗂️"
+        "subline7": "Zyra juaj dixhitale pret 🗂️",
+        "manualTask": "Detyrë manuale"
     },
     "upload": {
         "title": "Ngarko dokument",
@@ -132,7 +133,16 @@
         "gallery": "Nga galeria",
         "cameraButton": "Kamera",
         "galleryButton": "Galeria",
-        "onlyAllowed": "Lejohen vetëm JPG, PNG ose PDF."
+        "onlyAllowed": "Lejohen vetëm JPG, PNG ose PDF.",
+        "scanTitle": "Skano dokumentin",
+        "page": "Faqe",
+        "noPages": "Asnjë faqe",
+        "retake": "Rimarr",
+        "delete": "Fshi",
+        "addPage": "Shto faqe",
+        "finish": "Gati",
+        "buildingPdf": "Duke krijuar PDF...",
+        "pageCount": "{{count}} faqe"
     },
     "document": {
         "back": "Kthehu",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Shto",
         "replyHintsLabel": "Sugjerime konteksti (opsionale)",
         "replyHintsPlaceholder": "p.sh. Ju lutem jini të sjellshëm, referojuni paragrafit 5...",
-        "share": "Ndaj"
+        "share": "Ndaj",
+        "translateSection": "Përkthe dokumentin",
+        "translateBtn": "Përkthe",
+        "translatingDoc": "Po përkthehet…"
     },
     "archive": {
         "title": "Arkiva",
@@ -450,6 +463,31 @@
         "successTitle": "Bileta u krijua!",
         "successDesc": "Bileta juaj u krijua me sukses. Do t'ju përgjigjemi së shpejti!",
         "newTicket": "Biletë e re",
-        "sendError": "Gabim gjatë dërgimit të biletës."
+        "sendError": "Gabim gjatë dërgimit të biletës.",
+        "newTicketBtn": "Biletë e re",
+        "noTickets": "Ende nuk ka bileta",
+        "createFirst": "Krijo biletën e parë",
+        "subject": "Subjekti",
+        "subjectPlaceholder": "Përshkrim i shkurtër (opsional)",
+        "descriptionLabel": "Përshkrimi",
+        "minCharsTicket": "(min. 10 karaktere)",
+        "descPlaceholder": "Përshkruani problemin tuaj...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Duke krijuar...",
+        "createButton": "Krijo biletë",
+        "createError": "Gabim gjatë krijimit",
+        "statusCreated": "Krijuar",
+        "statusInProgress": "Në proces",
+        "statusResolved": "Zgjidhur",
+        "statusClosed": "Mbyllur",
+        "solutionFrom": "Zgjidhje nga mbështetja:",
+        "acceptSolution": "Prano zgjidhjen",
+        "writeMessage": "Shkruani mesazh...",
+        "ticketClosedMsg": "Bileta e mbyllur",
+        "you": "Ti",
+        "supportTeam": "Mbështetja",
+        "attachFile": "Bashkëngjit skedar",
+        "fileAttached": "Skedari u bashkëngjit",
+        "back": "Kthehu"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "თქვენი დოკუმენტები ელოდება 📄",
         "subline5": "დღეს პროდუქტიულები ვიყოთ 💪",
         "subline6": "კარგი ორგანიზება ნახევარი წარმატებაა 📋",
-        "subline7": "თქვენი ციფრული ოფისი ელოდება 🗂️"
+        "subline7": "თქვენი ციფრული ოფისი ელოდება 🗂️",
+        "manualTask": "ხელით დავალება"
     },
     "upload": {
         "title": "დოკუმენტის ატვირთვა",
@@ -132,7 +133,16 @@
         "gallery": "გალერეიდან",
         "cameraButton": "კამერა",
         "galleryButton": "გალერეა",
-        "onlyAllowed": "დაშვებულია მხოლოდ JPG, PNG ან PDF."
+        "onlyAllowed": "დაშვებულია მხოლოდ JPG, PNG ან PDF.",
+        "scanTitle": "დოკუმენტის სკანირება",
+        "page": "გვერდი",
+        "noPages": "გვერდები არ არის",
+        "retake": "ხელახლა",
+        "delete": "წაშლა",
+        "addPage": "გვერდის დამატება",
+        "finish": "მზადაა",
+        "buildingPdf": "PDF იქმნება...",
+        "pageCount": "{{count}} გვერდი"
     },
     "document": {
         "back": "უკან",
@@ -199,7 +209,10 @@
         "addTaskBtn": "დამატება",
         "replyHintsLabel": "კონტექსტის მინიშნებები (არასავალდებულო)",
         "replyHintsPlaceholder": "მაგ. იყავით თავაზიანი, მიუთითეთ მე-5 პუნქტზე...",
-        "share": "გაზიარება"
+        "share": "გაზიარება",
+        "translateSection": "დოკუმენტის თარგმნა",
+        "translateBtn": "თარგმნა",
+        "translatingDoc": "ითარგმნება…"
     },
     "archive": {
         "title": "არქივი",
@@ -450,6 +463,31 @@
         "successTitle": "ბილეთი შეიქმნა!",
         "successDesc": "თქვენი ბილეთი წარმატებით შეიქმნა. მალე გიპასუხებთ!",
         "newTicket": "ახალი ბილეთი",
-        "sendError": "ბილეთის გაგზავნის შეცდომა."
+        "sendError": "ბილეთის გაგზავნის შეცდომა.",
+        "newTicketBtn": "ახალი ბილეთი",
+        "noTickets": "ბილეთები ჯერ არ არის",
+        "createFirst": "შექმენით პირველი ბილეთი",
+        "subject": "თემა",
+        "subjectPlaceholder": "მოკლე აღწერა (არასავალდებულო)",
+        "descriptionLabel": "აღწერა",
+        "minCharsTicket": "(მინ. 10 სიმბოლო)",
+        "descPlaceholder": "აღწერეთ თქვენი პრობლემა...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "იქმნება...",
+        "createButton": "ბილეთის შექმნა",
+        "createError": "შეცდომა შექმნისას",
+        "statusCreated": "შექმნილი",
+        "statusInProgress": "მუშავდება",
+        "statusResolved": "გადაწყვეტილი",
+        "statusClosed": "დახურული",
+        "solutionFrom": "გადაწყვეტა მხარდაჭერისგან:",
+        "acceptSolution": "გადაწყვეტის მიღება",
+        "writeMessage": "დაწერეთ შეტყობინება...",
+        "ticketClosedMsg": "ბილეთი დახურულია",
+        "you": "თქვენ",
+        "supportTeam": "მხარდაჭერა",
+        "attachFile": "ფაილის მიმაგრება",
+        "fileAttached": "ფაილი მიმაგრებულია",
+        "back": "უკან"
     }
 }

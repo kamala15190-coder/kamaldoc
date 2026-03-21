@@ -117,7 +117,8 @@
         "subline4": "Jūsų dokumentai laukia 📄",
         "subline5": "Būkime produktyvūs šiandien 💪",
         "subline6": "Gerai organizuota – pusė sėkmės 📋",
-        "subline7": "Jūsų skaitmeninė raštinė laukia 🗂️"
+        "subline7": "Jūsų skaitmeninė raštinė laukia 🗂️",
+        "manualTask": "Rankinė užduotis"
     },
     "upload": {
         "title": "Įkelti dokumentą",
@@ -132,7 +133,16 @@
         "gallery": "Iš galerijos",
         "cameraButton": "Kamera",
         "galleryButton": "Galerija",
-        "onlyAllowed": "Leidžiami tik JPG, PNG arba PDF."
+        "onlyAllowed": "Leidžiami tik JPG, PNG arba PDF.",
+        "scanTitle": "Nuskaityti dokumentą",
+        "page": "Puslapis",
+        "noPages": "Nėra puslapių",
+        "retake": "Iš naujo",
+        "delete": "Ištrinti",
+        "addPage": "Pridėti puslapį",
+        "finish": "Baigta",
+        "buildingPdf": "Kuriamas PDF...",
+        "pageCount": "{{count}} puslapiai"
     },
     "document": {
         "back": "Atgal",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Pridėti",
         "replyHintsLabel": "Konteksto užuominos (neprivaloma)",
         "replyHintsPlaceholder": "pvz. Prašome mandagiai, nurodykite 5 pastraipą...",
-        "share": "Dalintis"
+        "share": "Dalintis",
+        "translateSection": "Versti dokumentą",
+        "translateBtn": "Versti",
+        "translatingDoc": "Verčiama…"
     },
     "archive": {
         "title": "Archyvas",
@@ -450,6 +463,31 @@
         "successTitle": "Bilietas sukurtas!",
         "successDesc": "Jūsų bilietas sėkmingai sukurtas. Netrukus atsakysime!",
         "newTicket": "Naujas bilietas",
-        "sendError": "Klaida siunčiant bilietą."
+        "sendError": "Klaida siunčiant bilietą.",
+        "newTicketBtn": "Naujas bilietas",
+        "noTickets": "Dar nėra bilietų",
+        "createFirst": "Sukurti pirmą bilietą",
+        "subject": "Tema",
+        "subjectPlaceholder": "Trumpas aprašymas (neprivaloma)",
+        "descriptionLabel": "Aprašymas",
+        "minCharsTicket": "(min. 10 simbolių)",
+        "descPlaceholder": "Aprašykite savo problemą...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Kuriama...",
+        "createButton": "Sukurti bilietą",
+        "createError": "Klaida kuriant",
+        "statusCreated": "Sukurtas",
+        "statusInProgress": "Vykdoma",
+        "statusResolved": "Išspręsta",
+        "statusClosed": "Uždarytas",
+        "solutionFrom": "Sprendimas iš palaikymo:",
+        "acceptSolution": "Priimti sprendimą",
+        "writeMessage": "Rašyti žinutę...",
+        "ticketClosedMsg": "Bilietas uždarytas",
+        "you": "Tu",
+        "supportTeam": "Palaikymas",
+        "attachFile": "Prisegti failą",
+        "fileAttached": "Failas prisegtas",
+        "back": "Atgal"
     }
 }

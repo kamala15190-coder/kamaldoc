@@ -117,7 +117,8 @@
         "subline4": "आपके दस्तावेज़ इंतज़ार कर रहे हैं 📄",
         "subline5": "आज उत्पादक बनें 💪",
         "subline6": "अच्छा संगठन आधी सफलता है 📋",
-        "subline7": "आपका डिजिटल कार्यालय इंतज़ार कर रहा है 🗂️"
+        "subline7": "आपका डिजिटल कार्यालय इंतज़ार कर रहा है 🗂️",
+        "manualTask": "मैनुअल कार्य"
     },
     "upload": {
         "title": "दस्तावेज़ अपलोड करें",
@@ -132,7 +133,16 @@
         "gallery": "गैलरी से",
         "cameraButton": "कैमरा",
         "galleryButton": "गैलरी",
-        "onlyAllowed": "केवल JPG, PNG या PDF अनुमत है।"
+        "onlyAllowed": "केवल JPG, PNG या PDF अनुमत है।",
+        "scanTitle": "दस्तावेज़ स्कैन करें",
+        "page": "पृष्ठ",
+        "noPages": "कोई पृष्ठ नहीं",
+        "retake": "दोबारा लें",
+        "delete": "हटाएं",
+        "addPage": "पृष्ठ जोड़ें",
+        "finish": "पूर्ण",
+        "buildingPdf": "PDF बना रहा है...",
+        "pageCount": "{{count}} पृष्ठ"
     },
     "document": {
         "back": "वापस",
@@ -199,7 +209,10 @@
         "addTaskBtn": "जोड़ें",
         "replyHintsLabel": "संदर्भ संकेत (वैकल्पिक)",
         "replyHintsPlaceholder": "उदा. कृपया विनम्र रहें, पैरा 5 का संदर्भ दें...",
-        "share": "साझा करें"
+        "share": "साझा करें",
+        "translateSection": "दस्तावेज़ अनुवाद करें",
+        "translateBtn": "अनुवाद करें",
+        "translatingDoc": "अनुवाद हो रहा है…"
     },
     "archive": {
         "title": "अभिलेखागार",
@@ -450,6 +463,31 @@
         "successTitle": "टिकट बनाया गया!",
         "successDesc": "आपका टिकट सफलतापूर्वक बनाया गया। हम जल्द जवाब देंगे!",
         "newTicket": "नया टिकट",
-        "sendError": "टिकट भेजने में त्रुटि।"
+        "sendError": "टिकट भेजने में त्रुटि।",
+        "newTicketBtn": "नया टिकट",
+        "noTickets": "अभी कोई टिकट नहीं",
+        "createFirst": "पहला टिकट बनाएं",
+        "subject": "विषय",
+        "subjectPlaceholder": "संक्षिप्त विवरण (वैकल्पिक)",
+        "descriptionLabel": "विवरण",
+        "minCharsTicket": "(न्यूनतम 10 अक्षर)",
+        "descPlaceholder": "अपनी समस्या का वर्णन करें...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "बना रहा है...",
+        "createButton": "टिकट बनाएं",
+        "createError": "बनाने में त्रुटि",
+        "statusCreated": "बनाया गया",
+        "statusInProgress": "प्रगति में",
+        "statusResolved": "हल किया गया",
+        "statusClosed": "बंद",
+        "solutionFrom": "सहायता से समाधान:",
+        "acceptSolution": "समाधान स्वीकार करें",
+        "writeMessage": "संदेश लिखें...",
+        "ticketClosedMsg": "टिकट बंद",
+        "you": "आप",
+        "supportTeam": "सहायता",
+        "attachFile": "फाइल संलग्न करें",
+        "fileAttached": "फाइल संलग्न",
+        "back": "वापस"
     }
 }

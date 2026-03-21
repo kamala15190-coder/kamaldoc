@@ -117,7 +117,8 @@
         "subline4": "המסמכים שלך מחכים 📄",
         "subline5": "בואו נהיה פרודוקטיביים היום 💪",
         "subline6": "ארגון טוב הוא חצי הקרב 📋",
-        "subline7": "המשרד הדיגיטלי שלך מחכה 🗂️"
+        "subline7": "המשרד הדיגיטלי שלך מחכה 🗂️",
+        "manualTask": "משימה ידנית"
     },
     "upload": {
         "title": "העלאת מסמך",
@@ -132,7 +133,16 @@
         "gallery": "מהגלריה",
         "cameraButton": "מצלמה",
         "galleryButton": "גלריה",
-        "onlyAllowed": "מותר רק JPG, PNG או PDF."
+        "onlyAllowed": "מותר רק JPG, PNG או PDF.",
+        "scanTitle": "סרוק מסמך",
+        "page": "עמוד",
+        "noPages": "אין עמודים",
+        "retake": "צלם שוב",
+        "delete": "מחק",
+        "addPage": "הוסף עמוד",
+        "finish": "סיום",
+        "buildingPdf": "יוצר PDF...",
+        "pageCount": "{{count}} עמודים"
     },
     "document": {
         "back": "חזרה",
@@ -199,7 +209,10 @@
         "addTaskBtn": "הוסף",
         "replyHintsLabel": "רמזי הקשר (אופציונלי)",
         "replyHintsPlaceholder": "לדוגמה: נא להיות מנומס, להתייחס לסעיף 5...",
-        "share": "שתף"
+        "share": "שתף",
+        "translateSection": "תרגם מסמך",
+        "translateBtn": "תרגם",
+        "translatingDoc": "מתרגם…"
     },
     "archive": {
         "title": "ארכיון",
@@ -450,6 +463,31 @@
         "successTitle": "כרטיס נוצר!",
         "successDesc": "הכרטיס נוצר בהצלחה. נחזור אליך בקרוב!",
         "newTicket": "כרטיס חדש",
-        "sendError": "שגיאה בשליחת הכרטיס."
+        "sendError": "שגיאה בשליחת הכרטיס.",
+        "newTicketBtn": "כרטיס חדש",
+        "noTickets": "אין כרטיסים עדיין",
+        "createFirst": "יצירת כרטיס ראשון",
+        "subject": "נושא",
+        "subjectPlaceholder": "תיאור קצר (אופציונלי)",
+        "descriptionLabel": "תיאור",
+        "minCharsTicket": "(מינ. 10 תווים)",
+        "descPlaceholder": "תאר את הבעיה שלך...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "יוצר...",
+        "createButton": "יצירת כרטיס",
+        "createError": "שגיאה ביצירה",
+        "statusCreated": "נוצר",
+        "statusInProgress": "בטיפול",
+        "statusResolved": "נפתר",
+        "statusClosed": "סגור",
+        "solutionFrom": "פתרון מהתמיכה:",
+        "acceptSolution": "קבל פתרון",
+        "writeMessage": "כתוב הודעה...",
+        "ticketClosedMsg": "כרטיס סגור",
+        "you": "אתה",
+        "supportTeam": "תמיכה",
+        "attachFile": "צרף קובץ",
+        "fileAttached": "קובץ צורף",
+        "back": "חזרה"
     }
 }

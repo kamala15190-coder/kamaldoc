@@ -117,7 +117,8 @@
         "subline4": "Tài liệu của bạn đang chờ 📄",
         "subline5": "Hôm nay hãy năng suất 💪",
         "subline6": "Tổ chức tốt là nửa thành công 📋",
-        "subline7": "Văn phòng số của bạn đang chờ 🗂️"
+        "subline7": "Văn phòng số của bạn đang chờ 🗂️",
+        "manualTask": "Nhiệm vụ thủ công"
     },
     "upload": {
         "title": "Tải lên tài liệu",
@@ -132,7 +133,16 @@
         "gallery": "Từ thư viện",
         "cameraButton": "Camera",
         "galleryButton": "Thư viện",
-        "onlyAllowed": "Chỉ chấp nhận JPG, PNG hoặc PDF."
+        "onlyAllowed": "Chỉ chấp nhận JPG, PNG hoặc PDF.",
+        "scanTitle": "Quét tài liệu",
+        "page": "Trang",
+        "noPages": "Không có trang",
+        "retake": "Chụp lại",
+        "delete": "Xóa",
+        "addPage": "Thêm trang",
+        "finish": "Xong",
+        "buildingPdf": "Đang tạo PDF...",
+        "pageCount": "{{count}} trang"
     },
     "document": {
         "back": "Quay lại",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Thêm",
         "replyHintsLabel": "Gợi ý ngữ cảnh (tùy chọn)",
         "replyHintsPlaceholder": "vd. Hãy lịch sự, tham chiếu đoạn 5...",
-        "share": "Chia sẻ"
+        "share": "Chia sẻ",
+        "translateSection": "Dịch tài liệu",
+        "translateBtn": "Dịch",
+        "translatingDoc": "Đang dịch…"
     },
     "archive": {
         "title": "Lưu trữ",
@@ -450,6 +463,31 @@
         "successTitle": "Phiếu hỗ trợ đã tạo!",
         "successDesc": "Phiếu hỗ trợ đã được tạo thành công. Chúng tôi sẽ phản hồi sớm!",
         "newTicket": "Phiếu mới",
-        "sendError": "Lỗi khi gửi phiếu hỗ trợ."
+        "sendError": "Lỗi khi gửi phiếu hỗ trợ.",
+        "newTicketBtn": "Phiếu mới",
+        "noTickets": "Chưa có phiếu nào",
+        "createFirst": "Tạo phiếu đầu tiên",
+        "subject": "Chủ đề",
+        "subjectPlaceholder": "Mô tả ngắn (tùy chọn)",
+        "descriptionLabel": "Mô tả",
+        "minCharsTicket": "(tối thiểu 10 ký tự)",
+        "descPlaceholder": "Mô tả vấn đề của bạn...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Đang tạo...",
+        "createButton": "Tạo phiếu",
+        "createError": "Lỗi khi tạo",
+        "statusCreated": "Đã tạo",
+        "statusInProgress": "Đang xử lý",
+        "statusResolved": "Đã giải quyết",
+        "statusClosed": "Đã đóng",
+        "solutionFrom": "Giải pháp từ hỗ trợ:",
+        "acceptSolution": "Chấp nhận giải pháp",
+        "writeMessage": "Viết tin nhắn...",
+        "ticketClosedMsg": "Phiếu đã đóng",
+        "you": "Bạn",
+        "supportTeam": "Hỗ trợ",
+        "attachFile": "Đính kèm tệp",
+        "fileAttached": "Đã đính kèm tệp",
+        "back": "Quay lại"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Zure dokumentuak zain daude 📄",
         "subline5": "Gaur emankorrak izan gaitezen 💪",
         "subline6": "Ondo antolatuta erdia irabazita da 📋",
-        "subline7": "Zure bulego digitala zain dago 🗂️"
+        "subline7": "Zure bulego digitala zain dago 🗂️",
+        "manualTask": "Eskuzko zeregina"
     },
     "upload": {
         "title": "Dokumentua igo",
@@ -132,7 +133,16 @@
         "gallery": "Galeriatik",
         "cameraButton": "Kamera",
         "galleryButton": "Galeria",
-        "onlyAllowed": "JPG, PNG edo PDF bakarrik onartzen dira."
+        "onlyAllowed": "JPG, PNG edo PDF bakarrik onartzen dira.",
+        "scanTitle": "Dokumentua eskaneatu",
+        "page": "Orria",
+        "noPages": "Orririk ez",
+        "retake": "Berregin",
+        "delete": "Ezabatu",
+        "addPage": "Orria gehitu",
+        "finish": "Eginda",
+        "buildingPdf": "PDFa sortzen...",
+        "pageCount": "{{count}} orri"
     },
     "document": {
         "back": "Atzera",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Gehitu",
         "replyHintsLabel": "Testuinguru-argibideak (aukerakoa)",
         "replyHintsPlaceholder": "adib. Mesedez, eutsi ondo, aipatu 5. paragrafoa...",
-        "share": "Partekatu"
+        "share": "Partekatu",
+        "translateSection": "Dokumentua itzuli",
+        "translateBtn": "Itzuli",
+        "translatingDoc": "Itzultzen…"
     },
     "archive": {
         "title": "Artxiboa",
@@ -450,6 +463,31 @@
         "successTitle": "Tiketa sortua!",
         "successDesc": "Zure tiketa ondo sortu da. Laster erantzungo dizugu!",
         "newTicket": "Tiketa berria",
-        "sendError": "Errorea tiketa bidaltzean."
+        "sendError": "Errorea tiketa bidaltzean.",
+        "newTicketBtn": "Tiketa berria",
+        "noTickets": "Ez dago tiketik oraindik",
+        "createFirst": "Sortu lehen tiketa",
+        "subject": "Gaia",
+        "subjectPlaceholder": "Deskribapen laburra (aukerakoa)",
+        "descriptionLabel": "Deskribapena",
+        "minCharsTicket": "(gutxienez 10 karaktere)",
+        "descPlaceholder": "Deskribatu zure arazoa...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Sortzen...",
+        "createButton": "Sortu tiketa",
+        "createError": "Errorea sortzerakoan",
+        "statusCreated": "Sortua",
+        "statusInProgress": "Prozesuan",
+        "statusResolved": "Ebatzia",
+        "statusClosed": "Itxita",
+        "solutionFrom": "Laguntzaren irtenbidea:",
+        "acceptSolution": "Onartu irtenbidea",
+        "writeMessage": "Idatzi mezua...",
+        "ticketClosedMsg": "Tiketa itxita",
+        "you": "Zu",
+        "supportTeam": "Laguntza",
+        "attachFile": "Erantsi fitxategia",
+        "fileAttached": "Fitxategia erantsita",
+        "back": "Atzera"
     }
 }

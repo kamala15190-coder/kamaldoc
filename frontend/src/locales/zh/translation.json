@@ -117,7 +117,8 @@
         "subline4": "您的文档等待处理 📄",
         "subline5": "今天要高效率 💪",
         "subline6": "有条理就成功了一半 📋",
-        "subline7": "您的数字办公室等待您 🗂️"
+        "subline7": "您的数字办公室等待您 🗂️",
+        "manualTask": "手动任务"
     },
     "upload": {
         "title": "上传文档",
@@ -132,7 +133,16 @@
         "gallery": "从相册",
         "cameraButton": "相机",
         "galleryButton": "相册",
-        "onlyAllowed": "仅允许 JPG、PNG 或 PDF。"
+        "onlyAllowed": "仅允许 JPG、PNG 或 PDF。",
+        "scanTitle": "扫描文档",
+        "page": "页",
+        "noPages": "没有页面",
+        "retake": "重拍",
+        "delete": "删除",
+        "addPage": "添加页面",
+        "finish": "完成",
+        "buildingPdf": "正在生成PDF...",
+        "pageCount": "{{count}} 页"
     },
     "document": {
         "back": "返回",
@@ -199,7 +209,10 @@
         "addTaskBtn": "添加",
         "replyHintsLabel": "上下文提示（可选）",
         "replyHintsPlaceholder": "例如：请礼貌用语，参考第5段...",
-        "share": "分享"
+        "share": "分享",
+        "translateSection": "翻译文档",
+        "translateBtn": "翻译",
+        "translatingDoc": "正在翻译…"
     },
     "archive": {
         "title": "归档",
@@ -450,6 +463,31 @@
         "successTitle": "工单已创建！",
         "successDesc": "您的工单已成功创建。我们将尽快回复！",
         "newTicket": "新工单",
-        "sendError": "发送工单时出错。"
+        "sendError": "发送工单时出错。",
+        "newTicketBtn": "新工单",
+        "noTickets": "暂无工单",
+        "createFirst": "创建第一个工单",
+        "subject": "主题",
+        "subjectPlaceholder": "简短描述（可选）",
+        "descriptionLabel": "描述",
+        "minCharsTicket": "（至少10个字符）",
+        "descPlaceholder": "描述您的问题...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "创建中...",
+        "createButton": "创建工单",
+        "createError": "创建失败",
+        "statusCreated": "已创建",
+        "statusInProgress": "处理中",
+        "statusResolved": "已解决",
+        "statusClosed": "已关闭",
+        "solutionFrom": "支持团队的解决方案：",
+        "acceptSolution": "接受解决方案",
+        "writeMessage": "输入消息...",
+        "ticketClosedMsg": "工单已关闭",
+        "you": "你",
+        "supportTeam": "客服",
+        "attachFile": "附加文件",
+        "fileAttached": "文件已附加",
+        "back": "返回"
     }
 }

@@ -117,7 +117,8 @@
         "subline4": "Документите ви очакват 📄",
         "subline5": "Нека бъдем продуктивни 💪",
         "subline6": "Добрата организация е половината 📋",
-        "subline7": "Дигиталният ви офис очаква 🗂️"
+        "subline7": "Дигиталният ви офис очаква 🗂️",
+        "manualTask": "Ръчна задача"
     },
     "upload": {
         "title": "Качи документ",
@@ -132,7 +133,16 @@
         "gallery": "От галерията",
         "cameraButton": "Камера",
         "galleryButton": "Галерия",
-        "onlyAllowed": "Позволени са само JPG, PNG или PDF."
+        "onlyAllowed": "Позволени са само JPG, PNG или PDF.",
+        "scanTitle": "Сканиране на документ",
+        "page": "Страница",
+        "noPages": "Няма страници",
+        "retake": "Повтори",
+        "delete": "Изтрий",
+        "addPage": "Добави страница",
+        "finish": "Готово",
+        "buildingPdf": "Създаване на PDF...",
+        "pageCount": "{{count}} страници"
     },
     "document": {
         "back": "Назад",
@@ -199,7 +209,10 @@
         "addTaskBtn": "Добави",
         "replyHintsLabel": "Контекстни подсказки (незадължително)",
         "replyHintsPlaceholder": "напр. Бъдете учтиви, позовете се на параграф 5...",
-        "share": "Сподели"
+        "share": "Сподели",
+        "translateSection": "Преведи документ",
+        "translateBtn": "Преведи",
+        "translatingDoc": "Превежда се…"
     },
     "archive": {
         "title": "Архив",
@@ -450,6 +463,31 @@
         "successTitle": "Тикетът е създаден!",
         "successDesc": "Тикетът ви беше създаден успешно. Ще ви отговорим скоро!",
         "newTicket": "Нов тикет",
-        "sendError": "Грешка при изпращане на тикет."
+        "sendError": "Грешка при изпращане на тикет.",
+        "newTicketBtn": "Нов тикет",
+        "noTickets": "Няма тикети",
+        "createFirst": "Създай първи тикет",
+        "subject": "Тема",
+        "subjectPlaceholder": "Кратко описание (по избор)",
+        "descriptionLabel": "Описание",
+        "minCharsTicket": "(мин. 10 знака)",
+        "descPlaceholder": "Опишете проблема си...",
+        "charCountTicket": "{{count}}/10",
+        "creating": "Създаване...",
+        "createButton": "Създай тикет",
+        "createError": "Грешка при създаване",
+        "statusCreated": "Създаден",
+        "statusInProgress": "В обработка",
+        "statusResolved": "Решен",
+        "statusClosed": "Затворен",
+        "solutionFrom": "Решение от поддръжка:",
+        "acceptSolution": "Приеми решение",
+        "writeMessage": "Напишете съобщение...",
+        "ticketClosedMsg": "Тикетът е затворен",
+        "you": "Ти",
+        "supportTeam": "Поддръжка",
+        "attachFile": "Прикачи файл",
+        "fileAttached": "Файлът е прикачен",
+        "back": "Назад"
     }
 }
