@@ -111,13 +111,13 @@
         "documentsTotal": "Documenten totaal",
         "thisWeek": "deze week",
         "recentlyAdded": "Recent toegevoegd",
-        "subline1": "Leuk je te zien 👋",
-        "subline2": "Welkom terug ✨",
-        "subline3": "Alles in één oogopslag 🚀",
-        "subline4": "Je documenten wachten 📄",
-        "subline5": "Laten we productief zijn 💪",
-        "subline6": "Goed georganiseerd is het halve werk 📋",
-        "subline7": "Je digitale kantoor wacht 🗂️"
+        "subline1": "Leuk je te zien",
+        "subline2": "Welkom terug",
+        "subline3": "Alles in één oogopslag",
+        "subline4": "Je documenten wachten",
+        "subline5": "Laten we productief zijn",
+        "subline6": "Goed georganiseerd is het halve werk",
+        "subline7": "Je digitale kantoor wacht"
     },
     "upload": {
         "title": "Document uploaden",

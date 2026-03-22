@@ -111,13 +111,13 @@
         "documentsTotal": "Jumla ya nyaraka",
         "thisWeek": "wiki hii",
         "recentlyAdded": "Imeongezwa hivi karibuni",
-        "subline1": "Furaha kukuona 👋",
-        "subline2": "Karibu tena ✨",
-        "subline3": "Kila kitu kwa mtazamo 🚀",
-        "subline4": "Nyaraka zako zinakungoja 📄",
-        "subline5": "Tuwe na tija leo 💪",
-        "subline6": "Kupanga vizuri ni nusu ya mafanikio 📋",
-        "subline7": "Ofisi yako ya kidijitali inakungoja 🗂️"
+        "subline1": "Furaha kukuona",
+        "subline2": "Karibu tena",
+        "subline3": "Kila kitu kwa mtazamo",
+        "subline4": "Nyaraka zako zinakungoja",
+        "subline5": "Tuwe na tija leo",
+        "subline6": "Kupanga vizuri ni nusu ya mafanikio",
+        "subline7": "Ofisi yako ya kidijitali inakungoja"
     },
     "upload": {
         "title": "Pakia hati",

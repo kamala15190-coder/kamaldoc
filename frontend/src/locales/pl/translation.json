@@ -111,13 +111,13 @@
         "documentsTotal": "Dokumenty łącznie",
         "thisWeek": "w tym tygodniu",
         "recentlyAdded": "Ostatnio dodane",
-        "subline1": "Miło cię widzieć 👋",
-        "subline2": "Witaj ponownie ✨",
-        "subline3": "Wszystko w zasięgu ręki 🚀",
-        "subline4": "Twoje dokumenty czekają 📄",
-        "subline5": "Bądźmy dziś produktywni 💪",
-        "subline6": "Dobrze zorganizowany to połowa sukcesu 📋",
-        "subline7": "Twoje cyfrowe biuro czeka 🗂️"
+        "subline1": "Miło cię widzieć",
+        "subline2": "Witaj ponownie",
+        "subline3": "Wszystko w zasięgu ręki",
+        "subline4": "Twoje dokumenty czekają",
+        "subline5": "Bądźmy dziś produktywni",
+        "subline6": "Dobrze zorganizowany to połowa sukcesu",
+        "subline7": "Twoje cyfrowe biuro czeka"
     },
     "upload": {
         "title": "Prześlij dokument",

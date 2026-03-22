@@ -111,13 +111,13 @@
         "documentsTotal": "전체 문서",
         "thisWeek": "이번 주",
         "recentlyAdded": "최근 추가됨",
-        "subline1": "만나서 반가워요 👋",
-        "subline2": "다시 오신 것을 환영합니다 ✨",
-        "subline3": "한눈에 모든 것을 🚀",
-        "subline4": "문서가 기다리고 있어요 📄",
-        "subline5": "오늘은 생산적으로 💪",
-        "subline6": "잘 정리하면 반은 성공 📋",
-        "subline7": "디지털 사무실이 기다립니다 🗂️"
+        "subline1": "만나서 반가워요",
+        "subline2": "다시 오신 것을 환영합니다",
+        "subline3": "한눈에 모든 것을",
+        "subline4": "문서가 기다리고 있어요",
+        "subline5": "오늘은 생산적으로",
+        "subline6": "잘 정리하면 반은 성공",
+        "subline7": "디지털 사무실이 기다립니다"
     },
     "upload": {
         "title": "문서 업로드",

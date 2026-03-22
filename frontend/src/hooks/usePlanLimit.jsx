@@ -1,6 +1,7 @@
 import { useState, useCallback, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Zap } from 'lucide-react';
 
 const PlanLimitContext = createContext({});
 
@@ -42,7 +43,7 @@ export const PlanLimitProvider = ({ children }) => {
             padding: '24px', width: '100%', maxWidth: '320px',
             textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
           }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>⚡</div>
+            <Zap style={{ width: 40, height: 40, marginBottom: 12, color: '#f59e0b' }} />
             <h3 style={{ fontWeight: '700', fontSize: '18px', marginBottom: '8px', color: '#1f2937' }}>
               {modal.message}
             </h3>

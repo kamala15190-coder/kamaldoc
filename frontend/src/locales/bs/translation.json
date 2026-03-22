@@ -111,13 +111,13 @@
         "documentsTotal": "Ukupno dokumenata",
         "thisWeek": "ove sedmice",
         "recentlyAdded": "Nedavno dodano",
-        "subline1": "Drago nam je vidjeti te 👋",
-        "subline2": "Dobrodošao nazad ✨",
-        "subline3": "Sve na prvi pogled 🚀",
-        "subline4": "Vaši dokumenti čekaju 📄",
-        "subline5": "Budimo produktivni danas 💪",
-        "subline6": "Dobro organizirano je pola posla 📋",
-        "subline7": "Vaš digitalni ured čeka 🗂️"
+        "subline1": "Drago nam je vidjeti te",
+        "subline2": "Dobrodošao nazad",
+        "subline3": "Sve na prvi pogled",
+        "subline4": "Vaši dokumenti čekaju",
+        "subline5": "Budimo produktivni danas",
+        "subline6": "Dobro organizirano je pola posla",
+        "subline7": "Vaš digitalni ured čeka"
     },
     "upload": {
         "title": "Učitaj dokument",

@@ -111,13 +111,13 @@
         "documentsTotal": "Documentos en total",
         "thisWeek": "esta semana",
         "recentlyAdded": "Añadidos recientemente",
-        "subline1": "Qué bueno verte 👋",
-        "subline2": "Bienvenido de nuevo ✨",
-        "subline3": "Todo de un vistazo 🚀",
-        "subline4": "Tus documentos te esperan 📄",
-        "subline5": "Hoy seremos productivos 💪",
-        "subline6": "Bien organizado es medio ganado 📋",
-        "subline7": "Tu oficina digital te espera 🗂️"
+        "subline1": "Qué bueno verte",
+        "subline2": "Bienvenido de nuevo",
+        "subline3": "Todo de un vistazo",
+        "subline4": "Tus documentos te esperan",
+        "subline5": "Hoy seremos productivos",
+        "subline6": "Bien organizado es medio ganado",
+        "subline7": "Tu oficina digital te espera"
     },
     "upload": {
         "title": "Subir documento",

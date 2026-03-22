@@ -111,13 +111,13 @@
         "documentsTotal": "Guztira dokumentuak",
         "thisWeek": "aste honetan",
         "recentlyAdded": "Berriki gehitutakoak",
-        "subline1": "Pozik zaitugu ikusteaz 👋",
-        "subline2": "Ongi etorri berriro ✨",
-        "subline3": "Dena begi-kolpe batean 🚀",
-        "subline4": "Zure dokumentuak zain daude 📄",
-        "subline5": "Gaur emankorrak izan gaitezen 💪",
-        "subline6": "Ondo antolatuta erdia irabazita da 📋",
-        "subline7": "Zure bulego digitala zain dago 🗂️"
+        "subline1": "Pozik zaitugu ikusteaz",
+        "subline2": "Ongi etorri berriro",
+        "subline3": "Dena begi-kolpe batean",
+        "subline4": "Zure dokumentuak zain daude",
+        "subline5": "Gaur emankorrak izan gaitezen",
+        "subline6": "Ondo antolatuta erdia irabazita da",
+        "subline7": "Zure bulego digitala zain dago"
     },
     "upload": {
         "title": "Dokumentua igo",

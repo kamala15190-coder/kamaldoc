@@ -111,13 +111,13 @@
         "documentsTotal": "Asiakirjoja yhteensä",
         "thisWeek": "tällä viikolla",
         "recentlyAdded": "Äskettäin lisätyt",
-        "subline1": "Kiva nähdä sinut 👋",
-        "subline2": "Tervetuloa takaisin ✨",
-        "subline3": "Kaikki yhdellä silmäyksellä 🚀",
-        "subline4": "Asiakirjasi odottavat 📄",
-        "subline5": "Olkaamme tuottavia tänään 💪",
-        "subline6": "Hyvin järjestetty on puoli voittoa 📋",
-        "subline7": "Digitaalinen toimistosi odottaa 🗂️"
+        "subline1": "Kiva nähdä sinut",
+        "subline2": "Tervetuloa takaisin",
+        "subline3": "Kaikki yhdellä silmäyksellä",
+        "subline4": "Asiakirjasi odottavat",
+        "subline5": "Olkaamme tuottavia tänään",
+        "subline6": "Hyvin järjestetty on puoli voittoa",
+        "subline7": "Digitaalinen toimistosi odottaa"
     },
     "upload": {
         "title": "Lataa asiakirja",

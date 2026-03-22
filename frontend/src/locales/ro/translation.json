@@ -111,13 +111,13 @@
         "documentsTotal": "Documente total",
         "thisWeek": "săptămâna aceasta",
         "recentlyAdded": "Adăugate recent",
-        "subline1": "Ce bine că ești aici 👋",
-        "subline2": "Bine ai revenit ✨",
-        "subline3": "Totul dintr-o privire 🚀",
-        "subline4": "Documentele tale așteaptă 📄",
-        "subline5": "Hai să fim productivi azi 💪",
-        "subline6": "Bine organizat e jumătate de bătălie 📋",
-        "subline7": "Biroul tău digital te așteaptă 🗂️"
+        "subline1": "Ce bine că ești aici",
+        "subline2": "Bine ai revenit",
+        "subline3": "Totul dintr-o privire",
+        "subline4": "Documentele tale așteaptă",
+        "subline5": "Hai să fim productivi azi",
+        "subline6": "Bine organizat e jumătate de bătălie",
+        "subline7": "Biroul tău digital te așteaptă"
     },
     "upload": {
         "title": "Încarcă document",

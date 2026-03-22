@@ -111,13 +111,13 @@
         "documentsTotal": "Dokumenter totalt",
         "thisWeek": "denne uken",
         "recentlyAdded": "Nylig lagt til",
-        "subline1": "Hyggelig å se deg 👋",
-        "subline2": "Velkommen tilbake ✨",
-        "subline3": "Alt i et overblikk 🚀",
-        "subline4": "Dokumentene dine venter 📄",
-        "subline5": "La oss være produktive 💪",
-        "subline6": "Godt organisert er halve jobben 📋",
-        "subline7": "Ditt digitale kontor venter 🗂️"
+        "subline1": "Hyggelig å se deg",
+        "subline2": "Velkommen tilbake",
+        "subline3": "Alt i et overblikk",
+        "subline4": "Dokumentene dine venter",
+        "subline5": "La oss være produktive",
+        "subline6": "Godt organisert er halve jobben",
+        "subline7": "Ditt digitale kontor venter"
     },
     "upload": {
         "title": "Last opp dokument",

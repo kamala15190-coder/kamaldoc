@@ -111,13 +111,13 @@
         "sectorAusgaben": "Ausgaben-Dashboard",
         "sectorArchiv": "Archiv",
         "customizeLayout": "Layout anpassen",
-        "subline1": "Schön, dass du da bist 👋",
-        "subline2": "Willkommen zurück ✨",
-        "subline3": "Alles im Blick. Los geht’s 🚀",
-        "subline4": "Deine Dokumente warten 📄",
-        "subline5": "Heute wird produktiv 💪",
-        "subline6": "Gut organisiert ist halb gewonnen 📋",
-        "subline7": "Dein digitales Büro wartet 🗂️"
+        "subline1": "Schön, dass du da bist",
+        "subline2": "Willkommen zurück",
+        "subline3": "Alles im Blick. Los geht’s",
+        "subline4": "Deine Dokumente warten",
+        "subline5": "Heute wird produktiv",
+        "subline6": "Gut organisiert ist halb gewonnen",
+        "subline7": "Dein digitales Büro wartet"
     },
     "upload": {
         "title": "Dokument hochladen",

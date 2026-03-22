@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
 import { PlanLimitProvider } from './hooks/usePlanLimit.jsx';
-import { ThemeProvider, useTheme } from './hooks/useTheme.jsx';
+import { ThemeProvider } from './hooks/useTheme.jsx';
 import { LANGUAGES, isRtl } from './languages';
 import { supabase } from './supabaseClient';
 import Dashboard from './pages/Dashboard';
@@ -175,8 +175,6 @@ function TopHeader() {
   const isAdmin = useIsAdmin();
   const { signOut } = useAuth();
   const { user } = useAuth();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const [ticketBadge, setTicketBadge] = useState(0);
 
   useEffect(() => {
@@ -231,19 +229,11 @@ function TopHeader() {
               border: isPro ? '0.5px solid rgba(99,89,255,0.25)' : isBasic ? '0.5px solid rgba(245,158,11,0.20)' : '0.5px solid var(--border-glass)',
               color: isPro ? 'var(--accent-solid)' : isBasic ? 'var(--warning-text)' : 'var(--text-muted)',
             }}>
-              {isDark ? (
-                <>
-                  {isPro && '🚀'}
-                  {isBasic && '⚡'}
-                  {isFree && '🔒'}
-                </>
-              ) : (
-                <>
-                  {isPro && <Rocket style={{ width: 12, height: 12 }} />}
-                  {isBasic && <Zap style={{ width: 12, height: 12 }} />}
-                  {isFree && <Lock style={{ width: 12, height: 12 }} />}
-                </>
-              )}
+              <>
+                {isPro && <Rocket style={{ width: 12, height: 12 }} />}
+                {isBasic && <Zap style={{ width: 12, height: 12 }} />}
+                {isFree && <Lock style={{ width: 12, height: 12 }} />}
+              </>
               {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : t('pricing.upgradePlan')}
             </div>
           )}

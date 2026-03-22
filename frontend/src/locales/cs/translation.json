@@ -111,13 +111,13 @@
         "documentsTotal": "Celkem dokumentů",
         "thisWeek": "tento týden",
         "recentlyAdded": "Nedávno přidáno",
-        "subline1": "Rádi tě vidíme 👋",
-        "subline2": "Vítej zpět ✨",
-        "subline3": "Vše na první pohled 🚀",
-        "subline4": "Vaše dokumenty čekají 📄",
-        "subline5": "Dnes buďme produktivní 💪",
-        "subline6": "Dobře organizováno je půl úspěchu 📋",
-        "subline7": "Vaše digitální kancelář čeká 🗂️"
+        "subline1": "Rádi tě vidíme",
+        "subline2": "Vítej zpět",
+        "subline3": "Vše na první pohled",
+        "subline4": "Vaše dokumenty čekají",
+        "subline5": "Dnes buďme produktivní",
+        "subline6": "Dobře organizováno je půl úspěchu",
+        "subline7": "Vaše digitální kancelář čeká"
     },
     "upload": {
         "title": "Nahrát dokument",

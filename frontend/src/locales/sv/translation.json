@@ -111,13 +111,13 @@
         "documentsTotal": "Dokument totalt",
         "thisWeek": "denna vecka",
         "recentlyAdded": "Nyligen tillagda",
-        "subline1": "Kul att se dig 👋",
-        "subline2": "Välkommen tillbaka ✨",
-        "subline3": "Allt i en överblick 🚀",
-        "subline4": "Dina dokument väntar 📄",
-        "subline5": "Låt oss vara produktiva 💪",
-        "subline6": "Välorganiserat är halva jobbet 📋",
-        "subline7": "Ditt digitala kontor väntar 🗂️"
+        "subline1": "Kul att se dig",
+        "subline2": "Välkommen tillbaka",
+        "subline3": "Allt i en överblick",
+        "subline4": "Dina dokument väntar",
+        "subline5": "Låt oss vara produktiva",
+        "subline6": "Välorganiserat är halva jobbet",
+        "subline7": "Ditt digitala kontor väntar"
     },
     "upload": {
         "title": "Ladda upp dokument",
