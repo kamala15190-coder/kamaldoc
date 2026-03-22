@@ -6,7 +6,7 @@ import {
   Minus, Settings, Archive, DollarSign, Undo2, Zap, Crown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDocuments, updateDocument, getExpenseSummary } from '../api';
+import { getDocuments, updateDocument, getExpenseSummary, getOpenTodos, updateTodo as apiUpdateTodo } from '../api';
 import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
@@ -95,6 +95,7 @@ export default function Dashboard() {
   const [documents, setDocuments] = useState([]);
   const [totalDocs, setTotalDocs] = useState(0);
   const [offeneTodos, setOffeneTodos] = useState([]);
+  const [manualTodos, setManualTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [search, setSearch] = useState('');
@@ -183,11 +184,12 @@ export default function Dashboard() {
     finally { setLoading(false); setLoadingMore(false); }
   };
   const fetchTodos = async () => { try { const data = await getDocuments({ handlung_offen: true }); setOffeneTodos(data.documents || data); } catch {} };
+  const fetchManualTodos = async () => { try { const data = await getOpenTodos(); setManualTodos(data || []); } catch {} };
   const fetchArchived = async () => { try { const data = await getDocuments({ archiv: true }); setArchivedDocs((data.documents || data).slice(0, 5)); } catch {} };
   const fetchExpenses = async () => { if (isFree) return; try { const data = await getExpenseSummary({ year: new Date().getFullYear() }); setExpenseSummary(data); } catch {} };
 
   const hasMore = !search && documents.length < totalDocs;
-  useEffect(() => { fetchDocs(); fetchTodos(); fetchArchived(); fetchExpenses(); }, [kategorie]);
+  useEffect(() => { fetchDocs(); fetchTodos(); fetchManualTodos(); fetchArchived(); fetchExpenses(); }, [kategorie]);
   useEffect(() => { const timer = setTimeout(fetchDocs, 400); return () => clearTimeout(timer); }, [search]);
 
   const handleTodoDone = async (docId) => {
@@ -200,6 +202,16 @@ export default function Dashboard() {
         fetchDocs();
       }, 500);
     } catch (err) { console.error(err); setDismissingIds(prev => { const s = new Set(prev); s.delete(docId); return s; }); }
+  };
+  const handleManualTodoDone = async (todoId) => {
+    setDismissingIds(prev => new Set(prev).add(`m_${todoId}`));
+    try {
+      await apiUpdateTodo(todoId, 1);
+      setTimeout(() => {
+        setManualTodos(prev => prev.filter(t => t.id !== todoId));
+        setDismissingIds(prev => { const s = new Set(prev); s.delete(`m_${todoId}`); return s; });
+      }, 500);
+    } catch (err) { console.error(err); setDismissingIds(prev => { const s = new Set(prev); s.delete(`m_${todoId}`); return s; }); }
   };
   const isOverdue = (dateStr) => dateStr ? new Date(dateStr) < new Date() : false;
 
@@ -270,18 +282,18 @@ export default function Dashboard() {
       </div>
     ),
 
-    todos: offeneTodos.length > 0 && (
+    todos: (offeneTodos.length > 0 || manualTodos.length > 0) && (
       <div style={{ ...glassCard, marginBottom: 16, animation: 'fadeUp 0.4s ease both', animationDelay: '0.13s' }}>
         <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
           <ClipboardList style={{ width: 14, height: 14, color: '#FF5F6D' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{t('dashboard.openTasks')}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'rgba(255,95,109,0.12)', color: '#FF5F6D' }}>{offeneTodos.length}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'rgba(255,95,109,0.12)', color: '#FF5F6D' }}>{offeneTodos.length + manualTodos.length}</span>
         </div>
         <div>
           {offeneTodos.map((todo, idx) => (
-            <div key={todo.id} style={{
+            <div key={`ki_${todo.id}`} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px 10px 16px',
-              borderBottom: idx < offeneTodos.length - 1 ? `0.5px solid ${tc.divider}` : 'none',
+              borderBottom: (idx < offeneTodos.length - 1 || manualTodos.length > 0) ? `0.5px solid ${tc.divider}` : 'none',
               transition: 'all 0.3s ease', cursor: 'pointer',
               opacity: dismissingIds.has(todo.id) ? 0 : 1,
               transform: dismissingIds.has(todo.id) ? 'translateX(40px)' : 'translateX(0)',
@@ -299,6 +311,30 @@ export default function Dashboard() {
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }} disabled={dismissingIds.has(todo.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
+                <CheckCircle style={{ width: 18, height: 18, color: '#00C896' }} />
+              </button>
+            </div>
+          ))}
+          {manualTodos.map((mt, idx) => (
+            <div key={`mt_${mt.id}`} style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px 10px 16px',
+              borderBottom: idx < manualTodos.length - 1 ? `0.5px solid ${tc.divider}` : 'none',
+              transition: 'all 0.3s ease', cursor: 'pointer',
+              opacity: dismissingIds.has(`m_${mt.id}`) ? 0 : 1,
+              transform: dismissingIds.has(`m_${mt.id}`) ? 'translateX(40px)' : 'translateX(0)',
+              animation: 'slideInLeft 0.3s ease both', animationDelay: `${(offeneTodos.length + idx) * 0.06}s`,
+            }} onClick={() => navigate(`/documents/${mt.document_id}`)}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: '#6359FF' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mt.text}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
+                  <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: 'rgba(99,89,255,0.12)', color: '#6359FF' }}>{t('dashboard.manualTask')}</span>
+                  <span style={{ fontSize: 11, color: tc.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mt.absender || mt.dateiname || '\u2014'}</span>
+                </div>
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); handleManualTodoDone(mt.id); }} disabled={dismissingIds.has(`m_${mt.id}`)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
                 <CheckCircle style={{ width: 18, height: 18, color: '#00C896' }} />
               </button>
             </div>

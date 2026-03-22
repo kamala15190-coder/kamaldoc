@@ -2,18 +2,19 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Trash2, Save, CheckCircle, MessageSquare,
-  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock, Brain, MessageCircle, StickyNote, Zap, Share2, ListChecks, Plus as PlusIcon, X as XIcon
+  Loader2, Copy, AlertCircle, ExternalLink, RefreshCw, Globe, Clock, Lock, Brain, MessageCircle, StickyNote, Zap, Share2, ListChecks, Plus as PlusIcon, X as XIcon, Languages
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   getDocument, updateDocument, deleteDocument,
   generateReply, getReplies, downloadFile,
-  getTodos, createTodo as apiCreateTodo, updateTodo as apiUpdateTodo, deleteTodo as apiDeleteTodo
+  getTodos, createTodo as apiCreateTodo, updateTodo as apiUpdateTodo, deleteTodo as apiDeleteTodo,
+  translateDocumentVolltext, getDocumentTranslations
 } from '../api';
 import { Capacitor } from '@capacitor/core';
 import AuthImage from '../components/AuthImage';
 import CollapsibleSection from '../components/CollapsibleSection';
-import { REPLY_LANGUAGES } from '../languages';
+import { REPLY_LANGUAGES, LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 
@@ -60,6 +61,10 @@ export default function DocumentDetail() {
   const [shared, setShared] = useState(null);
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
+  const [translateLang, setTranslateLang] = useState('en');
+  const [translating, setTranslating] = useState(false);
+  const [translations, setTranslations] = useState([]);
+  const [copiedTranslation, setCopiedTranslation] = useState(null);
   const [savedToast, setSavedToast] = useState({ message: '', visible: false, fading: false });
   const showToast = (msg) => {
     setSavedToast({ message: msg, visible: true, fading: false });
@@ -112,11 +117,21 @@ export default function DocumentDetail() {
     }
   }, [id]);
 
+  const fetchTranslations = useCallback(async () => {
+    try {
+      const data = await getDocumentTranslations(id);
+      setTranslations(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchDoc();
     fetchReplies();
     fetchTodos();
-  }, [fetchDoc, fetchReplies, fetchTodos]);
+    fetchTranslations();
+  }, [fetchDoc, fetchReplies, fetchTodos, fetchTranslations]);
 
   // Polling wenn Analyse laeuft
   useEffect(() => {
@@ -217,6 +232,26 @@ export default function DocumentDetail() {
       await apiDeleteTodo(todoId);
       setTodos(prev => prev.filter(t => t.id !== todoId));
     } catch (err) { console.error(err); }
+  };
+
+  const handleTranslate = async () => {
+    setTranslating(true);
+    try {
+      const result = await translateDocumentVolltext(id, translateLang);
+      await fetchTranslations();
+    } catch (err) {
+      if (!handleApiError(err)) {
+        console.error(err);
+      }
+    } finally {
+      setTranslating(false);
+    }
+  };
+
+  const handleCopyTranslation = (text, idx) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTranslation(idx);
+    setTimeout(() => setCopiedTranslation(null), 2000);
   };
 
   const handleShare = async (text, title = 'KamalDoc') => {
@@ -697,6 +732,96 @@ export default function DocumentDetail() {
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0 }}>{reply.inhalt}</p>
                       </div>
                     ))}
+                  </div>
+                )}
+              </CollapsibleSection>
+            </div>
+          )}
+
+          {/* Dokument übersetzen (Collapsible) */}
+          {doc.status === 'analysiert' && doc.volltext && (
+            <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+              <CollapsibleSection
+                title={t('document.translateSection')}
+                icon={Languages}
+                level={1}
+                defaultOpen={false}
+                badge={translations.length > 0 ? `${translations.length}` : undefined}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: translations.length > 0 ? 14 : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Globe style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <select
+                      value={translateLang}
+                      onChange={e => setTranslateLang(e.target.value)}
+                      className="input-dark"
+                      style={{ flex: 1, fontSize: 13 }}
+                    >
+                      {LANGUAGES.filter(l => l.code !== 'de').map(lang => (
+                        <option key={lang.code} value={lang.code}>{lang.flag} {lang.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <button
+                    onClick={handleTranslate}
+                    disabled={translating}
+                    className="btn-accent"
+                    style={{
+                      width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      opacity: translating ? 0.5 : 1,
+                    }}
+                  >
+                    {translating ? (
+                      <><Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> {t('document.translatingDoc')}</>
+                    ) : (
+                      <><Languages style={{ width: 16, height: 16 }} /> {t('document.translateBtn')}</>
+                    )}
+                  </button>
+                </div>
+
+                {translations.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {translations.map((tr, idx) => {
+                      const lang = LANGUAGES.find(l => l.code === tr.target_language);
+                      return (
+                        <div key={tr.id} style={{
+                          padding: 14, borderRadius: 12,
+                          background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>
+                              {lang ? `${lang.flag} ${lang.label}` : tr.target_language} — {new Date(tr.created_at).toLocaleString()}
+                            </p>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <button
+                                onClick={() => handleShare(tr.translated_text, t('document.translateSection'))}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 4,
+                                  fontSize: 12, color: 'var(--text-muted)', fontWeight: 600,
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                }}
+                                title={t('document.share')}
+                              >
+                                <Share2 style={{ width: 13, height: 13 }} />
+                              </button>
+                              <button
+                                onClick={() => handleCopyTranslation(tr.translated_text, idx)}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 4,
+                                  fontSize: 12, color: 'var(--accent-solid)', fontWeight: 600,
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                }}
+                              >
+                                <Copy style={{ width: 13, height: 13 }} />
+                                {copiedTranslation === idx ? t('document.copied') : t('document.copy')}
+                              </button>
+                            </div>
+                          </div>
+                          <p style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', margin: 0, maxHeight: 200, overflowY: 'auto' }}>{tr.translated_text}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </CollapsibleSection>
