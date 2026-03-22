@@ -16,20 +16,40 @@ export default function DatenschutzPage() {
         </Link>
 
         <div className="glass-card animate-fade-in-up" style={{ padding: 24 }}>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>DATENSCHUTZERKLÄRUNG — KamalDoc</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>DATENSCHUTZERKLÄRUNG — KDoc</h1>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 24px' }}>Stand: März 2026</p>
 
           <div>
-            <section style={sectionStyle}><h2 style={h2Style}>1. Verantwortlicher</h2><p style={pStyle}>Ahmed Kamal el din, Exlwöhr 57, 4871 Vöcklamarkt, Österreich<br />E-Mail: office@kdoc.at</p></section>
+            <section style={sectionStyle}>
+              <h2 style={h2Style}>1. Verantwortlicher</h2>
+              <p style={pStyle}>KDoc ist ein digitales Produkt von <strong>Schulbox E.U.</strong></p>
+              <p style={pStyle}>
+                Schulbox E.U.<br />
+                Inhaber: Ahmed Kamal El Din<br />
+                Exlwöhr 57, 4871 Vöcklamarkt, Österreich<br />
+                Tel.: +43 660 618 96 36<br />
+                E-Mail: office@kdoc.at<br />
+                UID: ATU82131159<br />
+                GISA-Zahl: 38254253
+              </p>
+            </section>
             <section style={sectionStyle}><h2 style={h2Style}>2. Welche Daten wir erheben</h2><ul style={ulStyle}><li style={liStyle}><strong>Kontodaten:</strong> E-Mail-Adresse, Name und Profilbild (bei Google-Login)</li><li style={liStyle}><strong>Hochgeladene Dokumente:</strong> Bilder und PDFs, extrahierter Text, KI-Analysen</li><li style={liStyle}><strong>Technische Daten:</strong> IP-Adresse, Geräteinformationen, Push-Notification Token</li></ul></section>
             <section style={sectionStyle}><h2 style={h2Style}>3. Zweck der Datenverarbeitung</h2><ul style={ulStyle}><li style={liStyle}>Bereitstellung der App-Funktionen</li><li style={liStyle}>Authentifizierung und Kontosicherheit</li><li style={liStyle}>Push-Benachrichtigungen bei Deadlines</li><li style={liStyle}>Technischer Betrieb und Sicherheit</li></ul></section>
             <section style={sectionStyle}><h2 style={h2Style}>4. Rechtsgrundlage (DSGVO)</h2><p style={pStyle}>Art. 6 Abs. 1 lit. b, a, f DSGVO</p></section>
             <section style={sectionStyle}><h2 style={h2Style}>5. Drittanbieter</h2><ul style={ulStyle}><li style={liStyle}><strong>Supabase</strong> (Datenbank/Auth, USA, DSGVO-konform)</li><li style={liStyle}><strong>Google OAuth</strong> (Login, USA, DSGVO-konform)</li><li style={liStyle}><strong>Mistral AI</strong> (KI-Analyse, Frankreich/EU, DSGVO-konform)</li><li style={liStyle}><strong>Hetzner Online</strong> (Server, Deutschland, DSGVO-konform)</li><li style={liStyle}><strong>Vercel</strong> (Web-Hosting, USA, DSGVO-konform)</li></ul></section>
             <section style={sectionStyle}><h2 style={h2Style}>6. Speicherdauer</h2><p style={pStyle}>Kontodaten bis Accountlöschung, Dokumente bis manuelle Löschung, Logs 30 Tage</p></section>
-            <section style={sectionStyle}><h2 style={h2Style}>7. Ihre Rechte (DSGVO)</h2><p style={pStyle}>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch</p><p style={pStyle}>Beschwerde: <a href="https://dsb.gv.at" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-solid)' }}>dsb.gv.at</a> — Kontakt: office@kdoc.at</p></section>
+            <section style={sectionStyle}><h2 style={h2Style}>7. Ihre Rechte (DSGVO)</h2><p style={pStyle}>Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerspruch</p><p style={pStyle}>Beschwerde: <a href="https://dsb.gv.at" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent-solid)' }}>dsb.gv.at</a> — Kontakt: <a href="mailto:office@kdoc.at" style={{ color: 'var(--accent-solid)' }}>office@kdoc.at</a></p></section>
             <section style={sectionStyle}><h2 style={h2Style}>8. Datensicherheit</h2><p style={pStyle}>HTTPS/TLS, keine Klartext-Passwörter, User-Isolation, Hetzner Deutschland, regelmäßige Updates</p></section>
             <section style={sectionStyle}><h2 style={h2Style}>9. Kinder</h2><p style={pStyle}>Nicht für unter 16-Jährige</p></section>
-            <section style={sectionStyle}><h2 style={h2Style}>10. Kontakt</h2><p style={pStyle}>Ahmed Kamal el din, office@kdoc.at, Exlwöhr 57, 4871 Vöcklamarkt</p></section>
+            <section style={sectionStyle}>
+              <h2 style={h2Style}>10. Kontakt</h2>
+              <p style={pStyle}>
+                Schulbox E.U. — Inhaber: Ahmed Kamal El Din<br />
+                Exlwöhr 57, 4871 Vöcklamarkt, Österreich<br />
+                Tel.: +43 660 618 96 36<br />
+                E-Mail: office@kdoc.at
+              </p>
+            </section>
           </div>
         </div>
       </div>

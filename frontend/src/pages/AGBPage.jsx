@@ -19,7 +19,7 @@ export default function AGBPage() {
 
         <div className="glass-card animate-fade-in-up" style={{ padding: 24 }}>
           <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-            ALLGEMEINE GESCHÄFTSBEDINGUNGEN (AGB) — KamalDoc
+            ALLGEMEINE GESCHÄFTSBEDINGUNGEN (AGB) — KDoc
           </h1>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 24px' }}>Stand: März 2026</p>
 
@@ -28,7 +28,7 @@ export default function AGBPage() {
             <section style={sectionStyle}>
               <h2 style={h2Style}>§ 1 Geltungsbereich und Vertragsgegenstand</h2>
               <p style={pStyle}>
-                (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend „AGB") gelten für sämtliche Leistungen, die über die Plattform KamalDoc (nachfolgend „KDoc", „die App", „die Plattform" oder „der Dienst") bereitgestellt werden. Betreiber ist Ahmed Kamal el din, Exlwöhr 57, 4871 Vöcklamarkt, Österreich (nachfolgend „Betreiber", „wir" oder „uns").
+                (1) Diese Allgemeinen Geschäftsbedingungen (nachfolgend „AGB") gelten für sämtliche Leistungen, die über die Plattform KDoc (nachfolgend „die App", „die Plattform" oder „der Dienst") bereitgestellt werden. KDoc ist ein digitales Produkt von <strong style={strongStyle}>Schulbox E.U.</strong> Betreiber ist Schulbox E.U., Inhaber Ahmed Kamal El Din, Exlwöhr 57, 4871 Vöcklamarkt, Österreich, UID: ATU82131159, GISA-Zahl: 38254253 (nachfolgend „Betreiber", „wir" oder „uns").
               </p>
               <p style={pStyle}>
                 (2) KDoc ist eine KI-gestützte Plattform zur digitalen Dokumentenverwaltung, die es Nutzern ermöglicht, Dokumente hochzuladen, mittels künstlicher Intelligenz analysieren, kategorisieren, übersetzen und zusammenfassen zu lassen sowie Fristen zu verwalten und Ausgaben zu tracken.
@@ -143,7 +143,7 @@ export default function AGBPage() {
                 (1) KDoc bietet verschiedene Abonnement-Stufen an (Free, Basic, Pro), deren jeweiliger Funktionsumfang auf der Pricing-Seite der App einsehbar ist.
               </p>
               <p style={pStyle}>
-                (2) Kostenpflichtige Abonnements werden über den Zahlungsdienstleister <strong style={strongStyle}>Stripe</strong> (Stripe, Inc.) abgewickelt. Stripe verarbeitet Zahlungsdaten gemäß PCI-DSS-Standards. KDoc speichert keine Kreditkarten- oder Bankdaten.
+                (2) Kostenpflichtige Abonnements werden über den Zahlungsdienstleister <strong style={strongStyle}>Stripe</strong> (Stripe, Inc.) abgewickelt. <strong style={strongStyle}>Vertragspartner für kostenpflichtige Leistungen ist Schulbox E.U.</strong> Stripe verarbeitet Zahlungsdaten gemäß PCI-DSS-Standards. KDoc speichert keine Kreditkarten- oder Bankdaten.
               </p>
               <p style={pStyle}>
                 (3) Die angegebenen Preise verstehen sich inklusive der gesetzlichen Umsatzsteuer, sofern anwendbar.
@@ -335,16 +335,19 @@ export default function AGBPage() {
             <section style={sectionStyle}>
               <h2 style={h2Style}>§ 18 Kontakt</h2>
               <p style={pStyle}>
-                Ahmed Kamal el din<br />
+                Schulbox E.U.<br />
+                Inhaber: Ahmed Kamal El Din<br />
                 Exlwöhr 57<br />
                 4871 Vöcklamarkt, Österreich<br />
-                E-Mail: office@kdoc.at
+                Tel.: +43 660 618 96 36<br />
+                E-Mail: office@kdoc.at<br />
+                UID: ATU82131159
               </p>
             </section>
 
             <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--border-glass)' }}>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', margin: 0 }}>
-                © {new Date().getFullYear()} KamalDoc — Alle Rechte vorbehalten.
+                © {new Date().getFullYear()} KDoc — Schulbox E.U. — Alle Rechte vorbehalten.
               </p>
             </div>
           </div>

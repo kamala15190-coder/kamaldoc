@@ -279,6 +279,8 @@ export default function LoginPage() {
           <Link to="/nutzungsbedingungen" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>{t('auth.termsOfService')}</Link>{' '}
           {t('auth.andThe')}{' '}
           <Link to="/agb" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>{t('auth.agb')}</Link>.
+          {' · '}
+          <Link to="/impressum" style={{ color: 'var(--accent-solid)', textDecoration: 'underline' }}>Impressum</Link>
         </p>
       </div>
 
