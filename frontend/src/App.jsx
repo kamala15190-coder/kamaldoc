@@ -436,7 +436,7 @@ function LanguageSwitcher() {
         }}
         title={currentLang.label}
       >
-        {currentLang.flag}
+        <span role="img" aria-label={currentLang.label} style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}>{currentLang.flag}</span>
       </button>
       {open && (
         <div className="modal-content" style={{
@@ -460,7 +460,7 @@ function LanguageSwitcher() {
                 transition: 'background 0.15s ease',
               }}
             >
-              <span style={{ fontSize: 16 }}>{lang.flag}</span>
+              <span role="img" aria-label={lang.label} style={{ fontSize: 16, fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
@@ -479,7 +479,7 @@ function LanguageSwitcher() {
                 transition: 'background 0.15s ease',
               }}
             >
-              <span style={{ fontSize: 16 }}>{lang.flag}</span>
+              <span role="img" aria-label={lang.label} style={{ fontSize: 16, fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}
