@@ -6,13 +6,20 @@ __pycache__/
 
 # Sensitive / secrets
 .env
+.env.*
+!.env.example
 *.env
 backend/.env
-*firebase-adminsdk*.json
 API.txt
 data/
 data/*.db
 Dokumente/
+
+# Firebase / Google
+google-services.json
+GoogleService-Info.plist
+*firebase-adminsdk*.json
+*service-account*.json
 
 # Scripts (local only)
 *.bat
@@ -37,6 +44,7 @@ releases/
 # iOS
 frontend/ios/App/Pods/
 frontend/ios/DerivedData/
+frontend/ios/App/App/GoogleService-Info.plist
 
 # Capacitor
 frontend/android/app/src/main/assets/public/
