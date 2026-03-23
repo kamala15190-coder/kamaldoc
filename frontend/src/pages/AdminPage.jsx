@@ -82,6 +82,7 @@ function ChangePlanSection() {
   const [searchEmail, setSearchEmail] = useState('')
   const [user, setUser] = useState(null)
   const [selectedPlan, setSelectedPlan] = useState('')
+  const [durationDays, setDurationDays] = useState('')
   const [searching, setSearching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null)
@@ -105,9 +106,10 @@ function ChangePlanSection() {
     setSaving(true)
     setMsg(null)
     try {
-      await adminChangePlan(user.email, selectedPlan)
+      const result = await adminChangePlan(user.email, selectedPlan, durationDays ? parseInt(durationDays) : null)
       setUser(prev => ({ ...prev, plan: selectedPlan }))
-      setMsg({ type: 'success', text: `Plan auf "${selectedPlan}" geändert.` })
+      const expiryMsg = result.expires_at ? ` (bis ${new Date(result.expires_at).toLocaleDateString('de-DE')})` : ''
+      setMsg({ type: 'success', text: `Plan auf "${selectedPlan}" geändert${expiryMsg}.` })
     } catch (err) {
       setMsg({ type: 'error', text: err?.response?.data?.detail || 'Fehler beim Ändern.' })
     } finally {
@@ -149,13 +151,19 @@ function ChangePlanSection() {
               textTransform: 'uppercase',
             }}>{user.plan}</span>
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)}
               style={{ ...inputStyle, minWidth: 120 }}>
               <option value="free">Free</option>
               <option value="basic">Basic</option>
               <option value="pro">Pro</option>
             </select>
+            {selectedPlan !== 'free' && (
+              <input type="number" min="1" max="365" value={durationDays}
+                onChange={e => setDurationDays(e.target.value)}
+                placeholder="Tage (leer=unbegrenzt)"
+                style={{ ...inputStyle, width: 160 }} />
+            )}
             <button onClick={handleSave} disabled={saving || selectedPlan === user.plan}
               style={{ ...btnAccent, opacity: (saving || selectedPlan === user.plan) ? 0.5 : 1 }}>
               {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Save style={{ width: 14, height: 14 }} />}

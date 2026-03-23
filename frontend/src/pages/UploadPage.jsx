@@ -218,7 +218,7 @@ export default function UploadPage() {
 
   return (
     <div>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }} className="animate-fade-in">
+      <h1 data-intro="upload" style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 20px' }} className="animate-fade-in">
         {t('upload.title')}
       </h1>
 

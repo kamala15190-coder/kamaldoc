@@ -915,6 +915,36 @@ async def save_einstellungen(data: dict, user_id: str = Depends(get_current_user
         await db.close()
 
 
+@app.get("/api/intro-status")
+async def get_intro_status(user_id: str = Depends(get_current_user)):
+    """Check if user has seen the intro guide."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT value FROM user_einstellungen WHERE user_id = ? AND key = 'has_seen_intro'",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        return {"has_seen_intro": row["value"] == "true" if row else False}
+    finally:
+        await db.close()
+
+
+@app.post("/api/intro-complete")
+async def mark_intro_complete(user_id: str = Depends(get_current_user)):
+    """Mark intro guide as completed for this user."""
+    db = await get_db()
+    try:
+        await db.execute(
+            "INSERT OR REPLACE INTO user_einstellungen (user_id, key, value) VALUES (?, 'has_seen_intro', 'true')",
+            (user_id,),
+        )
+        await db.commit()
+        return {"status": "ok"}
+    finally:
+        await db.close()
+
+
 @app.get("/api/status")
 async def get_status():
     mistral_status = await check_mistral_status()
@@ -1847,10 +1877,11 @@ async def admin_search_user(email: str = Query(...), user_id: str = Depends(get_
 
 @app.post("/api/admin/change-plan")
 async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)):
-    """Manually change a user's plan (admin only)."""
+    """Manually change a user's plan (admin only). Supports optional duration_days for expiry."""
     await _require_admin(user_id)
     email = data.get("email", "").strip()
     new_plan = data.get("new_plan", "").strip()
+    duration_days = data.get("duration_days")  # Optional: plan expires after N days
 
     if new_plan not in ("free", "basic", "pro"):
         raise HTTPException(400, "Plan muss free, basic oder pro sein.")
@@ -1879,31 +1910,54 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
         raise HTTPException(404, "Kein User mit dieser E-Mail gefunden.")
 
     target_id = target["id"]
+    now = datetime.now()
+    expires_at = None
+    if duration_days and new_plan != "free":
+        try:
+            expires_at = (now + timedelta(days=int(duration_days))).isoformat()
+        except (ValueError, TypeError):
+            raise HTTPException(400, "Ungültige Laufzeit.")
+
     db = await get_db()
     try:
-        await db.execute(
-            """INSERT INTO subscriptions (user_id, plan, updated_at)
-               VALUES (?, ?, datetime('now'))
-               ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL, updated_at = datetime('now')""",
-            (target_id, new_plan, new_plan)
-        )
+        if expires_at:
+            await db.execute(
+                """INSERT INTO subscriptions (user_id, plan, started_at, expires_at, cancelled_at, updated_at)
+                   VALUES (?, ?, ?, ?, NULL, ?)
+                   ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL,
+                   started_at = ?, expires_at = ?, cancelled_at = NULL, updated_at = ?""",
+                (target_id, new_plan, now.isoformat(), expires_at, now.isoformat(),
+                 new_plan, now.isoformat(), expires_at, now.isoformat())
+            )
+        else:
+            await db.execute(
+                """INSERT INTO subscriptions (user_id, plan, updated_at)
+                   VALUES (?, ?, datetime('now'))
+                   ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL, updated_at = datetime('now')""",
+                (target_id, new_plan, new_plan)
+            )
         await db.commit()
     finally:
         await db.close()
 
-    logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}")
-    return {"status": "ok", "email": email, "new_plan": new_plan}
+    logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}"
+                + (f", Laufzeit: {duration_days} Tage (bis {expires_at})" if expires_at else ""))
+    return {"status": "ok", "email": email, "new_plan": new_plan, "expires_at": expires_at}
 
 
 # --- Deadline-Checker Background Job ---
 
 async def deadline_checker_loop():
-    """Täglicher Hintergrund-Job: Prüft Deadlines und markiert fällige Dokumente."""
+    """Background job: check deadlines + plan expiry every 6 hours."""
     while True:
         try:
             await check_deadlines()
         except Exception as e:
             logger.error(f"[Deadline-Checker] Fehler: {e}", exc_info=True)
+        try:
+            await check_plan_expiry()
+        except Exception as e:
+            logger.error(f"[Plan-Expiry] Fehler: {e}", exc_info=True)
         # Alle 6 Stunden prüfen
         await asyncio.sleep(6 * 60 * 60)
 
@@ -1973,11 +2027,97 @@ async def check_deadlines():
         await db.close()
 
 
+async def check_plan_expiry():
+    """Check all users whose plan has expired and downgrade if no active Stripe sub."""
+    now = datetime.now()
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            """SELECT user_id, plan, expires_at, stripe_subscription_id, pending_plan
+               FROM subscriptions
+               WHERE plan IN ('basic', 'pro')
+                 AND expires_at IS NOT NULL
+                 AND cancelled_at IS NOT NULL""",
+        )
+        rows = await cursor.fetchall()
+        downgraded = 0
+
+        for row in rows:
+            try:
+                exp_date = datetime.fromisoformat(row["expires_at"])
+                if exp_date > now:
+                    continue  # Not expired yet
+            except (ValueError, TypeError):
+                continue
+
+            user_id = row["user_id"]
+            stripe_sub_id = row["stripe_subscription_id"]
+            new_plan = row["pending_plan"] or "free"
+
+            # If Stripe sub exists and was cancelled, Stripe handles it via webhook
+            # For admin-granted plans without Stripe, downgrade directly
+            if not stripe_sub_id:
+                await db.execute(
+                    """UPDATE subscriptions SET plan = ?, pending_plan = NULL,
+                       cancelled_at = NULL, updated_at = ? WHERE user_id = ?""",
+                    (new_plan, now.isoformat(), user_id),
+                )
+                downgraded += 1
+                logger.info(f"[Plan-Expiry] User {user_id} downgraded to {new_plan} (expired {row['expires_at']})")
+
+                # Send push notification about downgrade
+                t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (user_id,))
+                for t in await t_cursor.fetchall():
+                    await send_push_notification(t["token"], "Plan abgelaufen",
+                                                 f"Dein Plan wurde auf {new_plan.capitalize()} zurückgestuft.")
+
+        await db.commit()
+        if downgraded:
+            logger.info(f"[Plan-Expiry] {downgraded} Pläne heruntergestuft")
+    finally:
+        await db.close()
+
+
 async def send_push_notification(token: str, title: str, body: str):
-    """Push-Notification via FCM senden (placeholder - needs Firebase setup)."""
-    # TODO: Firebase Cloud Messaging Integration
-    # Für jetzt nur loggen - FCM Server Key muss in .env konfiguriert werden
-    logger.info(f"[Push] Würde senden an {token[:20]}...: {title} - {body}")
+    """Push-Notification via Firebase Cloud Messaging HTTP v1 API."""
+    fcm_server_key = os.getenv("FCM_SERVER_KEY", "")
+    if not fcm_server_key:
+        logger.info(f"[Push] FCM not configured. Would send to {token[:20]}...: {title} - {body}")
+        return
+
+    import httpx
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                "https://fcm.googleapis.com/fcm/send",
+                headers={
+                    "Authorization": f"key={fcm_server_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "to": token,
+                    "notification": {
+                        "title": title,
+                        "body": body,
+                        "sound": "default",
+                    },
+                    "data": {
+                        "title": title,
+                        "body": body,
+                    },
+                },
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                result = resp.json()
+                if result.get("success", 0) > 0:
+                    logger.info(f"[Push] Sent to {token[:20]}...: {title}")
+                else:
+                    logger.warning(f"[Push] FCM rejected: {result}")
+            else:
+                logger.warning(f"[Push] FCM HTTP {resp.status_code}: {resp.text[:200]}")
+    except Exception as e:
+        logger.error(f"[Push] FCM send error: {e}", exc_info=True)
 
 
 
@@ -1988,12 +2128,22 @@ TICKET_FILES_DIR = DATA_DIR / "ticket_files"
 TICKET_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 
+ALLOWED_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
+MAX_TICKET_FILE_SIZE = 5 * 1024 * 1024  # 5MB
+
+
 async def _save_ticket_file(file: UploadFile) -> tuple:
-    """Save uploaded ticket file, return (file_name, file_path)."""
-    ext = Path(file.filename).suffix or '.bin'
+    """Save uploaded ticket image, return (file_name, file_path). Validates format and size."""
+    ext = Path(file.filename).suffix.lower() or '.bin'
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(400, f"Nur Bilder erlaubt ({', '.join(ALLOWED_IMAGE_EXTENSIONS)})")
+
+    content = await file.read()
+    if len(content) > MAX_TICKET_FILE_SIZE:
+        raise HTTPException(400, f"Datei zu groß (max. {MAX_TICKET_FILE_SIZE // (1024*1024)}MB)")
+
     safe_name = f"{uuid.uuid4().hex}{ext}"
     dest = TICKET_FILES_DIR / safe_name
-    content = await file.read()
     with open(dest, 'wb') as f:
         f.write(content)
     return (file.filename, safe_name)

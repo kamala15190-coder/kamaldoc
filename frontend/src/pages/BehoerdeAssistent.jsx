@@ -212,7 +212,7 @@ export default function BehoerdeAssistent() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+      <div data-intro="behoerde" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
         <div style={{ padding: 8, borderRadius: 10, background: 'rgba(20,184,166,0.1)' }}>
           <Landmark style={{ width: 18, height: 18, color: '#2dd4bf' }} />
         </div>

@@ -455,7 +455,7 @@ async def get_subscription_status(user_id: str) -> dict:
 # --- Downgrade ---
 
 async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
-    """Schedule a downgrade to a lower plan at end of current period."""
+    """Schedule a downgrade to a lower plan. Atomic: Stripe first, then DB."""
     PLAN_ORDER = {"free": 0, "basic": 1, "pro": 2}
     current = await get_user_plan(user_id)
 
@@ -466,19 +466,35 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
 
     db = await get_db()
     try:
-        if target_plan == "free":
-            # For downgrade to free: cancel Stripe subscription at period end
-            cursor = await db.execute(
-                "SELECT stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
-                (user_id,),
-            )
-            row = await cursor.fetchone()
-            stripe_sub_id = row["stripe_subscription_id"] if row else None
-            if stripe_sub_id and STRIPE_SECRET_KEY:
-                try:
+        cursor = await db.execute(
+            "SELECT stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        stripe_sub_id = row["stripe_subscription_id"] if row else None
+
+        # Atomic: Stripe action FIRST, then DB update
+        if stripe_sub_id and STRIPE_SECRET_KEY and STRIPE_SECRET_KEY != "sk_test_PLACEHOLDER":
+            try:
+                if target_plan == "free":
+                    # Cancel Stripe subscription at period end
                     stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True)
-                except Exception as e:
-                    logger.error(f"Stripe cancel for downgrade error: {e}")
+                    logger.info(f"[Stripe] Downgrade→free: cancel_at_period_end for {stripe_sub_id}")
+                else:
+                    # Downgrade pro→basic: update subscription price
+                    new_price_id = STRIPE_BASIC_PRICE_ID if target_plan == "basic" else STRIPE_PRO_PRICE_ID
+                    sub = stripe.Subscription.retrieve(stripe_sub_id)
+                    if sub and sub.get("items", {}).get("data"):
+                        item_id = sub["items"]["data"][0]["id"]
+                        stripe.Subscription.modify(
+                            stripe_sub_id,
+                            items=[{"id": item_id, "price": new_price_id}],
+                            proration_behavior="none",
+                        )
+                        logger.info(f"[Stripe] Downgrade→{target_plan}: updated price for {stripe_sub_id}")
+            except Exception as e:
+                logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
+                raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
 
         now = datetime.now().isoformat()
         await db.execute(
@@ -487,13 +503,8 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
         )
         await db.commit()
 
-        cursor = await db.execute(
-            "SELECT expires_at FROM subscriptions WHERE user_id = ?", (user_id,)
-        )
-        row = await cursor.fetchone()
         expires_at = row["expires_at"] if row else None
-
-        logger.info(f"Downgrade scheduled: user={user_id}, from={current}, to={target_plan}")
+        logger.info(f"[Downgrade] Scheduled: user={user_id}, from={current}, to={target_plan}, expires={expires_at}")
         return {
             "message": f"Downgrade auf {target_plan} geplant.",
             "pending_plan": target_plan,
@@ -599,7 +610,7 @@ async def create_checkout_session(user_id: str, plan: str, source: str = "web") 
 
 
 async def cancel_subscription(user_id: str) -> dict:
-    """Cancel subscription (stays active until expires_at)."""
+    """Cancel subscription (stays active until expires_at). Atomic: Stripe first, then DB."""
     db = await get_db()
     try:
         cursor = await db.execute(
@@ -612,14 +623,16 @@ async def cancel_subscription(user_id: str) -> dict:
 
         stripe_sub_id = row["stripe_subscription_id"]
 
-        # Cancel in Stripe (at period end)
+        # Atomic: Cancel in Stripe FIRST, then update DB
         if stripe_sub_id and STRIPE_SECRET_KEY and STRIPE_SECRET_KEY != "sk_test_PLACEHOLDER":
             try:
                 stripe.Subscription.modify(
                     stripe_sub_id, cancel_at_period_end=True
                 )
+                logger.info(f"[Stripe] Subscription {stripe_sub_id} set to cancel_at_period_end for user {user_id}")
             except Exception as e:
-                logger.error(f"Stripe cancel error: {e}")
+                logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
+                raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
 
         now = datetime.now().isoformat()
         await db.execute(
@@ -627,6 +640,7 @@ async def cancel_subscription(user_id: str) -> dict:
             (now, now, user_id),
         )
         await db.commit()
+        logger.info(f"[Cancel] User {user_id} cancelled, active until {row['expires_at']}")
 
         return {
             "message": "Abo gekündigt. Bleibt aktiv bis zum Ende der Laufzeit.",

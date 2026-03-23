@@ -284,7 +284,7 @@ export default function ProfilPage() {
       </div>
 
       {/* Section: Appearance / Theme Toggle */}
-      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+      <div data-intro="darkmode" className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           {theme === 'dark' ? <Moon style={{ width: 16, height: 16, color: 'var(--accent-solid)' }} /> : <Sun style={{ width: 16, height: 16, color: 'var(--warning)' }} />}
           <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('profile.appearance')}</h2>
@@ -323,7 +323,7 @@ export default function ProfilPage() {
 
 
             {/* Section 1: Absenderdaten */}
-      <div className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
+      <div data-intro="absender" className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
         <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px' }}>{t('profile.senderData')}</h2>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>{t('profile.senderDesc')}</p>
 

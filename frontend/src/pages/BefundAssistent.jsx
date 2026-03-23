@@ -128,7 +128,7 @@ export default function BefundAssistent() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+      <div data-intro="befund" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
         <div style={{ padding: 8, borderRadius: 10, background: 'rgba(244,63,94,0.1)' }}>
           <Stethoscope style={{ width: 18, height: 18, color: '#fb7185' }} />
         </div>

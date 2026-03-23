@@ -192,9 +192,17 @@ function CreateTicket({ onBack }) {
             </p>
           </div>
 
-          {/* File attachment */}
+          {/* File attachment (images only, max 5MB) */}
           <div>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style={{ display: 'none' }} onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f && f.size > 5 * 1024 * 1024) {
+                setError(t('support.fileTooLarge'));
+                if (fileRef.current) fileRef.current.value = '';
+                return;
+              }
+              setFile(f || null);
+            }} />
             {file ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
                 <Paperclip style={{ width: 14, height: 14, color: 'var(--accent-solid)', flexShrink: 0 }} />
@@ -342,7 +350,11 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf,.pdf" style={{ display: 'none' }} onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style={{ display: 'none' }} onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f && f.size > 5 * 1024 * 1024) { alert('Max 5MB'); if (fileRef.current) fileRef.current.value = ''; return; }
+              setFile(f || null);
+            }} />
             <button onClick={() => fileRef.current?.click()} style={{ background: 'none', border: '1px solid var(--border-glass)', borderRadius: 10, padding: '10px', cursor: 'pointer', flexShrink: 0 }}>
               <Paperclip style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
             </button>

@@ -325,8 +325,20 @@ export async function adminSearchUser(email) {
   return data;
 }
 
-export async function adminChangePlan(email, newPlan) {
-  const { data } = await api.post('/admin/change-plan', { email, new_plan: newPlan });
+export async function adminChangePlan(email, newPlan, durationDays) {
+  const payload = { email, new_plan: newPlan };
+  if (durationDays) payload.duration_days = durationDays;
+  const { data } = await api.post('/admin/change-plan', payload);
+  return data;
+}
+
+export async function getIntroStatus() {
+  const { data } = await api.get('/intro-status');
+  return data;
+}
+
+export async function markIntroComplete() {
+  const { data } = await api.post('/intro-complete');
   return data;
 }
 

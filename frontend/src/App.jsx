@@ -37,6 +37,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ScanPreviewPage from './pages/ScanPreviewPage';
 import { checkAdmin, getTicketUnreadCount } from './api';
+import IntroGuide from './components/IntroGuide';
 
 const TAB_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -418,6 +419,7 @@ function LanguageSwitcher() {
   return (
     <div className="relative" ref={ref}>
       <button
+        data-intro="language"
         onClick={() => setOpen(prev => !prev)}
         style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -684,6 +686,7 @@ function AppContent() {
         </Routes>
       </main>
       {!isAuthPage && <BottomTabBar />}
+      {!isAuthPage && <IntroGuide />}
     </div>
   );
 }
