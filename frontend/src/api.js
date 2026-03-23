@@ -325,9 +325,10 @@ export async function adminSearchUser(email) {
   return data;
 }
 
-export async function adminChangePlan(email, newPlan, durationDays) {
+export async function adminChangePlan(email, newPlan, expiresAt) {
   const payload = { email, new_plan: newPlan };
-  if (durationDays) payload.duration_days = durationDays;
+  // expires_at: ISO date string YYYY-MM-DD, or null for unlimited
+  if (expiresAt && newPlan !== 'free') payload.expires_at = expiresAt;
   const { data } = await api.post('/admin/change-plan', payload);
   return data;
 }

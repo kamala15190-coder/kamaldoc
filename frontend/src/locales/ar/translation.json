@@ -509,6 +509,17 @@
     "skip": "تخطي",
     "back": "رجوع",
     "next": "التالي",
-    "finish": "إنهاء"
+    "finish": "إنهاء",
+    "step1SelectLang": "اختر لغتك:",
+    "step5Light": "فاتح",
+    "step5Dark": "داكن",
+    "step6FirstName": "الاسم الأول",
+    "step6LastName": "اسم العائلة",
+    "step6Address": "العنوان",
+    "step6Email": "البريد الإلكتروني",
+    "step6Phone": "الهاتف",
+    "step6Hint": "اختياري – يمكن تغييره في أي وقت من الملف الشخصي.",
+    "step6Save": "حفظ والمتابعة",
+    "step6Skip": "تخطي"
   }
 }

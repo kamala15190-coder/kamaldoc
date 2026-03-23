@@ -509,6 +509,17 @@
     "skip": "Пропустить",
     "back": "Назад",
     "next": "Далее",
-    "finish": "Готово"
+    "finish": "Готово",
+    "step1SelectLang": "Выберите язык:",
+    "step5Light": "Светлый",
+    "step5Dark": "Тёмный",
+    "step6FirstName": "Имя",
+    "step6LastName": "Фамилия",
+    "step6Address": "Адрес",
+    "step6Email": "Эл. почта",
+    "step6Phone": "Телефон",
+    "step6Hint": "Необязательно – можно изменить в профиле.",
+    "step6Save": "Сохранить и продолжить",
+    "step6Skip": "Пропустить"
   }
 }

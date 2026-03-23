@@ -509,6 +509,17 @@
     "skip": "Пропустити",
     "back": "Назад",
     "next": "Далі",
-    "finish": "Завершити"
+    "finish": "Завершити",
+    "step1SelectLang": "Оберіть мову:",
+    "step5Light": "Світла",
+    "step5Dark": "Темна",
+    "step6FirstName": "Ім'я",
+    "step6LastName": "Прізвище",
+    "step6Address": "Адреса",
+    "step6Email": "Ел. пошта",
+    "step6Phone": "Телефон",
+    "step6Hint": "Необов'язково – можна змінити в профілі.",
+    "step6Save": "Зберегти та продовжити",
+    "step6Skip": "Пропустити"
   }
 }

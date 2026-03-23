@@ -1,11 +1,89 @@
 import { useState, useEffect } from 'react'
-import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip } from 'lucide-react'
+import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip, ZoomIn } from 'lucide-react'
 import {
   adminSearchUser, adminChangePlan,
   getAdminList, addAdmin, removeAdmin,
   adminGetTickets, adminGetTicket, adminCloseTicket, adminAddTicketMessage, adminDeleteTicket,
   fetchTicketFileUrl,
 } from '../api'
+
+// Prüft ob ein Dateiname eine Bild-Erweiterung hat
+function isImageFile(fileName) {
+  if (!fileName) return false
+  const ext = fileName.split('.').pop().toLowerCase()
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)
+}
+
+/**
+ * Zeigt einen Ticket-Anhang im Admin-Bereich:
+ * - Bild: Inline-Vorschau, klickbar → Vollbild in neuem Tab
+ * - Sonstiges: Paperclip-Button
+ */
+function AdminTicketAttachment({ fileUrl, fileName }) {
+  const [blobUrl, setBlobUrl] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!fileUrl || !isImageFile(fileName)) return
+    setLoading(true)
+    fetchTicketFileUrl(fileUrl)
+      .then(url => setBlobUrl(url))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [fileUrl, fileName])
+
+  if (!fileUrl) return null
+
+  if (!isImageFile(fileName)) {
+    return (
+      <button onClick={async () => {
+        try {
+          const url = await fetchTicketFileUrl(fileUrl)
+          window.open(url, '_blank')
+        } catch (e) { console.error('File fetch failed', e) }
+      }} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 3, marginTop: 4,
+        fontSize: 11, color: 'var(--accent-solid)', background: 'none',
+        border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
+      }}>
+        <Paperclip style={{ width: 11, height: 11 }} /> {fileName || 'Anhang'}
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ marginTop: 6 }}>
+      {loading && <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>Lädt...</span>}
+      {blobUrl && (
+        <div
+          onClick={() => window.open(blobUrl, '_blank')}
+          style={{ cursor: 'pointer', display: 'inline-block', position: 'relative' }}
+          title="Vergrößern"
+        >
+          <img
+            src={blobUrl}
+            alt={fileName}
+            style={{
+              maxWidth: 200, maxHeight: 140, borderRadius: 6, display: 'block',
+              objectFit: 'cover', border: '1px solid var(--border-glass)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          />
+          <div style={{
+            position: 'absolute', top: 3, right: 3,
+            background: 'rgba(0,0,0,0.5)', borderRadius: 4,
+            padding: '2px 3px', display: 'flex',
+          }}>
+            <ZoomIn style={{ width: 9, height: 9, color: 'white' }} />
+          </div>
+          <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0' }}>Vergrößern</p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 const cardStyle = {
   background: 'var(--bg-glass-strong)',
@@ -82,7 +160,7 @@ function ChangePlanSection() {
   const [searchEmail, setSearchEmail] = useState('')
   const [user, setUser] = useState(null)
   const [selectedPlan, setSelectedPlan] = useState('')
-  const [durationDays, setDurationDays] = useState('')
+  const [expiresAt, setExpiresAt] = useState('')
   const [searching, setSearching] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState(null)
@@ -106,9 +184,9 @@ function ChangePlanSection() {
     setSaving(true)
     setMsg(null)
     try {
-      const result = await adminChangePlan(user.email, selectedPlan, durationDays ? parseInt(durationDays) : null)
+      const result = await adminChangePlan(user.email, selectedPlan, expiresAt || null)
       setUser(prev => ({ ...prev, plan: selectedPlan }))
-      const expiryMsg = result.expires_at ? ` (bis ${new Date(result.expires_at).toLocaleDateString('de-DE')})` : ''
+      const expiryMsg = result.expires_at ? ` (aktiv bis ${new Date(result.expires_at).toLocaleDateString('de-DE')})` : ''
       setMsg({ type: 'success', text: `Plan auf "${selectedPlan}" geändert${expiryMsg}.` })
     } catch (err) {
       setMsg({ type: 'error', text: err?.response?.data?.detail || 'Fehler beim Ändern.' })
@@ -159,10 +237,18 @@ function ChangePlanSection() {
               <option value="pro">Pro</option>
             </select>
             {selectedPlan !== 'free' && (
-              <input type="number" min="1" max="365" value={durationDays}
-                onChange={e => setDurationDays(e.target.value)}
-                placeholder="Tage (leer=unbegrenzt)"
-                style={{ ...inputStyle, width: 160 }} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 500 }}>
+                  Plan aktiv bis (leer = unbegrenzt)
+                </label>
+                <input
+                  type="date"
+                  value={expiresAt}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setExpiresAt(e.target.value)}
+                  style={{ ...inputStyle, width: 160 }}
+                />
+              </div>
             )}
             <button onClick={handleSave} disabled={saving || selectedPlan === user.plan}
               style={{ ...btnAccent, opacity: (saving || selectedPlan === user.plan) ? 0.5 : 1 }}>
@@ -396,18 +482,7 @@ function TicketManagementSection() {
                 <p style={{ fontSize: 10, fontWeight: 600, color: isAdmin ? '#10B981' : '#6359FF', margin: '0 0 2px' }}>{isAdmin ? 'Admin' : 'User'}</p>
                 <p style={{ fontSize: 12, color: 'var(--text-primary)', margin: 0, whiteSpace: 'pre-wrap' }}>{m.message}</p>
                 {m.file_url && (
-                  <button onClick={async () => {
-                    try {
-                      const blobUrl = await fetchTicketFileUrl(m.file_url)
-                      window.open(blobUrl, '_blank')
-                    } catch (e) { console.error('File fetch failed', e) }
-                  }} style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 4,
-                    fontSize: 11, color: 'var(--accent-solid)', background: 'none',
-                    border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
-                  }}>
-                    <Paperclip style={{ width: 11, height: 11 }} /> {m.file_name || 'Anhang'}
-                  </button>
+                  <AdminTicketAttachment fileUrl={m.file_url} fileName={m.file_name} />
                 )}
                 <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0', textAlign: 'right' }}>{new Date(m.created_at).toLocaleString('de-DE')}</p>
               </div>

@@ -61,7 +61,7 @@ export default function DocumentDetail() {
   const [shared, setShared] = useState(null);
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
-  const [translateLang, setTranslateLang] = useState('en');
+  const [translateLang, setTranslateLang] = useState('de');
   const [translating, setTranslating] = useState(false);
   const [translations, setTranslations] = useState([]);
   const [copiedTranslation, setCopiedTranslation] = useState(null);
@@ -757,7 +757,7 @@ export default function DocumentDetail() {
                       className="input-dark"
                       style={{ flex: 1, fontSize: 13 }}
                     >
-                      {LANGUAGES.filter(l => l.code !== 'de').map(lang => (
+                      {LANGUAGES.map(lang => (
                         <option key={lang.code} value={lang.code}>{lang.flag} {lang.label}</option>
                       ))}
                     </select>

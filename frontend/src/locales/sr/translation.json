@@ -509,6 +509,17 @@
     "skip": "Прескочи",
     "back": "Назад",
     "next": "Даље",
-    "finish": "Заврши"
+    "finish": "Заврши",
+    "step1SelectLang": "Изаберите језик:",
+    "step5Light": "Светло",
+    "step5Dark": "Тамно",
+    "step6FirstName": "Ime",
+    "step6LastName": "Prezime",
+    "step6Address": "Adresa",
+    "step6Email": "E-mail",
+    "step6Phone": "Telefon",
+    "step6Hint": "Opcionalno – može se promeniti u profilu.",
+    "step6Save": "Sačuvaj i nastavi",
+    "step6Skip": "Preskoči"
   }
 }

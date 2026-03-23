@@ -510,6 +510,17 @@
     "skip": "Überspringen",
     "back": "Zurück",
     "next": "Weiter",
-    "finish": "Fertig"
+    "finish": "Fertig",
+    "step1SelectLang": "Wähle deine Sprache:",
+    "step5Light": "Hell",
+    "step5Dark": "Dunkel",
+    "step6FirstName": "Vorname",
+    "step6LastName": "Nachname",
+    "step6Address": "Adresse",
+    "step6Email": "E-Mail",
+    "step6Phone": "Telefon",
+    "step6Hint": "Optional – kann jederzeit im Profil geändert werden.",
+    "step6Save": "Speichern & Weiter",
+    "step6Skip": "Überspringen"
   }
 }

@@ -47,6 +47,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<!-- Deaktiviert Firebase Auto-Swizzling damit Capacitor die APNs-Delegation übernehmen kann -->
+	<key>FirebaseAppDelegateProxyEnabled</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>KamalDoc benötigt Zugriff auf deine Kamera um Dokumente zu scannen.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

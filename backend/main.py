@@ -1881,7 +1881,7 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     await _require_admin(user_id)
     email = data.get("email", "").strip()
     new_plan = data.get("new_plan", "").strip()
-    duration_days = data.get("duration_days")  # Optional: plan expires after N days
+    expires_at_input = data.get("expires_at")  # Optional: ISO date string YYYY-MM-DD
 
     if new_plan not in ("free", "basic", "pro"):
         raise HTTPException(400, "Plan muss free, basic oder pro sein.")
@@ -1912,11 +1912,18 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     target_id = target["id"]
     now = datetime.now()
     expires_at = None
-    if duration_days and new_plan != "free":
+    if expires_at_input and new_plan != "free":
         try:
-            expires_at = (now + timedelta(days=int(duration_days))).isoformat()
+            # Datum validieren: muss YYYY-MM-DD Format sein und in der Zukunft liegen
+            expires_date = datetime.strptime(expires_at_input[:10], "%Y-%m-%d")
+            if expires_date.date() < now.date():
+                raise HTTPException(400, "Ablaufdatum muss in der Zukunft liegen.")
+            # Auf Ende des Tages setzen (23:59:59)
+            expires_at = expires_date.replace(hour=23, minute=59, second=59).isoformat()
+        except HTTPException:
+            raise
         except (ValueError, TypeError):
-            raise HTTPException(400, "Ungültige Laufzeit.")
+            raise HTTPException(400, "Ungültiges Datum. Format: YYYY-MM-DD.")
 
     db = await get_db()
     try:
@@ -1941,7 +1948,7 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
         await db.close()
 
     logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}"
-                + (f", Laufzeit: {duration_days} Tage (bis {expires_at})" if expires_at else ""))
+                + (f", aktiv bis {expires_at}" if expires_at else ", unbegrenzt"))
     return {"status": "ok", "email": email, "new_plan": new_plan, "expires_at": expires_at}
 
 
@@ -2078,46 +2085,146 @@ async def check_plan_expiry():
         await db.close()
 
 
+# --- FCM V1 OAuth2 Token Cache ---
+# Der Access Token ist ~1h gültig; wir cachen ihn und holen ihn 5 min vor Ablauf neu.
+_fcm_token_cache: dict = {"token": None, "expires_at": 0.0}
+
+FCM_PROJECT_ID = os.getenv("FCM_PROJECT_ID", "kdoc-e0c17")
+FCM_V1_URL = f"https://fcm.googleapis.com/v1/projects/{FCM_PROJECT_ID}/messages:send"
+
+
+async def _get_fcm_access_token() -> str:
+    """Holt einen OAuth2 Bearer Token für FCM V1 API via Service Account.
+
+    Liest den Pfad zur Service-Account-JSON aus der Umgebungsvariable
+    GOOGLE_APPLICATION_CREDENTIALS. Cached das Token bis 5 min vor Ablauf.
+
+    Returns:
+        Access token als String, oder "" wenn nicht konfiguriert.
+    """
+    import time
+
+    global _fcm_token_cache
+
+    # Cache prüfen – Token noch mindestens 5 Minuten gültig?
+    if _fcm_token_cache["token"] and time.time() < _fcm_token_cache["expires_at"] - 300:
+        return _fcm_token_cache["token"]
+
+    credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
+    if not credentials_path:
+        logger.warning("[Push] GOOGLE_APPLICATION_CREDENTIALS nicht gesetzt – FCM deaktiviert.")
+        return ""
+    if not os.path.exists(credentials_path):
+        logger.error(f"[Push] Service Account Datei nicht gefunden: {credentials_path}")
+        return ""
+
+    try:
+        import asyncio
+        from google.oauth2 import service_account
+        import google.auth.transport.requests
+
+        SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
+        creds = service_account.Credentials.from_service_account_file(
+            credentials_path, scopes=SCOPES
+        )
+
+        # google-auth ist synchron → im Thread-Pool ausführen, um den Event-Loop nicht zu blockieren
+        request = google.auth.transport.requests.Request()
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, creds.refresh, request)
+
+        _fcm_token_cache["token"] = creds.token
+        # creds.expiry ist ein datetime-Objekt, Fallback: +1h ab jetzt
+        _fcm_token_cache["expires_at"] = (
+            creds.expiry.timestamp() if creds.expiry else (time.time() + 3600)
+        )
+
+        logger.info("[Push] OAuth2 Token erfolgreich erneuert.")
+        return creds.token
+
+    except Exception as e:
+        logger.error(f"[Push] OAuth2 Token-Fehler: {e}", exc_info=True)
+        return ""
+
+
 async def send_push_notification(token: str, title: str, body: str):
-    """Push-Notification via Firebase Cloud Messaging HTTP v1 API."""
-    fcm_server_key = os.getenv("FCM_SERVER_KEY", "")
-    if not fcm_server_key:
-        logger.info(f"[Push] FCM not configured. Would send to {token[:20]}...: {title} - {body}")
+    """Push-Notification via Firebase Cloud Messaging HTTP V1 API senden.
+
+    Verwendet OAuth2 Service Account Auth (kein Legacy-Server-Key).
+    Konfiguration: GOOGLE_APPLICATION_CREDENTIALS=/pfad/zum/service-account.json
+                   FCM_PROJECT_ID=kdoc-e0c17  (Standard bereits gesetzt)
+
+    Args:
+        token: FCM Device-Token des Empfängers
+        title: Notification-Titel
+        body:  Notification-Text
+    """
+    access_token = await _get_fcm_access_token()
+    if not access_token:
+        logger.info(f"[Push] FCM nicht konfiguriert. Würde senden an {token[:20]}...: {title} – {body}")
         return
 
     import httpx
+
+    payload = {
+        "message": {
+            "token": token,
+            # notification-Block → wird von Android/iOS als System-Notification angezeigt
+            "notification": {
+                "title": title,
+                "body": body,
+            },
+            # data-Block → wird auch bei Hintergrund-Notifications an die App weitergegeben
+            "data": {
+                "title": title,
+                "body": body,
+            },
+            # Android-spezifische Einstellungen
+            "android": {
+                "priority": "HIGH",
+                "notification": {
+                    "sound": "default",
+                    "channel_id": "kdoc_notifications",
+                },
+            },
+            # APNs-Einstellungen für iOS (falls später benötigt)
+            "apns": {
+                "payload": {
+                    "aps": {
+                        "sound": "default",
+                        "badge": 1,
+                    }
+                }
+            },
+        }
+    }
+
     try:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
-                "https://fcm.googleapis.com/fcm/send",
+                FCM_V1_URL,
                 headers={
-                    "Authorization": f"key={fcm_server_key}",
+                    "Authorization": f"Bearer {access_token}",
                     "Content-Type": "application/json",
                 },
-                json={
-                    "to": token,
-                    "notification": {
-                        "title": title,
-                        "body": body,
-                        "sound": "default",
-                    },
-                    "data": {
-                        "title": title,
-                        "body": body,
-                    },
-                },
+                json=payload,
                 timeout=10,
             )
-            if resp.status_code == 200:
-                result = resp.json()
-                if result.get("success", 0) > 0:
-                    logger.info(f"[Push] Sent to {token[:20]}...: {title}")
-                else:
-                    logger.warning(f"[Push] FCM rejected: {result}")
-            else:
-                logger.warning(f"[Push] FCM HTTP {resp.status_code}: {resp.text[:200]}")
+
+        if resp.status_code == 200:
+            logger.info(f"[Push] ✓ Gesendet an {token[:20]}...: {title}")
+        elif resp.status_code == 401:
+            # Token abgelaufen → Cache leeren, damit beim nächsten Aufruf neu geholt wird
+            logger.warning("[Push] OAuth2 Token abgelaufen – Cache wird geleert.")
+            _fcm_token_cache["token"] = None
+            _fcm_token_cache["expires_at"] = 0.0
+        elif resp.status_code == 404:
+            logger.warning(f"[Push] Device-Token nicht mehr gültig (404) – {token[:20]}...")
+        else:
+            logger.warning(f"[Push] FCM HTTP {resp.status_code}: {resp.text[:300]}")
+
     except Exception as e:
-        logger.error(f"[Push] FCM send error: {e}", exc_info=True)
+        logger.error(f"[Push] Sende-Fehler: {e}", exc_info=True)
 
 
 

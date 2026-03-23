@@ -509,6 +509,17 @@
     "skip": "Atla",
     "back": "Geri",
     "next": "İleri",
-    "finish": "Bitir"
+    "finish": "Bitir",
+    "step1SelectLang": "Dilinizi seçin:",
+    "step5Light": "Açık",
+    "step5Dark": "Koyu",
+    "step6FirstName": "Ad",
+    "step6LastName": "Soyad",
+    "step6Address": "Adres",
+    "step6Email": "E-posta",
+    "step6Phone": "Telefon",
+    "step6Hint": "İsteğe bağlı – profilde her zaman değiştirilebilir.",
+    "step6Save": "Kaydet & Devam",
+    "step6Skip": "Atla"
   }
 }

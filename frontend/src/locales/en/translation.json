@@ -510,6 +510,17 @@
     "skip": "Skip",
     "back": "Back",
     "next": "Next",
-    "finish": "Finish"
+    "finish": "Finish",
+    "step1SelectLang": "Choose your language:",
+    "step5Light": "Light",
+    "step5Dark": "Dark",
+    "step6FirstName": "First name",
+    "step6LastName": "Last name",
+    "step6Address": "Address",
+    "step6Email": "Email",
+    "step6Phone": "Phone",
+    "step6Hint": "Optional – can be changed anytime in your profile.",
+    "step6Save": "Save & Continue",
+    "step6Skip": "Skip"
   }
 }

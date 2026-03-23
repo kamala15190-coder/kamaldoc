@@ -1,7 +1,100 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X } from 'lucide-react'
+import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn } from 'lucide-react'
 import { createTicket, getTickets, getTicket, addTicketMessage, acceptTicket, fetchTicketFileUrl } from '../api'
+
+// Prüft ob ein Dateiname eine Bild-Erweiterung hat
+function isImageFile(fileName) {
+  if (!fileName) return false
+  const ext = fileName.split('.').pop().toLowerCase()
+  return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(ext)
+}
+
+/**
+ * Zeigt einen Ticket-Anhang an:
+ * - Bild: Inline-Vorschau (200px), klickbar → öffnet Vollbild im neuen Tab
+ * - Sonstiges: Paperclip-Button zum Herunterladen
+ */
+function TicketAttachment({ fileUrl, fileName }) {
+  const [blobUrl, setBlobUrl] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const { t } = useTranslation()
+
+  useEffect(() => {
+    if (!fileUrl || !isImageFile(fileName)) return
+    setLoading(true)
+    fetchTicketFileUrl(fileUrl)
+      .then(url => setBlobUrl(url))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [fileUrl, fileName])
+
+  const openFullscreen = () => {
+    if (blobUrl) window.open(blobUrl, '_blank')
+  }
+
+  if (!fileUrl) return null
+
+  if (!isImageFile(fileName)) {
+    // Kein Bild → normaler Download-Button
+    return (
+      <button onClick={async () => {
+        try {
+          const url = await fetchTicketFileUrl(fileUrl)
+          window.open(url, '_blank')
+        } catch (e) { console.error('File fetch failed', e) }
+      }} style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6,
+        fontSize: 11, color: 'var(--accent-solid)', background: 'none',
+        border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
+      }}>
+        <Paperclip style={{ width: 12, height: 12 }} /> {fileName || t('support.fileAttached')}
+      </button>
+    )
+  }
+
+  // Bild-Vorschau mit Lupe-Hinweis
+  return (
+    <div style={{ marginTop: 8 }}>
+      {loading && (
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', padding: '4px 0' }}>
+          <Loader2 style={{ width: 12, height: 12, animation: 'spin 0.8s linear infinite', display: 'inline', marginRight: 4 }} />
+          {t('support.loadingImage')}
+        </div>
+      )}
+      {blobUrl && (
+        <div
+          onClick={openFullscreen}
+          style={{ cursor: 'pointer', display: 'inline-block', position: 'relative' }}
+          title={t('support.imageClickToEnlarge')}
+        >
+          <img
+            src={blobUrl}
+            alt={fileName}
+            style={{
+              maxWidth: 220, maxHeight: 160, borderRadius: 8, display: 'block',
+              objectFit: 'cover', border: '1px solid var(--border-glass)',
+              transition: 'opacity 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          />
+          {/* Lupe-Icon oben rechts */}
+          <div style={{
+            position: 'absolute', top: 4, right: 4,
+            background: 'rgba(0,0,0,0.5)', borderRadius: 6,
+            padding: '2px 4px', display: 'flex', alignItems: 'center', gap: 3,
+          }}>
+            <ZoomIn style={{ width: 10, height: 10, color: 'white' }} />
+          </div>
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '3px 0 0' }}>
+            {t('support.imageClickToEnlarge')}
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function SupportPage() {
   const { t } = useTranslation()
@@ -317,18 +410,7 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
               </p>
               <p style={{ fontSize: 13, color: 'var(--text-primary)', margin: 0, whiteSpace: 'pre-wrap' }}>{msg.message}</p>
               {msg.file_url && (
-                <button onClick={async () => {
-                  try {
-                    const blobUrl = await fetchTicketFileUrl(msg.file_url)
-                    window.open(blobUrl, '_blank')
-                  } catch (e) { console.error('File fetch failed', e) }
-                }} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 4, marginTop: 6,
-                  fontSize: 11, color: 'var(--accent-solid)', background: 'none',
-                  border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline',
-                }}>
-                  <Paperclip style={{ width: 12, height: 12 }} /> {msg.file_name || t('support.fileAttached')}
-                </button>
+                <TicketAttachment fileUrl={msg.file_url} fileName={msg.file_name} />
               )}
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', textAlign: 'right' }}>
                 {new Date(msg.created_at).toLocaleString()}
