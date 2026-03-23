@@ -283,7 +283,11 @@ export async function adminDeleteTicket(ticketId) {
 // --- Ticket file (authenticated blob fetch) ---
 
 export async function fetchTicketFileUrl(fileUrl) {
-  const url = fileUrl.startsWith('/') ? fileUrl : `/tickets/files/${fileUrl}`;
+  // Strip leading /api prefix: axios baseURL already includes /api,
+  // so /api/tickets/files/... would become /api/api/tickets/files/...
+  const url = fileUrl.startsWith('/api/') ? fileUrl.slice(4)
+    : fileUrl.startsWith('/') ? fileUrl
+    : `/tickets/files/${fileUrl}`;
   const resp = await api.get(url, { responseType: 'blob' });
   return URL.createObjectURL(resp.data);
 }

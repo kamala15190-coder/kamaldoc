@@ -492,6 +492,14 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
                             proration_behavior="none",
                         )
                         logger.info(f"[Stripe] Downgrade→{target_plan}: updated price for {stripe_sub_id}")
+            except stripe.error.InvalidRequestError as e:
+                if e.code == "resource_missing":
+                    # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
+                    logger.warning(f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and downgrading locally for user {user_id}")
+                    await db.execute("UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,))
+                else:
+                    logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
+                    raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
             except Exception as e:
                 logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
                 raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
@@ -630,6 +638,14 @@ async def cancel_subscription(user_id: str) -> dict:
                     stripe_sub_id, cancel_at_period_end=True
                 )
                 logger.info(f"[Stripe] Subscription {stripe_sub_id} set to cancel_at_period_end for user {user_id}")
+            except stripe.error.InvalidRequestError as e:
+                if e.code == "resource_missing":
+                    # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
+                    logger.warning(f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and cancelling locally for user {user_id}")
+                    await db.execute("UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,))
+                else:
+                    logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
+                    raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
             except Exception as e:
                 logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
                 raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
