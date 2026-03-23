@@ -696,6 +696,8 @@ async def handle_webhook(request: Request):
         await _handle_payment_succeeded(data)
     elif event_type == "invoice.payment_failed":
         await _handle_payment_failed(data)
+    elif event_type == "customer.subscription.updated":
+        await _handle_subscription_updated(data)
     elif event_type == "customer.subscription.deleted":
         await _handle_subscription_deleted(data)
 
@@ -764,6 +766,70 @@ async def _handle_payment_failed(invoice):
     """Log payment failure."""
     customer_id = invoice.get("customer")
     logger.warning(f"Payment failed for customer {customer_id}")
+
+
+async def _handle_subscription_updated(subscription):
+    """Sync DB when Stripe subscription changes (cancel_at_period_end, plan change, etc.)."""
+    customer_id = subscription.get("customer")
+    sub_id = subscription.get("id")
+    if not customer_id:
+        return
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT user_id, plan FROM subscriptions WHERE stripe_customer_id = ?",
+            (customer_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            logger.warning(f"[Webhook] subscription.updated for unknown customer {customer_id}")
+            return
+
+        user_id = row["user_id"]
+        now = datetime.now().isoformat()
+
+        # Sync cancel_at_period_end → cancelled_at
+        cancel_at_period_end = subscription.get("cancel_at_period_end", False)
+        if cancel_at_period_end:
+            await db.execute(
+                "UPDATE subscriptions SET cancelled_at = COALESCE(cancelled_at, ?), updated_at = ? WHERE user_id = ?",
+                (now, now, user_id),
+            )
+            logger.info(f"[Webhook] Subscription {sub_id} marked cancel_at_period_end for user {user_id}")
+        else:
+            # Reactivated — clear cancelled_at
+            await db.execute(
+                "UPDATE subscriptions SET cancelled_at = NULL, updated_at = ? WHERE user_id = ?",
+                (now, user_id),
+            )
+            logger.info(f"[Webhook] Subscription {sub_id} reactivated for user {user_id}")
+
+        # Sync plan from Stripe price
+        items = subscription.get("items", {}).get("data", [])
+        if items:
+            price_id = items[0].get("price", {}).get("id")
+            if price_id == STRIPE_BASIC_PRICE_ID and row["plan"] != "basic":
+                await db.execute(
+                    "UPDATE subscriptions SET plan = 'basic', updated_at = ? WHERE user_id = ?",
+                    (now, user_id),
+                )
+                logger.info(f"[Webhook] Plan synced to basic for user {user_id}")
+            elif price_id == STRIPE_PRO_PRICE_ID and row["plan"] != "pro":
+                await db.execute(
+                    "UPDATE subscriptions SET plan = 'pro', updated_at = ? WHERE user_id = ?",
+                    (now, user_id),
+                )
+                logger.info(f"[Webhook] Plan synced to pro for user {user_id}")
+
+        # Ensure stripe_subscription_id is current
+        await db.execute(
+            "UPDATE subscriptions SET stripe_subscription_id = ?, updated_at = ? WHERE user_id = ?",
+            (sub_id, now, user_id),
+        )
+        await db.commit()
+    finally:
+        await db.close()
 
 
 async def _handle_subscription_deleted(subscription):
