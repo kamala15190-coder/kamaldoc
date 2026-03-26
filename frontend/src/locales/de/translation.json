@@ -8,6 +8,7 @@
     "archive": "Archiv",
     "profile": "Profil",
     "support": "Hilfe & Support",
+    "email": "E-Mail verbinden",
     "menu": "Menü",
     "logout": "Abmelden"
   },
@@ -522,5 +523,35 @@
     "step6Hint": "Optional – kann jederzeit im Profil geändert werden.",
     "step6Save": "Speichern & Weiter",
     "step6Skip": "Überspringen"
+  },
+  "email": {
+    "connectedAccounts": "Verbundene Postfächer",
+    "connectedDesc": "Verbinde deine E-Mail-Postfächer, um E-Mails direkt in der kdoc-Suche zu finden.",
+    "connect": "Verbinden",
+    "connectTitle": "verbinden",
+    "connectButton": "Verbinden",
+    "connectFailed": "Verbindung fehlgeschlagen",
+    "disconnect": "Trennen",
+    "cancel": "Abbrechen",
+    "emailAddress": "E-Mail-Adresse",
+    "appPassword": "App-Passwort",
+    "fillAllFields": "Bitte alle Felder ausfüllen",
+    "privacyNotice": "Datenschutz-Hinweis anzeigen",
+    "privacyDetail1": "KamalDoc greift nur lesend auf deine E-Mails zu – es werden niemals E-Mails versendet, gelöscht oder verändert.",
+    "privacyDetail2": "Es werden keine E-Mail-Inhalte auf unseren Servern gespeichert. Die Suche erfolgt live und direkt bei deinem Anbieter.",
+    "privacyDetail3": "Du kannst jederzeit ein Postfach trennen – alle gespeicherten Zugangsdaten werden sofort vollständig gelöscht.",
+    "manage": "verwalten",
+    "searchPlaceholderCombined": "Dokumente & E-Mails durchsuchen…",
+    "filterAll": "Alle",
+    "filterDocuments": "Dokumente",
+    "filterEmails": "E-Mails",
+    "results": "E-Mail Ergebnisse",
+    "noSubject": "(Kein Betreff)",
+    "preview": "E-Mail Vorschau",
+    "previewError": "E-Mail konnte nicht geladen werden",
+    "to": "An",
+    "attachments": "Anhänge",
+    "icloud_app_password_hint": "iCloud erfordert ein App-spezifisches Passwort. Erstelle eines unter Apple ID → Anmelden & Sicherheit → App-spezifische Passwörter.",
+    "yahoo_app_password_hint": "Yahoo erfordert ein App-Passwort. Erstelle eines unter Yahoo Kontoeinstellungen → Sicherheit → App-Passwort generieren."
   }
 }

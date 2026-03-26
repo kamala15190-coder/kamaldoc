@@ -8,6 +8,7 @@
     "archive": "Archive",
     "profile": "Profile",
     "support": "Help & Support",
+    "email": "Connect Email",
     "menu": "Menu",
     "logout": "Logout"
   },
@@ -522,5 +523,35 @@
     "step6Hint": "Optional – can be changed anytime in your profile.",
     "step6Save": "Save & Continue",
     "step6Skip": "Skip"
+  },
+  "email": {
+    "connectedAccounts": "Connected Mailboxes",
+    "connectedDesc": "Connect your email accounts to search emails directly within kdoc.",
+    "connect": "Connect",
+    "connectTitle": "connect",
+    "connectButton": "Connect",
+    "connectFailed": "Connection failed",
+    "disconnect": "Disconnect",
+    "cancel": "Cancel",
+    "emailAddress": "Email address",
+    "appPassword": "App password",
+    "fillAllFields": "Please fill in all fields",
+    "privacyNotice": "Show privacy notice",
+    "privacyDetail1": "KamalDoc only reads your emails – it will never send, delete, or modify any emails.",
+    "privacyDetail2": "No email content is stored on our servers. Search queries are performed live directly with your provider.",
+    "privacyDetail3": "You can disconnect a mailbox at any time – all stored credentials will be deleted immediately and completely.",
+    "manage": "manage",
+    "searchPlaceholderCombined": "Search documents & emails…",
+    "filterAll": "All",
+    "filterDocuments": "Documents",
+    "filterEmails": "Emails",
+    "results": "Email Results",
+    "noSubject": "(No Subject)",
+    "preview": "Email Preview",
+    "previewError": "Failed to load email",
+    "to": "To",
+    "attachments": "Attachments",
+    "icloud_app_password_hint": "iCloud requires an app-specific password. Create one at Apple ID → Sign-In & Security → App-Specific Passwords.",
+    "yahoo_app_password_hint": "Yahoo requires an app password. Create one at Yahoo Account Settings → Security → Generate App Password."
   }
 }

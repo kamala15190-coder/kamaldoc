@@ -5,7 +5,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
   Landmark, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Lock,
-  Plus, ChevronRight, Settings, Download
+  Plus, ChevronRight, Settings, Download, Mail
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
@@ -36,6 +36,7 @@ import DokumenteListe from './pages/DokumenteListe';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import ScanPreviewPage from './pages/ScanPreviewPage';
+import EmailPage from './pages/EmailPage';
 import { checkAdmin, getTicketUnreadCount } from './api';
 import IntroGuide from './components/IntroGuide';
 
@@ -50,6 +51,7 @@ const TAB_ITEMS = [
 const MORE_ITEMS = [
   { path: '/archiv', labelKey: 'nav.archive', icon: Archive },
   { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
+  { path: '/email', labelKey: 'nav.email', icon: Mail },
   { path: '/support', labelKey: 'nav.support', icon: Headphones },
 ];
 
@@ -681,7 +683,9 @@ function AppContent() {
           <Route path="/support" element={<PrivateRoute><SupportPage /></PrivateRoute>} />
           <Route path="/admin" element={<PrivateRoute><AdminPage /></PrivateRoute>} />
           <Route path="/dokumente" element={<PrivateRoute><DokumenteListe /></PrivateRoute>} />
+          <Route path="/email-callback/:provider" element={<PrivateRoute><ProfilPage /></PrivateRoute>} />
           <Route path="/scan" element={<PrivateRoute><ScanPreviewPage /></PrivateRoute>} />
+          <Route path="/email" element={<PrivateRoute><EmailPage /></PrivateRoute>} />
           <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
       </main>
