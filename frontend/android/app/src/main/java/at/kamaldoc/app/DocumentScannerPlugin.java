@@ -1,7 +1,6 @@
 package at.kamaldoc.app;
 
 import android.app.Activity;
-import android.content.IntentSender;
 import android.net.Uri;
 import android.util.Base64;
 
@@ -9,7 +8,6 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -26,6 +24,16 @@ import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
+/**
+ * Capacitor plugin wrapping Google ML Kit Document Scanner.
+ *
+ * Uses SCANNER_MODE_BASE (manual mode):
+ * - No automatic document detection / auto-capture
+ * - User manually triggers each scan
+ * - Supports multiple pages (no page limit)
+ * - Gallery import disabled (dedicated gallery flow exists)
+ * - Returns JPEG images as base64 data URLs
+ */
 @CapacitorPlugin(name = "DocumentScanner")
 public class DocumentScannerPlugin extends Plugin {
 
@@ -44,12 +52,12 @@ public class DocumentScannerPlugin extends Plugin {
     @PluginMethod
     public void scan(PluginCall call) {
         savedCall = call;
-        
+
         GmsDocumentScannerOptions options = new GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(false)
-            .setPageLimit(1)
+            .setPageLimit(100)
             .setResultFormats(GmsDocumentScannerOptions.RESULT_FORMAT_JPEG)
-            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_FULL)
+            .setScannerMode(GmsDocumentScannerOptions.SCANNER_MODE_BASE)
             .build();
 
         GmsDocumentScanner scanner = GmsDocumentScanning.getClient(options);
@@ -79,7 +87,6 @@ public class DocumentScannerPlugin extends Plugin {
                     JSArray pages = new JSArray();
                     for (GmsDocumentScanningResult.Page page : scanResult.getPages()) {
                         Uri imageUri = page.getImageUri();
-                        // Read image and convert to base64 data URL
                         InputStream is = getContext().getContentResolver().openInputStream(imageUri);
                         ByteArrayOutputStream baos = new ByteArrayOutputStream();
                         byte[] buffer = new byte[8192];
@@ -106,3 +113,4 @@ public class DocumentScannerPlugin extends Plugin {
         savedCall = null;
     }
 }
+

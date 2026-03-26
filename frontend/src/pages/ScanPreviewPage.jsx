@@ -1,11 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, Check, Trash2, Camera, ImageIcon, FileText, Loader2, GripVertical, ArrowLeft, RotateCcw, Upload } from 'lucide-react'
+import { Plus, Check, Trash2, Camera, ImageIcon, FileText, Loader2, ArrowLeft, RotateCcw, Upload } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { buildPdf, fileToDataUrl, fileToArrayBuffer, extractPdfPages } from '../utils/pdfBuilder'
 import { uploadDocument } from '../api'
 import { usePlanLimit } from '../hooks/usePlanLimit'
+import { openNativeScanner, openNativeGallery, detectCapabilities } from '../utils/documentScannerHelper'
 import {
   DndContext,
   closestCenter,
@@ -28,32 +29,29 @@ export default function ScanPreviewPage() {
   const { handleApiError } = usePlanLimit()
   const initState = location.state || {}
   const [pages, setPages] = useState(() => {
-    // Accept initial pages from navigation state (camera or gallery)
     if (initState.initialPages?.length) {
-      return initState.initialPages.map(p => ({ id: `page_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, ...p }))
+      return initState.initialPages.map(p => ({ id: genId(), ...p }))
     }
     return []
-  }) // { id, type: 'image'|'pdf', dataUrl?, arrayBuffer?, thumbnail? }
+  })
   const [activeIdx, setActiveIdx] = useState(0)
   const [building, setBuilding] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadDone, setUploadDone] = useState(false)
   const [uploadDocId, setUploadDocId] = useState(null)
   const [error, setError] = useState(null)
-  const [contextMenu, setContextMenu] = useState(null) // { idx, x, y }
+  const [contextMenu, setContextMenu] = useState(null)
   const [fileName, setFileName] = useState(() => {
     const d = new Date()
     return `Scan_${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}.pdf`
   })
   const fileInputRef = useRef(null)
-  const longPressTimer = useRef(null)
   const galleryAutoOpened = useRef(false)
 
   // Auto-open gallery picker if navigated with openGallery flag
   useEffect(() => {
     if (initState.openGallery && !galleryAutoOpened.current && pages.length === 0) {
       galleryAutoOpened.current = true
-      // Small delay to ensure DOM is ready
       setTimeout(() => {
         if (fileInputRef.current) {
           fileInputRef.current.value = ''
@@ -68,14 +66,6 @@ export default function ScanPreviewPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
   )
 
-  const addId = () => `page_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-
-  // Add image page from dataUrl
-  const addImagePage = useCallback((dataUrl) => {
-    setPages(prev => [...prev, { id: addId(), type: 'image', dataUrl }])
-    setActiveIdx(prev => prev) // keep or move to last
-  }, [])
-
   // Add pages from files (gallery multi-select)
   const addFilesFromPicker = useCallback(async (fileList) => {
     const newPages = []
@@ -83,65 +73,73 @@ export default function ScanPreviewPage() {
       if (file.type === 'application/pdf') {
         const ab = await fileToArrayBuffer(file)
         const extracted = await extractPdfPages(ab)
-        extracted.forEach(p => newPages.push({ id: addId(), ...p }))
+        extracted.forEach(p => newPages.push({ id: genId(), ...p }))
       } else if (file.type.startsWith('image/')) {
         const dataUrl = await fileToDataUrl(file)
-        newPages.push({ id: addId(), type: 'image', dataUrl })
+        newPages.push({ id: genId(), type: 'image', dataUrl })
       }
     }
     setPages(prev => [...prev, ...newPages])
-    if (newPages.length > 0) setActiveIdx(prev => prev + (pages.length === 0 ? 0 : 0))
-  }, [pages.length])
+    if (newPages.length > 0) {
+      setActiveIdx(prev => prev)
+    }
+  }, [])
 
-  // Camera scan via ML Kit Document Scanner (Android) or Capacitor Camera (fallback)
+  /**
+   * "Seite hinzufügen" via camera.
+   *
+   * Native: Uses DocumentScannerHelper which tries native scanner first,
+   * then falls back to Capacitor Camera. All pages from scanner are added.
+   *
+   * Web: Opens HTML file input with camera capture attribute.
+   * This is the fallback "Seite hinzufügen" loop — user takes one photo,
+   * sees preview, and can press "Seite hinzufügen" again or "Fertig".
+   */
   const openCameraScan = async () => {
     if (Capacitor.isNativePlatform()) {
-      try {
-        const { registerPlugin } = await import('@capacitor/core')
-        const DocumentScanner = registerPlugin('DocumentScanner')
-        const result = await DocumentScanner.scan()
-        if (result.pages) {
-          result.pages.forEach(dataUrl => {
-            setPages(prev => [...prev, { id: addId(), type: 'image', dataUrl }])
-          })
-        }
-        return
-      } catch (err) {
-        console.warn('[KamalDoc] ML Kit scanner failed, falling back to camera:', err)
+      const result = await openNativeScanner()
+      if (result?.pages?.length) {
+        const newPages = result.pages.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
+        setPages(prev => [...prev, ...newPages])
+        setActiveIdx(prev => prev + newPages.length - 1)
       }
-      // Fallback: Capacitor Camera
-      try {
-        const { Camera: CapCamera, CameraResultType, CameraSource } = await import('@capacitor/camera')
-        const photo = await CapCamera.getPhoto({
-          resultType: CameraResultType.DataUrl,
-          source: CameraSource.Camera,
-          quality: 92,
-        })
-        if (photo.dataUrl) {
-          addImagePage(photo.dataUrl)
-        }
-      } catch (err) {
-        console.error('[KamalDoc] Camera error:', err)
-      }
-    } else {
-      // Web: open file input with camera
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.capture = 'environment'
-      input.onchange = async (e) => {
-        const file = e.target.files?.[0]
-        if (file) {
-          const dataUrl = await fileToDataUrl(file)
-          addImagePage(dataUrl)
-        }
-      }
-      input.click()
+      return
     }
+
+    // Web fallback: open file input with camera capture
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.capture = 'environment'
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0]
+      if (file) {
+        const dataUrl = await fileToDataUrl(file)
+        setPages(prev => [...prev, { id: genId(), type: 'image', dataUrl }])
+        setActiveIdx(prev => prev)
+      }
+    }
+    input.click()
   }
 
-  // Open gallery / file picker for multi-select
-  const openGalleryPicker = () => {
+  /**
+   * "Aus Galerie" / "Seite hinzufügen aus Galerie".
+   * Native: opens native photo picker (Capacitor pickImages) directly.
+   * Web: opens HTML file input for multi-select.
+   */
+  const openGalleryPicker = async () => {
+    if (Capacitor.isNativePlatform()) {
+      const result = await openNativeGallery()
+      if (result?.images?.length) {
+        const newPages = result.images.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
+        setPages(prev => [...prev, ...newPages])
+        if (newPages.length > 0) {
+          setActiveIdx(prev => prev)
+        }
+      }
+      return
+    }
+    // Web fallback: file input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
       fileInputRef.current.click()
@@ -371,6 +369,10 @@ export default function ScanPreviewPage() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
+}
+
+function genId() {
+  return `page_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
 function SortableThumb({ page, idx, isActive, onClick, onLongPress }) {

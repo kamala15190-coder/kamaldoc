@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
 import { uploadDocument } from '../api';
 import { usePlanLimit } from '../hooks/usePlanLimit';
+import { openNativeScanner, openNativeGallery, detectCapabilities } from '../utils/documentScannerHelper';
+import { fileToDataUrl } from '../utils/pdfBuilder';
 
 function useIsMobile() {
   return useMemo(() => {
@@ -18,8 +20,6 @@ export default function UploadPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const fileInputRef = useRef(null);
-  const cameraInputRef = useRef(null);
-  const galleryInputRef = useRef(null);
   const isMobile = useIsMobile();
   const { handleApiError } = usePlanLimit();
 
@@ -31,14 +31,9 @@ export default function UploadPage() {
   const [uploadDone, setUploadDone] = useState(false);
   const [uploadDocId, setUploadDocId] = useState(null);
 
-  // Zentrale Datei-Verarbeitung
+  // Zentrale Datei-Verarbeitung (for desktop drag & drop / file picker)
   const selectFile = useCallback((file) => {
     if (!file) return;
-    console.log('[KamalDoc Upload] Datei ausgewählt', {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-    });
     const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
     if (!allowed.includes(file.type)) {
       setUploadError(t('upload.onlyAllowed'));
@@ -48,36 +43,7 @@ export default function UploadPage() {
     setUploadError(null);
     setUploadDone(false);
     setUploadDocId(null);
-  }, []);
-
-  // Native change Event Handler — zuverlässiger als React onChange auf Mobile
-  const handleNativeChange = useCallback((e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      selectFile(file);
-    }
-    // Input zurücksetzen damit dieselbe Datei erneut wählbar ist
-    // Wichtig: Verzögert, damit der Browser die Datei erst verarbeiten kann
-    setTimeout(() => { if (e.target) e.target.value = ''; }, 100);
-  }, [selectFile]);
-
-  // Native Event Listener auf alle drei Input-Elemente registrieren
-  // Dies ist der Kernfix: addEventListener('change') feuert auf Android
-  // zuverlässiger als Reacts synthetisches onChange Event
-  useEffect(() => {
-    const refs = [cameraInputRef, galleryInputRef, fileInputRef];
-    const cleanups = [];
-
-    refs.forEach(ref => {
-      const el = ref.current;
-      if (el) {
-        el.addEventListener('change', handleNativeChange);
-        cleanups.push(() => el.removeEventListener('change', handleNativeChange));
-      }
-    });
-
-    return () => cleanups.forEach(fn => fn());
-  }, [handleNativeChange]);
+  }, [t]);
 
   // Preview generieren wenn Datei ausgewählt
   useEffect(() => {
@@ -101,24 +67,15 @@ export default function UploadPage() {
 
   const handleUpload = async () => {
     if (!selectedFile || uploading) return;
-
-    console.log('[KamalDoc Upload] Upload gestartet', {
-      name: selectedFile.name,
-      size: selectedFile.size,
-      type: selectedFile.type,
-    });
-
     setUploading(true);
     setUploadError(null);
     try {
       const result = await uploadDocument(selectedFile);
-      console.log('[KamalDoc Upload] Upload erfolgreich', { id: result.id });
       setUploadDone(true);
       setUploadDocId(result.id);
     } catch (err) {
       if (handleApiError(err)) return;
       const msg = err.response?.data?.detail || err.message || 'Upload fehlgeschlagen';
-      console.error('[KamalDoc Upload] Upload Fehler', msg, err);
       setUploadError(msg);
     } finally {
       setUploading(false);
@@ -143,36 +100,29 @@ export default function UploadPage() {
   const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
   const handleDragLeave = () => setDragOver(false);
 
-  // Capacitor Camera: DataUrl → File object
-  const dataUrlToFile = (dataUrl, filename) => {
-    const [header, base64] = dataUrl.split(',');
-    const mime = header.match(/:(.*?);/)[1];
-    const binary = atob(base64);
-    const array = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) array[i] = binary.charCodeAt(i);
-    return new File([array], filename, { type: mime });
-  };
-
-  // Kamera öffnen — direkt Kamera starten, dann zu /scan mit Bild
+  /**
+   * "Foto aufnehmen" — Camera flow.
+   * Native: opens native document scanner (ML Kit / VNDocumentCamera) directly.
+   * Web mobile: opens camera via capture input, navigates to /scan.
+   * Desktop: hidden file input fallback.
+   */
   const openCamera = async () => {
     if (Capacitor.isNativePlatform()) {
-      try {
-        const { Camera: CapCamera, CameraResultType, CameraSource } = await import('@capacitor/camera');
-        const photo = await CapCamera.getPhoto({
-          resultType: CameraResultType.DataUrl,
-          source: CameraSource.Camera,
-          quality: 92,
+      // Native: use document scanner helper — starts in correct mode immediately
+      const result = await openNativeScanner();
+      if (result?.pages?.length) {
+        navigate('/scan', {
+          state: {
+            initialPages: result.pages.map(dataUrl => ({ type: 'image', dataUrl })),
+            source: 'camera',
+          },
         });
-        if (photo.dataUrl) {
-          navigate('/scan', { state: { initialPages: [{ type: 'image', dataUrl: photo.dataUrl }], source: 'camera' } });
-        }
-      } catch (err) {
-        console.error('[KamalDoc] Camera error:', err);
       }
       return;
     }
+
     if (isMobile) {
-      // Mobile web: open camera via capture input, then navigate
+      // Mobile web: open camera via capture input, then navigate to /scan
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -180,32 +130,47 @@ export default function UploadPage() {
       input.onchange = async (e) => {
         const file = e.target.files?.[0];
         if (file) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            navigate('/scan', { state: { initialPages: [{ type: 'image', dataUrl: reader.result }], source: 'camera' } });
-          };
-          reader.readAsDataURL(file);
+          const dataUrl = await fileToDataUrl(file);
+          navigate('/scan', {
+            state: {
+              initialPages: [{ type: 'image', dataUrl }],
+              source: 'camera',
+            },
+          });
         }
       };
       input.click();
       return;
     }
-    const el = cameraInputRef.current;
+
+    // Desktop fallback: file input
+    const el = fileInputRef.current;
     if (el) { el.value = ''; el.click(); }
   };
 
+  /**
+   * "Aus Galerie" — Gallery flow.
+   * Native: opens native photo picker (Capacitor pickImages) directly.
+   *   On cancel/empty result — stays on /upload, no navigation.
+   *   On success — navigates to /scan with selected images.
+   * Web: navigates to /scan with openGallery flag (uses <input type="file" multiple>).
+   */
   const openGallery = async () => {
     if (Capacitor.isNativePlatform()) {
-      // Native: use multi-select file input to pick from gallery
-      navigate('/scan', { state: { openGallery: true } });
+      const result = await openNativeGallery();
+      if (result?.images?.length) {
+        navigate('/scan', {
+          state: {
+            initialPages: result.images.map(dataUrl => ({ type: 'image', dataUrl })),
+            source: 'gallery',
+          },
+        });
+      }
+      // Cancel or empty — stay on /upload, no navigation
       return;
     }
-    if (isMobile) {
-      navigate('/scan', { state: { openGallery: true } });
-      return;
-    }
-    const el = galleryInputRef.current;
-    if (el) { el.value = ''; el.click(); }
+    // Web: navigate to /scan for consistent multi-page experience
+    navigate('/scan', { state: { openGallery: true } });
   };
 
   const openFileDialog = () => {
@@ -214,6 +179,13 @@ export default function UploadPage() {
       el.value = '';
       el.click();
     }
+  };
+
+  // Desktop file input handler
+  const handleFileInput = (e) => {
+    const file = e.target.files?.[0];
+    if (file) selectFile(file);
+    setTimeout(() => { if (e.target) e.target.value = ''; }, 100);
   };
 
   return (
@@ -421,10 +393,8 @@ export default function UploadPage() {
         </>
       )}
 
-      {/* Hidden file inputs */}
-      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" multiple style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
-      <input ref={cameraInputRef} type="file" accept="image/jpeg,image/png" capture="environment" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
-      <input ref={galleryInputRef} type="file" accept="image/*,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} />
+      {/* Hidden file input — desktop only */}
+      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} onChange={handleFileInput} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
