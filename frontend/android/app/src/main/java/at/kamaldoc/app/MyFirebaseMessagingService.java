@@ -104,10 +104,7 @@ public class MyFirebaseMessagingService extends MessagingService {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        int flags = PendingIntent.FLAG_ONE_SHOT;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= PendingIntent.FLAG_IMMUTABLE;
-        }
+        int flags = PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE;
 
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, flags);
 

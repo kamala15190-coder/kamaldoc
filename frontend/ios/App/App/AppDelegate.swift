@@ -11,6 +11,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Capacitor's ApplicationDelegateProxy übernimmt die eigentliche Verarbeitung;
         // wir registrieren nur den Delegate damit Foreground-Notifications angezeigt werden.
         UNUserNotificationCenter.current().delegate = self
+
+        // DocumentScanner Plugin registrieren (VNDocumentCameraViewController)
+        let bridge = (window?.rootViewController as? CAPBridgeViewController)?.bridge
+        bridge?.registerPluginInstance(DocumentScannerPlugin())
+
         return true
     }
 

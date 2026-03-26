@@ -6,6 +6,7 @@ import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubs
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
+import EmailAccountSettings from '../email/EmailAccountSettings';
 
 export default function ProfilPage() {
   const { t, i18n } = useTranslation();
@@ -321,6 +322,9 @@ export default function ProfilPage() {
         </div>
       </div>
 
+
+      {/* Section: Connected Email Accounts */}
+      <EmailAccountSettings />
 
             {/* Section 1: Absenderdaten */}
       <div data-intro="absender" className="glass-card animate-fade-in-up" style={{ padding: 16 }}>
