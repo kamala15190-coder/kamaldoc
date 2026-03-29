@@ -149,10 +149,10 @@ export default function AdminPage() {
         <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Admin-Bereich</h1>
       </div>
 
-      <FinanceOverviewSection />
       <TicketManagementSection />
       <ChangePlanSection />
       <AdminManagementSection />
+      <FinanceOverviewSection />
     </div>
   )
 }
