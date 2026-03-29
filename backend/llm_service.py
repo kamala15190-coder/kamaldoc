@@ -431,7 +431,15 @@ LANGUAGE_NAMES = {
 
 # --- Reply generation ---
 
-async def generate_reply(document: dict, einstellungen: dict = None, target_language: str = "de", hints: str = "") -> str:
+ANTWORTTYP_PROMPTS = {
+    "allgemein": "",
+    "kuendigung": "Schreibe eine formelle Kündigung des Vertrags/der Vereinbarung. Der Brief soll klar und eindeutig die Kündigung aussprechen, das Kündigungsdatum nennen und um Bestätigung bitten.",
+    "zahlungsbestaetigung": "Schreibe eine Zahlungsbestätigung für den genannten Betrag. Der Brief soll den bezahlten Betrag, das Zahlungsdatum und die Zahlungsmethode erwähnen.",
+    "reklamation": "Schreibe eine professionelle Reklamation/Beschwerde. Der Brief soll das Problem klar beschreiben, eine Frist für die Lösung setzen und auf die Rechte des Verbrauchers hinweisen.",
+}
+
+
+async def generate_reply(document: dict, einstellungen: dict = None, target_language: str = "de", hints: str = "", reply_type: str = "allgemein") -> str:
     """Antwortbrief via Mistral AI generieren."""
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
 
@@ -456,6 +464,10 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
     else:
         absender_info = "Verwende Platzhalter [IHR NAME] und [IHRE ADRESSE] f\u00fcr die eigenen Absenderdaten."
 
+    # Antworttyp-Zusatz (Kündigung, Zahlungsbestätigung, Reklamation, ...)
+    typ_text = ANTWORTTYP_PROMPTS.get(reply_type, "")
+    typ_instruction = f"\n\n**ANTWORTTYP:** {typ_text}" if typ_text else ""
+
     hints_text = f"\n\n**WICHTIG - H\u00d6CHSTE PRIORIT\u00c4T** Der Benutzer hat folgende Kontext-Hinweise/Anweisungen gegeben, die UNBEDINGT im Brief ber\u00fccksichtigt und umgesetzt werden M\u00dcSSEN:\n\"{hints}\"\n\nDiese Anweisungen haben Vorrang vor allen anderen Informationen. Der generierte Brief MUSS den Inhalt dieser Hinweise widerspiegeln." if hints else ""
     prompt = ANTWORT_PROMPT_TEMPLATE.format(
         absender=document.get("absender", "Unbekannt"),
@@ -465,7 +477,7 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
         volltext=document.get("volltext", ""),
         absender_info=absender_info,
         target_language_name=target_language_name,
-    ) + hints_text
+    ) + typ_instruction + hints_text
 
     heute = datetime.now().strftime("%d.%m.%Y")
     prompt = prompt.replace("{heute}", heute)

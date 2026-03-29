@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
+import { formatLocalDate } from '../utils/dateUtils';
 
 
 const KATEGORIE_BADGE = {
@@ -143,7 +144,7 @@ export default function Archiv() {
               )}
               {doc.erledigt_am && (
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                  {new Date(doc.erledigt_am).toLocaleDateString('de-DE')}
+                  {formatLocalDate(doc.erledigt_am)}
                 </span>
               )}
             </div>

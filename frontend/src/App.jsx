@@ -12,6 +12,7 @@ import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
 import { SubscriptionProvider, useSubscription } from './hooks/useSubscription.jsx';
 import { PlanLimitProvider } from './hooks/usePlanLimit.jsx';
 import { ThemeProvider } from './hooks/useTheme.jsx';
+import { FeatureFlagsProvider } from './hooks/useFeatureFlags.jsx';
 import { LANGUAGES, isRtl } from './languages';
 import { supabase } from './supabaseClient';
 import Dashboard from './pages/Dashboard';
@@ -38,6 +39,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import ScanPreviewPage from './pages/ScanPreviewPage';
 import EmailPage from './pages/EmailPage';
 import { checkAdmin, getTicketUnreadCount } from './api';
+import { useFeatureFlags } from './hooks/useFeatureFlags.jsx';
 import IntroGuide from './components/IntroGuide';
 
 const TAB_ITEMS = [
@@ -180,6 +182,7 @@ function TopHeader() {
   const { signOut } = useAuth();
   const { user } = useAuth();
   const [ticketBadge, setTicketBadge] = useState(0);
+  const { isEnabled } = useFeatureFlags();
 
   useEffect(() => {
     setMoreOpen(false);
@@ -297,7 +300,7 @@ function TopHeader() {
         </div>
 
         <div style={{ padding: 12, flex: 1, overflowY: 'auto' }}>
-          {MORE_ITEMS.map(({ path, labelKey, icon: Icon }) => (
+          {MORE_ITEMS.filter(item => item.path !== '/email' || isEnabled('email_enabled')).map(({ path, labelKey, icon: Icon }) => (
             <Link
               key={path}
               to={path}
@@ -714,9 +717,11 @@ function App() {
         <AuthProvider>
           <SubscriptionProvider>
             <PlanLimitProvider>
-              <RtlWrapper>
-                <AppContent />
-              </RtlWrapper>
+              <FeatureFlagsProvider>
+                <RtlWrapper>
+                  <AppContent />
+                </RtlWrapper>
+              </FeatureFlagsProvider>
             </PlanLimitProvider>
           </SubscriptionProvider>
         </AuthProvider>

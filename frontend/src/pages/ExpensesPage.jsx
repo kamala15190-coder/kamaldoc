@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getExpenseCategories, getExpenseItems, getExpenseSummary } from '../api';
+import { formatLocalDate } from '../utils/dateUtils';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import UpgradePrompt from '../components/UpgradePrompt';
@@ -328,7 +329,7 @@ export default function ExpensesPage() {
                         )}
                         {item.date && (
                           <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                            {new Date(item.date).toLocaleDateString('de-DE')}
+                            {formatLocalDate(item.date)}
                           </span>
                         )}
                       </div>

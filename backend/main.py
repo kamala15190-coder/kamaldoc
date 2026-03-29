@@ -10,7 +10,7 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import fitz  # PyMuPDF
 import stripe
@@ -60,16 +60,34 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-# --- Rate Limiting Middleware (60 Requests/Minute pro IP) ---
+# --- Rate Limiting Middleware ---
+# Global: 200 Requests/Minute pro IP
+# Per-Endpoint: /api/upload → 60/min, /api/push-token → 10/min (Loop-Schutz)
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     EXEMPT_PATHS = {"/api/status", "/auth/google/login", "/auth/google/callback"}
 
-    def __init__(self, app, max_requests: int = 120, window_seconds: int = 60):
+    # Striktere Limits pro Endpoint (requests/minute pro IP)
+    PATH_LIMITS = {
+        "/api/upload": 60,
+        "/api/push-token": 10,
+    }
+
+    def __init__(self, app, max_requests: int = 200, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
-        self.requests = defaultdict(list)
+        self.requests: dict[str, list] = defaultdict(list)
+        self.path_requests: dict[str, list] = defaultdict(list)
+
+    def _cors_headers(self, request: Request) -> dict:
+        origin = request.headers.get("origin", "")
+        if origin:
+            return {
+                "access-control-allow-origin": origin,
+                "access-control-allow-credentials": "true",
+            }
+        return {}
 
     async def dispatch(self, request: Request, call_next):
         # Health-Check, Auth-Endpoints und OPTIONS vom Rate Limit ausnehmen
@@ -82,26 +100,33 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             or (request.client.host if request.client else "unknown")
         )
         now = time.time()
-        # Alte Einträge entfernen
-        self.requests[client_ip] = [
-            t for t in self.requests[client_ip] if now - t < self.window_seconds
-        ]
+        path = request.url.path
+
+        # Per-Endpoint-Limit prüfen (z.B. /api/push-token: 10/min)
+        path_limit = self.PATH_LIMITS.get(path)
+        if path_limit is not None:
+            key = f"{client_ip}:{path}"
+            self.path_requests[key] = [t for t in self.path_requests[key] if now - t < self.window_seconds]
+            if len(self.path_requests[key]) >= path_limit:
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": f"Too Many Requests – max {path_limit} pro Minute für diesen Endpoint"},
+                    headers=self._cors_headers(request),
+                )
+            self.path_requests[key].append(now)
+
+        # Globales Limit prüfen
+        self.requests[client_ip] = [t for t in self.requests[client_ip] if now - t < self.window_seconds]
         if len(self.requests[client_ip]) >= self.max_requests:
-            # CORS-Header hinzufügen damit der Browser die Antwort nicht blockiert
-            origin = request.headers.get("origin", "")
-            headers = {}
-            if origin:
-                headers["access-control-allow-origin"] = origin
-                headers["access-control-allow-credentials"] = "true"
             return JSONResponse(
                 status_code=429,
-                content={"detail": "Too Many Requests – max 120 pro Minute"},
-                headers=headers,
+                content={"detail": "Too Many Requests – max 200 pro Minute"},
+                headers=self._cors_headers(request),
             )
         self.requests[client_ip].append(now)
         return await call_next(request)
 
-app.add_middleware(RateLimitMiddleware, max_requests=120, window_seconds=60)
+app.add_middleware(RateLimitMiddleware, max_requests=200, window_seconds=60)
 
 ORIGINALS_DIR = DATA_DIR / "originals"
 THUMBNAILS_DIR = DATA_DIR / "thumbnails"
@@ -485,10 +510,10 @@ async def upload_document(
     # Plan enforcement: Upload-Limit prüfen
     await check_upload_limit(user_id)
 
-    # File size limit: 20 MB
+    # File size limit: 50 MB
     file_content = await file.read()
-    if len(file_content) > 20 * 1024 * 1024:
-        raise HTTPException(413, "Datei zu groß. Maximal 20 MB erlaubt.")
+    if len(file_content) > 50 * 1024 * 1024:
+        raise HTTPException(413, "Datei zu groß. Maximal 50 MB erlaubt.")
     await file.seek(0)
 
     ext = Path(file.filename).suffix.lower()
@@ -534,6 +559,73 @@ async def upload_document(
     asyncio.create_task(run_analysis_with_limit(doc_id, str(image_path), user_id))
 
     return {"id": doc_id, "status": "analyse_laeuft", "dateiname": file.filename}
+
+
+@app.post("/api/upload-batch")
+async def upload_documents_batch(
+    files: List[UploadFile] = File(...),
+    doc_type: str = Query("standard"),
+    user_id: str = Depends(get_current_user)
+):
+    """Mehrere Dokumente auf einmal hochladen. Fehler pro Datei werden isoliert."""
+    results = []
+    for file in files:
+        try:
+            await check_upload_limit(user_id)
+
+            file_content = await file.read()
+            if len(file_content) > 50 * 1024 * 1024:
+                results.append({"dateiname": file.filename, "error": "Datei zu groß. Maximal 50 MB erlaubt."})
+                continue
+
+            ext = Path(file.filename).suffix.lower()
+            if ext not in (".jpg", ".jpeg", ".png", ".pdf"):
+                results.append({"dateiname": file.filename, "error": "Nur JPG, PNG und PDF erlaubt"})
+                continue
+
+            file_id = uuid.uuid4().hex[:12]
+            original_name = f"{file_id}{ext}"
+            original_path = ORIGINALS_DIR / original_name
+
+            with open(original_path, "wb") as f:
+                f.write(file_content)
+
+            if ext == ".pdf":
+                image_name = f"{file_id}.jpg"
+                image_path = ORIGINALS_DIR / image_name
+                pdf_to_image(str(original_path), str(image_path))
+            else:
+                image_path = original_path
+
+            thumb_name = f"{file_id}_thumb.jpg"
+            thumb_path = THUMBNAILS_DIR / thumb_name
+            create_thumbnail(str(image_path), str(thumb_path))
+
+            db = await get_db()
+            try:
+                cursor = await db.execute(
+                    """INSERT INTO documents (dateiname, originalpfad, thumbnailpfad, dateityp, doc_type, user_id)
+                       VALUES (?, ?, ?, ?, ?, ?)""",
+                    (file.filename, original_name, thumb_name, ext.lstrip("."), doc_type, user_id),
+                )
+                doc_id = cursor.lastrowid
+                await db.commit()
+            finally:
+                await db.close()
+
+            await increment_usage(user_id, "documents_total")
+            asyncio.create_task(run_analysis_with_limit(doc_id, str(image_path), user_id))
+
+            results.append({"id": doc_id, "status": "analyse_laeuft", "dateiname": file.filename})
+
+        except HTTPException as e:
+            error_detail = e.detail if isinstance(e.detail, str) else e.detail.get("message", str(e.detail))
+            results.append({"dateiname": file.filename, "error": error_detail})
+        except Exception as e:
+            logger.error(f"Batch upload error for {file.filename}: {e}")
+            results.append({"dateiname": file.filename, "error": "Upload fehlgeschlagen"})
+
+    return {"results": results}
 
 
 @app.get("/api/documents")
@@ -769,7 +861,8 @@ async def create_reply(doc_id: int, data: dict = None, target_language: str = "d
 
         try:
             hints = (data or {}).get("hints", "")
-            reply_text = await generate_reply(doc, einstellungen, target_language, hints)
+            reply_type = (data or {}).get("reply_type", "allgemein")
+            reply_text = await generate_reply(doc, einstellungen, target_language, hints, reply_type)
         except Exception as e:
             logger.error(f"LLM-Fehler: {e}", exc_info=True)
             raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
@@ -2070,6 +2163,55 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
         },
         "net": net,
     }
+
+
+# --- Feature Flags ---
+
+@app.get("/api/feature-flags")
+async def get_feature_flags_public():
+    """Öffentlicher Endpoint: gibt alle Feature-Flags als {key: enabled} zurück."""
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT key, enabled FROM feature_flags")
+        rows = await cursor.fetchall()
+        return {row["key"]: bool(row["enabled"]) for row in rows}
+    finally:
+        await db.close()
+
+
+@app.get("/api/admin/feature-flags")
+async def admin_get_feature_flags(user_id: str = Depends(get_current_user)):
+    """Admin: alle Feature-Flags mit Timestamps."""
+    await _require_admin(user_id)
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT key, enabled, updated_at FROM feature_flags ORDER BY key")
+        rows = await cursor.fetchall()
+        return {"flags": [{"key": r["key"], "enabled": bool(r["enabled"]), "updated_at": r["updated_at"]} for r in rows]}
+    finally:
+        await db.close()
+
+
+@app.post("/api/admin/feature-flags/{key}")
+async def admin_set_feature_flag(key: str, data: dict, user_id: str = Depends(get_current_user)):
+    """Admin: einzelnen Feature-Flag setzen."""
+    await _require_admin(user_id)
+    enabled = data.get("enabled")
+    if enabled is None:
+        raise HTTPException(400, "enabled (true/false) erforderlich")
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT 1 FROM feature_flags WHERE key = ?", (key,))
+        if not await cursor.fetchone():
+            raise HTTPException(404, f"Feature-Flag '{key}' nicht gefunden")
+        await db.execute(
+            "UPDATE feature_flags SET enabled = ?, updated_at = datetime('now','localtime') WHERE key = ?",
+            (1 if enabled else 0, key),
+        )
+        await db.commit()
+        return {"key": key, "enabled": bool(enabled)}
+    finally:
+        await db.close()
 
 
 # --- Deadline-Checker Background Job ---

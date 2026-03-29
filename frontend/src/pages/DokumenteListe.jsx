@@ -7,6 +7,7 @@ import { useTheme } from '../hooks/useTheme';
 import { searchEmails } from '../email/EmailSearchAdapter';
 import { PROVIDER_INFO } from '../email/EmailConnectorService';
 import EmailPreviewModal from '../email/EmailPreviewModal';
+import { formatLocalDate } from '../utils/dateUtils';
 
 const KATEGORIE_ICON = {
   behoerde: { bg: 'rgba(99,89,255,0.12)', color: '#6359FF' },
@@ -223,7 +224,7 @@ export default function DokumenteListe() {
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                         {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
-                        {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</span>}
+                        {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{formatLocalDate(doc.datum)}</span>}
                         {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
                       </div>
                     </div>
@@ -308,7 +309,7 @@ export default function DokumenteListe() {
                             </span>
                             {email.date && (
                               <span style={{ fontSize: 11, color: tc.textMuted, marginLeft: 'auto', flexShrink: 0 }}>
-                                {new Date(email.date).toLocaleDateString('de-DE')}
+                                {formatLocalDate(email.date)}
                               </span>
                             )}
                           </div>

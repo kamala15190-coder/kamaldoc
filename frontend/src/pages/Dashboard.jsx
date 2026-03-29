@@ -11,6 +11,7 @@ import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
+import { formatLocalDate } from '../utils/dateUtils';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -307,7 +308,7 @@ export default function Dashboard() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                   <span style={{ fontSize: 11, color: tc.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{todo.handlung_beschreibung || '\u2014'}</span>
-                  {todo.faelligkeitsdatum && <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0, background: isOverdue(todo.faelligkeitsdatum) ? 'rgba(255,95,109,0.12)' : 'transparent', color: isOverdue(todo.faelligkeitsdatum) ? '#FF5F6D' : tc.textMuted }}>{new Date(todo.faelligkeitsdatum).toLocaleDateString('de-DE')}</span>}
+                  {todo.faelligkeitsdatum && <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0, background: isOverdue(todo.faelligkeitsdatum) ? 'rgba(255,95,109,0.12)' : 'transparent', color: isOverdue(todo.faelligkeitsdatum) ? '#FF5F6D' : tc.textMuted }}>{formatLocalDate(todo.faelligkeitsdatum)}</span>}
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }} disabled={dismissingIds.has(todo.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
@@ -650,7 +651,7 @@ function DocumentRow({ doc, tc, isLast, delay }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
-          {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</span>}
+          {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{formatLocalDate(doc.datum)}</span>}
           {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
         </div>
       </div>

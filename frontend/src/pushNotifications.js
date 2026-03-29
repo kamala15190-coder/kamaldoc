@@ -4,11 +4,18 @@ import { registerPushToken } from './api';
  * Push Notifications via Capacitor.
  * Registriert den Push-Token beim Backend für Deadline-Benachrichtigungen.
  * Auf Web/Browser wird dies übersprungen.
- * 
+ *
  * Verwendet Capacitor.Plugins statt direktem Import, damit Vite
  * keine unresolvable-dependency-Warnung wirft.
  */
+
+// Guard: initPushNotifications darf nur einmal pro App-Start laufen.
+// Mehrfachaufrufe entstehen durch Auth-State-Changes und Visibility-Events in useAuth.
+let _pushInitialized = false;
+
 export async function initPushNotifications() {
+  if (_pushInitialized) return;
+
   // Nur auf nativen Plattformen (Android/iOS) aktivieren
   const Capacitor = window.Capacitor;
   if (!Capacitor?.isNativePlatform()) {
@@ -31,6 +38,9 @@ export async function initPushNotifications() {
       return;
     }
 
+    // Ab hier gilt die Initialisierung als gestartet – kein zweiter Versuch
+    _pushInitialized = true;
+
     // Registrierung starten
     await PushNotifications.register();
 
@@ -38,7 +48,8 @@ export async function initPushNotifications() {
     PushNotifications.addListener('registration', async (token) => {
       console.log('[Push] Token erhalten:', token.value);
       try {
-        await registerPushToken(token.value, 'android');
+        const platform = Capacitor.getPlatform?.() || 'android';
+        await registerPushToken(token.value, platform);
         console.log('[Push] Token erfolgreich beim Backend registriert');
       } catch (err) {
         console.error('[Push] Token-Registrierung fehlgeschlagen:', err);

@@ -201,6 +201,20 @@ async def init_db():
                 befund_month INTEGER DEFAULT 0,
                 last_reset TEXT
             );
+
+            CREATE TABLE IF NOT EXISTS feature_flags (
+                key TEXT PRIMARY KEY,
+                enabled INTEGER DEFAULT 1,
+                updated_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+
+            -- Default Feature-Flags für E-Mail
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_enabled', 0);
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_gmail', 0);
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_outlook', 0);
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_gmx', 0);
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_icloud', 0);
+            INSERT OR IGNORE INTO feature_flags (key, enabled) VALUES ('email_yahoo', 0);
         """)
         await db.commit()
 

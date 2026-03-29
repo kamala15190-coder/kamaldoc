@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, FileText, AlertCircle, Receipt, Mail, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { getDocuments } from '../api'
+import { formatLocalDate } from '../utils/dateUtils'
 
 const SEKTOR_CONFIG = {
   gesamt: { icon: FileText, color: 'var(--accent-solid)', bg: 'var(--accent-soft)', labelKey: 'dashboard.total' },
@@ -87,7 +88,7 @@ export default function SektorDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>
                   <span>
                     {doc.hochgeladen_am
-                      ? new Date(doc.hochgeladen_am).toLocaleDateString('de-DE')
+                      ? formatLocalDate(doc.hochgeladen_am)
                       : '—'}
                   </span>
                   {(doc.faelligkeitsdatum || doc.deadline) && (
@@ -95,7 +96,7 @@ export default function SektorDetailPage() {
                       color: doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date() ? '#ef4444' : 'var(--text-muted)',
                       fontWeight: doc.faelligkeitsdatum && new Date(doc.faelligkeitsdatum) < new Date() ? 600 : 400,
                     }}>
-                      Deadline: {new Date(doc.faelligkeitsdatum || doc.deadline).toLocaleDateString('de-DE')}
+                      Deadline: {formatLocalDate(doc.faelligkeitsdatum || doc.deadline)}
                     </span>
                   )}
                 </div>

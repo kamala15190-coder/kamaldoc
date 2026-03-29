@@ -9,6 +9,7 @@ import { uploadDocument, getDocuments, getDocument, simplifyDocument, translateD
 import { REPLY_LANGUAGES } from '../languages';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import CollapsibleSection from '../components/CollapsibleSection';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export default function BefundAssistent() {
   const { t } = useTranslation();
@@ -259,7 +260,7 @@ export default function BefundAssistent() {
                 <FileText style={{ width: 18, height: 18, color: '#fb7185', flexShrink: 0 }} />
                 <div style={{ minWidth: 0, flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.absender || doc.dateiname}</p>
-                  {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{new Date(doc.datum).toLocaleDateString('de-DE')}</p>}
+                  {doc.datum && <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{formatLocalDate(doc.datum)}</p>}
                 </div>
                 {doc.vereinfacht && <Check style={{ width: 14, height: 14, color: 'var(--success)', flexShrink: 0 }} />}
                 <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />

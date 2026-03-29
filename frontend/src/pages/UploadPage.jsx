@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, Camera, FileText, CheckCircle, Loader2, AlertCircle, X, ImageIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
-import { uploadDocument } from '../api';
+import { uploadDocuments } from '../api';
 import { usePlanLimit } from '../hooks/usePlanLimit';
-import { openNativeScanner, openNativeGallery, detectCapabilities } from '../utils/documentScannerHelper';
+import { openNativeScanner, openNativeGallery } from '../utils/documentScannerHelper';
 import { fileToDataUrl } from '../utils/pdfBuilder';
 
 function useIsMobile() {
@@ -16,6 +16,51 @@ function useIsMobile() {
   }, []);
 }
 
+// status: 'pending' | 'uploading' | 'done' | 'error'
+function FileStatusRow({ entry, index, total }) {
+  const icon = entry.status === 'done'
+    ? <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
+    : entry.status === 'error'
+      ? <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)', flexShrink: 0 }} />
+      : entry.status === 'uploading'
+        ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.25)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+        : <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border-glass-strong)', flexShrink: 0 }} />;
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '10px 12px', borderRadius: 10,
+      background: entry.status === 'done'
+        ? 'var(--success-soft)'
+        : entry.status === 'error'
+          ? 'rgba(239,68,68,0.08)'
+          : 'var(--bg-glass)',
+      border: `1px solid ${entry.status === 'done' ? 'rgba(16,185,129,0.2)' : entry.status === 'error' ? 'rgba(239,68,68,0.2)' : 'var(--border-glass)'}`,
+    }}>
+      {icon}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {index + 1}/{total}: {entry.file.name}
+        </div>
+        {entry.status === 'error' && (
+          <div style={{ fontSize: 11, color: 'var(--danger-text)', marginTop: 2 }}>{entry.error}</div>
+        )}
+        {entry.status === 'uploading' && (
+          <div style={{ fontSize: 11, color: 'var(--accent-solid)', marginTop: 2 }}>Wird hochgeladen…</div>
+        )}
+        {entry.status === 'pending' && (
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Wartend…</div>
+        )}
+      </div>
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+        {(entry.file.size / 1024).toFixed(0)} KB
+      </span>
+    </div>
+  );
+}
+
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
+
 export default function UploadPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -24,91 +69,98 @@ export default function UploadPage() {
   const { handleApiError } = usePlanLimit();
 
   const [dragOver, setDragOver] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [preview, setPreview] = useState(null);
+  // fileEntries: Array<{ file, status, docId, error }>
+  const [fileEntries, setFileEntries] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(null);
-  const [uploadDone, setUploadDone] = useState(false);
-  const [uploadDocId, setUploadDocId] = useState(null);
+  const [uploadError, setUploadError] = useState(null); // Allgemeiner Fehler (kein Plan, etc.)
 
-  // Zentrale Datei-Verarbeitung (for desktop drag & drop / file picker)
-  const selectFile = useCallback((file) => {
-    if (!file) return;
-    const allowed = ['image/jpeg', 'image/png', 'application/pdf'];
-    if (!allowed.includes(file.type)) {
+  const allDone = fileEntries.length > 0 && fileEntries.every(e => e.status === 'done' || e.status === 'error');
+  const successCount = fileEntries.filter(e => e.status === 'done').length;
+
+  // Single-file auto-redirect
+  useEffect(() => {
+    if (allDone && fileEntries.length === 1 && fileEntries[0].status === 'done' && fileEntries[0].docId) {
+      const timer = setTimeout(() => navigate(`/documents/${fileEntries[0].docId}`), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [allDone, fileEntries, navigate]);
+
+  const addFiles = useCallback((newFiles) => {
+    const valid = Array.from(newFiles).filter(f => ALLOWED_TYPES.includes(f.type));
+    if (valid.length === 0) {
       setUploadError(t('upload.onlyAllowed'));
       return;
     }
-    setSelectedFile(file);
     setUploadError(null);
-    setUploadDone(false);
-    setUploadDocId(null);
+    setFileEntries(prev => [
+      ...prev,
+      ...valid.map(file => ({ file, status: 'pending', docId: null, error: null })),
+    ]);
   }, [t]);
 
-  // Preview generieren wenn Datei ausgewählt
-  useEffect(() => {
-    if (!selectedFile) { setPreview(null); return; }
-    if (selectedFile.type === 'application/pdf') {
-      setPreview('pdf');
-      return;
-    }
-    const url = URL.createObjectURL(selectedFile);
-    setPreview(url);
-    return () => URL.revokeObjectURL(url);
-  }, [selectedFile]);
-
-  // Auto-Redirect nach Upload
-  useEffect(() => {
-    if (uploadDone && uploadDocId) {
-      const timer = setTimeout(() => navigate(`/documents/${uploadDocId}`), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [uploadDone, uploadDocId, navigate]);
-
   const handleUpload = async () => {
-    if (!selectedFile || uploading) return;
+    if (uploading || fileEntries.length === 0) return;
+    const pending = fileEntries.filter(e => e.status === 'pending');
+    if (pending.length === 0) return;
+
     setUploading(true);
     setUploadError(null);
-    try {
-      const result = await uploadDocument(selectedFile);
-      setUploadDone(true);
-      setUploadDocId(result.id);
-    } catch (err) {
-      if (handleApiError(err)) return;
-      const msg = err.response?.data?.detail || err.message || 'Upload fehlgeschlagen';
-      setUploadError(msg);
-    } finally {
-      setUploading(false);
-    }
+
+    // Mark all pending as uploading as they go
+    const results = await uploadDocuments(
+      pending.map(e => e.file),
+      'standard',
+      (idx, _total, _filename, status) => {
+        const file = pending[idx]?.file || pending[Math.max(0, idx - 1)]?.file;
+        setFileEntries(prev => prev.map(e =>
+          e.file === file ? { ...e, status: status === 'uploading' ? 'uploading' : e.status } : e
+        ));
+      }
+    );
+
+    // Apply results
+    setFileEntries(prev => {
+      const updated = [...prev];
+      results.forEach((res, i) => {
+        const idx = updated.findIndex(e => e.file === pending[i].file);
+        if (idx !== -1) {
+          updated[idx] = {
+            ...updated[idx],
+            status: res.success ? 'done' : 'error',
+            docId: res.id ?? null,
+            error: res.error ?? null,
+          };
+        }
+        // Check if this is a plan limit error
+        if (!res.success && res.raw) {
+          handleApiError(res.raw);
+        }
+      });
+      return updated;
+    });
+
+    setUploading(false);
   };
 
   const handleReset = () => {
-    setSelectedFile(null);
-    setPreview(null);
+    setFileEntries([]);
     setUploadError(null);
-    setUploadDone(false);
-    setUploadDocId(null);
+    setUploading(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) selectFile(file);
+    if (e.dataTransfer.files?.length) addFiles(e.dataTransfer.files);
   };
 
-  const handleDragOver = (e) => { e.preventDefault(); setDragOver(true); };
-  const handleDragLeave = () => setDragOver(false);
+  const handleFileInput = (e) => {
+    if (e.target.files?.length) addFiles(e.target.files);
+    setTimeout(() => { if (e.target) e.target.value = ''; }, 100);
+  };
 
-  /**
-   * "Foto aufnehmen" — Camera flow.
-   * Native: opens native document scanner (ML Kit / VNDocumentCamera) directly.
-   * Web mobile: opens camera via capture input, navigates to /scan.
-   * Desktop: hidden file input fallback.
-   */
   const openCamera = async () => {
     if (Capacitor.isNativePlatform()) {
-      // Native: use document scanner helper — starts in correct mode immediately
       const result = await openNativeScanner();
       if (result?.pages?.length) {
         navigate('/scan', {
@@ -120,9 +172,7 @@ export default function UploadPage() {
       }
       return;
     }
-
     if (isMobile) {
-      // Mobile web: open camera via capture input, then navigate to /scan
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
@@ -131,30 +181,16 @@ export default function UploadPage() {
         const file = e.target.files?.[0];
         if (file) {
           const dataUrl = await fileToDataUrl(file);
-          navigate('/scan', {
-            state: {
-              initialPages: [{ type: 'image', dataUrl }],
-              source: 'camera',
-            },
-          });
+          navigate('/scan', { state: { initialPages: [{ type: 'image', dataUrl }], source: 'camera' } });
         }
       };
       input.click();
       return;
     }
-
-    // Desktop fallback: file input
     const el = fileInputRef.current;
     if (el) { el.value = ''; el.click(); }
   };
 
-  /**
-   * "Aus Galerie" — Gallery flow.
-   * Native: opens native photo picker (Capacitor pickImages) directly.
-   *   On cancel/empty result — stays on /upload, no navigation.
-   *   On success — navigates to /scan with selected images.
-   * Web: navigates to /scan with openGallery flag (uses <input type="file" multiple>).
-   */
   const openGallery = async () => {
     if (Capacitor.isNativePlatform()) {
       const result = await openNativeGallery();
@@ -166,26 +202,14 @@ export default function UploadPage() {
           },
         });
       }
-      // Cancel or empty — stay on /upload, no navigation
       return;
     }
-    // Web: navigate to /scan for consistent multi-page experience
     navigate('/scan', { state: { openGallery: true } });
   };
 
   const openFileDialog = () => {
     const el = fileInputRef.current;
-    if (el) {
-      el.value = '';
-      el.click();
-    }
-  };
-
-  // Desktop file input handler
-  const handleFileInput = (e) => {
-    const file = e.target.files?.[0];
-    if (file) selectFile(file);
-    setTimeout(() => { if (e.target) e.target.value = ''; }, 100);
+    if (el) { el.value = ''; el.click(); }
   };
 
   return (
@@ -194,110 +218,82 @@ export default function UploadPage() {
         {t('upload.title')}
       </h1>
 
-      {/* Vorschau wenn Datei ausgewählt */}
-      {selectedFile && (
+      {/* Dateiliste wenn Dateien ausgewählt */}
+      {fileEntries.length > 0 && (
         <div className="glass-card animate-scale-in" style={{ padding: 20, border: '1px solid rgba(16,185,129,0.25)' }}>
-          {/* Visuelles Feedback */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
-            padding: '10px 14px', borderRadius: 10,
-            background: 'var(--success-soft)', border: '1px solid rgba(16,185,129,0.15)',
-          }}>
-            <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {t('upload.fileSelected', { name: selectedFile.name })}
-            </span>
-            <span style={{ fontSize: 11, color: 'var(--success-text)', flexShrink: 0 }}>({(selectedFile.size / 1024).toFixed(0)} KB)</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+            {fileEntries.map((entry, i) => (
+              <FileStatusRow key={`${entry.file.name}-${i}`} entry={entry} index={i} total={fileEntries.length} />
+            ))}
           </div>
 
-          {/* Preview */}
-          <div style={{
-            width: '100%', aspectRatio: '1', maxWidth: 280, margin: '0 auto 16px',
-            borderRadius: 14, overflow: 'hidden',
-            background: 'rgba(255,255,255,0.03)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: '1px solid var(--border-glass)',
-          }}>
-            {preview === 'pdf' ? (
-              <FileText style={{ width: 48, height: 48, color: 'var(--text-muted)', opacity: 0.5 }} />
-            ) : preview ? (
-              <img src={preview} alt="Vorschau" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <ImageIcon style={{ width: 48, height: 48, color: 'var(--text-muted)', opacity: 0.3 }} />
-            )}
-          </div>
-
-          {/* Upload-Fortschritt */}
-          {uploading && (
-            <div style={{ marginTop: 16 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: '50%',
-                  border: '2px solid rgba(139,92,246,0.2)',
-                  borderTopColor: 'var(--accent-solid)',
-                  animation: 'spin 0.8s linear infinite',
-                }} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-solid)' }}>{t('upload.uploading')}</span>
-              </div>
-              <div style={{ width: '100%', height: 4, borderRadius: 2, background: 'var(--bg-glass)', overflow: 'hidden' }}>
-                <div style={{
-                  width: '70%', height: '100%', borderRadius: 2,
-                  background: 'var(--accent-gradient)',
-                  animation: 'shimmer 1.5s ease-in-out infinite',
-                  backgroundSize: '200% 100%',
-                }} />
-              </div>
+          {/* Ergebnis-Zusammenfassung */}
+          {allDone && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, background: 'var(--success-soft)', border: '1px solid rgba(16,185,129,0.15)', marginBottom: 12 }}>
+              <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--success-text)' }}>
+                {successCount}/{fileEntries.length} Dateien erfolgreich hochgeladen
+              </span>
             </div>
           )}
 
-          {/* Erfolg */}
-          {uploadDone && (
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--success-text)' }}>{t('upload.uploadSuccess')}</span>
-            </div>
-          )}
-
-          {/* Fehler */}
+          {/* Allgemeiner Fehler */}
           {uploadError && (
-            <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
               <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)' }} />
               <span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{uploadError}</span>
             </div>
           )}
 
           {/* Buttons */}
-          {!uploading && !uploadDone && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 16 }}>
+          {!uploading && !allDone && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={handleUpload}
-                disabled={!selectedFile}
                 className="btn-accent"
-                style={{
-                  width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  opacity: !selectedFile ? 0.5 : 1,
-                }}
+                style={{ width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               >
-                <Upload style={{ width: 18, height: 18 }} /> {t('upload.uploadButton')}
+                <Upload style={{ width: 18, height: 18 }} />
+                {fileEntries.length === 1 ? t('upload.uploadButton') : `${fileEntries.length} Dateien hochladen`}
               </button>
-              <button
-                onClick={handleReset}
-                className="btn-ghost"
-                style={{
-                  width: '100%', padding: '12px 0', fontSize: 14,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                }}
-              >
+              <button onClick={openFileDialog} className="btn-ghost" style={{ width: '100%', padding: '12px 0', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <FileText style={{ width: 16, height: 16 }} /> Weitere Dateien hinzufügen
+              </button>
+              <button onClick={handleReset} className="btn-ghost" style={{ width: '100%', padding: '12px 0', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <X style={{ width: 16, height: 16 }} /> {t('upload.cancel')}
+              </button>
+            </div>
+          )}
+
+          {uploading && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0' }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-solid)' }}>{t('upload.uploading')}</span>
+            </div>
+          )}
+
+          {allDone && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+              {fileEntries.length === 1 && fileEntries[0].status === 'done' && (
+                <button onClick={() => navigate(`/documents/${fileEntries[0].docId}`)} className="btn-accent" style={{ width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600 }}>
+                  Dokument ansehen
+                </button>
+              )}
+              {fileEntries.length > 1 && successCount > 0 && (
+                <button onClick={() => navigate('/documents')} className="btn-accent" style={{ width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600 }}>
+                  Alle Dokumente ansehen
+                </button>
+              )}
+              <button onClick={handleReset} className="btn-ghost" style={{ width: '100%', padding: '12px 0', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                <Upload style={{ width: 16, height: 16 }} /> Weitere Dateien hochladen
               </button>
             </div>
           )}
         </div>
       )}
 
-      {/* Auswahl-UI — nur wenn noch keine Datei ausgewählt */}
-      {!selectedFile && (
+      {/* Auswahl-UI — nur wenn noch keine Dateien ausgewählt */}
+      {fileEntries.length === 0 && (
         <>
           {/* Desktop: Drag & Drop */}
           {!isMobile && (
@@ -310,8 +306,8 @@ export default function UploadPage() {
                 cursor: 'pointer', transition: 'all 0.25s ease',
               }}
               onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
               onClick={openFileDialog}
             >
               <Upload style={{ width: 40, height: 40, margin: '0 auto 16px', color: dragOver ? 'var(--accent-solid)' : 'var(--text-muted)' }} />
@@ -319,7 +315,7 @@ export default function UploadPage() {
                 {t('upload.dragDrop')}
               </p>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
-                {t('upload.fileTypes')}
+                {t('upload.fileTypes')} · Mehrere Dateien möglich
               </p>
             </div>
           )}
@@ -331,11 +327,7 @@ export default function UploadPage() {
                 <button
                   onClick={openCamera}
                   className="btn-accent camera-glass-btn"
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 8, padding: 20, borderRadius: 16, minHeight: 100,
-                    fontSize: 14, fontWeight: 600,
-                  }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, borderRadius: 16, minHeight: 100, fontSize: 14, fontWeight: 600 }}
                 >
                   <Camera style={{ width: 28, height: 28 }} />
                   {t('upload.camera')}
@@ -343,27 +335,16 @@ export default function UploadPage() {
                 <button
                   onClick={openGallery}
                   className="glass-card"
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    gap: 8, padding: 20, minHeight: 100,
-                    fontSize: 14, fontWeight: 600, color: 'var(--text-primary)',
-                    cursor: 'pointer', border: '1px solid var(--border-glass-strong)',
-                  }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, minHeight: 100, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer', border: '1px solid var(--border-glass-strong)' }}
                 >
                   <ImageIcon style={{ width: 28, height: 28, color: 'var(--text-secondary)' }} />
                   {t('upload.gallery')}
                 </button>
               </div>
-
-              {/* File button below */}
               <button
                 onClick={openFileDialog}
                 className="btn-ghost"
-                style={{
-                  width: '100%', marginTop: 12, padding: '14px 0',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  fontSize: 14, fontWeight: 500,
-                }}
+                style={{ width: '100%', marginTop: 12, padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}
               >
                 <FileText style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
                 <span style={{ color: 'var(--text-secondary)' }}>{t('upload.document', 'Dokument')} / {t('upload.fileTypes')}</span>
@@ -383,7 +364,6 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Fehler */}
           {uploadError && (
             <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)' }} />
@@ -393,8 +373,16 @@ export default function UploadPage() {
         </>
       )}
 
-      {/* Hidden file input — desktop only */}
-      <input ref={fileInputRef} type="file" accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf" style={{ position: 'absolute', left: '-9999px', opacity: 0 }} tabIndex={-1} onChange={handleFileInput} />
+      {/* Hidden file input — multiple Dateien erlaubt */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+        style={{ position: 'absolute', left: '-9999px', opacity: 0 }}
+        tabIndex={-1}
+        onChange={handleFileInput}
+      />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );

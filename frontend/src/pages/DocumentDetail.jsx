@@ -13,6 +13,7 @@ import {
 } from '../api';
 import { Capacitor } from '@capacitor/core';
 import AuthImage from '../components/AuthImage';
+import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils';
 import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES, LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
@@ -55,6 +56,7 @@ export default function DocumentDetail() {
   const [markingDone, setMarkingDone] = useState(false);
   const [justMarkedDone, setJustMarkedDone] = useState(false);
   const [replyLanguage, setReplyLanguage] = useState('de');
+  const [replyType, setReplyType] = useState('allgemein');
   const [replyHints, setReplyHints] = useState('');
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
@@ -193,7 +195,7 @@ export default function DocumentDetail() {
   const handleGenerateReply = async () => {
     setGeneratingReply(true);
     try {
-      await generateReply(id, replyLanguage, replyHints);
+      await generateReply(id, replyLanguage, replyHints, replyType);
       await fetchReplies();
     } catch (err) {
       if (!handleApiError(err)) {
@@ -432,7 +434,7 @@ export default function DocumentDetail() {
               <div>
                 <p style={{ fontSize: 13, color: 'var(--success-text)', textDecoration: 'line-through', opacity: 0.7, margin: 0 }}>{doc.handlung_beschreibung || t('document.actionDone')}</p>
                 <p style={{ fontSize: 12, color: 'var(--success-text)', margin: '2px 0 0', fontWeight: 600 }}>
-                  {doc.erledigt_am ? t('document.doneAt', { date: new Date(doc.erledigt_am).toLocaleDateString() }) : t('document.doneLabel')}
+                  {doc.erledigt_am ? t('document.doneAt', { date: formatLocalDate(doc.erledigt_am) }) : t('document.doneLabel')}
                 </p>
               </div>
             </div>
@@ -523,13 +525,13 @@ export default function DocumentDetail() {
                     </span>
                   ) : null
                 } />
-                <Field label={t('document.date')} value={doc.datum ? new Date(doc.datum).toLocaleDateString() : null} />
+                <Field label={t('document.date')} value={doc.datum ? formatLocalDate(doc.datum) : null} />
                 <Field label={t('document.sender')} value={doc.absender} />
                 <Field label={t('document.recipient')} value={doc.empfaenger} />
                 <Field label={t('document.amount')} value={doc.betrag != null ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : null} />
-                <Field label={t('document.due')} value={doc.faelligkeitsdatum ? new Date(doc.faelligkeitsdatum).toLocaleDateString() : null} />
+                <Field label={t('document.due')} value={doc.faelligkeitsdatum ? formatLocalDate(doc.faelligkeitsdatum) : null} />
                 <Field label={t('document.filename')} value={doc.dateiname && doc.dateiname.length > 20 ? doc.dateiname.slice(0, 17) + '...' + doc.dateiname.slice(doc.dateiname.lastIndexOf('.')) : doc.dateiname} />
-                <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? new Date(doc.hochgeladen_am).toLocaleString() : null} />
+                <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? formatLocalDateTime(doc.hochgeladen_am) : null} />
               </div>
 
               {/* Deadline */}
@@ -554,7 +556,7 @@ export default function DocumentDetail() {
                           const updated = await updateDocument(id, { deadline: deadline || '' });
                           setDoc(updated);
                           setDeadline(updated.deadline || '');
-                          showToast(`Deadline gespeichert: ${new Date(updated.deadline).toLocaleDateString('de-DE')}`);
+                          showToast(`Deadline gespeichert: ${formatLocalDate(updated.deadline)}`);
                         } catch (err) { console.error(err); }
                         finally { setSavingDeadline(false); }
                       }}
@@ -660,6 +662,21 @@ export default function DocumentDetail() {
                       ))}
                     </select>
                   </div>
+                  {/* Antworttyp-Dropdown */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <MessageSquare style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+                    <select
+                      value={replyType}
+                      onChange={e => setReplyType(e.target.value)}
+                      className="input-dark"
+                      style={{ flex: 1, fontSize: 13 }}
+                    >
+                      <option value="allgemein">{t('document.replyTypeGeneral', 'Allgemein')}</option>
+                      <option value="kuendigung">{t('document.replyTypeCancellation', 'Kündigung')}</option>
+                      <option value="zahlungsbestaetigung">{t('document.replyTypePayment', 'Zahlungsbestätigung')}</option>
+                      <option value="reklamation">{t('document.replyTypeComplaint', 'Reklamation')}</option>
+                    </select>
+                  </div>
                   {/* Context hints for AI */}
                   <div>
                     <label style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6, display: 'block', fontWeight: 600 }}>
@@ -702,7 +719,7 @@ export default function DocumentDetail() {
                       }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                           <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
-                            {new Date(reply.erstellt_am).toLocaleString()}
+                            {formatLocalDateTime(reply.erstellt_am)}
                           </p>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                             <button
@@ -791,7 +808,7 @@ export default function DocumentDetail() {
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                             <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', margin: 0 }}>
-                              {lang ? `${lang.flag} ${lang.label}` : tr.target_language} — {new Date(tr.created_at).toLocaleString()}
+                              {lang ? `${lang.flag} ${lang.label}` : tr.target_language} — {formatLocalDateTime(tr.created_at)}
                             </p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                               <button

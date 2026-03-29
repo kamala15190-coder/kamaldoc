@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip, ZoomIn, DollarSign, AlertCircle } from 'lucide-react'
+import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip, ZoomIn, DollarSign, AlertCircle, Mail } from 'lucide-react'
 import {
   adminSearchUser, adminChangePlan,
   getAdminList, addAdmin, removeAdmin,
   adminGetTickets, adminGetTicket, adminCloseTicket, adminAddTicketMessage, adminDeleteTicket,
   fetchTicketFileUrl, adminGetFinanceOverview,
+  adminGetFeatureFlags, adminSetFeatureFlag,
 } from '../api'
 
 // Prüft ob ein Dateiname eine Bild-Erweiterung hat
@@ -153,6 +154,7 @@ export default function AdminPage() {
       <ChangePlanSection />
       <AdminManagementSection />
       <FinanceOverviewSection />
+      <EmailFeatureFlagsSection />
     </div>
   )
 }
@@ -431,6 +433,136 @@ function AdminManagementSection() {
   )
 }
 
+
+const PROVIDER_LABELS = {
+  email_gmail: 'Gmail',
+  email_outlook: 'Outlook',
+  email_gmx: 'GMX',
+  email_icloud: 'iCloud',
+  email_yahoo: 'Yahoo',
+}
+
+function ToggleSwitch({ checked, onChange, disabled }) {
+  return (
+    <button
+      onClick={() => !disabled && onChange(!checked)}
+      style={{
+        width: 44, height: 24, borderRadius: 12, border: 'none', cursor: disabled ? 'default' : 'pointer',
+        background: checked ? 'var(--accent-solid)' : 'var(--bg-glass)',
+        border: `1px solid ${checked ? 'var(--accent-solid)' : 'var(--border-glass-strong)'}`,
+        position: 'relative', transition: 'all 0.2s ease',
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <div style={{
+        width: 18, height: 18, borderRadius: '50%',
+        background: checked ? '#fff' : 'var(--text-muted)',
+        position: 'absolute', top: 2,
+        left: checked ? 22 : 2,
+        transition: 'all 0.2s ease',
+      }} />
+    </button>
+  )
+}
+
+function EmailFeatureFlagsSection() {
+  const [flags, setFlags] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(null) // key currently saving
+
+  useEffect(() => {
+    adminGetFeatureFlags()
+      .then(data => setFlags(data.flags || []))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleToggle = async (key, enabled) => {
+    setSaving(key)
+    try {
+      await adminSetFeatureFlag(key, enabled)
+      setFlags(prev => prev.map(f => f.key === key ? { ...f, enabled } : f))
+    } catch (err) {
+      console.error('Flag toggle failed:', err)
+    } finally {
+      setSaving(null)
+    }
+  }
+
+  const globalEnabled = flags.find(f => f.key === 'email_enabled')?.enabled ?? false
+  const providerFlags = flags.filter(f => f.key !== 'email_enabled' && f.key.startsWith('email_'))
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={sectionTitle}>
+        <Mail style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> E-Mail Verbinden
+      </h2>
+
+      {loading ? (
+        <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Global toggle */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 14px', borderRadius: 10,
+            background: globalEnabled ? 'var(--accent-soft)' : 'var(--bg-glass)',
+            border: `1px solid ${globalEnabled ? 'rgba(139,92,246,0.25)' : 'var(--border-glass)'}`,
+          }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+              E-Mail Feature (global)
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {saving === 'email_enabled' && <Loader2 style={{ width: 14, height: 14, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />}
+              <ToggleSwitch
+                checked={globalEnabled}
+                onChange={(v) => handleToggle('email_enabled', v)}
+                disabled={saving !== null}
+              />
+            </div>
+          </div>
+
+          {/* Provider toggles */}
+          {providerFlags.length > 0 && (
+            <div style={{
+              padding: '2px 0 0 12px',
+              borderLeft: '2px solid var(--border-glass)',
+              marginLeft: 6,
+              opacity: globalEnabled ? 1 : 0.4,
+              pointerEvents: globalEnabled ? 'auto' : 'none',
+              transition: 'opacity 0.2s',
+            }}>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 8px', fontWeight: 600 }}>
+                Provider (nur aktiv wenn global AN)
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {providerFlags.map(f => (
+                  <div key={f.key} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '10px 12px', borderRadius: 8,
+                    background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                      {PROVIDER_LABELS[f.key] || f.key}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {saving === f.key && <Loader2 style={{ width: 12, height: 12, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />}
+                      <ToggleSwitch
+                        checked={f.enabled}
+                        onChange={(v) => handleToggle(f.key, v)}
+                        disabled={saving !== null}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const STATUS_COLORS = {
   'erstellt': { bg: 'rgba(99,89,255,0.12)', color: '#6359FF', label: 'Erstellt' },

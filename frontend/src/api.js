@@ -23,6 +23,29 @@ export async function uploadDocument(file, docType = 'standard') {
   return data;
 }
 
+/**
+ * Mehrere Dateien sequenziell hochladen.
+ * onProgress(index, total, filename, status) wird pro Datei aufgerufen.
+ * Fehler pro Datei werden isoliert – eine fehlgeschlagene Datei bricht nicht den Rest ab.
+ */
+export async function uploadDocuments(files, docType = 'standard', onProgress) {
+  const results = [];
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    onProgress?.(i, files.length, file.name, 'uploading');
+    try {
+      const result = await uploadDocument(file, docType);
+      results.push({ success: true, ...result, dateiname: file.name });
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      const error = typeof detail === 'string' ? detail : detail?.message || err.message || 'Upload fehlgeschlagen';
+      results.push({ success: false, dateiname: file.name, error, raw: err });
+    }
+    onProgress?.(i + 1, files.length, file.name, results[i].success ? 'done' : 'error');
+  }
+  return results;
+}
+
 export async function getDocuments(params = {}) {
   const { data } = await api.get('/documents', { params });
   return data;
@@ -110,10 +133,12 @@ export async function deleteDocument(id) {
   return data;
 }
 
-export async function generateReply(id, targetLanguage, hints) {
+export async function generateReply(id, targetLanguage, hints, replyType) {
   const params = targetLanguage ? { target_language: targetLanguage } : {};
-  const body = hints ? { hints } : null;
-  const { data } = await api.post(`/documents/${id}/reply`, body, { params });
+  const body = {};
+  if (hints) body.hints = hints;
+  if (replyType && replyType !== 'allgemein') body.reply_type = replyType;
+  const { data } = await api.post(`/documents/${id}/reply`, Object.keys(body).length > 0 ? body : null, { params });
   return data;
 }
 
@@ -342,6 +367,23 @@ export async function adminGetFinanceOverview() {
   return data;
 }
 
+// --- Feature Flags ---
+
+export async function getFeatureFlags() {
+  const { data } = await api.get('/feature-flags');
+  return data;
+}
+
+export async function adminGetFeatureFlags() {
+  const { data } = await api.get('/admin/feature-flags');
+  return data;
+}
+
+export async function adminSetFeatureFlag(key, enabled) {
+  const { data } = await api.post(`/admin/feature-flags/${key}`, { enabled });
+  return data;
+}
+
 export async function getIntroStatus() {
   const { data } = await api.get('/intro-status');
   return data;
@@ -361,6 +403,16 @@ export function getFileUrl(id) {
 }
 
 export async function downloadFile(id, filename) {
+  // Native: öffne Datei im System-Browser (Blob-Download funktioniert nicht in WebView)
+  if (window.Capacitor?.isNativePlatform?.()) {
+    try {
+      const { Browser } = await import('@capacitor/browser');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token || '';
+      await Browser.open({ url: `${API_BASE_URL}/api/documents/${id}/file?token=${token}` });
+      return;
+    } catch (_) { /* fallback to web method */ }
+  }
   const { data } = await api.get(`/documents/${id}/file`, { responseType: 'blob' });
   const url = URL.createObjectURL(data);
   const a = document.createElement('a');

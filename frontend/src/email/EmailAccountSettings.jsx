@@ -9,12 +9,15 @@ import { Mail, Plus, Trash2, Loader2, CheckCircle, AlertCircle, Shield, External
 import { useTranslation } from 'react-i18next';
 import { useEmailAccounts } from './useEmailAccounts';
 import { PROVIDER_INFO } from './EmailConnectorService';
+import { useFeatureFlags } from '../hooks/useFeatureFlags';
 
-const PROVIDERS = ['gmail', 'outlook', 'gmx', 'icloud', 'yahoo'];
+const ALL_PROVIDERS = ['gmail', 'outlook', 'gmx', 'icloud', 'yahoo'];
 
 export default function EmailAccountSettings() {
   const { t } = useTranslation();
   const { accounts, loading, connecting, connect, connectWithPassword, disconnect, setConnecting } = useEmailAccounts();
+  const { isEnabled } = useFeatureFlags();
+  const PROVIDERS = ALL_PROVIDERS.filter(p => isEnabled(`email_${p}`));
   const [showPasswordForm, setShowPasswordForm] = useState(null); // { provider, instructions }
   const [pwEmail, setPwEmail] = useState('');
   const [pwPassword, setPwPassword] = useState('');
