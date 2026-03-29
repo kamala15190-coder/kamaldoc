@@ -20,6 +20,24 @@ MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "")
 MISTRAL_TEXT_MODEL = os.getenv("MISTRAL_TEXT_MODEL", "mistral-small-latest")
 MISTRAL_OCR_MODEL = os.getenv("MISTRAL_OCR_MODEL", "mistral-ocr-latest")
 
+
+async def _log_mistral_usage(model: str, input_tokens: int, output_tokens: int):
+    """Log Mistral API token usage to the database."""
+    try:
+        from database import get_db
+        db = await get_db()
+        try:
+            await db.execute(
+                "INSERT INTO mistral_usage (model, input_tokens, output_tokens) VALUES (?, ?, ?)",
+                (model, input_tokens, output_tokens),
+            )
+            await db.commit()
+        finally:
+            await db.close()
+    except Exception as e:
+        logger.warning(f"[Mistral Usage] Failed to log: {e}")
+
+
 # Global no-markdown instruction appended to all text prompts
 NO_MARKDOWN_RULE = """
 FORMATIERUNGSREGEL (STRIKT EINHALTEN):
@@ -199,6 +217,11 @@ async def _mistral_chat(messages: list, model: str = None, temperature: float = 
         resp.raise_for_status()
         data = resp.json()
 
+    # Track token usage
+    usage = data.get("usage", {})
+    if usage:
+        await _log_mistral_usage(use_model, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+
     return data["choices"][0]["message"]["content"]
 
 
@@ -231,6 +254,12 @@ async def _mistral_ocr(image_path: str) -> str:
         )
         resp.raise_for_status()
         data = resp.json()
+
+    # Track token usage (OCR uses combined input+output billing)
+    usage = data.get("usage", {})
+    total_tokens = usage.get("total_tokens", 0) or usage.get("pages_processed", len(data.get("pages", []))) * 1000
+    if total_tokens or usage:
+        await _log_mistral_usage(MISTRAL_OCR_MODEL, total_tokens, 0)
 
     # OCR endpoint returns pages with markdown content
     pages = data.get("pages", [])

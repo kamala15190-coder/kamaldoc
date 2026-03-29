@@ -1969,8 +1969,6 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
     """Finance overview: Stripe revenue + Mistral costs for current month."""
     await _require_admin(user_id)
 
-    import httpx
-
     # --- Stripe: count active subscriptions and get prices ---
     basic_price_id = os.getenv("STRIPE_BASIC_PRICE_ID", "")
     pro_price_id = os.getenv("STRIPE_PRO_PRICE_ID", "")
@@ -2016,41 +2014,38 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
     pro_revenue = pro_count * pro_unit_price
     total_revenue = basic_revenue + pro_revenue
 
-    # --- Mistral: usage for current month ---
+    # --- Mistral: usage for current month from local DB ---
     now = datetime.now()
     current_month = now.strftime("%Y-%m")
-    mistral_key = os.getenv("MISTRAL_API_KEY", "")
+    month_start = f"{current_month}-01 00:00:00"
 
     ocr_cost = 0.0
     small_cost = 0.0
 
-    if mistral_key:
-        try:
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                resp = await client.get(
-                    "https://api.mistral.ai/v1/usage",
-                    headers={"Authorization": f"Bearer {mistral_key}"},
-                    params={"start_date": f"{current_month}-01", "end_date": now.strftime("%Y-%m-%d")},
-                )
-                if resp.status_code == 200:
-                    usage_data = resp.json()
-                    # Parse usage entries
-                    for entry in usage_data.get("data", []):
-                        model = entry.get("model", "")
-                        input_tokens = entry.get("input_tokens", 0) or 0
-                        output_tokens = entry.get("output_tokens", 0) or 0
+    db = await get_db()
+    try:
+        # Sum OCR tokens for current month
+        cursor = await db.execute(
+            "SELECT COALESCE(SUM(input_tokens + output_tokens), 0) as total FROM mistral_usage WHERE model LIKE '%ocr%' AND created_at >= ?",
+            (month_start,),
+        )
+        row = await cursor.fetchone()
+        ocr_tokens = row["total"] if row else 0
+        ocr_cost = (ocr_tokens / 1_000_000) * MISTRAL_PRICING["mistral-ocr-latest"]["combined"]
 
-                        if "ocr" in model:
-                            total_tokens = input_tokens + output_tokens
-                            ocr_cost += (total_tokens / 1_000_000) * MISTRAL_PRICING["mistral-ocr-latest"]["combined"]
-                        elif "small" in model:
-                            pricing = MISTRAL_PRICING["mistral-small-latest"]
-                            small_cost += (input_tokens / 1_000_000) * pricing["input"]
-                            small_cost += (output_tokens / 1_000_000) * pricing["output"]
-                else:
-                    logger.warning(f"[Finance] Mistral usage API returned {resp.status_code}: {resp.text}")
-        except Exception as e:
-            logger.error(f"[Finance] Mistral usage error: {e}")
+        # Sum small model tokens for current month
+        cursor = await db.execute(
+            "SELECT COALESCE(SUM(input_tokens), 0) as inp, COALESCE(SUM(output_tokens), 0) as outp FROM mistral_usage WHERE model LIKE '%small%' AND created_at >= ?",
+            (month_start,),
+        )
+        row = await cursor.fetchone()
+        if row:
+            pricing = MISTRAL_PRICING["mistral-small-latest"]
+            small_cost = (row["inp"] / 1_000_000) * pricing["input"] + (row["outp"] / 1_000_000) * pricing["output"]
+    except Exception as e:
+        logger.error(f"[Finance] Mistral DB usage error: {e}")
+    finally:
+        await db.close()
 
     # Convert USD to EUR
     ocr_cost_eur = round(ocr_cost * USD_TO_EUR, 2)

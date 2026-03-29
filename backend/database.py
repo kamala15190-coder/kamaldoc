@@ -185,6 +185,14 @@ async def init_db():
                 created_at TEXT NOT NULL DEFAULT (datetime('now','localtime')),
                 FOREIGN KEY (ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE
             );
+            CREATE TABLE IF NOT EXISTS mistral_usage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                model TEXT NOT NULL,
+                input_tokens INTEGER DEFAULT 0,
+                output_tokens INTEGER DEFAULT 0,
+                created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+            );
+
             CREATE TABLE IF NOT EXISTS usage_counters (
                 user_id TEXT PRIMARY KEY,
                 documents_total INTEGER DEFAULT 0,
