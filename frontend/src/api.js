@@ -337,6 +337,11 @@ export async function adminChangePlan(email, newPlan, expiresAt) {
   return data;
 }
 
+export async function adminGetFinanceOverview() {
+  const { data } = await api.get('/admin/finance-overview');
+  return data;
+}
+
 export async function getIntroStatus() {
   const { data } = await api.get('/intro-status');
   return data;

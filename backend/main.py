@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 import fitz  # PyMuPDF
+import stripe
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
@@ -1950,6 +1951,130 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}"
                 + (f", aktiv bis {expires_at}" if expires_at else ", unbegrenzt"))
     return {"status": "ok", "email": email, "new_plan": new_plan, "expires_at": expires_at}
+
+
+# --- Admin Finance Overview ---
+
+USD_TO_EUR = 0.92
+
+# Mistral pricing per 1M tokens (USD)
+MISTRAL_PRICING = {
+    "mistral-ocr-latest": {"combined": 2.00},        # $2.00/1M tokens (input+output)
+    "mistral-small-latest": {"input": 0.10, "output": 0.30},
+}
+
+
+@app.get("/api/admin/finance-overview")
+async def admin_finance_overview(user_id: str = Depends(get_current_user)):
+    """Finance overview: Stripe revenue + Mistral costs for current month."""
+    await _require_admin(user_id)
+
+    import httpx
+
+    # --- Stripe: count active subscriptions and get prices ---
+    basic_price_id = os.getenv("STRIPE_BASIC_PRICE_ID", "")
+    pro_price_id = os.getenv("STRIPE_PRO_PRICE_ID", "")
+
+    basic_count = 0
+    pro_count = 0
+    basic_unit_price = 0.0
+    pro_unit_price = 0.0
+
+    try:
+        # Count active Basic subscriptions
+        basic_subs = stripe.Subscription.list(price=basic_price_id, status="active", limit=100)
+        basic_count = len(basic_subs.data)
+        # Paginate if needed
+        while basic_subs.has_more:
+            basic_subs = stripe.Subscription.list(
+                price=basic_price_id, status="active", limit=100,
+                starting_after=basic_subs.data[-1].id
+            )
+            basic_count += len(basic_subs.data)
+
+        # Count active Pro subscriptions
+        pro_subs = stripe.Subscription.list(price=pro_price_id, status="active", limit=100)
+        pro_count = len(pro_subs.data)
+        while pro_subs.has_more:
+            pro_subs = stripe.Subscription.list(
+                price=pro_price_id, status="active", limit=100,
+                starting_after=pro_subs.data[-1].id
+            )
+            pro_count += len(pro_subs.data)
+
+        # Get unit prices from Stripe Price API
+        if basic_price_id:
+            bp = stripe.Price.retrieve(basic_price_id)
+            basic_unit_price = (bp.unit_amount or 0) / 100.0  # cents → EUR
+        if pro_price_id:
+            pp = stripe.Price.retrieve(pro_price_id)
+            pro_unit_price = (pp.unit_amount or 0) / 100.0
+    except Exception as e:
+        logger.error(f"[Finance] Stripe error: {e}")
+
+    basic_revenue = basic_count * basic_unit_price
+    pro_revenue = pro_count * pro_unit_price
+    total_revenue = basic_revenue + pro_revenue
+
+    # --- Mistral: usage for current month ---
+    now = datetime.now()
+    current_month = now.strftime("%Y-%m")
+    mistral_key = os.getenv("MISTRAL_API_KEY", "")
+
+    ocr_cost = 0.0
+    small_cost = 0.0
+
+    if mistral_key:
+        try:
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                resp = await client.get(
+                    "https://api.mistral.ai/v1/usage",
+                    headers={"Authorization": f"Bearer {mistral_key}"},
+                    params={"start_date": f"{current_month}-01", "end_date": now.strftime("%Y-%m-%d")},
+                )
+                if resp.status_code == 200:
+                    usage_data = resp.json()
+                    # Parse usage entries
+                    for entry in usage_data.get("data", []):
+                        model = entry.get("model", "")
+                        input_tokens = entry.get("input_tokens", 0) or 0
+                        output_tokens = entry.get("output_tokens", 0) or 0
+
+                        if "ocr" in model:
+                            total_tokens = input_tokens + output_tokens
+                            ocr_cost += (total_tokens / 1_000_000) * MISTRAL_PRICING["mistral-ocr-latest"]["combined"]
+                        elif "small" in model:
+                            pricing = MISTRAL_PRICING["mistral-small-latest"]
+                            small_cost += (input_tokens / 1_000_000) * pricing["input"]
+                            small_cost += (output_tokens / 1_000_000) * pricing["output"]
+                else:
+                    logger.warning(f"[Finance] Mistral usage API returned {resp.status_code}: {resp.text}")
+        except Exception as e:
+            logger.error(f"[Finance] Mistral usage error: {e}")
+
+    # Convert USD to EUR
+    ocr_cost_eur = round(ocr_cost * USD_TO_EUR, 2)
+    small_cost_eur = round(small_cost * USD_TO_EUR, 2)
+    total_cost_eur = round((ocr_cost + small_cost) * USD_TO_EUR, 2)
+
+    net = round(total_revenue - total_cost_eur, 2)
+
+    return {
+        "stripe": {
+            "basic_count": basic_count,
+            "pro_count": pro_count,
+            "basic_revenue": round(basic_revenue, 2),
+            "pro_revenue": round(pro_revenue, 2),
+            "total_revenue": round(total_revenue, 2),
+        },
+        "mistral": {
+            "ocr_cost": ocr_cost_eur,
+            "small_cost": small_cost_eur,
+            "total_cost": total_cost_eur,
+            "month": current_month,
+        },
+        "net": net,
+    }
 
 
 # --- Deadline-Checker Background Job ---

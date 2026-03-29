@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip, ZoomIn } from 'lucide-react'
+import { Shield, Save, Search, UserPlus, Trash2, Loader2, MessageCircle, ChevronRight, ChevronDown, ArrowLeft, Send, CheckCircle, Paperclip, ZoomIn, DollarSign, AlertCircle } from 'lucide-react'
 import {
   adminSearchUser, adminChangePlan,
   getAdminList, addAdmin, removeAdmin,
   adminGetTickets, adminGetTicket, adminCloseTicket, adminAddTicketMessage, adminDeleteTicket,
-  fetchTicketFileUrl,
+  fetchTicketFileUrl, adminGetFinanceOverview,
 } from '../api'
 
 // Prüft ob ein Dateiname eine Bild-Erweiterung hat
@@ -149,9 +149,74 @@ export default function AdminPage() {
         <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Admin-Bereich</h1>
       </div>
 
+      <FinanceOverviewSection />
       <TicketManagementSection />
       <ChangePlanSection />
       <AdminManagementSection />
+    </div>
+  )
+}
+
+function FinanceOverviewSection() {
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    adminGetFinanceOverview()
+      .then(setData)
+      .catch(err => setError(err?.response?.data?.detail || 'Finanzdaten konnten nicht geladen werden.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const fmt = (v) => v.toFixed(2).replace('.', ',')
+
+  return (
+    <div style={cardStyle}>
+      <h2 style={sectionTitle}>
+        <DollarSign style={{ width: 16, height: 16, color: 'var(--text-muted)' }} /> Monatsübersicht
+      </h2>
+
+      {loading && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12 }}>
+          <Loader2 style={{ width: 18, height: 18, color: 'var(--text-muted)', animation: 'spin 0.8s linear infinite' }} />
+          <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Lade Finanzdaten...</span>
+        </div>
+      )}
+
+      {error && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, borderRadius: 10, background: 'var(--danger-soft)' }}>
+          <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)' }} />
+          <span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{error}</span>
+        </div>
+      )}
+
+      {data && (
+        <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 2, color: 'var(--text-primary)' }}>
+          <div style={{ fontWeight: 700, marginBottom: 4 }}>Aktive Abos</div>
+          <div style={{ paddingLeft: 8 }}>
+            <div>├─ kdoc Basic: <span style={{ fontWeight: 600 }}>{data.stripe.basic_count}</span> Abos = <span style={{ fontWeight: 600 }}>{fmt(data.stripe.basic_revenue)} €/Mo</span></div>
+            <div>├─ kdoc Pro: <span style={{ fontWeight: 600 }}>{data.stripe.pro_count}</span> Abos = <span style={{ fontWeight: 600 }}>{fmt(data.stripe.pro_revenue)} €/Mo</span></div>
+            <div>└─ Gesamt Stripe: <span style={{ fontWeight: 700 }}>{fmt(data.stripe.total_revenue)} €/Mo</span></div>
+          </div>
+
+          <div style={{ fontWeight: 700, marginTop: 12, marginBottom: 4 }}>
+            Mistral Kosten ({data.mistral.month})
+          </div>
+          <div style={{ paddingLeft: 8 }}>
+            <div>├─ mistral-ocr-latest: <span style={{ fontWeight: 600, color: 'var(--danger)' }}>- {fmt(data.mistral.ocr_cost)} €</span></div>
+            <div>└─ mistral-small-latest: <span style={{ fontWeight: 600, color: 'var(--danger)' }}>- {fmt(data.mistral.small_cost)} €</span></div>
+          </div>
+
+          <div style={{
+            borderTop: '1px solid var(--border-glass)', marginTop: 12, paddingTop: 10,
+            fontSize: 15, fontWeight: 700,
+            color: data.net >= 0 ? '#34d399' : '#ef4444',
+          }}>
+            Netto Monat: {data.net >= 0 ? '+' : ''}{fmt(data.net)} €
+          </div>
+        </div>
+      )}
     </div>
   )
 }
