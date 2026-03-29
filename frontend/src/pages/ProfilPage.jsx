@@ -7,6 +7,7 @@ import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
 import EmailAccountSettings from '../email/EmailAccountSettings';
+import { formatLocalDate } from '../utils/dateUtils';
 
 export default function ProfilPage() {
   const { t, i18n } = useTranslation();
@@ -199,8 +200,8 @@ export default function ProfilPage() {
           {subscription?.expires_at && (
             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               {subscription.cancelled_at
-                ? t('profile.cancelledUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })
-                : t('profile.activeUntil', { date: new Date(subscription.expires_at).toLocaleDateString() })}
+                ? t('profile.cancelledUntil', { date: formatLocalDate(subscription.expires_at) })
+                : t('profile.activeUntil', { date: formatLocalDate(subscription.expires_at) })}
             </span>
           )}
         </div>
@@ -221,7 +222,7 @@ export default function ProfilPage() {
                 marginBottom: 14,
               }}>
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  {t('profile.nextReset', { date: new Date(usage.next_reset).toLocaleDateString(i18n.language === 'de' ? 'de-DE' : undefined) })}
+                  {t('profile.nextReset', { date: formatLocalDate(usage.next_reset) })}
                 </span>
               </div>
             )}
@@ -233,7 +234,7 @@ export default function ProfilPage() {
             <AlertCircle style={{ width: 14, height: 14, color: 'var(--warning-text)', flexShrink: 0 }} />
             <span style={{ fontSize: 12, color: 'var(--warning-text)' }}>
               {t('profile.pendingDowngrade', {
-                date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '---',
+                date: subscription?.expires_at ? formatLocalDate(subscription.expires_at) : '---',
                 plan: subscription.pending_plan.charAt(0).toUpperCase() + subscription.pending_plan.slice(1),
               })}
             </span>

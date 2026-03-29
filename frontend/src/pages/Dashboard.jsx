@@ -11,7 +11,7 @@ import AuthImage from '../components/AuthImage';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDate, parseUTC } from '../utils/dateUtils';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -214,7 +214,7 @@ export default function Dashboard() {
       }, 500);
     } catch (err) { console.error(err); setDismissingIds(prev => { const s = new Set(prev); s.delete(`m_${todoId}`); return s; }); }
   };
-  const isOverdue = (dateStr) => dateStr ? new Date(dateStr) < new Date() : false;
+  const isOverdue = (dateStr) => dateStr ? parseUTC(dateStr) < new Date() : false;
 
   // Theme colors
   const tc = {
@@ -249,7 +249,7 @@ export default function Dashboard() {
   const erledigtCount = documents.filter(d => d.handlung_erledigt).length;
   const now = new Date(); const dow = now.getDay() || 7;
   const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dow + 1); startOfWeek.setHours(0,0,0,0);
-  const thisWeekCount = documents.filter(d => d.datum && new Date(d.datum) >= startOfWeek).length;
+  const thisWeekCount = documents.filter(d => d.datum && parseUTC(d.datum) >= startOfWeek).length;
 
   const availableSectors = ALL_SECTORS.filter(s => !visibleSections.some(v => v.id === s.id)).map(s => ({ ...s, locked: s.requiresPlan && !isPaid }));
 

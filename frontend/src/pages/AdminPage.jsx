@@ -7,6 +7,7 @@ import {
   fetchTicketFileUrl, adminGetFinanceOverview,
   adminGetFeatureFlags, adminSetFeatureFlag,
 } from '../api'
+import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils'
 
 // Prüft ob ein Dateiname eine Bild-Erweiterung hat
 function isImageFile(fileName) {
@@ -253,7 +254,7 @@ function ChangePlanSection() {
     try {
       const result = await adminChangePlan(user.email, selectedPlan, expiresAt || null)
       setUser(prev => ({ ...prev, plan: selectedPlan }))
-      const expiryMsg = result.expires_at ? ` (aktiv bis ${new Date(result.expires_at).toLocaleDateString('de-DE')})` : ''
+      const expiryMsg = result.expires_at ? ` (aktiv bis ${formatLocalDate(result.expires_at)})` : ''
       setMsg({ type: 'success', text: `Plan auf "${selectedPlan}" geändert${expiryMsg}.` })
     } catch (err) {
       setMsg({ type: 'error', text: err?.response?.data?.detail || 'Fehler beim Ändern.' })
@@ -660,7 +661,7 @@ function TicketManagementSection() {
 
         <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.6 }}>
           <strong style={{ color: 'var(--text-primary)' }}>User:</strong> {selected.user_id.slice(0, 8)}...<br />
-          <strong style={{ color: 'var(--text-primary)' }}>Erstellt:</strong> {new Date(selected.created_at).toLocaleString('de-DE')}<br />
+          <strong style={{ color: 'var(--text-primary)' }}>Erstellt:</strong> {formatLocalDateTime(selected.created_at)}<br />
           <strong style={{ color: 'var(--text-primary)' }}>Priorität:</strong> {selected.priority}<br />
           {selected.subject && <><strong style={{ color: 'var(--text-primary)' }}>Betreff:</strong> {selected.subject}<br /></>}
         </div>
@@ -681,7 +682,7 @@ function TicketManagementSection() {
                 {m.file_url && (
                   <AdminTicketAttachment fileUrl={m.file_url} fileName={m.file_name} />
                 )}
-                <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0', textAlign: 'right' }}>{new Date(m.created_at).toLocaleString('de-DE')}</p>
+                <p style={{ fontSize: 9, color: 'var(--text-muted)', margin: '2px 0 0', textAlign: 'right' }}>{formatLocalDateTime(m.created_at)}</p>
               </div>
             )
           })}
@@ -786,7 +787,7 @@ function TicketRow({ ticket, onOpen }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
           <span style={{ fontSize: 9, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: st.bg, color: st.color }}>{st.label}</span>
           <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{ticket.priority}</span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{new Date(ticket.updated_at).toLocaleDateString('de-DE')}</span>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 'auto' }}>{formatLocalDate(ticket.updated_at)}</span>
         </div>
       </div>
       <ChevronRight style={{ width: 12, height: 12, color: 'var(--text-muted)', flexShrink: 0 }} />

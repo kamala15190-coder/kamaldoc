@@ -13,7 +13,7 @@ import {
 } from '../api';
 import { Capacitor } from '@capacitor/core';
 import AuthImage from '../components/AuthImage';
-import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDateTime, formatLocalDate, parseUTC } from '../utils/dateUtils';
 import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES, LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
@@ -596,12 +596,12 @@ export default function DocumentDetail() {
                     )}
                   </div>
                 </div>
-                {deadline && new Date(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && new Date(deadline) >= new Date(new Date().toDateString()) && (
+                {deadline && parseUTC(deadline) <= new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) && parseUTC(deadline) >= new Date(new Date().toDateString()) && (
                   <p style={{ fontSize: 12, color: 'var(--warning-text)', fontWeight: 600, margin: '6px 0 0' }}>
                     {t('document.deadlineSoon')}
                   </p>
                 )}
-                {deadline && new Date(deadline) < new Date(new Date().toDateString()) && (
+                {deadline && parseUTC(deadline) < new Date(new Date().toDateString()) && (
                   <p style={{ fontSize: 12, color: 'var(--danger)', fontWeight: 600, margin: '6px 0 0' }}>
                     {t('document.deadlineOverdue')}
                   </p>

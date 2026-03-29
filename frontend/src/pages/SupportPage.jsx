@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn } from 'lucide-react'
 import { createTicket, getTickets, getTicket, addTicketMessage, acceptTicket, fetchTicketFileUrl } from '../api'
+import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils'
 
 // Prüft ob ein Dateiname eine Bild-Erweiterung hat
 function isImageFile(fileName) {
@@ -202,7 +203,7 @@ export default function SupportPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
                     <span style={{ fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: st.bg, color: st.color }}>{statusLabel(ticket.status)}</span>
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>#{ticket.id}</span>
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{new Date(ticket.created_at).toLocaleDateString()}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 'auto' }}>{formatLocalDate(ticket.created_at)}</span>
                   </div>
                 </div>
                 <ChevronRight style={{ width: 14, height: 14, color: 'var(--text-muted)', flexShrink: 0 }} />
@@ -376,7 +377,7 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
 
       <div className="glass-card" style={{ padding: 14, marginBottom: 12, opacity: isClosed ? 0.6 : 1 }}>
         <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px' }}>
-          {new Date(ticket.created_at).toLocaleString()} · {t('support.priority')}: {ticket.priority}
+          {formatLocalDateTime(ticket.created_at)} · {t('support.priority')}: {ticket.priority}
         </p>
         {ticket.subject && <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px' }}>{ticket.subject}</p>}
       </div>
@@ -413,7 +414,7 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
                 <TicketAttachment fileUrl={msg.file_url} fileName={msg.file_name} />
               )}
               <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '4px 0 0', textAlign: 'right' }}>
-                {new Date(msg.created_at).toLocaleString()}
+                {formatLocalDateTime(msg.created_at)}
               </p>
             </div>
           )

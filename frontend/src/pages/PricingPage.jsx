@@ -6,6 +6,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
 import { createCheckout, downgradeSubscription } from '../api';
 import { Capacitor } from '@capacitor/core';
+import { formatLocalDate } from '../utils/dateUtils';
 
 const PLAN_ORDER = { free: 0, basic: 1, pro: 2 };
 
@@ -142,7 +143,7 @@ export default function PricingPage() {
       )}
       {pendingPlan && (
         <div className="glass-card" style={{ padding: 14, marginBottom: 14, textAlign: 'center', fontSize: 13, color: 'var(--warning-text)', border: '1px solid rgba(245,158,11,0.15)' }}>
-          {t('profile.pendingDowngrade', { date: subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString() : '—', plan: t(`pricing.${pendingPlan}`) })}
+          {t('profile.pendingDowngrade', { date: subscription?.expires_at ? formatLocalDate(subscription.expires_at) : '—', plan: t(`pricing.${pendingPlan}`) })}
         </div>
       )}
 
