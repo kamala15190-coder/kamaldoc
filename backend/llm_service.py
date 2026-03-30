@@ -55,6 +55,65 @@ def _build_system_msg():
     return {"role": "system", "content": NO_MARKDOWN_RULE.replace("{heute}", heute)}
 
 
+def _build_json_system_msg():
+    """Build a system message for JSON-only responses (no prose rules)."""
+    return {"role": "system", "content": "Du bist ein Dokumentenanalyse-Assistent. Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Kein erklärender Text, keine Markdown-Formatierung, nur reines JSON."}
+
+
+def extract_json_from_llm_response(text: str) -> dict:
+    """
+    Extrahiert JSON aus LLM-Antwort robust.
+    Behandelt: reines JSON, JSON in Markdown, JSON mit Text davor/danach,
+    truncated JSON und trailing commas.
+    """
+    if not text:
+        raise ValueError("Leere Antwort vom LLM")
+
+    text = text.strip()
+
+    # Fall 1: Direkt valides JSON
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Fall 2: JSON in Markdown-Codeblock (```json ... ``` oder ``` ... ```)
+    match = _re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, _re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
+
+    # Fall 3: JSON irgendwo im Text — erstes { bis letztes }
+    start = text.find("{")
+    end = text.rfind("}") + 1
+    if start >= 0 and end > start:
+        candidate = text[start:end]
+        try:
+            return json.loads(candidate)
+        except json.JSONDecodeError:
+            pass
+
+        # Fall 4: Trailing commas entfernen und erneut versuchen
+        candidate_fixed = _re.sub(r',\s*([}\]])', r'\1', candidate)
+        try:
+            return json.loads(candidate_fixed)
+        except json.JSONDecodeError:
+            pass
+
+        # Fall 5: Truncated JSON — schließende Klammern ergänzen
+        depth = candidate_fixed.count("{") - candidate_fixed.count("}")
+        if depth > 0:
+            candidate_closed = candidate_fixed + ("}" * depth)
+            try:
+                return json.loads(candidate_closed)
+            except json.JSONDecodeError:
+                pass
+
+    raise ValueError(f"Konnte kein JSON extrahieren aus LLM-Antwort (Länge {len(text)}): {text[:300]}...")
+
+
 ANALYSE_PROMPT = """Du bist ein Dokumenten-Analyse-System. Analysiere den folgenden extrahierten Dokumententext und extrahiere alle relevanten Informationen.
 
 Antworte AUSSCHLIESSLICH mit einem JSON-Objekt im folgenden Format (keine Erkl\u00e4rung, kein Markdown, nur JSON):
@@ -325,29 +384,18 @@ async def _analyze_from_ocr_text(ocr_text: str) -> dict:
 
     # Step 2: Analyze extracted text with text model
     messages = [
-        _build_system_msg(),
+        _build_json_system_msg(),
         {"role": "user", "content": f"{ANALYSE_PROMPT}\n\nDokumententext:\n---\n{ocr_text}\n---"}
     ]
     content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
-    logger.info(f"[LLM RAW Response] {content[:500]}")
+    logger.info(f"[LLM RAW Response] length={len(content)}, preview={content[:500]}")
 
-    # JSON aus der Antwort extrahieren
-    content = content.strip()
-    if content.startswith("```"):
-        lines = content.split("\n")
-        content = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
-        content = content.strip()
-
+    # JSON aus der Antwort extrahieren (robust)
     try:
-        result = json.loads(content)
-    except json.JSONDecodeError:
-        # Versuche JSON aus dem Text zu extrahieren
-        start = content.find("{")
-        end = content.rfind("}") + 1
-        if start >= 0 and end > start:
-            result = json.loads(content[start:end])
-        else:
-            raise ValueError(f"Konnte kein JSON aus LLM-Antwort extrahieren: {content[:200]}")
+        result = extract_json_from_llm_response(content)
+    except ValueError:
+        logger.error(f"[LLM Parse Error] Vollständige Antwort:\n{content}")
+        raise
 
     # Use OCR text as volltext if the LLM didn't include it or returned a short summary
     if not result.get("volltext") or len(result.get("volltext", "")) < len(ocr_text) * 0.5:
@@ -390,16 +438,10 @@ async def extract_expense_items(volltext: str) -> list:
         return []
 
     try:
-        messages = [_build_system_msg(), {"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}]
+        messages = [_build_json_system_msg(), {"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}]
         content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
 
-        content = content.strip()
-        if content.startswith("```"):
-            lines = content.split("\n")
-            content = "\n".join(lines[1:-1]) if lines[-1].strip() == "```" else "\n".join(lines[1:])
-            content = content.strip()
-
-        result = json.loads(content) if content.startswith("{") else json.loads(content[content.find("{"):content.rfind("}") + 1])
+        result = extract_json_from_llm_response(content)
         items = result.get("items", [])
         logger.info(f"[ExpenseItems] Extracted {len(items)} items")
         return items
