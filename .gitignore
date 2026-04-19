@@ -48,3 +48,9 @@ frontend/ios/App/App/GoogleService-Info.plist
 
 # Capacitor
 frontend/android/app/src/main/assets/public/
+
+# Remotion
+Videos/remotion/node_modules/
+Videos/remotion/out/
+Videos/remotion/.remotion/
+Videos/Cluttered*.zip

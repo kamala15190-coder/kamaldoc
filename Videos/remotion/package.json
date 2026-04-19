@@ -1,0 +1,18 @@
+{
+  "name": "kdoc-videos",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render:reel": "remotion render src/index.ts UseCaseReel ../kdoc_usecase_reel.mp4 --codec=h264 --crf=20",
+    "render:marketing": "remotion render src/index.ts MarketingVideo ../kdoc_marketing_video.mp4 --codec=h264 --crf=20"
+  },
+  "dependencies": {
+    "@remotion/bundler": "^4.0.448",
+    "@remotion/cli": "^4.0.448",
+    "@remotion/renderer": "^4.0.448",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "remotion": "^4.0.448"
+  }
+}
