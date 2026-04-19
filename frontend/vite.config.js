@@ -9,22 +9,20 @@ export default defineConfig({
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
-        // Manuelles Chunking: Vendor-Libs in eigene Chunks, damit Pages
-        // geladen werden können ohne React/Supabase/i18n zu blockieren.
+        // Manuelles Chunking NUR für Leaf-Libraries ohne interne Deps auf React-Ökosystem.
+        // React/React-DOM/React-Router NICHT splitten – die Abhängigkeits-Kette
+        // (react-router → Activity) erwartet synchrone Co-Evaluierung, sonst Runtime-TypeError.
         manualChunks: (id) => {
           if (!id.includes('node_modules')) return undefined;
-          if (id.includes('react-dom') || id.includes('/react/') || id.includes('react-router')) return 'vendor-react';
-          if (id.includes('@supabase') || id.includes('gotrue')) return 'vendor-supabase';
-          if (id.includes('i18next') || id.includes('react-i18next')) return 'vendor-i18n';
           if (id.includes('@capacitor')) return 'vendor-capacitor';
-          if (id.includes('axios')) return 'vendor-axios';
-          if (id.includes('@dnd-kit')) return 'vendor-dnd';
           if (id.includes('lucide-react')) return 'vendor-icons';
-          if (id.includes('date-fns') || id.includes('dayjs')) return 'vendor-dates';
           if (id.includes('firebase')) return 'vendor-firebase';
           if (id.includes('browser-image-compression') || id.includes('heic2any') || id.includes('pdf-lib') || id.includes('jspdf')) return 'vendor-pdf-img';
           if (id.includes('recharts') || id.includes('victory') || id.includes('d3-')) return 'vendor-charts';
-          return 'vendor-misc';
+          if (id.includes('@dnd-kit')) return 'vendor-dnd';
+          // Alles andere (React, React-Router, Supabase, i18next, axios) bleibt im Haupt-Bundle
+          // bzw. wird von Rollup automatisch gechunkt.
+          return undefined;
         },
       },
     },
