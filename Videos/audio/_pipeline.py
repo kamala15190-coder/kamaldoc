@@ -1,6 +1,13 @@
 """
-Audio pipeline v2 — warm female VO, cinematic soft piano bg, NO sfx.
-Output: D:\\Projekte\\KamalDoc\\Videos\\kdoc_reel_v2_final.mp4
+Audio pipeline v3 — slower, warmer female German voice + gentle piano BG.
+
+Layout:
+  lines/line_01.mp3 .. line_07.mp3  → individual VO files (ElevenLabs)
+  voiceover.mp3                      → concatenated lines with silence gaps
+  background.mp3                     → cinematic soft pad
+  final_audio.mp3                    → BG 7% + VO 100% @1s offset
+
+Output: kdoc_reel_v2_final.mp4
 """
 from __future__ import annotations
 import json
@@ -14,10 +21,9 @@ from pathlib import Path
 ROOT = Path(r"D:\Projekte\KamalDoc")
 VIDEOS = ROOT / "Videos"
 AUDIO = VIDEOS / "audio"
-SFX = AUDIO / "sfx"  # kept empty per spec, folder may linger
-
+LINES = AUDIO / "lines"
 AUDIO.mkdir(parents=True, exist_ok=True)
-SFX.mkdir(parents=True, exist_ok=True)
+LINES.mkdir(parents=True, exist_ok=True)
 
 VIDEO_IN = VIDEOS / "kdoc_reel_v2.mp4"
 VIDEO_OUT = VIDEOS / "kdoc_reel_v2_final.mp4"
@@ -34,33 +40,43 @@ for line in (ROOT / "backend" / ".env").read_text(encoding="utf-8").splitlines()
 ELEVEN = ENV["ELEVENLABS_API_KEY"]
 PIXABAY = ENV["PIXABAY_API_KEY"]
 
-# ElevenLabs public preset voice IDs (warm female German-capable).
-FEMALE_VOICES: list[tuple[str, str]] = [
-    ("Sarah",     "EXAVITQu4vr4xnSDxMaL"),
+# User priority list of preset voice IDs (publicly documented).
+# The API key lacks voices_read permission, so we cannot dynamically search
+# the voice library; we use these known IDs and fall back on failure.
+VOICE_CANDIDATES: list[tuple[str, str]] = [
+    ("Freya",     "jsCqWAovK2LkecY7zXl4"),  # user list #3 — expressive, clear, handles German well
+    ("Elli",      "MF3mGyEYCl7XYWbV9V6O"),  # user list #2 — emotional, young
+    ("Laura",     "FGY2WhTYpPnrIDTdsKH5"),  # user list #5 — young female
+    ("Nicole",    "piTKgcLEGmPE4e6mEKli"),  # user list #6 — young female
+    ("Domi",      "AZnzlk1XvdvUeBnXmlld"),  # user list #1 — stronger timbre
+    # Non-priority fallbacks known to do German well
     ("Charlotte", "XB0fDUnXU5powFXDhCwa"),
+    ("Lily",      "pFZP5JQG7iQjIQuC4Bku"),
     ("Matilda",   "XrExE9yKIg1WjnnlVkGX"),
-    # Bella – legacy preset; these IDs rotate. Try both historical values.
-    ("Bella v1",  "EXAVITQu4vr4xnSDxMaL"),
-    ("Bella v2",  "pMsXgVXv3BLzUgSXRplE"),
 ]
 
-# VO script — German, "keydoc" phonetic, SSML <break> tags.
-VO_LINES: list[tuple[float, str]] = [
-    (0.3,  'Papierstapel war gestern.'),
-    (4.0,  'keydoc scannt, erkennt und archiviert deine Dokumente <break time="300ms"/> vollautomatisch.'),
-    (9.0,  'Der Befundassistent erklärt medizinische Befunde <break time="300ms"/> einfach und verständlich. <break time="400ms"/> In über fünfzig Sprachen.'),
-    (15.0, 'Fristen für Behörden, Verträge und Rechnungen. <break time="400ms"/> keydoc erinnert dich rechtzeitig.'),
-    (20.0, 'Eingehende Briefe? <break time="400ms"/> keydoc antwortet für dich. <break time="300ms"/> Per KI <break time="200ms"/> in Sekunden.'),
-    (26.0, 'Verbinde deine E-Mail-Konten. <break time="400ms"/> Eine Suche. <break time="300ms"/> Alle Quellen.'),
-    (35.6, '<break time="600ms"/>keydoc. <break time="400ms"/> Jetzt kostenlos im Google Play Store.'),
+# ----------------------------------------------------------------------------
+# Script — 7 standalone lines with post-silence gaps in milliseconds
+# Using phonetic "keydoc" so ElevenLabs doesn't spell it out.
+# ----------------------------------------------------------------------------
+SCRIPT: list[tuple[str, int]] = [
+    ("Papierstapel war gestern.",                                                                                   1200),
+    ("keydoc scannt, erkennt und archiviert deine Dokumente — vollautomatisch.",                                    1000),
+    ("Der Befundassistent erklärt medizinische Befunde einfach und verständlich — in über fünfzig Sprachen.",       1000),
+    ("Fristen für Behörden, Verträge und Rechnungen — keydoc erinnert dich rechtzeitig.",                          1000),
+    ("Eingehende Briefe? keydoc antwortet für dich — per künstlicher Intelligenz, in Sekunden.",                   1000),
+    ("Verbinde deine E-Mail-Konten mit keydoc. Eine Suche. Alle Quellen.",                                         1000),
+    ("keydoc. Jetzt kostenlos im Google Play Store.",                                                               800),
 ]
-TOTAL_DURATION = 50.0
+
+VIDEO_DURATION = 50.0  # measured from kdoc_reel_v2.mp4
+VO_START_OFFSET = 1.0  # seconds — music breathes for 1s before speech
 
 VOICE_SETTINGS = {
-    "stability": 0.55,
-    "similarity_boost": 0.80,
-    "style": 0.20,
-    "use_speaker_boost": True,
+    "stability": 0.75,          # higher = more consistent, less aggressive
+    "similarity_boost": 0.70,
+    "style": 0.05,              # nearly zero = pure natural voice
+    "use_speaker_boost": False,
 }
 
 
@@ -69,10 +85,14 @@ def run(cmd: list[str]) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, check=True, capture_output=True, text=True)
 
 
-def http_get(url: str, headers: dict | None = None) -> bytes:
-    req = urllib.request.Request(url, headers=headers or {})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        return r.read()
+def probe_duration(path: Path) -> float:
+    r = run([
+        "ffprobe", "-v", "error",
+        "-show_entries", "format=duration",
+        "-of", "default=noprint_wrappers=1:nokey=1",
+        str(path),
+    ])
+    return float(r.stdout.strip())
 
 
 def http_post_json(url: str, body: dict, headers: dict) -> bytes:
@@ -82,34 +102,22 @@ def http_post_json(url: str, body: dict, headers: dict) -> bytes:
         return r.read()
 
 
-# ---------------------------------------------------------------------------
-# STEP 1 — ElevenLabs female voiceover
-# ---------------------------------------------------------------------------
-def try_eleven_voices() -> list[tuple[str, str]]:
-    """Try the API first; fall back to preset list."""
-    try:
-        data = json.loads(http_get("https://api.elevenlabs.io/v1/voices", {"xi-api-key": ELEVEN}).decode())
-        lookup = {v.get("name", "").lower(): v["voice_id"] for v in data.get("voices", [])}
-        ordered: list[tuple[str, str]] = []
-        for name in ("Sarah", "Charlotte", "Matilda", "Bella"):
-            vid = lookup.get(name.lower())
-            if vid:
-                ordered.append((name, vid))
-        if ordered:
-            print(f"[VO] account has: {[n for n, _ in ordered]}")
-            return ordered
-    except Exception as e:
-        print(f"[VO] /voices unavailable ({e}) — using public presets")
-    return FEMALE_VOICES
+def http_get(url: str, headers: dict | None = None) -> bytes:
+    req = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return r.read()
 
 
+# ---------------------------------------------------------------------------
+# STEP 1 — voiceover
+# ---------------------------------------------------------------------------
 def eleven_tts(text: str, voice_id: str, out: Path) -> bool:
-    """Attempt TTS; return True on success."""
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128"
     body = {
         "text": text,
         "model_id": "eleven_multilingual_v2",
         "voice_settings": VOICE_SETTINGS,
+        "language_code": "de",  # hint — some models respect this
     }
     try:
         data = http_post_json(url, body, {"xi-api-key": ELEVEN, "Accept": "audio/mpeg"})
@@ -121,49 +129,111 @@ def eleven_tts(text: str, voice_id: str, out: Path) -> bool:
         return False
 
 
-def pick_and_render_vo() -> None:
-    voices = try_eleven_voices()
+def pick_voice() -> tuple[str, str]:
+    """Return (name, voice_id) of the first voice that renders successfully."""
+    test_text = SCRIPT[0][0]
+    for name, vid in VOICE_CANDIDATES:
+        probe_path = AUDIO / "_voice_probe.mp3"
+        if eleven_tts(test_text, vid, probe_path):
+            probe_path.unlink(missing_ok=True)
+            print(f"[VO] selected voice: {name} ({vid})")
+            return name, vid
+        # language_code might not be accepted by some voices — retry without
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{vid}?output_format=mp3_44100_128"
+        body = {"text": test_text, "model_id": "eleven_multilingual_v2", "voice_settings": VOICE_SETTINGS}
+        try:
+            data = http_post_json(url, body, {"xi-api-key": ELEVEN, "Accept": "audio/mpeg"})
+            probe_path.write_bytes(data)
+            probe_path.unlink()
+            print(f"[VO] selected voice (no lang hint): {name} ({vid})")
+            return name, vid
+        except Exception as e:
+            print(f"[VO] {name} unusable: {e}")
+    raise RuntimeError("No voice could render the probe line")
 
-    # Pick the first voice that successfully renders the first line.
-    test_line = VO_LINES[0][1]
-    chosen_name, chosen_id = "", ""
-    for name, vid in voices:
-        probe = AUDIO / "_vo_probe.mp3"
-        if eleven_tts(test_line, vid, probe):
-            chosen_name, chosen_id = name, vid
-            probe.unlink(missing_ok=True)
-            print(f"[VO] using {name} ({vid})")
-            break
-    if not chosen_id:
-        raise RuntimeError("All voice presets failed")
 
-    parts_dir = AUDIO / "_vo_parts"
-    parts_dir.mkdir(exist_ok=True)
+def render_lines(voice_id: str) -> list[Path]:
+    rendered: list[Path] = []
+    for i, (text, _) in enumerate(SCRIPT, start=1):
+        p = LINES / f"line_{i:02d}.mp3"
+        # retry with/without language_code
+        url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}?output_format=mp3_44100_128"
+        body = {"text": text, "model_id": "eleven_multilingual_v2", "voice_settings": VOICE_SETTINGS}
+        try:
+            body_with_lang = {**body, "language_code": "de"}
+            data = http_post_json(url, body_with_lang, {"xi-api-key": ELEVEN, "Accept": "audio/mpeg"})
+        except urllib.error.HTTPError:
+            data = http_post_json(url, body, {"xi-api-key": ELEVEN, "Accept": "audio/mpeg"})
+        p.write_bytes(data)
+        print(f"[VO] rendered line {i:02d} ({len(data)/1024:.0f} KB): {text[:60]}…")
+        rendered.append(p)
+    return rendered
 
-    parts: list[tuple[float, Path]] = []
-    for i, (start, text) in enumerate(VO_LINES):
-        p = parts_dir / f"line_{i:02d}.mp3"
-        ok = eleven_tts(text, chosen_id, p)
-        if not ok:
-            raise RuntimeError(f"line {i} render failed")
-        parts.append((start, p))
 
-    # Assemble 50-second track with adelay + amix
-    inputs: list[str] = []
+def concat_lines_with_gaps(line_paths: list[Path], target_max: float) -> float:
+    """Concat with silence gaps. If total exceeds target, shrink gaps proportionally.
+    Returns final duration in seconds.
+    """
+    # Start with a leading silence of VO_START_OFFSET, then each line + its gap.
+    silence_ms: list[int] = [int(VO_START_OFFSET * 1000)]
+    line_durs_ms: list[int] = []
+    for i, p in enumerate(line_paths):
+        dur = probe_duration(p)
+        line_durs_ms.append(int(dur * 1000))
+        if i < len(line_paths) - 1:
+            silence_ms.append(SCRIPT[i][1])
+    # Final trailing silence = last line's gap, acts as tail padding
+    trailing_ms = SCRIPT[-1][1]
+
+    total_ms = sum(silence_ms) + sum(line_durs_ms) + trailing_ms
+    target_ms = int(target_max * 1000)
+    if total_ms > target_ms:
+        overflow = total_ms - target_ms
+        # Shrink interior gaps proportionally (skip leading + trailing for flow)
+        interior_sum = sum(silence_ms[1:])
+        if interior_sum > 0:
+            scale = max(0.0, (interior_sum - overflow) / interior_sum)
+            for i in range(1, len(silence_ms)):
+                silence_ms[i] = int(silence_ms[i] * scale)
+            trailing_ms = int(trailing_ms * scale)
+            print(f"[VO] shrank gaps by factor {scale:.2f} (overflow was {overflow} ms)")
+
+    # Build ffmpeg filter: silence → line1 → silence → line2 → … → trailing silence
     filters: list[str] = []
-    for i, (start, path) in enumerate(parts):
-        inputs += ["-i", str(path)]
-        delay_ms = int(start * 1000)
-        filters.append(
-            f"[{i}:a]adelay={delay_ms}|{delay_ms},apad,atrim=0:{TOTAL_DURATION}[a{i}]"
-        )
-    mix_chain = "".join(f"[a{i}]" for i in range(len(parts)))
-    filters.append(f"{mix_chain}amix=inputs={len(parts)}:normalize=0:duration=first[mix]")
-    # Slight atempo=0.96 slows speech ~4% for a calmer, warmer cadence
-    filters.append(
-        f"[mix]atrim=0:{TOTAL_DURATION},atempo=0.96,"
-        "aformat=channel_layouts=mono,aresample=44100[out]"
-    )
+    inputs: list[str] = []
+    # We use anullsrc as silence source via -f lavfi -t <dur>
+    # Sequence segments by sequential numeric index
+    idx = 0
+    seg_labels: list[str] = []
+
+    # Leading silence
+    inputs += ["-f", "lavfi", "-t", f"{silence_ms[0]/1000:.3f}", "-i", "anullsrc=cl=mono:r=44100"]
+    filters.append(f"[{idx}:a]aresample=44100,aformat=channel_layouts=mono[s{idx}]")
+    seg_labels.append(f"[s{idx}]")
+    idx += 1
+
+    for li, p in enumerate(line_paths):
+        inputs += ["-i", str(p)]
+        filters.append(f"[{idx}:a]aresample=44100,aformat=channel_layouts=mono[s{idx}]")
+        seg_labels.append(f"[s{idx}]")
+        idx += 1
+        # Between-line silence (not after last line — that's the trailing)
+        if li < len(line_paths) - 1:
+            gap_s = silence_ms[li + 1] / 1000
+            inputs += ["-f", "lavfi", "-t", f"{gap_s:.3f}", "-i", "anullsrc=cl=mono:r=44100"]
+            filters.append(f"[{idx}:a]aresample=44100,aformat=channel_layouts=mono[s{idx}]")
+            seg_labels.append(f"[s{idx}]")
+            idx += 1
+
+    # Trailing silence
+    inputs += ["-f", "lavfi", "-t", f"{trailing_ms/1000:.3f}", "-i", "anullsrc=cl=mono:r=44100"]
+    filters.append(f"[{idx}:a]aresample=44100,aformat=channel_layouts=mono[s{idx}]")
+    seg_labels.append(f"[s{idx}]")
+    idx += 1
+
+    concat_chain = "".join(seg_labels) + f"concat=n={idx}:v=0:a=1[out]"
+    filters.append(concat_chain)
+
     run([
         "ffmpeg", "-y", *inputs,
         "-filter_complex", ";".join(filters),
@@ -171,11 +241,21 @@ def pick_and_render_vo() -> None:
         "-c:a", "libmp3lame", "-b:a", "192k",
         str(VO),
     ])
-    print(f"[VO] done — voice: {chosen_name}")
+    return probe_duration(VO)
+
+
+def step_voiceover() -> tuple[str, float]:
+    name, vid = pick_voice()
+    lines = render_lines(vid)
+    vo_dur = concat_lines_with_gaps(lines, target_max=VIDEO_DURATION)
+    print(f"[VO] final voiceover duration: {vo_dur:.2f}s (budget {VIDEO_DURATION}s)")
+    if vo_dur > VIDEO_DURATION + 0.2:
+        raise RuntimeError(f"VO {vo_dur:.2f}s still exceeds video {VIDEO_DURATION}s after shrinking")
+    return name, vo_dur
 
 
 # ---------------------------------------------------------------------------
-# STEP 2 — Pixabay (or synth fallback) cinematic piano pad
+# STEP 2 — background (Pixabay or synth)
 # ---------------------------------------------------------------------------
 def pixabay_search(query: str, min_dur: int) -> dict | None:
     url = f"https://pixabay.com/api/audio/?key={PIXABAY}&q={urllib.parse.quote(query)}&safesearch=true"
@@ -185,7 +265,7 @@ def pixabay_search(query: str, min_dur: int) -> dict | None:
         hits.sort(key=lambda h: h.get("likes", 0), reverse=True)
         return hits[0] if hits else None
     except Exception as e:
-        print(f"[BG] '{query}' — {e}")
+        print(f"[BG] search '{query}' — {e}")
         return None
 
 
@@ -203,25 +283,22 @@ def pixabay_download(hit: dict, out: Path) -> bool:
         return False
 
 
-def synth_piano_pad(out: Path, duration: float) -> None:
-    """Soft piano-pad score — Am7 → Fmaj7 → Cmaj9 → G progression with long
-    release, gentle arpeggio, shimmer reverb. Warm and emotional, Apple-ad-tier.
+def synth_soft_piano(out: Path, duration: float) -> str:
+    """Very soft cinematic pad — quieter than previous v3, mimics Apple-style score.
+    Am7 → Fmaj7 → Cmaj9 → G with long release + multi-tap reverb.
     """
-    # Four chords, each ~13s, extended voicings (maj7 / add9) for that
-    # cinematic-pop sound.  Frequencies correspond to (bass, ch1, ch2, ch3, ch4).
     chords = [
-        # Am7  : A2, E3, A3, C4, G4
+        # Am7 extended
         (110.00, 164.81, 220.00, 261.63, 392.00),
-        # Fmaj7: F2, C3, F3, A3, E4
+        # Fmaj7
         (87.31,  130.81, 174.61, 220.00, 329.63),
-        # Cmaj9: C3, G3, C4, E4, D5
+        # Cmaj9
         (130.81, 196.00, 261.63, 329.63, 587.33),
-        # G    : G2, D3, G3, B3, D4
+        # G maj
         (98.00,  146.83, 196.00, 246.94, 293.66),
     ]
     chord_dur = duration / len(chords)
     tmp_parts: list[Path] = []
-
     for i, (f1, f2, f3, f4, f5) in enumerate(chords):
         p = AUDIO / f"_pad_{i}.wav"
         run([
@@ -232,21 +309,19 @@ def synth_piano_pad(out: Path, duration: float) -> None:
             "-f", "lavfi", "-i", f"sine=frequency={f4}:duration={chord_dur}",
             "-f", "lavfi", "-i", f"sine=frequency={f5}:duration={chord_dur}",
             "-filter_complex",
-            "[0:a]volume=0.40,lowpass=f=320[bass];"
-            "[1:a]volume=0.28[v1];"
-            "[2:a]volume=0.24[v2];"
-            "[3:a]volume=0.22[v3];"
-            "[4:a]volume=0.18[v4];"
+            "[0:a]volume=0.35,lowpass=f=280[bass];"
+            "[1:a]volume=0.22[v1];"
+            "[2:a]volume=0.20[v2];"
+            "[3:a]volume=0.18[v3];"
+            "[4:a]volume=0.12[v4];"
             "[bass][v1][v2][v3][v4]amix=inputs=5:normalize=0,"
-            # Slow attack/release per chord so they overlap smoothly
-            "afade=t=in:st=0:d=2.0,"
-            f"afade=t=out:st={chord_dur - 2.5}:d=2.5",
+            "afade=t=in:st=0:d=2.5,"
+            f"afade=t=out:st={chord_dur - 3.0}:d=3.0",
             "-c:a", "pcm_s16le",
             str(p),
         ])
         tmp_parts.append(p)
 
-    # Concat with small crossfade via acrossfade would need pairs; we just overlap via concat + reverb
     concat_inputs: list[str] = []
     for p in tmp_parts:
         concat_inputs += ["-i", str(p)]
@@ -255,13 +330,11 @@ def synth_piano_pad(out: Path, duration: float) -> None:
         "".join(f"[{i}:a]" for i in range(n))
         + f"concat=n={n}:v=0:a=1[seq];"
         "[seq]"
-        "highpass=f=50,"
-        "lowpass=f=2600,"
-        # Soft tape-like saturation + shimmer reverb
-        "aecho=0.55:0.55:600|1200|2200:0.35|0.25|0.15,"
-        # Very gentle tremolo for breathing
-        "tremolo=f=0.15:d=0.06,"
-        "volume=0.90"
+        "highpass=f=60,"
+        "lowpass=f=2400,"
+        "aecho=0.55:0.6:700|1400|2400:0.3|0.2|0.1,"
+        "tremolo=f=0.12:d=0.05,"
+        "volume=0.75"
         "[out]"
     )
     run([
@@ -274,46 +347,45 @@ def synth_piano_pad(out: Path, duration: float) -> None:
     for p in tmp_parts:
         try: p.unlink()
         except Exception: pass
+    return "Synthesised Soft Piano Pad (Am7-Fmaj7-Cmaj9-G)"
 
 
-def fetch_background() -> None:
+def step_background() -> str:
     queries = [
-        "epic cinematic soft piano ambient",
-        "emotional cinematic background",
-        "soft orchestral inspiring",
-        "gentle epic motivational",
-        "cinematic piano emotional",
-        "inspirational ambient piano",
+        "soft cinematic piano emotional",
+        "gentle orchestral inspiring calm",
+        "warm ambient piano background",
+        "cinematic soft emotional background",
     ]
     for q in queries:
         hit = pixabay_search(q, min_dur=45)
         if not hit:
             continue
-        print(f"[BG] '{q}' → {hit.get('user')} · {hit.get('duration')}s · likes {hit.get('likes')}")
+        title = f"{hit.get('tags') or 'Pixabay'} by {hit.get('user', 'anon')}"
+        print(f"[BG] query '{q}' → {title} ({hit.get('duration')}s, likes {hit.get('likes')})")
         if pixabay_download(hit, BG):
-            return
-    print("[BG] Pixabay unavailable — synthesize cinematic pad")
-    synth_piano_pad(BG, duration=TOTAL_DURATION + 5)
+            return title
+    print("[BG] Pixabay music API unavailable — synthesise cinematic pad")
+    return synth_soft_piano(BG, duration=VIDEO_DURATION + 5)
 
 
 # ---------------------------------------------------------------------------
-# STEP 4 — Mix (VO + BG only; no SFX)
+# STEP 3 — mix
 # ---------------------------------------------------------------------------
-def mix_final() -> None:
+def step_mix() -> None:
     filters = [
-        # BG: loop in case shorter than 50s, trim to 50s, 9% vol, 2s fade-in, 3s fade-out
-        f"[0:a]aloop=loop=-1:size=2e9,atrim=0:{TOTAL_DURATION},"
-        f"volume=0.09,"
-        f"afade=t=in:st=0:d=2,"
-        f"afade=t=out:st={TOTAL_DURATION - 3}:d=3"
+        # BG at 7%, 3s fade-in, 4s fade-out
+        f"[0:a]aloop=loop=-1:size=2e9,atrim=0:{VIDEO_DURATION},"
+        f"volume=0.07,"
+        f"afade=t=in:st=0:d=3,"
+        f"afade=t=out:st={VIDEO_DURATION - 4}:d=4"
         "[bg]",
-        # VO: pad to 50s at 100% (already offset inside VO file)
-        f"[1:a]volume=1.0,apad,atrim=0:{TOTAL_DURATION}[vo]",
-        # Mix, stereo, limit
+        # VO: already contains its own 1s leading silence in the concat; no extra offset
+        f"[1:a]volume=1.0,apad,atrim=0:{VIDEO_DURATION}[vo]",
         "[bg][vo]amix=inputs=2:normalize=0:duration=first[mix]",
-        f"[mix]atrim=0:{TOTAL_DURATION},"
+        f"[mix]atrim=0:{VIDEO_DURATION},"
         "aformat=channel_layouts=stereo,aresample=44100,"
-        "alimiter=limit=0.95[out]",
+        "alimiter=limit=0.97[out]",
     ]
     run([
         "ffmpeg", "-y",
@@ -328,63 +400,70 @@ def mix_final() -> None:
 
 
 # ---------------------------------------------------------------------------
-# STEP 5 — Merge video + audio
+# STEP 4 — merge video + audio
 # ---------------------------------------------------------------------------
-def merge_av() -> None:
+def step_merge() -> None:
     run([
         "ffmpeg", "-y",
         "-i", str(VIDEO_IN),
         "-i", str(FINAL_AUDIO),
         "-map", "0:v:0", "-map", "1:a:0",
         "-c:v", "copy",
-        "-c:a", "aac", "-b:a", "256k",
+        "-c:a", "aac", "-b:a", "192k",
         "-shortest",
         str(VIDEO_OUT),
     ])
 
 
 # ---------------------------------------------------------------------------
-# STEP 6 — Verify
+# STEP 5 — verify
 # ---------------------------------------------------------------------------
-def qa() -> None:
-    assert VIDEO_OUT.exists(), "no output file"
+def step_verify(voice_name: str, bg_title: str) -> None:
+    assert VIDEO_OUT.exists(), "output file missing"
     size_mb = VIDEO_OUT.stat().st_size / (1024 * 1024)
+    duration = probe_duration(VIDEO_OUT)
     r = run([
-        "ffprobe", "-v", "error",
-        "-show_entries", "format=duration",
-        "-of", "default=noprint_wrappers=1:nokey=1",
-        str(VIDEO_OUT),
-    ])
-    duration = float(r.stdout.strip())
-    r2 = run([
         "ffprobe", "-v", "error", "-select_streams", "a:0",
-        "-show_entries", "stream=codec_name,channels,sample_rate,bit_rate",
-        "-of", "default=nw=1",
+        "-show_entries", "stream=codec_name,channels,bit_rate",
+        "-of", "default=nw=1:nokey=1",
         str(VIDEO_OUT),
     ])
-    print("\n" + "=" * 60)
-    print(f"[OK] Final video ready - Duration: {duration:.1f}s - Size: {size_mb:.1f}MB")
-    print(r2.stdout.strip())
-    print("=" * 60)
+    print("\n" + "=" * 70)
+    print(f"[OK] Fertig - Datei: kdoc_reel_v2_final.mp4 | Dauer: {duration:.1f}s | "
+          f"Groesse: {size_mb:.1f}MB | Stimme: {voice_name} | Musik: {bg_title}")
+    print(f"     Audio: {' / '.join(r.stdout.strip().splitlines())}")
+    print("=" * 70)
 
 
+# ---------------------------------------------------------------------------
+# MAIN
+# ---------------------------------------------------------------------------
 def main() -> int:
     step = sys.argv[1] if len(sys.argv) > 1 else "all"
+
+    voice_name = "Freya"  # default if stepping mix-only
+    bg_title = "Synth Pad"
+
     if step in ("all", "vo"):
-        print("### STEP 1: voiceover")
-        pick_and_render_vo()
+        print("### STEP 1 voiceover")
+        voice_name, _ = step_voiceover()
+
     if step in ("all", "bg"):
-        print("### STEP 2: background")
-        fetch_background()
+        print("### STEP 2 background music")
+        bg_title = step_background()
+
     if step in ("all", "mix"):
-        print("### STEP 4: mix")
-        mix_final()
+        print("### STEP 3 mix")
+        step_mix()
+
     if step in ("all", "merge"):
-        print("### STEP 5: merge")
-        merge_av()
+        print("### STEP 4 merge")
+        step_merge()
+
     if step in ("all", "qa"):
-        print("### STEP 6: QA")
-        qa()
+        print("### STEP 5 verify")
+        step_verify(voice_name, bg_title)
+
     return 0
 
 
