@@ -1,10 +1,11 @@
+// File encoding: UTF-8
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2, SAFE } from '../brandV2';
 import { SceneShell, SceneTitle } from '../components/SceneShell';
 import { IconOrb, StethoscopeIcon, CheckIcon } from '../components/Icons';
 
-/** SCENE 3 — Befundassistent: medical morph \u2192 clean summary \u2192 bar chart detail (9.1s / 273 frames) */
+/** SCENE 3 — Befundassistent: medical morph → clean summary → bar chart detail (9.1s / 273 frames) */
 export const S3Befund: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -13,7 +14,7 @@ export const S3Befund: React.FC = () => {
 
   const morphProg = interpolate(frame, [60, 105], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const beforeOpacity = interpolate(morphProg, [0, 0.5, 1], [1, 0.5, 0]);
-  // After-card fades out at 155\u2013178 to cross-fade into bar chart
+  // After-card fades out at 155–178 to cross-fade into bar chart
   const afterFadeOut = interpolate(frame, [155, 178], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const afterOpacity = interpolate(morphProg, [0, 0.5, 1], [0, 0.2, 1]) * afterFadeOut;
 
@@ -49,15 +50,15 @@ export const S3Befund: React.FC = () => {
 
       <SceneTitle
         label="Befundassistent"
-        headline={<>Medizin, verst\u00e4ndlich.</>}
-        sub={<>KI erkl\u00e4rt deine Befunde<br />in einfacher Sprache.</>}
+        headline={<>Medizin, verständlich.</>}
+        sub={<>KI erklärt deine Befunde<br />in einfacher Sprache.</>}
         topOffset={SAFE.top + 170}
       />
 
       {/* Before / After card container */}
       <div style={{ position: 'absolute', left: '50%', top: 1090, transform: 'translateX(-50%)', width: 820, height: 500 }}>
 
-        {/* BEFORE \u2014 blurred dense text */}
+        {/* BEFORE — blurred dense text */}
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 18, background: V2.glassStrong, border: `1px solid ${V2.border}`,
@@ -68,14 +69,14 @@ export const S3Befund: React.FC = () => {
           boxSizing: 'border-box',
         }}>
           <div style={{ fontFamily: V2.font, fontSize: 18, color: V2.textMuted, marginBottom: 10 }}>
-            Laborbefund \u00b7 ID 2024-0812
+            Laborbefund · ID 2024-0812
           </div>
           <div style={{ fontFamily: V2.font, fontSize: 14, color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, fontStyle: 'italic' }}>
-            H\u00e4moglobin 14,2 g/dL \u00b7 Erythrozyten 4,6 Mio/\u00b5L \u00b7 MCV 88 fL \u00b7 MCH 30 pg \u00b7 Leukozyten 6,4/nL \u00b7 Thrombozyten 248/nL \u00b7 CRP &lt;0.5 mg/dL \u00b7 Kreatinin 0,9 mg/dL \u00b7 GFR &gt;90 mL/min \u00b7 ALT 22 U/L \u00b7 AST 18 U/L \u00b7 GGT 20 U/L \u00b7 Bilirubin 0,8 mg/dL \u00b7 HDL 52 mg/dL \u00b7 LDL 118 mg/dL \u00b7 Triglyceride 92 mg/dL \u00b7 Glukose 88 mg/dL \u00b7 HbA1c 5,3 % \u2026
+            Hämoglobin 14,2 g/dL · Erythrozyten 4,6 Mio/µL · MCV 88 fL · MCH 30 pg · Leukozyten 6,4/nL · Thrombozyten 248/nL · CRP &lt;0.5 mg/dL · Kreatinin 0,9 mg/dL · GFR &gt;90 mL/min · ALT 22 U/L · AST 18 U/L · GGT 20 U/L · Bilirubin 0,8 mg/dL · HDL 52 mg/dL · LDL 118 mg/dL · Triglyceride 92 mg/dL · Glukose 88 mg/dL · HbA1c 5,3 % …
           </div>
         </div>
 
-        {/* AFTER \u2014 clean glass summary */}
+        {/* AFTER — clean glass summary */}
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 18, background: V2.glassStrong, border: `1px solid ${V2.border}`,
@@ -94,15 +95,15 @@ export const S3Befund: React.FC = () => {
             <div>
               <div style={{ fontFamily: V2.font, fontSize: 26, color: V2.textMuted, marginBottom: 2 }}>Ihr Befund</div>
               <div style={{ fontFamily: V2.font, fontSize: 38, fontWeight: 700, color: V2.text, letterSpacing: -0.5 }}>
-                Alles im gr\u00fcnen Bereich \u2713
+                Alles im grünen Bereich ✓
               </div>
             </div>
           </div>
           {[
             { k: 'Blutwerte', v: 'normal' },
-            { k: 'Entz\u00fcndung', v: 'unauff\u00e4llig' },
+            { k: 'Entzündung', v: 'unauffällig' },
             { k: 'Leber & Niere', v: 'gesund' },
-            { k: 'N\u00e4chster Termin', v: 'in 12 Monaten' },
+            { k: 'Nächster Termin', v: 'in 12 Monaten' },
           ].map((row, i) => (
             <div key={row.k} style={{
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -116,7 +117,7 @@ export const S3Befund: React.FC = () => {
           ))}
         </div>
 
-        {/* BAR CHART \u2014 cross-fades in as after-card fades out */}
+        {/* BAR CHART — cross-fades in as after-card fades out */}
         <div style={{
           position: 'absolute', inset: 0,
           borderRadius: 18, background: V2.glassStrong, border: `1px solid ${V2.border}`,
@@ -169,7 +170,7 @@ export const S3Befund: React.FC = () => {
             fontWeight: 600, letterSpacing: 0.3, textAlign: 'center',
             marginTop: 4,
           }}>
-            Ihr Arzt wird informiert \u2713
+            Ihr Arzt wird informiert ✓
           </div>
         </div>
       </div>

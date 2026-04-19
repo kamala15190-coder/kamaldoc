@@ -1,3 +1,4 @@
+// File encoding: UTF-8
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2, SAFE } from '../brandV2';
@@ -27,7 +28,7 @@ export const S2Scan: React.FC = () => {
   const barFill = interpolate(frame, [120, 154], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const checkItems = [
     { text: 'Erkannt: Einkommensteuerbescheid', startFrame: 156 },
-    { text: 'Kategorie: Beh\u00f6rde', startFrame: 162 },
+    { text: 'Kategorie: Behörde', startFrame: 162 },
     { text: 'Archiviert', startFrame: 168 },
   ];
 
@@ -66,7 +67,7 @@ export const S2Scan: React.FC = () => {
       }}>
         <div style={{ fontFamily: V2.font, fontSize: 20, color: V2.textMuted, marginBottom: 10 }}>Finanzamt Wien</div>
         <div style={{ fontFamily: V2.font, fontSize: 26, fontWeight: 600, color: V2.text, marginBottom: 18 }}>
-          Einkommensteuer\u00adbescheid 2024
+          Einkommensteuerbescheid 2024
         </div>
         {[0, 1, 2, 3, 4].map(row => (
           <div key={row} style={{
@@ -87,6 +88,7 @@ export const S2Scan: React.FC = () => {
       <div style={{
         position: 'absolute', left: 0, right: 0, bottom: SAFE.bottom + 40,
         display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'wrap', padding: '0 40px',
+        transform: 'translateZ(0)',
       }}>
         {tags.map((tag, i) => {
           const prog = spring({ frame: frame - (80 + i * 10), fps, config: { damping: 16, stiffness: 130 } });
@@ -94,9 +96,22 @@ export const S2Scan: React.FC = () => {
             <div key={tag} style={{
               opacity: prog * tagFadeOut,
               transform: `translateY(${interpolate(prog, [0, 1], [20, 0])}px)`,
-              padding: '14px 26px', borderRadius: 999,
-              background: 'rgba(99, 89, 255, 0.15)', border: `1px solid ${V2.primary}`,
-              color: V2.primaryLight, fontFamily: V2.font, fontSize: 32, fontWeight: 600, letterSpacing: -0.2,
+              display: 'inline-flex',
+              alignItems: 'center',
+              paddingTop: 8,
+              paddingBottom: 8,
+              paddingLeft: 18,
+              paddingRight: 18,
+              borderRadius: 999,
+              border: '1.5px solid rgba(99, 89, 255, 0.8)',
+              background: 'rgba(99, 89, 255, 0.15)',
+              color: '#FFFFFF',
+              fontSize: 28,
+              fontWeight: 600,
+              fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+              letterSpacing: 0.3,
+              WebkitFontSmoothing: 'antialiased',
+              MozOsxFontSmoothing: 'grayscale',
             }}>
               {tag}
             </div>
@@ -116,7 +131,7 @@ export const S2Scan: React.FC = () => {
             fontFamily: V2.font, fontSize: 30, fontWeight: 600,
             color: V2.textMuted, marginBottom: 20, letterSpacing: 0.5,
           }}>
-            KI analysiert\u2026
+            KI analysiert…
           </div>
           <div style={{
             height: 10, borderRadius: 99,

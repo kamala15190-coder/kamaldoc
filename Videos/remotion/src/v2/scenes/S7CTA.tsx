@@ -1,3 +1,4 @@
+// File encoding: UTF-8
 import React from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2 } from '../brandV2';

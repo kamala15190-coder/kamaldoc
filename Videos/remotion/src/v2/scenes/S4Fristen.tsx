@@ -1,3 +1,4 @@
+// File encoding: UTF-8
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2, SAFE } from '../brandV2';
@@ -9,6 +10,13 @@ const DEADLINES = [
   { title: 'Miete Nebenkosten Einspruch', sub: 'Hausverwaltung', days: 12, urgent: false },
   { title: 'Arztbefund Kontrolltermin', sub: 'Dr. Steiner', days: 28, urgent: false },
 ];
+
+const BellSVG = () => (
+  <svg width={28} height={28} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"
+      fill={V2.primaryLight} />
+  </svg>
+);
 
 /** SCENE 4 — Fristen: deadline cards + push notification slide-in (7.7s / 231 frames) */
 export const S4Fristen: React.FC = () => {
@@ -41,7 +49,7 @@ export const S4Fristen: React.FC = () => {
       <SceneTitle
         label="Fristen"
         headline={<>Nie wieder verpassen.</>}
-        sub={<>Automatische Erinnerungen f\u00fcr<br />Beh\u00f6rden, Vertr\u00e4ge & mehr.</>}
+        sub={<>Automatische Erinnerungen für<br />Behörden, Verträge & mehr.</>}
         topOffset={SAFE.top + 170}
       />
 
@@ -49,25 +57,26 @@ export const S4Fristen: React.FC = () => {
       <div style={{
         position: 'absolute', left: SAFE.side, right: SAFE.side, top: 630,
         opacity: notifOpacity,
-        transform: `translateY(${notifY}px)`,
+        transform: `translateY(${notifY}px) translateZ(0)`,
+        willChange: 'transform',
       }}>
         <div style={{
           borderRadius: 18,
-          background: V2.glassStrong,
+          background: 'rgba(15,15,25,0.95)',
           border: `1px solid ${V2.border}`,
           borderLeft: `3px solid ${V2.primary}`,
           backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
           padding: '24px 28px',
           display: 'flex', alignItems: 'flex-start', gap: 18,
+          WebkitFontSmoothing: 'antialiased',
         }}>
-          {/* Bell icon */}
+          {/* Bell icon — SVG */}
           <div style={{
             width: 52, height: 52, borderRadius: 14, flexShrink: 0,
             background: 'rgba(99,89,255,0.2)', border: `1px solid ${V2.primary}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 26,
           }}>
-            \uD83D\uDD14
+            <BellSVG />
           </div>
           <div style={{ flex: 1 }}>
             <div style={{
@@ -79,7 +88,7 @@ export const S4Fristen: React.FC = () => {
             <div style={{
               fontFamily: V2.font, fontSize: 26, color: V2.textMuted, lineHeight: 1.4,
             }}>
-              Finanzamt \u00d6sterreich \u2014 Frist in 3 Tagen
+              Finanzamt Österreich — Frist in 3 Tagen
             </div>
             <div style={{
               fontFamily: V2.font, fontSize: 22, color: 'rgba(148,163,184,0.6)',
@@ -100,7 +109,7 @@ export const S4Fristen: React.FC = () => {
         fontFamily: V2.font, fontSize: 34, fontWeight: 600,
         color: V2.primaryLight, letterSpacing: -0.3,
       }}>
-        Automatisch. Immer p\u00fcnktlich.
+        Automatisch. Immer pünktlich.
       </div>
 
       {/* Deadline cards */}

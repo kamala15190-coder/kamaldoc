@@ -1,3 +1,4 @@
+// File encoding: UTF-8
 import React from 'react';
 import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2, SAFE } from '../brandV2';
@@ -72,7 +73,7 @@ export const S6MCP: React.FC = () => {
   const outlookPos = { x: 880, y: 120 };
   const kdocPos    = { x: 540, y: 360 };
 
-  // Timing scaled from 300\u2192180 frames (\u00d70.6)
+  // Timing scaled from 300→180 frames (×0.6)
   const graphLineProg = interpolate(frame, [24, 54], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   const dotPhase = ((frame - 48) / 24) % 1;
 
@@ -105,8 +106,19 @@ export const S6MCP: React.FC = () => {
         topOffset={SAFE.top + 170}
       />
 
+      {/* Caption — above the connection diagram (FIX 6) */}
+      <div style={{
+        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 630,
+        textAlign: 'center', fontFamily: V2.font, fontSize: 42, fontWeight: 800,
+        color: '#FFFFFF', letterSpacing: -0.5,
+        opacity: captionProg,
+        transform: `translateY(${interpolate(captionProg, [0, 1], [14, 0])}px)`,
+      }}>
+        Eine Suche. Alle Quellen.
+      </div>
+
       {/* Graph stage */}
-      <div style={{ position: 'absolute', left: 0, right: 0, top: 1000, height: 520 }}>
+      <div style={{ position: 'absolute', left: 0, right: 0, top: 800, height: 520 }}>
         <svg viewBox="0 0 1080 500" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, overflow: 'visible' }}>
           <ConnectLine from={gmailPos} to={kdocPos} progress={graphLineProg} dotPhase={dotPhase} />
           <ConnectLine from={outlookPos} to={kdocPos} progress={graphLineProg} dotPhase={(dotPhase + 0.5) % 1} />
@@ -159,7 +171,7 @@ export const S6MCP: React.FC = () => {
 
       {/* Search + results */}
       <div style={{
-        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 1560,
+        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 1390,
         opacity: searchProg,
         transform: `translateY(${interpolate(searchProg, [0, 1], [20, 0])}px)`,
       }}>
@@ -170,12 +182,12 @@ export const S6MCP: React.FC = () => {
         }}>
           <SearchIcon size={28} />
           <div style={{ flex: 1, fontFamily: V2.font, fontSize: 32, color: V2.text, fontWeight: 500 }}>
-            {typedText}{cursorOn && typedLen < searchText.length ? '\u258D' : ''}
+            {typedText}{cursorOn && typedLen < searchText.length ? '▍' : ''}
           </div>
           <kbd style={{
             fontFamily: V2.font, fontSize: 20, color: V2.textMuted, padding: '6px 10px',
             borderRadius: 6, background: 'rgba(255,255,255,0.06)', border: `1px solid ${V2.border}`,
-          }}>\u2318K</kbd>
+          }}>⌘K</kbd>
         </div>
 
         <div style={{
@@ -191,7 +203,7 @@ export const S6MCP: React.FC = () => {
               fontFamily: V2.font, fontSize: 22, fontWeight: 600, color: V2.primaryLight,
               letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4,
             }}>kdoc Dokumente</div>
-            {['Strom \u00b7 A1 Energie \u00b7 02.12.24', 'Internet \u00b7 Drei \u00b7 09.12.24'].map(r => (
+            {['Strom · A1 Energie · 02.12.24', 'Internet · Drei · 09.12.24'].map(r => (
               <div key={r} style={{
                 padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.03)',
                 fontFamily: V2.font, fontSize: 22, color: V2.text, display: 'flex', alignItems: 'center', gap: 10,
@@ -208,7 +220,7 @@ export const S6MCP: React.FC = () => {
               fontFamily: V2.font, fontSize: 22, fontWeight: 600, color: V2.primaryLight,
               letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4,
             }}>Postfach</div>
-            {['Amazon \u00b7 Bestellung \u00b7 12.12.24', 'Miete \u00b7 WBV \u00b7 29.12.24'].map(r => (
+            {['Amazon · Bestellung · 12.12.24', 'Miete · WBV · 29.12.24'].map(r => (
               <div key={r} style={{
                 padding: '10px 12px', borderRadius: 10, background: 'rgba(255,255,255,0.03)',
                 fontFamily: V2.font, fontSize: 22, color: V2.text, display: 'flex', alignItems: 'center', gap: 10,
@@ -218,17 +230,6 @@ export const S6MCP: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* Bottom caption */}
-      <div style={{
-        position: 'absolute', bottom: SAFE.bottom + 20, left: SAFE.side, right: SAFE.side,
-        textAlign: 'center', fontFamily: V2.font, fontSize: 34, fontWeight: 600,
-        color: V2.primaryLight, letterSpacing: -0.3,
-        opacity: captionProg,
-        transform: `translateY(${interpolate(captionProg, [0, 1], [14, 0])}px)`,
-      }}>
-        Eine Suche. Alle Quellen.
       </div>
     </SceneShell>
   );
