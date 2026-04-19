@@ -14,7 +14,7 @@ const KATEGORIE_ICON = {
   brief: { bg: 'rgba(96,165,250,0.12)', color: '#60a5fa' },
   rechnung: { bg: 'rgba(245,158,11,0.12)', color: '#F59E0B' },
   lohnzettel: { bg: 'rgba(0,200,150,0.12)', color: '#00C896' },
-  kontoauszug: { bg: 'rgba(139,92,246,0.12)', color: '#8b5cf6' },
+  kontoauszug: { bg: 'rgba(99,102,241,0.12)', color: '#8b5cf6' },
   vertrag: { bg: 'rgba(248,113,113,0.12)', color: '#f87171' },
   sonstiges: { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af' },
 };
@@ -95,6 +95,7 @@ export default function DokumenteListe() {
 
   const hasMore = !search && documents.length < total;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchDocs(); }, [kategorie]);
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -102,6 +103,7 @@ export default function DokumenteListe() {
       fetchEmails();
     }, 400);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, filter]);
 
   // Combine results based on filter

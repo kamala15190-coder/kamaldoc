@@ -39,7 +39,7 @@ async function secureSet(key, value) {
       const { Preferences } = await import('@capacitor/preferences');
       await Preferences.set({ key, value: JSON.stringify(value) });
       return;
-    } catch (_) { /* fallback */ }
+    } catch { /* fallback */ }
   }
   localStorage.setItem(key, JSON.stringify(value));
 }
@@ -50,21 +50,10 @@ async function secureGet(key) {
       const { Preferences } = await import('@capacitor/preferences');
       const { value } = await Preferences.get({ key });
       return value ? JSON.parse(value) : null;
-    } catch (_) { /* fallback */ }
+    } catch { /* fallback */ }
   }
   const raw = localStorage.getItem(key);
   return raw ? JSON.parse(raw) : null;
-}
-
-async function secureRemove(key) {
-  if (Capacitor.isNativePlatform()) {
-    try {
-      const { Preferences } = await import('@capacitor/preferences');
-      await Preferences.remove({ key });
-      return;
-    } catch (_) { /* fallback */ }
-  }
-  localStorage.removeItem(key);
 }
 
 // ---------- Account CRUD ----------
@@ -75,7 +64,7 @@ async function secureRemove(key) {
  */
 export async function getConnectedAccounts() {
   const accounts = await secureGet(STORAGE_KEY);
-  return (accounts || []).map(({ tokens, ...rest }) => rest);
+  return (accounts || []).map(({ tokens: _tok, ...rest }) => rest); // eslint-disable-line no-unused-vars
 }
 
 /**
@@ -176,7 +165,7 @@ export async function searchAllAccounts(query, options = {}) {
             ]);
             return { account, results: retryResults };
           }
-        } catch (_) { /* refresh failed */ }
+        } catch { /* refresh failed */ }
       }
       return { account, error: error.message || 'Unknown error' };
     }

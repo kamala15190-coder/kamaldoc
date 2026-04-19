@@ -8,10 +8,10 @@ KamalDoc Subscription System
 import logging
 import os
 from datetime import datetime, timedelta
-from typing import Optional
 
 import stripe
 from fastapi import HTTPException, Request
+
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -65,13 +65,12 @@ PLAN_LIMITS = {
 
 # --- DB Helpers ---
 
+
 async def ensure_subscription(user_id: str):
     """Ensure user has a subscription row. Creates 'free' if missing."""
     db = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT plan FROM subscriptions WHERE user_id = ?", (user_id,)
-        )
+        cursor = await db.execute("SELECT plan FROM subscriptions WHERE user_id = ?", (user_id,))
         row = await cursor.fetchone()
         if not row:
             await db.execute(
@@ -87,9 +86,7 @@ async def ensure_usage(user_id: str):
     """Ensure user has a usage_counters row."""
     db = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT user_id, registration_date FROM usage_counters WHERE user_id = ?", (user_id,)
-        )
+        cursor = await db.execute("SELECT user_id, registration_date FROM usage_counters WHERE user_id = ?", (user_id,))
         row = await cursor.fetchone()
         if not row:
             now = datetime.now().strftime("%Y-%m-%d")
@@ -151,6 +148,7 @@ async def get_user_plan(user_id: str) -> str:
 def _calc_reset_boundary(registration_date_str: str, now: datetime) -> datetime:
     """Calculate the most recent monthly reset boundary based on the user's registration day."""
     import calendar
+
     try:
         reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
         reg_day = reg_date.day
@@ -176,6 +174,7 @@ def _calc_reset_boundary(registration_date_str: str, now: datetime) -> datetime:
 def _calc_next_reset(registration_date_str: str, now: datetime) -> str:
     """Calculate the next monthly reset date for display."""
     import calendar
+
     try:
         reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
         reg_day = reg_date.day
@@ -201,9 +200,7 @@ async def get_usage(user_id: str) -> dict:
     await ensure_usage(user_id)
     db = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT * FROM usage_counters WHERE user_id = ?", (user_id,)
-        )
+        cursor = await db.execute("SELECT * FROM usage_counters WHERE user_id = ?", (user_id,))
         row = await cursor.fetchone()
         usage = dict(row)
 
@@ -240,7 +237,15 @@ async def get_usage(user_id: str) -> dict:
         await db.close()
 
 
-ALLOWED_USAGE_FIELDS = {"documents_total", "documents_month", "ki_analyses_total", "ki_analyses_month", "behoerden_month", "befund_month"}
+ALLOWED_USAGE_FIELDS = {
+    "documents_total",
+    "documents_month",
+    "ki_analyses_total",
+    "ki_analyses_month",
+    "behoerden_month",
+    "befund_month",
+}
+
 
 async def increment_usage(user_id: str, field: str, amount: int = 1):
     """Increment a usage counter."""
@@ -259,6 +264,7 @@ async def increment_usage(user_id: str, field: str, amount: int = 1):
 
 
 # --- Plan Enforcement ---
+
 
 async def check_upload_limit(user_id: str):
     """Check if user can upload a document."""
@@ -406,6 +412,7 @@ async def check_expenses_access(user_id: str):
 
 # --- Subscription Status ---
 
+
 async def get_subscription_status(user_id: str) -> dict:
     """Get full subscription status for frontend."""
     await ensure_subscription(user_id)
@@ -417,9 +424,7 @@ async def get_subscription_status(user_id: str) -> dict:
 
     db = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT * FROM subscriptions WHERE user_id = ?", (user_id,)
-        )
+        cursor = await db.execute("SELECT * FROM subscriptions WHERE user_id = ?", (user_id,))
         sub = dict(await cursor.fetchone())
     finally:
         await db.close()
@@ -453,6 +458,7 @@ async def get_subscription_status(user_id: str) -> dict:
 
 
 # --- Downgrade ---
+
 
 async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
     """Schedule a downgrade to a lower plan. Atomic: Stripe first, then DB."""
@@ -495,8 +501,12 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
             except stripe.error.InvalidRequestError as e:
                 if e.code == "resource_missing":
                     # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
-                    logger.warning(f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and downgrading locally for user {user_id}")
-                    await db.execute("UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,))
+                    logger.warning(
+                        f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and downgrading locally for user {user_id}"
+                    )
+                    await db.execute(
+                        "UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,)
+                    )
                 else:
                     logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
                     raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
@@ -523,6 +533,7 @@ async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
 
 
 # --- Reactivate ---
+
 
 async def reactivate_subscription(user_id: str) -> dict:
     """Reactivate a cancelled subscription."""
@@ -565,6 +576,7 @@ async def reactivate_subscription(user_id: str) -> dict:
 
 # --- Stripe Checkout ---
 
+
 async def create_checkout_session(user_id: str, plan: str, source: str = "web") -> dict:
     """Create Stripe Checkout Session for Basic or Pro plan."""
     if not STRIPE_SECRET_KEY or STRIPE_SECRET_KEY == "sk_test_PLACEHOLDER":
@@ -606,8 +618,12 @@ async def create_checkout_session(user_id: str, plan: str, source: str = "web") 
                 "request_three_d_secure": "automatic",
             },
         },
-        success_url=f"at.kamaldoc.app://checkout-success" if source == "android" else f"{FRONTEND_URL}/profil?checkout=success",
-        cancel_url=f"at.kamaldoc.app://checkout-cancel" if source == "android" else f"{FRONTEND_URL}/pricing?checkout=cancel",
+        success_url="at.kamaldoc.app://checkout-success"
+        if source == "android"
+        else f"{FRONTEND_URL}/profil?checkout=success",
+        cancel_url="at.kamaldoc.app://checkout-cancel"
+        if source == "android"
+        else f"{FRONTEND_URL}/pricing?checkout=cancel",
         metadata={"user_id": user_id, "plan": plan},
         custom_text={
             "submit": {"message": "KamalDoc – Ihr Dokumenten-Assistent"},
@@ -634,15 +650,17 @@ async def cancel_subscription(user_id: str) -> dict:
         # Atomic: Cancel in Stripe FIRST, then update DB
         if stripe_sub_id and STRIPE_SECRET_KEY and STRIPE_SECRET_KEY != "sk_test_PLACEHOLDER":
             try:
-                stripe.Subscription.modify(
-                    stripe_sub_id, cancel_at_period_end=True
-                )
+                stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True)
                 logger.info(f"[Stripe] Subscription {stripe_sub_id} set to cancel_at_period_end for user {user_id}")
             except stripe.error.InvalidRequestError as e:
                 if e.code == "resource_missing":
                     # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
-                    logger.warning(f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and cancelling locally for user {user_id}")
-                    await db.execute("UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,))
+                    logger.warning(
+                        f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and cancelling locally for user {user_id}"
+                    )
+                    await db.execute(
+                        "UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,)
+                    )
                 else:
                     logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
                     raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
@@ -668,6 +686,7 @@ async def cancel_subscription(user_id: str) -> dict:
 
 # --- Stripe Webhook ---
 
+
 async def handle_webhook(request: Request):
     """Process Stripe webhook events."""
     payload = await request.body()
@@ -678,9 +697,7 @@ async def handle_webhook(request: Request):
         return {"status": "ignored"}
 
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, STRIPE_WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
     except stripe.error.SignatureVerificationError:
         raise HTTPException(400, "Invalid signature")
     except Exception as e:
@@ -855,6 +872,3 @@ async def _handle_subscription_deleted(subscription):
             logger.info(f"Subscription deleted, downgraded: user={row['user_id']}")
     finally:
         await db.close()
-
-
-

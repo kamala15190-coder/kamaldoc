@@ -18,6 +18,9 @@ import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES, LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
+import { usePolling } from '../hooks/usePolling';
+import { useConfirm } from '../hooks/useConfirm';
+import { useToast } from '../hooks/useToast';
 
 const KATEGORIE_BADGE = {
   brief: 'badge-brief',
@@ -52,7 +55,7 @@ export default function DocumentDetail() {
   const [generatingReply, setGeneratingReply] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [copied, setCopied] = useState(null);
-  const [polling, setPolling] = useState(false);
+  const [, setPolling] = useState(false);
   const [markingDone, setMarkingDone] = useState(false);
   const [justMarkedDone, setJustMarkedDone] = useState(false);
   const [replyLanguage, setReplyLanguage] = useState('de');
@@ -60,7 +63,6 @@ export default function DocumentDetail() {
   const [replyHints, setReplyHints] = useState('');
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
-  const [shared, setShared] = useState(null);
   const [deadline, setDeadline] = useState('');
   const [savingDeadline, setSavingDeadline] = useState(false);
   const [translateLang, setTranslateLang] = useState('de');
@@ -85,6 +87,8 @@ export default function DocumentDetail() {
   }, []);
 
   const { handleApiError} = usePlanLimit();
+  const confirm = useConfirm();
+  const toast = useToast();
 
   const fetchDoc = useCallback(async () => {
     try {
@@ -135,22 +139,15 @@ export default function DocumentDetail() {
     fetchTranslations();
   }, [fetchDoc, fetchReplies, fetchTodos, fetchTranslations]);
 
-  // Polling wenn Analyse laeuft
-  useEffect(() => {
-    if (doc?.status === 'analyse_laeuft') {
-      setPolling(true);
-      const interval = setInterval(async () => {
-        const updated = await fetchDoc();
-        if (updated && updated.status !== 'analyse_laeuft') {
-          setPolling(false);
-          clearInterval(interval);
-        }
-      }, 3000);
-      return () => clearInterval(interval);
-    } else {
-      setPolling(false);
-    }
-  }, [doc?.status, fetchDoc]);
+  // Polling wenn Analyse laeuft – stoppt sauber beim Unmount / Statuswechsel
+  const analysing = doc?.status === 'analyse_laeuft';
+  useEffect(() => { setPolling(analysing); }, [analysing]);
+  usePolling(fetchDoc, {
+    enabled: analysing,
+    intervalMs: 3000,
+    maxAttempts: 60,
+    isDone: (updated) => !!updated && updated.status !== 'analyse_laeuft',
+  });
 
   const handleSave = async () => {
     setSaving(true);
@@ -181,13 +178,22 @@ export default function DocumentDetail() {
   };
 
   const handleDelete = async () => {
-    if (!confirm(t('document.confirmDelete'))) return;
+    const ok = await confirm({
+      title: t('document.confirmDeleteTitle', 'Dokument löschen?'),
+      message: t('document.confirmDelete'),
+      confirmLabel: t('common.delete', 'Löschen'),
+      cancelLabel: t('common.cancel', 'Abbrechen'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await deleteDocument(id);
+      toast.success(t('document.deleted', 'Dokument gelöscht'));
       navigate('/');
     } catch (err) {
       console.error(err);
+      toast.error(err?.userMessage || t('document.deleteFailed', 'Löschen fehlgeschlagen'));
       setDeleting(false);
     }
   };
@@ -239,7 +245,7 @@ export default function DocumentDetail() {
   const handleTranslate = async () => {
     setTranslating(true);
     try {
-      const result = await translateDocumentVolltext(id, translateLang);
+      await translateDocumentVolltext(id, translateLang);
       await fetchTranslations();
     } catch (err) {
       if (!handleApiError(err)) {
@@ -261,9 +267,9 @@ export default function DocumentDetail() {
       try {
         const { Share } = await import('@capacitor/share');
         await Share.share({ title, text, dialogTitle: t('document.share') });
-      } catch (_) {}
+      } catch { /* ignore */ }
     } else if (navigator.share) {
-      try { await navigator.share({ title, text }); } catch (_) {}
+      try { await navigator.share({ title, text }); } catch { /* ignore */ }
     } else {
       window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
     }
@@ -273,7 +279,7 @@ export default function DocumentDetail() {
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
-          border: '3px solid rgba(139,92,246,0.15)',
+          border: '3px solid rgba(99,102,241,0.15)',
           borderTopColor: 'var(--accent-solid)',
           animation: 'spin 0.8s linear infinite',
         }} />
@@ -635,6 +641,23 @@ export default function DocumentDetail() {
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', whiteSpace: 'pre-wrap', maxHeight: 200, overflowY: 'auto', margin: 0 }}>{doc.volltext}</p>
                 </div>
               )}
+
+              {doc.status === 'analysiert' && doc.volltext && doc.volltext.length < 50 && (
+                <div style={{
+                  marginTop: 14, padding: '10px 12px',
+                  borderRadius: 10,
+                  background: 'rgba(245,158,11,0.12)',
+                  border: '1px solid rgba(245,158,11,0.3)',
+                  color: 'var(--warning-text)',
+                  fontSize: 'var(--fs-body-sm, 13px)',
+                  display: 'flex', gap: 8, alignItems: 'flex-start',
+                }} role="alert">
+                  <AlertCircle style={{ width: 16, height: 16, flexShrink: 0, marginTop: 1 }} />
+                  <span>
+                    {t('document.ocrLowQuality', 'Die Texterkennung lieferte nur wenig Inhalt. Bitte lade ein schärferes Foto hoch – idealerweise ohne Reflexionen und gut ausgeleuchtet.')}
+                  </span>
+                </div>
+              )}
             </CollapsibleSection>
           </div>
 
@@ -926,7 +949,7 @@ function Field({ label, value, small }) {
 
 function ReminderSettings({ docId, currentDays, onUpdate }) {
   const { t } = useTranslation();
-  const { plan, isFree, isBasic, isPro } = useSubscription();
+  const { isFree, isBasic, isPro } = useSubscription();
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState(currentDays ?? 3);
 
@@ -1000,7 +1023,7 @@ function ReminderSettings({ docId, currentDays, onUpdate }) {
           );
         })}
       </div>
-      {saving && <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', marginTop: 8 }} />}
+      {saving && <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', marginTop: 8 }} />}
     </div>
   );
 }

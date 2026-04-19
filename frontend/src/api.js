@@ -5,9 +5,10 @@ import { REPLY_LANGUAGES } from './languages';
 
 const api = axios.create({
   baseURL: API_BASE_URL + '/api',
+  timeout: 60000, // LLM-Calls koennen lang laufen, 60s ist oberer Normalfall
 });
 
-// Interceptor: Authorization Header mit Supabase JWT Token hinzufÃ¼gen
+// Interceptor: Authorization Header mit Supabase JWT Token hinzufügen
 api.interceptors.request.use(async (config) => {
   const { data: { session } } = await supabase.auth.getSession();
   if (session?.access_token) {
@@ -15,6 +16,46 @@ api.interceptors.request.use(async (config) => {
   }
   return config;
 });
+
+// Response-Interceptor: 401 => Re-Login, 429 => Retry-After-Hint, 5xx => generisch.
+// Per-Call-Logik (Abos, Plan-Limits) nutzt weiterhin handleApiError() und sieht
+// den Originalfehler unverändert.
+let handlingUnauthorized = false;
+api.interceptors.response.use(
+  (resp) => resp,
+  async (error) => {
+    if (axios.isCancel?.(error) || error?.code === 'ERR_CANCELED' || error?.name === 'CanceledError') {
+      return Promise.reject(error);
+    }
+    const status = error?.response?.status;
+    const url = error?.config?.url || '';
+
+    if (status === 401 && !handlingUnauthorized && !url.includes('/subscription/status')) {
+      handlingUnauthorized = true;
+      try {
+        await supabase.auth.signOut();
+      } catch { /* ignore */ }
+      try {
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login';
+        }
+      } finally {
+        handlingUnauthorized = false;
+      }
+    }
+
+    if (status === 429) {
+      const retryAfter = error?.response?.headers?.['retry-after'];
+      error.userMessage = retryAfter
+        ? `Zu viele Anfragen. Bitte in ${retryAfter}s erneut versuchen.`
+        : 'Zu viele Anfragen. Bitte kurz warten und erneut versuchen.';
+    } else if (status >= 500) {
+      error.userMessage = 'Der Server ist vorübergehend nicht erreichbar. Bitte später erneut versuchen.';
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export async function uploadDocument(file, docType = 'standard') {
   const formData = new FormData();
@@ -411,7 +452,7 @@ export async function downloadFile(id, filename) {
       const token = session?.access_token || '';
       await Browser.open({ url: `${API_BASE_URL}/api/documents/${id}/file?token=${token}` });
       return;
-    } catch (_) { /* fallback to web method */ }
+    } catch { /* fallback to web method */ }
   }
   const { data } = await api.get(`/documents/${id}/file`, { responseType: 'blob' });
   const url = URL.createObjectURL(data);

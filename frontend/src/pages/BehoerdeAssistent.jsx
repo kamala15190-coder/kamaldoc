@@ -82,7 +82,7 @@ export default function BehoerdeAssistent() {
         if (saved.rechtseinschaetzung) setLegalAssessment(saved.rechtseinschaetzung);
         if (saved.anfechtbare_elemente) setContestableElements(saved.anfechtbare_elemente);
         if (saved.widerspruchsschreiben) setObjectionLetter(cleanObjectionText(saved.widerspruchsschreiben));
-      } catch (_) {}
+      } catch { /* ignore */ }
       fetchDocs();
     } catch (err) {
       if (!handleApiError(err)) setError(err.message || 'Upload fehlgeschlagen');
@@ -191,7 +191,7 @@ export default function BehoerdeAssistent() {
       } else {
         window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
       }
-    } catch (_) {}
+    } catch { /* ignore */ }
   };
   const selectDoc = async (doc) => {
     const full = await getDocument(doc.id);
@@ -208,7 +208,7 @@ export default function BehoerdeAssistent() {
       if (saved.rechtseinschaetzung) setLegalAssessment(saved.rechtseinschaetzung);
       if (saved.anfechtbare_elemente) setContestableElements(saved.anfechtbare_elemente);
       if (saved.widerspruchsschreiben) setObjectionLetter(cleanObjectionText(saved.widerspruchsschreiben));
-    } catch (_) { /* no saved results yet */ }
+    } catch { /* no saved results yet */ }
   };
 
   return (
@@ -414,7 +414,7 @@ export default function BehoerdeAssistent() {
         </div>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : docs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>

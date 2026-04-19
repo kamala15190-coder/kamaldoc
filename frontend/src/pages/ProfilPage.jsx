@@ -6,12 +6,16 @@ import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubs
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
+import { useConfirm } from '../hooks/useConfirm';
+import { useToast } from '../hooks/useToast';
 import EmailAccountSettings from '../email/EmailAccountSettings';
 import { formatLocalDate } from '../utils/dateUtils';
 
 export default function ProfilPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const confirm = useConfirm();
+  const toast = useToast();
   const [form, setForm] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -103,12 +107,20 @@ export default function ProfilPage() {
   }, [searchParams, refreshSub]);
 
   const handleCancel = async () => {
-    if (!confirm(t('profile.confirmCancel'))) return;
+    const ok = await confirm({
+      title: t('profile.confirmCancelTitle', 'Abo kündigen?'),
+      message: t('profile.confirmCancel'),
+      confirmLabel: t('profile.cancelSubscription', 'Kündigen'),
+      cancelLabel: t('common.cancel', 'Zurück'),
+      variant: 'warning',
+    });
+    if (!ok) return;
     setCancelling(true);
     setCancelError(null);
     try {
       await cancelSubscription();
       setCancelSuccess(true);
+      toast.success(t('profile.cancelSuccess', 'Abo gekündigt'));
       refreshSub();
       setTimeout(() => setCancelSuccess(false), 5000);
     } catch (err) {
@@ -141,6 +153,7 @@ export default function ProfilPage() {
       window.location.href = '/login';
     } catch (err) {
       console.error('Account deletion failed:', err);
+      toast.error(err?.userMessage || t('profile.deleteAccountFailed', 'Account-Löschung fehlgeschlagen'));
       setDeletingAccount(false);
       setShowDeleteModal(false);
     }
@@ -157,7 +170,7 @@ export default function ProfilPage() {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );

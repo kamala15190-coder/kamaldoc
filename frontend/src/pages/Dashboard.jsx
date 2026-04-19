@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
   Search, FileText, Receipt, Mail, AlertCircle,
   ChevronRight, Loader2, CheckCircle, ClipboardList,
-  Minus, Settings, Archive, DollarSign, Undo2, Zap, Crown
+  Minus, Settings, Archive, DollarSign, Undo2, Zap, Crown, Plus
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument, getExpenseSummary, getOpenTodos, updateTodo as apiUpdateTodo } from '../api';
 import AuthImage from '../components/AuthImage';
+import Skeleton from '../components/Skeleton';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -26,7 +27,7 @@ const KATEGORIE_ICON = {
   brief: { bg: 'rgba(96,165,250,0.12)', color: '#60a5fa' },
   rechnung: { bg: 'rgba(245,158,11,0.12)', color: '#F59E0B' },
   lohnzettel: { bg: 'rgba(0,200,150,0.12)', color: '#00C896' },
-  kontoauszug: { bg: 'rgba(139,92,246,0.12)', color: '#8b5cf6' },
+  kontoauszug: { bg: 'rgba(99,102,241,0.12)', color: '#8b5cf6' },
   vertrag: { bg: 'rgba(248,113,113,0.12)', color: '#f87171' },
   sonstiges: { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af' },
 };
@@ -77,7 +78,7 @@ function loadLayout(userId) {
       for (const def of DEFAULT_SECTIONS) { if (!ids.includes(def.id)) parsed.push({ ...def }); }
       return parsed.filter(s => ALL_SECTION_IDS.includes(s.id));
     }
-  } catch {}
+  } catch { /* ignore */ }
   return DEFAULT_SECTIONS.map(s => ({ ...s }));
 }
 function saveLayout(sections, userId) {
@@ -162,12 +163,11 @@ export default function Dashboard() {
       });
     }
     setTouchDragging(null); setTouchOffsetY(0);
-  }, [touchDragging, touchOffsetY, sections]);
+  }, [touchDragging, touchOffsetY, sections, userId]);
 
   const hideSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: false } : s); saveLayout(u, userId); return u; }); setConfirmHide(null); };
   const showSection = (id) => { setSections(prev => { const u = prev.map(s => s.id === id ? { ...s, visible: true } : s); saveLayout(u, userId); return u; }); setShowAddModal(false); };
   const resetLayout = () => { const d = DEFAULT_SECTIONS.map(s => ({ ...s })); setSections(d); saveLayout(d, userId); };
-  const hiddenSections = sections.filter(s => !s.visible);
   const visibleSections = sections.filter(s => s.visible);
 
   const fetchDocs = async (append = false) => {
@@ -184,13 +184,17 @@ export default function Dashboard() {
     } catch (err) { console.error('Fehler beim Laden:', err); }
     finally { setLoading(false); setLoadingMore(false); }
   };
-  const fetchTodos = async () => { try { const data = await getDocuments({ handlung_offen: true }); setOffeneTodos(data.documents || data); } catch {} };
-  const fetchManualTodos = async () => { try { const data = await getOpenTodos(); setManualTodos(data || []); } catch {} };
-  const fetchArchived = async () => { try { const data = await getDocuments({ archiv: true }); setArchivedDocs((data.documents || data).slice(0, 5)); } catch {} };
-  const fetchExpenses = async () => { if (isFree) return; try { const data = await getExpenseSummary({ year: new Date().getFullYear() }); setExpenseSummary(data); } catch {} };
+  const fetchTodos = async () => { try { const data = await getDocuments({ handlung_offen: true }); setOffeneTodos(data.documents || data); } catch { /* ignore */ } };
+  const fetchManualTodos = async () => { try { const data = await getOpenTodos(); setManualTodos(data || []); } catch { /* ignore */ } };
+  const fetchArchived = async () => { try { const data = await getDocuments({ archiv: true }); setArchivedDocs((data.documents || data).slice(0, 5)); } catch { /* ignore */ } };
+  const fetchExpenses = async () => { if (isFree) return; try { const data = await getExpenseSummary({ year: new Date().getFullYear() }); setExpenseSummary(data); } catch { /* ignore */ } };
 
   const hasMore = !search && documents.length < totalDocs;
+  // Initial load + category change: re-fetch all. fetchDocs dep intentionally omitted (recreated each render).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchDocs(); fetchTodos(); fetchManualTodos(); fetchArchived(); fetchExpenses(); }, [kategorie]);
+  // Debounced search: only reacts to `search`. fetchDocs dep intentionally omitted.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { const timer = setTimeout(fetchDocs, 400); return () => clearTimeout(timer); }, [search]);
 
   const handleTodoDone = async (docId) => {
@@ -374,15 +378,44 @@ export default function Dashboard() {
     documents: (
       <div style={{ animation: 'fadeUp 0.4s ease both', animationDelay: '0.29s' }}>
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(99,89,255,0.15)', borderTopColor: '#6359FF', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ ...glassCard, padding: 0 }}>
+            <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Skeleton width={14} height={14} radius={4} />
+              <Skeleton width={120} height={12} />
+            </div>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ padding: '12px 16px', display: 'flex', gap: 12, alignItems: 'center', borderBottom: i < 2 ? `0.5px solid ${tc.divider}` : 'none' }}>
+                <Skeleton width={40} height={52} radius={8} />
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <Skeleton width="60%" height={14} />
+                  <Skeleton width="35%" height={11} />
+                </div>
+              </div>
+            ))}
           </div>
         ) : documents.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <FileText style={{ width: 48, height: 48, color: tc.textHint, margin: '0 auto 16px' }} />
-            <p style={{ color: tc.textMuted, fontSize: 16, margin: '0 0 16px' }}>{t('dashboard.noDocuments')}</p>
-            <Link to="/upload" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#6359FF', fontWeight: 600, fontSize: 14, textDecoration: 'none' }}>
-              {t('dashboard.uploadDocument')} <ChevronRight style={{ width: 16, height: 16 }} />
+          <div style={{ ...glassCard, padding: '48px 24px', textAlign: 'center' }}>
+            <div style={{
+              width: 64, height: 64, borderRadius: 16,
+              background: 'var(--accent-soft)', margin: '0 auto 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <FileText style={{ width: 32, height: 32, color: 'var(--accent-solid)' }} />
+            </div>
+            <h3 style={{ fontSize: 'var(--fs-title, 17px)', fontWeight: 700, color: tc.text, margin: '0 0 6px' }}>
+              {t('dashboard.noDocumentsTitle', 'Los geht\'s!')}
+            </h3>
+            <p style={{ color: tc.textMuted, fontSize: 'var(--fs-body, 15px)', margin: '0 0 20px', lineHeight: 1.5 }}>
+              {t('dashboard.noDocuments')}
+            </p>
+            <Link to="/upload" className="btn-accent" style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px', borderRadius: 12,
+              background: 'var(--accent-solid)', color: '#fff',
+              fontWeight: 600, fontSize: 'var(--fs-body, 15px)',
+              textDecoration: 'none',
+            }}>
+              <Plus style={{ width: 18, height: 18 }} /> {t('dashboard.uploadDocument')}
             </Link>
           </div>
         ) : (
@@ -596,7 +629,7 @@ function TileCard({ icon, iconBg, value, label, tc, onClick }) {
   );
 }
 
-function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorLabel, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd, tc, isDark }) {
+function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorLabel, isTouchDragging, touchOffsetY, onTouchStart, onTouchMove, onTouchEnd, tc }) {
   const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging, isOver } = useSortable({ id });
   const isBeingDragged = isDragging || isTouchDragging;
@@ -635,27 +668,59 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
 function DocumentRow({ doc, tc, isLast, delay }) {
   const { t } = useTranslation();
   const catIcon = KATEGORIE_ICON[doc.kategorie] || KATEGORIE_ICON.sonstiges;
+  const done = doc.handlung_erledigt;
+  const deadlinePill = getDeadlinePill(doc.deadline, done);
   return (
     <Link to={`/documents/${doc.id}`} style={{
       display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', textDecoration: 'none',
       borderBottom: isLast ? 'none' : `0.5px solid ${tc.divider}`,
       animation: 'slideInLeft 0.3s ease both', animationDelay: `${Math.min(delay, 10) * 0.04}s`,
+      opacity: done ? 0.6 : 1,
+      position: 'relative',
     }}>
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: catIcon.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <FileText style={{ width: 16, height: 16, color: catIcon.color }} />
+      <div style={{ position: 'relative', width: 40, height: 52, borderRadius: 8, background: catIcon.bg, overflow: 'hidden', flexShrink: 0, border: '1px solid var(--border-glass)' }}>
+        <AuthImage
+          src={`/documents/${doc.id}/thumbnail`}
+          alt=""
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+          <FileText style={{ width: 16, height: 16, color: catIcon.color, opacity: 0.25 }} />
+        </div>
+        {done && (
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <CheckCircle style={{ width: 16, height: 16, color: '#fff' }} />
+          </div>
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{doc.absender || doc.dateiname}</span>
-          {doc.handlung_erforderlich && !doc.handlung_erledigt && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5F6D', flexShrink: 0, animation: 'glowPulse 2s ease-in-out infinite' }} />}
+          <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textDecoration: done ? 'line-through' : 'none' }}>{doc.absender || doc.dateiname}</span>
+          {doc.handlung_erforderlich && !done && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5F6D', flexShrink: 0, animation: 'glowPulse 2s ease-in-out infinite' }} />}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
           {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{formatLocalDate(doc.datum)}</span>}
+          {deadlinePill && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: deadlinePill.bg, color: deadlinePill.color }}>{deadlinePill.label}</span>}
           {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
         </div>
       </div>
       <ChevronRight style={{ width: 14, height: 14, color: tc.textHint, flexShrink: 0 }} />
     </Link>
   );
+}
+
+function getDeadlinePill(deadline, done) {
+  if (!deadline || done) return null;
+  const d = new Date(deadline);
+  if (isNaN(d.getTime())) return null;
+  const now = new Date();
+  const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) {
+    return { bg: 'rgba(239,68,68,0.14)', color: '#f87171', label: `vor ${Math.abs(diffDays)} T.` };
+  }
+  if (diffDays === 0) return { bg: 'rgba(239,68,68,0.18)', color: '#f87171', label: 'heute' };
+  if (diffDays <= 3) return { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', label: `${diffDays} T.` };
+  if (diffDays <= 14) return { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: `${diffDays} T.` };
+  return null;
 }

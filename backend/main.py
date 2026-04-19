@@ -1,40 +1,57 @@
 import asyncio
+import io
 import logging
 import os
 import smtplib
-import shutil
 import time
 import uuid
 from collections import defaultdict
 from datetime import datetime
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
-from typing import List, Optional
 
 import fitz  # PyMuPDF
 import stripe
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, Depends, Query, Request
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from PIL import Image
 from pydantic import BaseModel
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from database import DB_PATH, DATA_DIR, get_db, init_db
-from llm_service import (
-    analyze_document, analyze_document_from_text, ocr_image,
-    check_mistral_status, generate_reply,
-    explain_authority_document, simplify_medical_report, translate_simplified_report,
-    extract_expense_items, legal_assessment, get_contestable_elements, generate_objection_letter
-)
 from auth import get_current_user
+from database import DATA_DIR, DB_PATH, get_db, init_db, permanent_admin_id
+from llm_service import (
+    analyze_document,
+    analyze_document_from_text,
+    check_mistral_status,
+    explain_authority_document,
+    extract_expense_items,
+    generate_objection_letter,
+    generate_reply,
+    get_contestable_elements,
+    legal_assessment,
+    ocr_image,
+    simplify_medical_report,
+    translate_simplified_report,
+)
 from subscription import (
-    check_upload_limit, check_analysis_limit, check_behoerden_limit,
-    check_befund_limit, check_expenses_access, increment_usage,
-    get_subscription_status, create_checkout_session, cancel_subscription,
-    downgrade_subscription, reactivate_subscription,
-    handle_webhook, get_user_plan, get_usage, PLAN_LIMITS,
+    PLAN_LIMITS,
+    cancel_subscription,
+    check_analysis_limit,
+    check_befund_limit,
+    check_behoerden_limit,
+    check_expenses_access,
+    check_upload_limit,
+    create_checkout_session,
+    downgrade_subscription,
+    get_subscription_status,
+    get_usage,
+    get_user_plan,
+    handle_webhook,
+    increment_usage,
+    reactivate_subscription,
 )
 
 logging.basicConfig(level=logging.INFO)
@@ -42,19 +59,56 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="KamalDoc API", version="1.0.0")
 
+
+def safe_task(coro, name: str = "background", on_error=None):
+    """Erzeugt einen asyncio.Task mit Exception-Logging.
+
+    Ohne diesen Wrapper gehen Exceptions aus `asyncio.create_task(...)` stumm
+    verloren, wenn niemand die Task `await`-ed. Das ließ Analyse-Jobs und den
+    Deadline-Checker unbemerkt sterben.
+
+    `on_error(exc)` wird (falls gesetzt) synchron im Done-Callback aufgerufen;
+    selbst dort geworfene Exceptions werden wieder nur geloggt.
+    """
+    task = asyncio.create_task(coro)
+
+    def _done(t: asyncio.Task):
+        if t.cancelled():
+            return
+        exc = t.exception()
+        if exc is None:
+            return
+        logger.error(f"[{name}] Background-Task gecrasht: {exc}", exc_info=exc)
+        if on_error is not None:
+            try:
+                on_error(exc)
+            except Exception as cb_exc:
+                logger.error(f"[{name}] on_error-Callback gecrasht: {cb_exc}", exc_info=cb_exc)
+
+    task.add_done_callback(_done)
+    return task
+
+
+_PROD_ORIGINS = [
+    "https://kamaldoc-flax.vercel.app",
+    "https://kdoc.at",
+    "https://www.kdoc.at",
+    "https://api.kdoc.at",
+    "capacitor://localhost",
+    "ionic://localhost",
+]
+_DEV_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost",
+    "https://localhost",
+    "http://127.0.0.1:5173",
+]
+_APP_ENV = os.getenv("APP_ENV", "development").lower()
+_CORS_ORIGINS = _PROD_ORIGINS + ([] if _APP_ENV == "production" else _DEV_ORIGINS)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://kamaldoc-flax.vercel.app",
-        "https://kdoc.at",
-        "https://www.kdoc.at",
-        "https://api.kdoc.at",
-        "http://localhost:5173",
-        "http://localhost",
-        "https://localhost",
-        "capacitor://localhost",
-        "ionic://localhost",
-    ],
+    allow_origins=_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
@@ -63,6 +117,7 @@ app.add_middleware(
 # --- Rate Limiting Middleware ---
 # Global: 200 Requests/Minute pro IP
 # Per-Endpoint: /api/upload → 60/min, /api/push-token → 10/min (Loop-Schutz)
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     EXEMPT_PATHS = {"/api/status", "/auth/google/login", "/auth/google/callback"}
@@ -126,6 +181,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.requests[client_ip].append(now)
         return await call_next(request)
 
+
 app.add_middleware(RateLimitMiddleware, max_requests=200, window_seconds=60)
 
 ORIGINALS_DIR = DATA_DIR / "originals"
@@ -137,7 +193,7 @@ async def startup():
     await init_db()
     logger.info("KamalDoc Backend gestartet")
     # Deadline-Checker im Hintergrund starten
-    asyncio.create_task(deadline_checker_loop())
+    safe_task(deadline_checker_loop(), name="deadline-checker")
 
 
 # --- Google OAuth Proxy (damit Google "Weiter zu kdoc.at" anzeigt) ---
@@ -157,6 +213,7 @@ GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
 # OAuth state store (in-memory, TTL 10 min)
 _oauth_states = {}
 
+
 def _cleanup_oauth_states():
     """Remove expired OAuth states (older than 10 minutes)."""
     now = time.time()
@@ -169,6 +226,7 @@ def _cleanup_oauth_states():
 async def google_login(platform: str = "web"):
     """Redirect user to Google OAuth with our own redirect_uri."""
     import secrets
+
     _cleanup_oauth_states()
     token = secrets.token_urlsafe(32)
     state = f"{platform}:{token}"
@@ -189,8 +247,9 @@ async def google_login(platform: str = "web"):
 @app.get("/auth/google/callback")
 async def google_callback(code: str = None, state: str = "", error: str = None):
     """Handle Google OAuth callback, exchange code, sign in via Supabase, redirect to frontend."""
+    from urllib.parse import quote, urlencode
+
     import httpx as _httpx
-    from urllib.parse import urlencode, quote
 
     if error or not code:
         logger.error(f"Google OAuth error: {error}")
@@ -203,7 +262,7 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
         platform = parts[0] if parts[0] in ("web", "android") else "web"
         state_token = parts[1]
         if state_token not in _oauth_states:
-            logger.warning(f"Invalid OAuth state token")
+            logger.warning("Invalid OAuth state token")
             return RedirectResponse(url=f"{FRONTEND_URL}/login?error=invalid_state")
         del _oauth_states[state_token]
     else:
@@ -213,13 +272,16 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
     # 1. Exchange authorization code for tokens with Google
     try:
         async with _httpx.AsyncClient(timeout=15) as client:
-            token_resp = await client.post(GOOGLE_TOKEN_URL, data={
-                "code": code,
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": f"{API_URL}/auth/google/callback",
-                "grant_type": "authorization_code",
-            })
+            token_resp = await client.post(
+                GOOGLE_TOKEN_URL,
+                data={
+                    "code": code,
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "redirect_uri": f"{API_URL}/auth/google/callback",
+                    "grant_type": "authorization_code",
+                },
+            )
             token_data = token_resp.json()
 
         if "error" in token_data:
@@ -260,12 +322,14 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
         return RedirectResponse(url=f"{FRONTEND_URL}/login?error=supabase_exception")
 
     # 3. Redirect to frontend/app with tokens in URL hash
-    fragment = urlencode({
-        "access_token": access_token,
-        "refresh_token": refresh_token,
-        "expires_in": expires_in,
-        "token_type": token_type,
-    })
+    fragment = urlencode(
+        {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "expires_in": expires_in,
+            "token_type": token_type,
+        }
+    )
 
     if platform == "android":
         redirect_url = f"{ANDROID_CALLBACK}#{fragment}"
@@ -276,6 +340,42 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
 
 
 # --- Hilfsfunktionen ---
+
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".pdf"}
+# PNG, JPEG, und %PDF- magic bytes. Gibt uns eine kleine Defense-in-Depth
+# gegen umbenannte Malware-Uploads (Pillow/fitz sind unser echter Gatekeeper).
+_IMAGE_MAGIC_PREFIXES = (
+    b"\x89PNG\r\n\x1a\n",  # PNG
+    b"\xff\xd8\xff",  # JPEG
+)
+_PDF_MAGIC_PREFIX = b"%PDF-"
+
+
+def _looks_like_allowed_upload(content: bytes, ext: str) -> bool:
+    """Header-Inspektion + echter Decode-Versuch via PIL/fitz."""
+    if not content:
+        return False
+    try:
+        if ext == ".pdf":
+            if not content.startswith(_PDF_MAGIC_PREFIX):
+                return False
+            doc = fitz.open(stream=content, filetype="pdf")
+            try:
+                if doc.page_count < 1:
+                    return False
+            finally:
+                doc.close()
+            return True
+        # JPG / JPEG / PNG
+        if not any(content.startswith(p) for p in _IMAGE_MAGIC_PREFIXES):
+            return False
+        with Image.open(io.BytesIO(content)) as img:
+            img.verify()  # PIL-Integrity-Check
+        return True
+    except Exception as exc:
+        logger.debug(f"Upload-Validation fehlgeschlagen (ext={ext}): {exc}")
+        return False
+
 
 def create_thumbnail(image_path: str, thumb_path: str, size=(400, 400)):
     with Image.open(image_path) as img:
@@ -288,11 +388,13 @@ def create_thumbnail(image_path: str, thumb_path: str, size=(400, 400)):
 def pdf_to_image(pdf_path: str, output_path: str) -> str:
     """Erste Seite eines PDFs als JPEG speichern."""
     doc = fitz.open(pdf_path)
-    page = doc[0]
-    pix = page.get_pixmap(dpi=200)
-    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-    img.save(output_path, format="JPEG", quality=90)
-    doc.close()
+    try:
+        page = doc[0]
+        pix = page.get_pixmap(dpi=200)
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        img.save(output_path, format="JPEG", quality=90)
+    finally:
+        doc.close()
     return output_path
 
 
@@ -327,28 +429,27 @@ async def run_analysis(doc_id: int, image_path: str):
     db = await get_db()
     try:
         # Look up original file to handle multi-page PDFs
-        cursor = await db.execute(
-            "SELECT originalpfad, dateityp FROM documents WHERE id = ?", (doc_id,)
-        )
+        cursor = await db.execute("SELECT originalpfad, dateityp FROM documents WHERE id = ?", (doc_id,))
         doc_row = await cursor.fetchone()
         original_path = str(ORIGINALS_DIR / doc_row["originalpfad"]) if doc_row else None
         file_type = doc_row["dateityp"] if doc_row else ""
 
-        if file_type == "pdf" and original_path and os.path.exists(original_path):
-            num_pages = pdf_page_count(original_path)
+        pdf_exists = await asyncio.to_thread(os.path.exists, original_path) if original_path else False
+        if file_type == "pdf" and original_path and pdf_exists:
+            num_pages = await asyncio.to_thread(pdf_page_count, original_path)
             logger.info(f"[Analyse] PDF mit {num_pages} Seiten erkannt: {original_path}")
             if num_pages > 1:
                 # Multi-page PDF: OCR each page separately, combine text
                 all_ocr_texts = []
                 for i in range(num_pages):
                     page_img_path = str(ORIGINALS_DIR / f"{Path(original_path).stem}_page{i}.jpg")
-                    pdf_page_to_image(original_path, i, page_img_path)
+                    await asyncio.to_thread(pdf_page_to_image, original_path, i, page_img_path)
                     page_text = await ocr_image(page_img_path)
-                    all_ocr_texts.append(f"--- Seite {i+1} ---\n{page_text}")
-                    logger.info(f"[Analyse] Seite {i+1}/{num_pages} OCR: {len(page_text)} Zeichen")
+                    all_ocr_texts.append(f"--- Seite {i + 1} ---\n{page_text}")
+                    logger.info(f"[Analyse] Seite {i + 1}/{num_pages} OCR: {len(page_text)} Zeichen")
                     # Clean up temp page image
                     try:
-                        os.remove(page_img_path)
+                        await asyncio.to_thread(os.remove, page_img_path)
                     except OSError:
                         pass
                 combined_ocr = "\n\n".join(all_ocr_texts)
@@ -365,11 +466,13 @@ async def run_analysis(doc_id: int, image_path: str):
         handlung_erf_int = 1 if handlung_erf_raw else 0
         handlung_beschr = result.get("handlung_beschreibung")
 
-        logger.info(f"[Analyse] Dokument {doc_id}: "
-                     f"handlung_erforderlich raw={handlung_erf_raw} ({type(handlung_erf_raw).__name__}) → DB={handlung_erf_int}, "
-                     f"handlung_beschreibung='{handlung_beschr}', "
-                     f"kategorie='{result.get('kategorie')}', "
-                     f"absender='{result.get('absender')}'")
+        logger.info(
+            f"[Analyse] Dokument {doc_id}: "
+            f"handlung_erforderlich raw={handlung_erf_raw} ({type(handlung_erf_raw).__name__}) → DB={handlung_erf_int}, "
+            f"handlung_beschreibung='{handlung_beschr}', "
+            f"kategorie='{result.get('kategorie')}', "
+            f"absender='{result.get('absender')}'"
+        )
 
         # Deadline: faelligkeitsdatum als initiale Deadline verwenden
         deadline = result.get("faelligkeitsdatum")
@@ -424,10 +527,12 @@ async def run_analysis(doc_id: int, image_path: str):
         )
         verify = await cursor.fetchone()
         if verify:
-            logger.info(f"[Analyse] DB-Verifikation Dokument {doc_id}: "
-                         f"handlung_erforderlich={verify['handlung_erforderlich']}, "
-                         f"handlung_beschreibung='{verify['handlung_beschreibung']}', "
-                         f"kategorie='{verify['kategorie']}'")
+            logger.info(
+                f"[Analyse] DB-Verifikation Dokument {doc_id}: "
+                f"handlung_erforderlich={verify['handlung_erforderlich']}, "
+                f"handlung_beschreibung='{verify['handlung_beschreibung']}', "
+                f"kategorie='{verify['kategorie']}'"
+            )
 
         logger.info(f"[Analyse] Dokument {doc_id} erfolgreich analysiert und gespeichert")
 
@@ -444,8 +549,15 @@ async def run_analysis(doc_id: int, image_path: str):
                     for item in items:
                         await db.execute(
                             "INSERT INTO expense_items (document_id, user_id, name, category, subcategory, price, date) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                            (doc_id, doc_user_id, item.get("name", ""), item.get("category", "Sonstiges"),
-                             item.get("subcategory"), abs(float(item.get("price", 0))), doc_date),
+                            (
+                                doc_id,
+                                doc_user_id,
+                                item.get("name", ""),
+                                item.get("category", "Sonstiges"),
+                                item.get("subcategory"),
+                                abs(float(item.get("price", 0))),
+                                doc_date,
+                            ),
                         )
                     await db.commit()
                     logger.info(f"[Analyse] {len(items)} expense items für Dokument {doc_id} gespeichert")
@@ -465,13 +577,14 @@ async def run_analysis(doc_id: int, image_path: str):
 
 # --- Pydantic-Modelle ---
 
+
 class DocumentUpdate(BaseModel):
-    status: Optional[str] = None
-    notizen: Optional[str] = None
-    handlung_erledigt: Optional[bool] = None
-    tags: Optional[str] = None
-    deadline: Optional[str] = None
-    reminder_days: Optional[int] = None
+    status: str | None = None
+    notizen: str | None = None
+    handlung_erledigt: bool | None = None
+    tags: str | None = None
+    deadline: str | None = None
+    reminder_days: int | None = None
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -481,6 +594,25 @@ class DocumentUpdate(BaseModel):
             raise ValueError("Tags darf maximal 1.000 Zeichen haben")
         if self.deadline and len(self.deadline) > 30:
             raise ValueError("Ungültiges Deadline-Format")
+
+
+async def _mark_document_failed(doc_id: int, error_msg: str) -> None:
+    """Last-resort: Dokument auf Status 'fehler' setzen wenn Background-Task crasht."""
+    try:
+        db = await get_db()
+        try:
+            # Nur ersten 500 Zeichen der Error-Message speichern (kein Secret-Leak in DB).
+            safe_msg = (error_msg or "")[:500]
+            await db.execute(
+                "UPDATE documents SET status = 'fehler', analyse_fehler = ? "
+                "WHERE id = ? AND status = 'analyse_laeuft'",
+                (safe_msg, doc_id),
+            )
+            await db.commit()
+        finally:
+            await db.close()
+    except Exception as exc:
+        logger.error(f"[_mark_document_failed] Konnte Dokument {doc_id} nicht markieren: {exc}")
 
 
 async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
@@ -501,11 +633,10 @@ async def run_analysis_with_limit(doc_id: int, image_path: str, user_id: str):
 
 # --- Routen ---
 
+
 @app.post("/api/upload")
 async def upload_document(
-    file: UploadFile = File(...),
-    doc_type: str = Query("standard"),
-    user_id: str = Depends(get_current_user)
+    file: UploadFile = File(...), doc_type: str = Query("standard"), user_id: str = Depends(get_current_user)
 ):
     # Plan enforcement: Upload-Limit prüfen
     await check_upload_limit(user_id)
@@ -514,31 +645,36 @@ async def upload_document(
     file_content = await file.read()
     if len(file_content) > 50 * 1024 * 1024:
         raise HTTPException(413, "Datei zu groß. Maximal 50 MB erlaubt.")
-    await file.seek(0)
 
     ext = Path(file.filename).suffix.lower()
-    if ext not in (".jpg", ".jpeg", ".png", ".pdf"):
+    if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(400, "Nur JPG, PNG und PDF erlaubt")
+
+    if not await asyncio.to_thread(_looks_like_allowed_upload, file_content, ext):
+        raise HTTPException(400, "Ungültige oder beschädigte Datei")
 
     file_id = uuid.uuid4().hex[:12]
     original_name = f"{file_id}{ext}"
     original_path = ORIGINALS_DIR / original_name
 
-    with open(original_path, "wb") as f:
-        shutil.copyfileobj(file.file, f)
+    def _write_original():
+        with open(original_path, "wb") as f:
+            f.write(file_content)
+
+    await asyncio.to_thread(_write_original)
 
     # Bild für Analyse vorbereiten
     if ext == ".pdf":
         image_name = f"{file_id}.jpg"
         image_path = ORIGINALS_DIR / image_name
-        pdf_to_image(str(original_path), str(image_path))
+        await asyncio.to_thread(pdf_to_image, str(original_path), str(image_path))
     else:
         image_path = original_path
 
     # Thumbnail erstellen
     thumb_name = f"{file_id}_thumb.jpg"
     thumb_path = THUMBNAILS_DIR / thumb_name
-    create_thumbnail(str(image_path), str(thumb_path))
+    await asyncio.to_thread(create_thumbnail, str(image_path), str(thumb_path))
 
     db = await get_db()
     try:
@@ -556,16 +692,21 @@ async def upload_document(
     await increment_usage(user_id, "documents_total")
 
     # Analyse im Hintergrund starten (mit Limit-Check)
-    asyncio.create_task(run_analysis_with_limit(doc_id, str(image_path), user_id))
+    safe_task(
+        run_analysis_with_limit(doc_id, str(image_path), user_id),
+        name=f"analysis-{doc_id}",
+        on_error=lambda exc: safe_task(
+            _mark_document_failed(doc_id, str(exc)),
+            name=f"mark-failed-{doc_id}",
+        ),
+    )
 
     return {"id": doc_id, "status": "analyse_laeuft", "dateiname": file.filename}
 
 
 @app.post("/api/upload-batch")
 async def upload_documents_batch(
-    files: List[UploadFile] = File(...),
-    doc_type: str = Query("standard"),
-    user_id: str = Depends(get_current_user)
+    files: list[UploadFile] = File(...), doc_type: str = Query("standard"), user_id: str = Depends(get_current_user)
 ):
     """Mehrere Dokumente auf einmal hochladen. Fehler pro Datei werden isoliert."""
     results = []
@@ -579,27 +720,34 @@ async def upload_documents_batch(
                 continue
 
             ext = Path(file.filename).suffix.lower()
-            if ext not in (".jpg", ".jpeg", ".png", ".pdf"):
+            if ext not in ALLOWED_EXTENSIONS:
                 results.append({"dateiname": file.filename, "error": "Nur JPG, PNG und PDF erlaubt"})
+                continue
+
+            if not await asyncio.to_thread(_looks_like_allowed_upload, file_content, ext):
+                results.append({"dateiname": file.filename, "error": "Ungültige oder beschädigte Datei"})
                 continue
 
             file_id = uuid.uuid4().hex[:12]
             original_name = f"{file_id}{ext}"
             original_path = ORIGINALS_DIR / original_name
 
-            with open(original_path, "wb") as f:
-                f.write(file_content)
+            def _write_original(path=original_path, data=file_content):
+                with open(path, "wb") as f:
+                    f.write(data)
+
+            await asyncio.to_thread(_write_original)
 
             if ext == ".pdf":
                 image_name = f"{file_id}.jpg"
                 image_path = ORIGINALS_DIR / image_name
-                pdf_to_image(str(original_path), str(image_path))
+                await asyncio.to_thread(pdf_to_image, str(original_path), str(image_path))
             else:
                 image_path = original_path
 
             thumb_name = f"{file_id}_thumb.jpg"
             thumb_path = THUMBNAILS_DIR / thumb_name
-            create_thumbnail(str(image_path), str(thumb_path))
+            await asyncio.to_thread(create_thumbnail, str(image_path), str(thumb_path))
 
             db = await get_db()
             try:
@@ -614,7 +762,14 @@ async def upload_documents_batch(
                 await db.close()
 
             await increment_usage(user_id, "documents_total")
-            asyncio.create_task(run_analysis_with_limit(doc_id, str(image_path), user_id))
+            safe_task(
+                run_analysis_with_limit(doc_id, str(image_path), user_id),
+                name=f"analysis-{doc_id}",
+                on_error=lambda exc, d=doc_id: safe_task(
+                    _mark_document_failed(d, str(exc)),
+                    name=f"mark-failed-{d}",
+                ),
+            )
 
             results.append({"id": doc_id, "status": "analyse_laeuft", "dateiname": file.filename})
 
@@ -631,15 +786,15 @@ async def upload_documents_batch(
 @app.get("/api/documents")
 async def list_documents(
     user_id: str = Depends(get_current_user),
-    search: Optional[str] = None,
-    kategorie: Optional[str] = None,
-    handlung_erforderlich: Optional[bool] = None,
-    handlung_offen: Optional[bool] = None,
-    archiv: Optional[bool] = None,
-    status: Optional[str] = None,
-    doc_type: Optional[str] = None,
-    limit: Optional[int] = None,
-    offset: Optional[int] = 0,
+    search: str | None = None,
+    kategorie: str | None = None,
+    handlung_erforderlich: bool | None = None,
+    handlung_offen: bool | None = None,
+    archiv: bool | None = None,
+    status: str | None = None,
+    doc_type: str | None = None,
+    limit: int | None = None,
+    offset: int | None = 0,
 ):
     query = "SELECT * FROM documents WHERE user_id = ?"
     count_query = "SELECT COUNT(*) as total FROM documents WHERE user_id = ?"
@@ -743,9 +898,7 @@ async def get_document_file(doc_id: int, user_id: str = Depends(get_current_user
 async def get_document_thumbnail(doc_id: int, user_id: str = Depends(get_current_user)):
     db = await get_db()
     try:
-        cursor = await db.execute(
-            "SELECT thumbnailpfad FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id)
-        )
+        cursor = await db.execute("SELECT thumbnailpfad FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
         row = await cursor.fetchone()
         if not row:
             raise HTTPException(404, "Dokument nicht gefunden")
@@ -799,9 +952,7 @@ async def update_document(doc_id: int, update: DocumentUpdate, user_id: str = De
             raise HTTPException(400, "Keine Felder zum Aktualisieren")
 
         params.extend([doc_id, user_id])
-        await db.execute(
-            f"UPDATE documents SET {', '.join(fields)} WHERE id = ? AND user_id = ?", params
-        )
+        await db.execute(f"UPDATE documents SET {', '.join(fields)} WHERE id = ? AND user_id = ?", params)
         await db.commit()
 
         cursor = await db.execute("SELECT * FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
@@ -839,7 +990,9 @@ async def delete_document(doc_id: int, user_id: str = Depends(get_current_user))
 
 
 @app.post("/api/documents/{doc_id}/reply")
-async def create_reply(doc_id: int, data: dict = None, target_language: str = "de", user_id: str = Depends(get_current_user)):
+async def create_reply(
+    doc_id: int, data: dict = None, target_language: str = "de", user_id: str = Depends(get_current_user)
+):
     await check_analysis_limit(user_id)
     db = await get_db()
     try:
@@ -853,7 +1006,9 @@ async def create_reply(doc_id: int, data: dict = None, target_language: str = "d
         # Einstellungen laden für Absenderdaten
         einstellungen = {}
         try:
-            settings_cursor = await db.execute("SELECT key, value FROM user_einstellungen WHERE user_id = ?", (user_id,))
+            settings_cursor = await db.execute(
+                "SELECT key, value FROM user_einstellungen WHERE user_id = ?", (user_id,)
+            )
             settings_rows = await settings_cursor.fetchall()
             einstellungen = {r["key"]: r["value"] for r in settings_rows}
         except Exception:
@@ -901,9 +1056,8 @@ async def get_replies(doc_id: int, user_id: str = Depends(get_current_user)):
         await db.close()
 
 
-
-
 # --- Todos ---
+
 
 @app.get("/api/documents/{doc_id}/todos")
 async def get_todos(doc_id: int, user_id: str = Depends(get_current_user)):
@@ -975,9 +1129,7 @@ async def delete_todo(todo_id: int, user_id: str = Depends(get_current_user)):
         await db.close()
 
 
-EINSTELLUNGEN_KEYS = [
-    "vorname", "nachname", "adresse", "plz", "ort", "email", "telefon"
-]
+EINSTELLUNGEN_KEYS = ["vorname", "nachname", "adresse", "plz", "ort", "email", "telefon"]
 
 
 @app.get("/api/einstellungen")
@@ -1051,12 +1203,13 @@ async def get_status():
 
 # --- Ausgaben-Dashboard ---
 
+
 @app.get("/api/expenses")
 async def get_expenses(
     user_id: str = Depends(get_current_user),
-    year: Optional[int] = None,
-    month: Optional[int] = None,
-    expense_category: Optional[str] = None,
+    year: int | None = None,
+    month: int | None = None,
+    expense_category: str | None = None,
 ):
     """Ausgaben-Aggregation für Rechnungen."""
     # Plan enforcement: Expenses nur für Basic/Pro
@@ -1149,10 +1302,10 @@ async def get_expense_categories(user_id: str = Depends(get_current_user)):
 @app.get("/api/expenses/items")
 async def get_expense_items(
     user_id: str = Depends(get_current_user),
-    category: Optional[str] = None,
-    subcategory: Optional[str] = None,
-    year: Optional[int] = None,
-    month: Optional[int] = None,
+    category: str | None = None,
+    subcategory: str | None = None,
+    year: int | None = None,
+    month: int | None = None,
 ):
     """Gefilterte Expense Items (expense_items + documents fallback)."""
     await check_expenses_access(user_id)
@@ -1220,8 +1373,8 @@ async def get_expense_items(
 @app.get("/api/expenses/summary")
 async def get_expense_summary(
     user_id: str = Depends(get_current_user),
-    year: Optional[int] = None,
-    month: Optional[int] = None,
+    year: int | None = None,
+    month: int | None = None,
 ):
     """Zusammenfassung: total, by_category, by_month (expense_items + documents fallback)."""
     await check_expenses_access(user_id)
@@ -1262,7 +1415,9 @@ async def get_expense_summary(
             fb_params.append(month)
         cur2 = await db.execute(fb, fb_params)
         for r in await cur2.fetchall():
-            all_items.append({"price": r["betrag"], "category": r["expense_category"] or "Sonstiges", "date": r["datum"]})
+            all_items.append(
+                {"price": r["betrag"], "category": r["expense_category"] or "Sonstiges", "date": r["datum"]}
+            )
 
         total = sum(i["price"] for i in all_items)
         by_category = {}
@@ -1290,6 +1445,7 @@ async def get_expense_summary(
 
 # --- Behörden-Assistent ---
 
+
 @app.get("/api/documents/{doc_id}/behoerden-results")
 async def get_behoerden_results(
     doc_id: int,
@@ -1305,8 +1461,14 @@ async def get_behoerden_results(
         )
         row = await cursor.fetchone()
         if not row:
-            return {"erklaerung": None, "rechtseinschaetzung": None, "anfechtbare_elemente": None, "widerspruchsschreiben": None}
+            return {
+                "erklaerung": None,
+                "rechtseinschaetzung": None,
+                "anfechtbare_elemente": None,
+                "widerspruchsschreiben": None,
+            }
         import json as _json
+
         ae = row["anfechtbare_elemente"]
         return {
             "erklaerung": row["erklaerung"],
@@ -1355,7 +1517,9 @@ async def explain_document(
 
     db = await get_db()
     try:
-        cursor = await db.execute("SELECT volltext, erklaerung FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+        cursor = await db.execute(
+            "SELECT volltext, erklaerung FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id)
+        )
         row = await cursor.fetchone()
         if not row:
             raise HTTPException(404, "Dokument nicht gefunden")
@@ -1371,7 +1535,9 @@ async def explain_document(
             raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         # Erklärung speichern
-        await db.execute("UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id))
+        await db.execute(
+            "UPDATE documents SET erklaerung = ? WHERE id = ? AND user_id = ?", (erklaerung, doc_id, user_id)
+        )
         await _upsert_behoerden_result(db, doc_id, user_id, erklaerung=erklaerung)
 
         await increment_usage(user_id, "behoerden_month")
@@ -1445,7 +1611,10 @@ async def contestable_elements_endpoint(
             raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
         import json as _json
-        await _upsert_behoerden_result(db, doc_id, user_id, anfechtbare_elemente=_json.dumps(elements, ensure_ascii=False))
+
+        await _upsert_behoerden_result(
+            db, doc_id, user_id, anfechtbare_elemente=_json.dumps(elements, ensure_ascii=False)
+        )
 
         await increment_usage(user_id, "behoerden_month")
 
@@ -1511,6 +1680,7 @@ Telefon: {s.get('telefon', '')}"""
 
 # --- Befund-Assistent ---
 
+
 @app.post("/api/documents/{doc_id}/simplify")
 async def simplify_document(
     doc_id: int,
@@ -1537,7 +1707,9 @@ async def simplify_document(
             logger.error(f"LLM-Fehler: {e}", exc_info=True)
             raise HTTPException(502, "KI-Analyse fehlgeschlagen. Bitte versuche es erneut.")
 
-        await db.execute("UPDATE documents SET vereinfacht = ? WHERE id = ? AND user_id = ?", (vereinfacht, doc_id, user_id))
+        await db.execute(
+            "UPDATE documents SET vereinfacht = ? WHERE id = ? AND user_id = ?", (vereinfacht, doc_id, user_id)
+        )
         await db.commit()
 
         await increment_usage(user_id, "befund_month")
@@ -1589,6 +1761,7 @@ async def translate_document(
 
 # --- Account Deletion ---
 
+
 @app.delete("/api/account")
 async def delete_account(user_id: str = Depends(get_current_user)):
     """Delete user account and all associated data."""
@@ -1611,19 +1784,34 @@ async def delete_account(user_id: str = Depends(get_current_user)):
                 os.remove(thumb)
 
         # Delete document-linked rows
-        await db.execute("DELETE FROM antworten WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
-        await db.execute("DELETE FROM befund_translations WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
-        await db.execute("DELETE FROM behoerden_results WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,))
+        await db.execute(
+            "DELETE FROM antworten WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,)
+        )
+        await db.execute(
+            "DELETE FROM befund_translations WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)",
+            (user_id,),
+        )
+        await db.execute(
+            "DELETE FROM behoerden_results WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)",
+            (user_id,),
+        )
         await db.execute("DELETE FROM todos WHERE user_id = ?", (user_id,))
         # Delete user-owned rows
-        for table in ["documents", "expense_items", "push_tokens",
-                       "user_einstellungen", "usage_counters", "subscriptions"]:
+        for table in [
+            "documents",
+            "expense_items",
+            "push_tokens",
+            "user_einstellungen",
+            "usage_counters",
+            "subscriptions",
+        ]:
             await db.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
         await db.commit()
 
         # Delete Supabase user
         try:
             import httpx as _httpx
+
             supabase_url = os.getenv("SUPABASE_URL", "")
             supabase_service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
             if supabase_url and supabase_service_key:
@@ -1645,6 +1833,7 @@ async def delete_account(user_id: str = Depends(get_current_user)):
 
 
 # --- Push Token Registration ---
+
 
 @app.post("/api/push-token")
 async def register_push_token(
@@ -1670,6 +1859,7 @@ async def register_push_token(
 
 
 # --- Subscription API ---
+
 
 @app.get("/api/subscription/status")
 async def subscription_status(user_id: str = Depends(get_current_user)):
@@ -1724,7 +1914,10 @@ SMTP_USER = os.getenv("SMTP_USER", "")
 SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
 SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", "office@kdoc.at")
 
-PERMANENT_ADMIN = "c300e58e-9a45-4f3d-90db-705e8083e976"
+
+def PERMANENT_ADMIN() -> str | None:
+    """First ADMIN_USER_IDS entry is the permanent admin (cannot be removed via API)."""
+    return permanent_admin_id()
 
 
 async def _get_support_email():
@@ -1810,6 +2003,7 @@ async def support_ticket(data: dict, user_id: str = Depends(get_current_user)):
 
 # --- Admin API ---
 
+
 @app.get("/api/admin/check")
 async def admin_check(user_id: str = Depends(get_current_user)):
     """Check if the current user is an admin."""
@@ -1829,15 +2023,16 @@ async def admin_list(user_id: str = Depends(get_current_user)):
             aid = row["user_id"]
             # Try to find email from Supabase profiles or just show ID
             email_cursor = await db.execute(
-                "SELECT value FROM user_einstellungen WHERE user_id = ? AND key = 'email'",
-                (aid,)
+                "SELECT value FROM user_einstellungen WHERE user_id = ? AND key = 'email'", (aid,)
             )
             email_row = await email_cursor.fetchone()
-            admins.append({
-                "user_id": aid,
-                "email": email_row["value"] if email_row else None,
-                "is_permanent": aid == PERMANENT_ADMIN,
-            })
+            admins.append(
+                {
+                    "user_id": aid,
+                    "email": email_row["value"] if email_row else None,
+                    "is_permanent": aid == PERMANENT_ADMIN(),
+                }
+            )
         return {"admins": admins}
     finally:
         await db.close()
@@ -1851,9 +2046,11 @@ async def admin_add(data: dict, user_id: str = Depends(get_current_user)):
     if not email:
         raise HTTPException(400, "E-Mail erforderlich.")
 
-    from auth import SUPABASE_URL
     import httpx
-    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+
+    from auth import SUPABASE_URL
+
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
     # Search user in Supabase by email
     async with httpx.AsyncClient() as client:
@@ -1879,8 +2076,7 @@ async def admin_add(data: dict, user_id: str = Depends(get_current_user)):
         await db.execute("INSERT OR IGNORE INTO admins (user_id) VALUES (?)", (target_id,))
         # Store email mapping for display
         await db.execute(
-            "INSERT OR REPLACE INTO user_einstellungen (user_id, key, value) VALUES (?, 'email', ?)",
-            (target_id, email)
+            "INSERT OR REPLACE INTO user_einstellungen (user_id, key, value) VALUES (?, 'email', ?)", (target_id, email)
         )
         await db.commit()
     finally:
@@ -1894,7 +2090,7 @@ async def admin_remove(data: dict, user_id: str = Depends(get_current_user)):
     """Remove an admin."""
     await _require_admin(user_id)
     target_id = data.get("user_id", "")
-    if target_id == PERMANENT_ADMIN:
+    if target_id == PERMANENT_ADMIN():
         raise HTTPException(400, "Dieser Admin kann nicht entfernt werden.")
     if not target_id:
         raise HTTPException(400, "User ID erforderlich.")
@@ -1926,10 +2122,7 @@ async def admin_set_support_email(data: dict, user_id: str = Depends(get_current
 
     db = await get_db()
     try:
-        await db.execute(
-            "INSERT OR REPLACE INTO settings (key, value) VALUES ('support_email', ?)",
-            (email,)
-        )
+        await db.execute("INSERT OR REPLACE INTO settings (key, value) VALUES ('support_email', ?)", (email,))
         await db.commit()
     finally:
         await db.close()
@@ -1942,9 +2135,11 @@ async def admin_search_user(email: str = Query(...), user_id: str = Depends(get_
     """Search user by email and return their plan."""
     await _require_admin(user_id)
 
-    from auth import SUPABASE_URL
     import httpx
-    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+
+    from auth import SUPABASE_URL
+
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
@@ -1982,9 +2177,11 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
     if not email:
         raise HTTPException(400, "E-Mail erforderlich.")
 
-    from auth import SUPABASE_URL
     import httpx
-    service_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+
+    from auth import SUPABASE_URL
+
+    service_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(
@@ -2027,22 +2224,33 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
                    VALUES (?, ?, ?, ?, NULL, ?)
                    ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL,
                    started_at = ?, expires_at = ?, cancelled_at = NULL, updated_at = ?""",
-                (target_id, new_plan, now.isoformat(), expires_at, now.isoformat(),
-                 new_plan, now.isoformat(), expires_at, now.isoformat())
+                (
+                    target_id,
+                    new_plan,
+                    now.isoformat(),
+                    expires_at,
+                    now.isoformat(),
+                    new_plan,
+                    now.isoformat(),
+                    expires_at,
+                    now.isoformat(),
+                ),
             )
         else:
             await db.execute(
                 """INSERT INTO subscriptions (user_id, plan, updated_at)
                    VALUES (?, ?, datetime('now'))
                    ON CONFLICT(user_id) DO UPDATE SET plan = ?, pending_plan = NULL, updated_at = datetime('now')""",
-                (target_id, new_plan, new_plan)
+                (target_id, new_plan, new_plan),
             )
         await db.commit()
     finally:
         await db.close()
 
-    logger.info(f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}"
-                + (f", aktiv bis {expires_at}" if expires_at else ", unbegrenzt"))
+    logger.info(
+        f"[Admin] Plan für {email} ({target_id}) auf '{new_plan}' geändert von Admin {user_id}"
+        + (f", aktiv bis {expires_at}" if expires_at else ", unbegrenzt")
+    )
     return {"status": "ok", "email": email, "new_plan": new_plan, "expires_at": expires_at}
 
 
@@ -2052,7 +2260,7 @@ USD_TO_EUR = 0.92
 
 # Mistral pricing per 1M tokens (USD)
 MISTRAL_PRICING = {
-    "mistral-ocr-latest": {"combined": 2.00},        # $2.00/1M tokens (input+output)
+    "mistral-ocr-latest": {"combined": 2.00},  # $2.00/1M tokens (input+output)
     "mistral-small-latest": {"input": 0.10, "output": 0.30},
 }
 
@@ -2078,8 +2286,7 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
         # Paginate if needed
         while basic_subs.has_more:
             basic_subs = stripe.Subscription.list(
-                price=basic_price_id, status="active", limit=100,
-                starting_after=basic_subs.data[-1].id
+                price=basic_price_id, status="active", limit=100, starting_after=basic_subs.data[-1].id
             )
             basic_count += len(basic_subs.data)
 
@@ -2088,8 +2295,7 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
         pro_count = len(pro_subs.data)
         while pro_subs.has_more:
             pro_subs = stripe.Subscription.list(
-                price=pro_price_id, status="active", limit=100,
-                starting_after=pro_subs.data[-1].id
+                price=pro_price_id, status="active", limit=100, starting_after=pro_subs.data[-1].id
             )
             pro_count += len(pro_subs.data)
 
@@ -2167,6 +2373,7 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
 
 # --- Feature Flags ---
 
+
 @app.get("/api/feature-flags")
 async def get_feature_flags_public():
     """Öffentlicher Endpoint: gibt alle Feature-Flags als {key: enabled} zurück."""
@@ -2187,7 +2394,9 @@ async def admin_get_feature_flags(user_id: str = Depends(get_current_user)):
     try:
         cursor = await db.execute("SELECT key, enabled, updated_at FROM feature_flags ORDER BY key")
         rows = await cursor.fetchall()
-        return {"flags": [{"key": r["key"], "enabled": bool(r["enabled"]), "updated_at": r["updated_at"]} for r in rows]}
+        return {
+            "flags": [{"key": r["key"], "enabled": bool(r["enabled"]), "updated_at": r["updated_at"]} for r in rows]
+        }
     finally:
         await db.close()
 
@@ -2216,6 +2425,7 @@ async def admin_set_feature_flag(key: str, data: dict, user_id: str = Depends(ge
 
 # --- Deadline-Checker Background Job ---
 
+
 async def deadline_checker_loop():
     """Background job: check deadlines + plan expiry every 6 hours."""
     while True:
@@ -2234,6 +2444,7 @@ async def deadline_checker_loop():
 async def check_deadlines():
     """Prüfe Dokumente mit Deadline basierend auf reminder_days pro Dokument."""
     from datetime import timedelta
+
     today = datetime.now().date()
 
     db = await get_db()
@@ -2272,8 +2483,10 @@ async def check_deadlines():
             except (ValueError, TypeError):
                 continue
 
-            logger.info(f"[Deadline-Checker] Deadline-Warnung für Dokument {doc['id']}: "
-                       f"{doc['absender']} - Deadline: {doc['deadline']} (reminder: {reminder_days}d)")
+            logger.info(
+                f"[Deadline-Checker] Deadline-Warnung für Dokument {doc['id']}: "
+                f"{doc['absender']} - Deadline: {doc['deadline']} (reminder: {reminder_days}d)"
+            )
 
             # Token für Push-Notifications des Dokument-Besitzers holen
             token_cursor = await db.execute("SELECT token, platform FROM push_tokens WHERE user_id = ?", (user_id,))
@@ -2283,7 +2496,9 @@ async def check_deadlines():
                 await send_push_notification(
                     token=t["token"],
                     title=f"Deadline in Kürze: {doc.get('absender', 'Dokument')}",
-                    body=doc.get("handlung_beschreibung") or doc.get("zusammenfassung") or f"Fällig am {doc['deadline']}",
+                    body=doc.get("handlung_beschreibung")
+                    or doc.get("zusammenfassung")
+                    or f"Fällig am {doc['deadline']}",
                 )
 
             # Als benachrichtigt markieren
@@ -2337,8 +2552,9 @@ async def check_plan_expiry():
                 # Send push notification about downgrade
                 t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (user_id,))
                 for t in await t_cursor.fetchall():
-                    await send_push_notification(t["token"], "Plan abgelaufen",
-                                                 f"Dein Plan wurde auf {new_plan.capitalize()} zurückgestuft.")
+                    await send_push_notification(
+                        t["token"], "Plan abgelaufen", f"Dein Plan wurde auf {new_plan.capitalize()} zurückgestuft."
+                    )
 
         await db.commit()
         if downgraded:
@@ -2382,13 +2598,12 @@ async def _get_fcm_access_token() -> str:
 
     try:
         import asyncio
-        from google.oauth2 import service_account
+
         import google.auth.transport.requests
+        from google.oauth2 import service_account
 
         SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
-        creds = service_account.Credentials.from_service_account_file(
-            credentials_path, scopes=SCOPES
-        )
+        creds = service_account.Credentials.from_service_account_file(credentials_path, scopes=SCOPES)
 
         # google-auth ist synchron → im Thread-Pool ausführen, um den Event-Loop nicht zu blockieren
         request = google.auth.transport.requests.Request()
@@ -2397,9 +2612,7 @@ async def _get_fcm_access_token() -> str:
 
         _fcm_token_cache["token"] = creds.token
         # creds.expiry ist ein datetime-Objekt, Fallback: +1h ab jetzt
-        _fcm_token_cache["expires_at"] = (
-            creds.expiry.timestamp() if creds.expiry else (time.time() + 3600)
-        )
+        _fcm_token_cache["expires_at"] = creds.expiry.timestamp() if creds.expiry else (time.time() + 3600)
 
         logger.info("[Push] OAuth2 Token erfolgreich erneuert.")
         return creds.token
@@ -2489,21 +2702,19 @@ async def send_push_notification(token: str, title: str, body: str):
         logger.error(f"[Push] Sende-Fehler: {e}", exc_info=True)
 
 
-
-
 # --- Support Ticket System ---
 
 TICKET_FILES_DIR = DATA_DIR / "ticket_files"
 TICKET_FILES_DIR.mkdir(parents=True, exist_ok=True)
 
 
-ALLOWED_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'}
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
 MAX_TICKET_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 
 async def _save_ticket_file(file: UploadFile) -> tuple:
     """Save uploaded ticket image, return (file_name, file_path). Validates format and size."""
-    ext = Path(file.filename).suffix.lower() or '.bin'
+    ext = Path(file.filename).suffix.lower() or ".bin"
     if ext not in ALLOWED_IMAGE_EXTENSIONS:
         raise HTTPException(400, f"Nur Bilder erlaubt ({', '.join(ALLOWED_IMAGE_EXTENSIONS)})")
 
@@ -2513,7 +2724,7 @@ async def _save_ticket_file(file: UploadFile) -> tuple:
 
     safe_name = f"{uuid.uuid4().hex}{ext}"
     dest = TICKET_FILES_DIR / safe_name
-    with open(dest, 'wb') as f:
+    with open(dest, "wb") as f:
         f.write(content)
     return (file.filename, safe_name)
 
@@ -2555,7 +2766,9 @@ async def create_ticket(
             t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (admin["user_id"],))
             tokens = await t_cursor.fetchall()
             for t in tokens:
-                await send_push_notification(t["token"], "Neues Support-Ticket", f"Priorität: {priority} — {subject or message[:60]}")
+                await send_push_notification(
+                    t["token"], "Neues Support-Ticket", f"Priorität: {priority} — {subject or message[:60]}"
+                )
 
         return {"status": "ok", "ticket_id": ticket_id}
     finally:
@@ -2670,7 +2883,9 @@ async def add_ticket_message(
             for admin in await admin_cursor.fetchall():
                 t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (admin["user_id"],))
                 for t in await t_cursor.fetchall():
-                    await send_push_notification(t["token"], "Ticket-Antwort", f"User hat auf Ticket #{ticket_id} geantwortet")
+                    await send_push_notification(
+                        t["token"], "Ticket-Antwort", f"User hat auf Ticket #{ticket_id} geantwortet"
+                    )
 
         return {"status": "ok"}
     finally:
@@ -2728,6 +2943,7 @@ async def get_ticket_file(filename: str, user_id: str = Depends(get_current_user
 
 
 # --- Admin Ticket API ---
+
 
 @app.get("/api/admin/tickets")
 async def admin_list_tickets(user_id: str = Depends(get_current_user)):
@@ -2814,7 +3030,9 @@ async def admin_close_ticket(ticket_id: int, data: dict, user_id: str = Depends(
         if ticket:
             t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (ticket["user_id"],))
             for t in await t_cursor.fetchall():
-                await send_push_notification(t["token"], "Ticket aktualisiert", f"Dein Support-Ticket #{ticket_id} wurde bearbeitet.")
+                await send_push_notification(
+                    t["token"], "Ticket aktualisiert", f"Dein Support-Ticket #{ticket_id} wurde bearbeitet."
+                )
 
         return {"status": "ok"}
     finally:
@@ -2850,7 +3068,9 @@ async def admin_add_message(ticket_id: int, data: dict, user_id: str = Depends(g
         if ticket:
             t_cursor = await db.execute("SELECT token FROM push_tokens WHERE user_id = ?", (ticket["user_id"],))
             for t in await t_cursor.fetchall():
-                await send_push_notification(t["token"], "Neue Nachricht", f"Admin hat auf Ticket #{ticket_id} geantwortet.")
+                await send_push_notification(
+                    t["token"], "Neue Nachricht", f"Admin hat auf Ticket #{ticket_id} geantwortet."
+                )
 
         return {"status": "ok"}
     finally:
@@ -2895,5 +3115,4 @@ async def download_apk():
     apk_path = "/opt/kamaldoc/kamaldoc-latest.apk"
     if not os.path.exists(apk_path):
         raise HTTPException(404, "APK nicht verfügbar")
-    return FileResponse(apk_path, filename="KamalDoc.apk",
-                       media_type="application/vnd.android.package-archive")
+    return FileResponse(apk_path, filename="KamalDoc.apk", media_type="application/vnd.android.package-archive")

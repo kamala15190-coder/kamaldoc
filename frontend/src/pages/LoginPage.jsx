@@ -38,7 +38,7 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithIdToken({
+      const { error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: response.credential,
         nonce: nonceRef.current,
@@ -57,7 +57,7 @@ export default function LoginPage() {
     setError(null)
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) throw error
       navigate('/')
     } catch (err) {

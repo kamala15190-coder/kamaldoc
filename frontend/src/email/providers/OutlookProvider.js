@@ -71,7 +71,7 @@ export class OutlookProvider {
                 mimeType: a.contentType,
                 size: a.size || 0,
               }));
-          } catch (_) { /* skip attachment fetch errors */ }
+          } catch { /* skip attachment fetch errors */ }
         }
         return this._normalize(msg, attachments);
       })
@@ -121,7 +121,7 @@ export class OutlookProvider {
             mimeType: a.contentType,
             size: a.size || 0,
           }));
-      } catch (_) {}
+      } catch { /* ignore */ }
     }
 
     const toRecipients = (msg.toRecipients || [])

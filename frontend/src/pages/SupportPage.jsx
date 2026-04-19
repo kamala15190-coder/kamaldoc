@@ -23,10 +23,11 @@ function TicketAttachment({ fileUrl, fileName }) {
 
   useEffect(() => {
     if (!fileUrl || !isImageFile(fileName)) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetchTicketFileUrl(fileUrl)
       .then(url => setBlobUrl(url))
-      .catch(() => {})
+      .catch(() => { /* ignore */ })
       .finally(() => setLoading(false))
   }, [fileUrl, fileName])
 
@@ -331,7 +332,7 @@ function CreateTicket({ onBack }) {
 
 function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, statusLabel, STATUS_COLORS }) {
   const { t } = useTranslation()
-  const [messages, setMessages] = useState(initialMessages)
+  const [messages] = useState(initialMessages)
   const [newMsg, setNewMsg] = useState('')
   const [sending, setSending] = useState(false)
   const [accepting, setAccepting] = useState(false)

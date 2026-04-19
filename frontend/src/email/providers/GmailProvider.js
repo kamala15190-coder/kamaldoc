@@ -196,7 +196,7 @@ export class GmailProvider {
           .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       );
-    } catch (_) {
+    } catch {
       return atob(normalized);
     }
   }

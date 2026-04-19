@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "build:android": "vite build && npx cap sync android",
     "postinstall": "node scripts/patch-gradle-wrapper.js"
   },
   "dependencies": {

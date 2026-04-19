@@ -28,7 +28,7 @@ export default function UpgradePrompt({ messageKey, minPlan = 'basic', className
   );
 }
 
-export function UpgradeOverlay({ messageKey, minPlan = 'basic' }) {
+export function UpgradeOverlay({ messageKey }) {
   const { t } = useTranslation();
 
   return (

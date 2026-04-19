@@ -82,7 +82,7 @@ export default function AGBPage() {
               </p>
 
               <h3 style={h3Style}>3.2 Kurzzeitige Datenübermittlung an KI-Dienste (Mistral AI)</h3>
-              <p style={{...pStyle, padding: '10px 14px', borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.15)'}}>
+              <p style={{...pStyle, padding: '10px 14px', borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)'}}>
                 <strong style={{color: 'var(--accent-solid)'}}>HINWEIS – Datenverarbeitung:</strong> Für die KI-gestützte Analyse, Zusammenfassung, Vereinfachung und Übersetzung von Dokumenten werden die relevanten Textinhalte <strong style={strongStyle}>kurzzeitig</strong> an den KI-Dienst <strong style={strongStyle}>Mistral AI</strong> (Mistral AI S.A.S., 15 rue des Halles, 75001 Paris, Frankreich) übermittelt.
               </p>
               <p style={pStyle}>

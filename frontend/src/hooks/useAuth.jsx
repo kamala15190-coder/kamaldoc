@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { supabase } from '../supabaseClient'
@@ -46,7 +47,7 @@ export const AuthProvider = ({ children }) => {
             handleSession(data.session)
             return
           }
-        } catch (_) { /* fall through */ }
+        } catch { /* fall through */ }
       }
 
       // Implicit flow: extract tokens from hash fragment (redirect-based fallback)
@@ -87,7 +88,7 @@ export const AuthProvider = ({ children }) => {
             try {
               const { Browser } = await import('@capacitor/browser')
               await Browser.close()
-            } catch (_) {}
+            } catch { /* ignore */ }
 
             // Extract tokens from deep link hash
             const hashPart = url.split('#')[1]

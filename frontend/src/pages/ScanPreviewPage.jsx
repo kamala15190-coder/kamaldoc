@@ -6,7 +6,8 @@ import { Capacitor } from '@capacitor/core'
 import { buildPdf, fileToDataUrl, fileToArrayBuffer, extractPdfPages } from '../utils/pdfBuilder'
 import { uploadDocument } from '../api'
 import { usePlanLimit } from '../hooks/usePlanLimit'
-import { openNativeScanner, openNativeGallery, detectCapabilities } from '../utils/documentScannerHelper'
+import { openNativeScanner, openNativeGallery } from '../utils/documentScannerHelper'
+import Confetti from '../components/Confetti'
 import {
   DndContext,
   closestCenter,
@@ -34,11 +35,10 @@ export default function ScanPreviewPage() {
     }
     return []
   })
-  const [activeIdx, setActiveIdx] = useState(0)
+  const [activeIdx, setActiveIdx] = useState(() => (initState.initialPages?.length || 1) - 1)
   const [building, setBuilding] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadDone, setUploadDone] = useState(false)
-  const [uploadDocId, setUploadDocId] = useState(null)
   const [error, setError] = useState(null)
   const [contextMenu, setContextMenu] = useState(null)
   const [fileName, setFileName] = useState(() => {
@@ -48,7 +48,7 @@ export default function ScanPreviewPage() {
   const fileInputRef = useRef(null)
   const galleryAutoOpened = useRef(false)
 
-  // Auto-open gallery picker if navigated with openGallery flag
+  // Auto-open gallery picker if navigated with openGallery flag – runs exactly once on mount.
   useEffect(() => {
     if (initState.openGallery && !galleryAutoOpened.current && pages.length === 0) {
       galleryAutoOpened.current = true
@@ -59,6 +59,7 @@ export default function ScanPreviewPage() {
         }
       }, 100)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const sensors = useSensors(
@@ -79,10 +80,12 @@ export default function ScanPreviewPage() {
         newPages.push({ id: genId(), type: 'image', dataUrl })
       }
     }
-    setPages(prev => [...prev, ...newPages])
-    if (newPages.length > 0) {
-      setActiveIdx(prev => prev)
-    }
+    if (newPages.length === 0) return
+    setPages(prev => {
+      const updated = [...prev, ...newPages]
+      setActiveIdx(updated.length - 1) // springe zur letzten neu hinzugefügten Seite
+      return updated
+    })
   }, [])
 
   /**
@@ -100,8 +103,11 @@ export default function ScanPreviewPage() {
       const result = await openNativeScanner()
       if (result?.pages?.length) {
         const newPages = result.pages.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
-        setPages(prev => [...prev, ...newPages])
-        setActiveIdx(prev => prev + newPages.length - 1)
+        setPages(prev => {
+          const updated = [...prev, ...newPages]
+          setActiveIdx(updated.length - 1)
+          return updated
+        })
       }
       return
     }
@@ -115,8 +121,11 @@ export default function ScanPreviewPage() {
       const file = e.target.files?.[0]
       if (file) {
         const dataUrl = await fileToDataUrl(file)
-        setPages(prev => [...prev, { id: genId(), type: 'image', dataUrl }])
-        setActiveIdx(prev => prev)
+        setPages(prev => {
+          const updated = [...prev, { id: genId(), type: 'image', dataUrl }]
+          setActiveIdx(updated.length - 1)
+          return updated
+        })
       }
     }
     input.click()
@@ -132,10 +141,11 @@ export default function ScanPreviewPage() {
       const result = await openNativeGallery()
       if (result?.images?.length) {
         const newPages = result.images.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
-        setPages(prev => [...prev, ...newPages])
-        if (newPages.length > 0) {
-          setActiveIdx(prev => prev)
-        }
+        setPages(prev => {
+          const updated = [...prev, ...newPages]
+          setActiveIdx(updated.length - 1)
+          return updated
+        })
       }
       return
     }
@@ -153,8 +163,11 @@ export default function ScanPreviewPage() {
 
   // Remove page
   const removePage = (idx) => {
-    setPages(prev => prev.filter((_, i) => i !== idx))
-    setActiveIdx(prev => Math.min(prev, Math.max(0, pages.length - 2)))
+    setPages(prev => {
+      const next = prev.filter((_, i) => i !== idx)
+      setActiveIdx(cur => Math.min(cur, Math.max(0, next.length - 1)))
+      return next
+    })
     setContextMenu(null)
   }
 
@@ -190,12 +203,13 @@ export default function ScanPreviewPage() {
     setBuilding(true)
     setError(null)
     try {
-      const pdfFile = await buildPdf(pages, fileName)
+      const baseName = (fileName || '').trim() || `Scan_${new Date().toISOString().slice(0, 10)}`
+      const safeName = baseName.toLowerCase().endsWith('.pdf') ? baseName : `${baseName}.pdf`
+      const pdfFile = await buildPdf(pages, safeName)
       setBuilding(false)
       setUploading(true)
       const result = await uploadDocument(pdfFile)
       setUploadDone(true)
-      setUploadDocId(result.id)
       setTimeout(() => navigate(`/documents/${result.id}`), 1500)
     } catch (err) {
       if (handleApiError(err)) return
@@ -243,7 +257,7 @@ export default function ScanPreviewPage() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 'calc(100dvh - 120px)', position: 'relative' }}>
       {/* Close context menu on tap anywhere */}
       {contextMenu && <div style={{ position: 'fixed', inset: 0, zIndex: 50 }} onClick={() => setContextMenu(null)} />}
 
@@ -268,11 +282,11 @@ export default function ScanPreviewPage() {
         )}
       </div>
 
-      {/* Thumbnail strip (~80px) */}
+      {/* Thumbnail strip (~100px with larger A4-ratio thumbs + inline Add-tile) */}
       {pages.length > 0 && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={pages.map(p => p.id)} strategy={horizontalListSortingStrategy}>
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '6px 0', minHeight: 80 }}>
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 0', minHeight: 104 }} className="hide-scrollbar">
               {pages.map((page, idx) => (
                 <SortableThumb
                   key={page.id}
@@ -283,6 +297,14 @@ export default function ScanPreviewPage() {
                   onLongPress={(e) => handleThumbnailLongPress(idx, e)}
                 />
               ))}
+              <button
+                type="button"
+                className="scan-thumb scan-thumb-add"
+                onClick={openCameraScan}
+                aria-label={t('upload.addPage', 'Seite hinzufügen')}
+              >
+                <Plus style={{ width: 22, height: 22 }} />
+              </button>
             </div>
           </SortableContext>
         </DndContext>
@@ -366,6 +388,7 @@ export default function ScanPreviewPage() {
 
       <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,application/pdf"
         style={{ display: 'none' }} onChange={handleGalleryFiles} />
+      <Confetti show={uploadDone} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
@@ -381,27 +404,31 @@ function SortableThumb({ page, idx, isActive, onClick, onLongPress }) {
   const style = {
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     transition,
-    width: 60, height: 70, borderRadius: 8, overflow: 'hidden',
-    border: isActive ? '2px solid var(--accent-solid)' : '2px solid transparent',
-    background: 'var(--bg-glass)', flexShrink: 0, cursor: 'grab',
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    position: 'relative',
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`scan-thumb ${isActive ? 'active' : ''}`}
+      tabIndex={0}
+      role="button"
+      aria-label={`Seite ${idx + 1}`}
+      {...attributes}
+      {...listeners}
       onClick={onClick}
       onContextMenu={onLongPress}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.() } }}
     >
       {page.type === 'image' && page.dataUrl ? (
-        <img src={page.dataUrl} alt={`${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <img src={page.dataUrl} alt={`Seite ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
-        <FileText style={{ width: 20, height: 20, color: 'var(--text-muted)', opacity: 0.5 }} />
+        <FileText style={{ width: 22, height: 22, color: 'var(--text-muted)', opacity: 0.5 }} />
       )}
       <span style={{
-        position: 'absolute', bottom: 2, left: 0, right: 0,
-        textAlign: 'center', fontSize: 9, fontWeight: 700,
-        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.7)',
+        position: 'absolute', bottom: 3, left: 0, right: 0,
+        textAlign: 'center', fontSize: 10, fontWeight: 700,
+        color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.75)',
       }}>
         {idx + 1}
       </span>

@@ -40,63 +40,42 @@ export default function ExpensesPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSubcategory, setSelectedSubcategory] = useState('');
 
-  if (subLoading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-      </div>
-    );
-  }
-
-  if (isFree) {
-    return (
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
-          <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
-            <DollarSign style={{ width: 18, height: 18, color: 'var(--warning-text)' }} />
-          </div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
-        </div>
-        <div className="glass-card" style={{ overflow: 'hidden' }}>
-          <UpgradePrompt messageKey="pricing.expensesLocked" minPlan="basic" />
-        </div>
-      </div>
-    );
-  }
-
   const years = useMemo(() => {
     const c = new Date().getFullYear();
     return [c, c - 1, c - 2, c - 3];
   }, []);
 
-  const fetchAll = async () => {
-    setLoading(true);
-    try {
-      const params = {};
-      if (selectedYear) params.year = selectedYear;
-      if (selectedMonth) params.month = selectedMonth;
-      if (selectedCategory) params.category = selectedCategory;
-      if (selectedSubcategory) params.subcategory = selectedSubcategory;
-
-      const [catData, summaryData, itemsData] = await Promise.all([
-        getExpenseCategories(),
-        getExpenseSummary(params),
-        getExpenseItems(params),
-      ]);
-      setCategories(catData.categories || {});
-      setSummary(summaryData);
-      setItems(itemsData.items || []);
-    } catch (err) {
-      if (!handleApiError(err)) console.error('Fehler beim Laden der Ausgaben:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAll();
-  }, [selectedYear, selectedMonth, selectedCategory, selectedSubcategory]);
+    if (subLoading || isFree) return;
+    let cancelled = false;
+    const run = async () => {
+      setLoading(true);
+      try {
+        const params = {};
+        if (selectedYear) params.year = selectedYear;
+        if (selectedMonth) params.month = selectedMonth;
+        if (selectedCategory) params.category = selectedCategory;
+        if (selectedSubcategory) params.subcategory = selectedSubcategory;
+
+        const [catData, summaryData, itemsData] = await Promise.all([
+          getExpenseCategories(),
+          getExpenseSummary(params),
+          getExpenseItems(params),
+        ]);
+        if (cancelled) return;
+        setCategories(catData.categories || {});
+        setSummary(summaryData);
+        setItems(itemsData.items || []);
+      } catch (err) {
+        if (cancelled) return;
+        if (!handleApiError(err)) console.error('Fehler beim Laden der Ausgaben:', err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [subLoading, isFree, selectedYear, selectedMonth, selectedCategory, selectedSubcategory, handleApiError]);
 
   // Build chart data
   const chartData = useMemo(() => {
@@ -130,6 +109,31 @@ export default function ExpensesPage() {
   }, [summary]);
 
   const subcategories = selectedCategory ? (categories[selectedCategory] || []) : [];
+
+  if (subLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
+
+  if (isFree) {
+    return (
+      <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }} className="animate-fade-in">
+          <div style={{ padding: 8, borderRadius: 10, background: 'var(--warning-soft)' }}>
+            <DollarSign style={{ width: 18, height: 18, color: 'var(--warning-text)' }} />
+          </div>
+          <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>{t('expenses.title')}</h1>
+        </div>
+        <div className="glass-card" style={{ overflow: 'hidden' }}>
+          <UpgradePrompt messageKey="pricing.expensesLocked" minPlan="basic" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -219,7 +223,7 @@ export default function ExpensesPage() {
 
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       ) : !summary ? (

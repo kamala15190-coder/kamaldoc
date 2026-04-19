@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
@@ -56,7 +55,6 @@ const PLANS = [
 
 export default function PricingPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { plan: currentPlan, subscription, refresh } = useSubscription();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -65,7 +63,6 @@ export default function PricingPage() {
   const [success, setSuccess] = useState(null);
 
   const isDowngrade = (planId) => PLAN_ORDER[planId] < PLAN_ORDER[currentPlan];
-  const isUpgrade = (planId) => PLAN_ORDER[planId] > PLAN_ORDER[currentPlan];
 
   const handleSelect = async (planId) => {
     if (planId === currentPlan) return;
@@ -108,13 +105,6 @@ export default function PricingPage() {
     if (planId === currentPlan) return t('pricing.currentPlan');
     if (isDowngrade(planId)) return t('pricing.downgrade');
     return t('pricing.upgrade');
-  };
-
-  const getButtonStyle = (planId, isPopular, isCurrent) => {
-    if (isCurrent) return 'bg-green-50 text-green-700 border border-green-200';
-    if (isDowngrade(planId)) return 'bg-slate-100 text-slate-700 hover:bg-slate-200';
-    if (isPopular) return 'bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50';
-    return 'bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50';
   };
 
   const pendingPlan = subscription?.pending_plan;

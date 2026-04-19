@@ -27,10 +27,11 @@ function AdminTicketAttachment({ fileUrl, fileName }) {
 
   useEffect(() => {
     if (!fileUrl || !isImageFile(fileName)) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
     fetchTicketFileUrl(fileUrl)
       .then(url => setBlobUrl(url))
-      .catch(() => {})
+      .catch(() => { /* ignore */ })
       .finally(() => setLoading(false))
   }, [fileUrl, fileName])
 
@@ -448,7 +449,7 @@ function ToggleSwitch({ checked, onChange, disabled }) {
     <button
       onClick={() => !disabled && onChange(!checked)}
       style={{
-        width: 44, height: 24, borderRadius: 12, border: 'none', cursor: disabled ? 'default' : 'pointer',
+        width: 44, height: 24, borderRadius: 12, cursor: disabled ? 'default' : 'pointer',
         background: checked ? 'var(--accent-solid)' : 'var(--bg-glass)',
         border: `1px solid ${checked ? 'var(--accent-solid)' : 'var(--border-glass-strong)'}`,
         position: 'relative', transition: 'all 0.2s ease',
@@ -508,7 +509,7 @@ function EmailFeatureFlagsSection() {
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 14px', borderRadius: 10,
             background: globalEnabled ? 'var(--accent-soft)' : 'var(--bg-glass)',
-            border: `1px solid ${globalEnabled ? 'rgba(139,92,246,0.25)' : 'var(--border-glass)'}`,
+            border: `1px solid ${globalEnabled ? 'rgba(99,102,241,0.25)' : 'var(--border-glass)'}`,
           }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
               E-Mail Feature (global)

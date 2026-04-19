@@ -34,7 +34,7 @@ export default function EmailAccountSettings() {
         setPwEmail('');
         setPwPassword('');
       }
-    } catch (_) {
+    } catch {
       setPwError(t('email.connectFailed'));
     }
   };
@@ -59,7 +59,7 @@ export default function EmailAccountSettings() {
     setDisconnecting(accountId);
     try {
       await disconnect(accountId);
-    } catch (_) {}
+    } catch { /* ignore */ }
     setDisconnecting(null);
   };
 

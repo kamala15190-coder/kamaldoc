@@ -59,7 +59,7 @@ export default function IntroGuide() {
     if (s && location.pathname !== s.route) {
       navigate(s.route);
     }
-  }, [step, show, finishing]);
+  }, [step, show, finishing, location.pathname, navigate]);
 
   // Find and highlight the target element after navigation
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function IntroGuide() {
   const handleComplete = useCallback(async () => {
     setConfetti(true);
     setFinishing(true);
-    try { await markIntroComplete(); } catch {}
+    try { await markIntroComplete(); } catch { /* ignore */ }
     setTimeout(() => {
       setShow(false);
       setConfetti(false);
@@ -98,7 +98,7 @@ export default function IntroGuide() {
   }, [navigate]);
 
   const handleSkip = useCallback(async () => {
-    try { await markIntroComplete(); } catch {}
+    try { await markIntroComplete(); } catch { /* ignore */ }
     setShow(false);
     navigate('/');
   }, [navigate]);
@@ -122,7 +122,7 @@ export default function IntroGuide() {
       await saveEinstellungen(senderForm);
       setSenderSaved(true);
       setTimeout(() => handleNext(), 600);
-    } catch {}
+    } catch { /* ignore */ }
     finally { setSavingSender(false); }
   }, [senderForm, handleNext]);
 

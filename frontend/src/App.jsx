@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { Haptics, ImpactStyle } from '@capacitor/haptics';
@@ -15,32 +15,39 @@ import { ThemeProvider } from './hooks/useTheme.jsx';
 import { FeatureFlagsProvider } from './hooks/useFeatureFlags.jsx';
 import { LANGUAGES, isRtl } from './languages';
 import { supabase } from './supabaseClient';
+// Eager: Happy-Path (Dashboard + Upload + Login) werden immer sofort gebraucht
 import Dashboard from './pages/Dashboard';
-import DocumentDetail from './pages/DocumentDetail';
 import UploadPage from './pages/UploadPage';
-import Archiv from './pages/Archiv';
-import ProfilPage from './pages/ProfilPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import ExpensesPage from './pages/ExpensesPage';
-import BehoerdeAssistent from './pages/BehoerdeAssistent';
-import BefundAssistent from './pages/BefundAssistent';
-import PricingPage from './pages/PricingPage';
-import DatenschutzPage from './pages/DatenschutzPage';
-import NutzungsbedingungenPage from './pages/NutzungsbedingungenPage';
-import AGBPage from './pages/AGBPage';
-import ImpressumPage from './pages/ImpressumPage';
-import SupportPage from './pages/SupportPage';
-import AdminPage from './pages/AdminPage';
-import SektorDetailPage from './pages/SektorDetailPage';
-import DokumenteListe from './pages/DokumenteListe';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import ScanPreviewPage from './pages/ScanPreviewPage';
-import EmailPage from './pages/EmailPage';
+// Lazy: alles andere – spart ~60% Initial-Bundle, Android-Startup deutlich schneller
+const DocumentDetail = lazy(() => import('./pages/DocumentDetail'));
+const Archiv = lazy(() => import('./pages/Archiv'));
+const ProfilPage = lazy(() => import('./pages/ProfilPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
+const BehoerdeAssistent = lazy(() => import('./pages/BehoerdeAssistent'));
+const BefundAssistent = lazy(() => import('./pages/BefundAssistent'));
+const PricingPage = lazy(() => import('./pages/PricingPage'));
+const DatenschutzPage = lazy(() => import('./pages/DatenschutzPage'));
+const NutzungsbedingungenPage = lazy(() => import('./pages/NutzungsbedingungenPage'));
+const AGBPage = lazy(() => import('./pages/AGBPage'));
+const ImpressumPage = lazy(() => import('./pages/ImpressumPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const SektorDetailPage = lazy(() => import('./pages/SektorDetailPage'));
+const DokumenteListe = lazy(() => import('./pages/DokumenteListe'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const ScanPreviewPage = lazy(() => import('./pages/ScanPreviewPage'));
+const EmailPage = lazy(() => import('./pages/EmailPage'));
 import { checkAdmin, getTicketUnreadCount } from './api';
 import { useFeatureFlags } from './hooks/useFeatureFlags.jsx';
 import IntroGuide from './components/IntroGuide';
+import ErrorBoundary from './components/ErrorBoundary';
+import Spinner from './components/Spinner';
+import { ConfirmDialogProvider } from './components/ConfirmDialog';
+import { ToastProvider } from './components/Toast';
+import CommandPalette from './components/CommandPalette';
 
 const TAB_ITEMS = [
   { path: '/', labelKey: 'nav.dashboard', icon: LayoutDashboard },
@@ -78,7 +85,7 @@ function PrivateRoute({ children }) {
         <div className="flex flex-col items-center gap-3 animate-fade-in">
           <div style={{
             width: 40, height: 40, borderRadius: '50%',
-            border: '3px solid rgba(139,92,246,0.2)',
+            border: '3px solid rgba(99,102,241,0.2)',
             borderTopColor: 'var(--accent-solid)',
             animation: 'spin 0.8s linear infinite',
           }} />
@@ -114,7 +121,9 @@ function BottomTabBar() {
         margin: '0 auto',
         padding: '0 4px',
       }}>
-        {TAB_ITEMS.map(({ path, labelKey, icon: Icon, isCenter }) => {
+        {TAB_ITEMS.map((item) => {
+          const { path, labelKey, isCenter } = item;
+          const TabIcon = item.icon;
           const active = isActive(path);
 
           if (isCenter) {
@@ -123,12 +132,12 @@ function BottomTabBar() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 width: 52, height: 52, borderRadius: 16,
                 background: 'var(--accent-gradient)',
-                boxShadow: '0 4px 20px rgba(139, 92, 246, 0.35)',
+                boxShadow: '0 4px 20px rgba(99,102,241, 0.35)',
                 textDecoration: 'none',
                 transform: 'translateY(-8px)',
                 transition: 'all 0.25s ease',
               }}>
-                <Icon style={{ width: 24, height: 24, color: 'white', strokeWidth: 2.5 }} />
+                <TabIcon style={{ width: 24, height: 24, color: 'white', strokeWidth: 2.5 }} />
               </Link>
             );
           }
@@ -148,7 +157,7 @@ function BottomTabBar() {
                 background: active ? 'var(--accent-soft)' : 'transparent',
                 transition: 'all 0.25s ease',
               }}>
-                <Icon style={{
+                <TabIcon style={{
                   width: 20, height: 20,
                   color: active ? 'var(--accent-solid)' : 'var(--nav-inactive)',
                   opacity: active ? 1 : 'var(--nav-inactive-opacity)',
@@ -185,6 +194,7 @@ function TopHeader() {
   const { isEnabled } = useFeatureFlags();
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMoreOpen(false);
   }, [location.pathname]);
 
@@ -206,7 +216,7 @@ function TopHeader() {
     setMoreOpen(false);
   };
 
-  const { plan: currentPlan, isPro, isBasic, isFree, isPaid, loading: subLoading } = useSubscription();
+  const { isPro, isBasic, isFree, loading: subLoading } = useSubscription();
 
   return (
     <>
@@ -249,15 +259,16 @@ function TopHeader() {
             <LanguageSwitcher />
             <button
               onClick={() => setMoreOpen(true)}
+              aria-label="Menü öffnen"
               style={{
                 position: 'relative',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 36, height: 36, borderRadius: 10,
+                width: 44, height: 44, borderRadius: 12,
                 background: 'transparent', border: 'none', cursor: 'pointer',
               }}
             >
-              <Menu style={{ width: 20, height: 20, color: 'var(--text-secondary)' }} />
-              {ticketBadge > 0 && <span style={{ position: 'absolute', top: 6, right: 6, width: 8, height: 8, borderRadius: '50%', background: '#FF5F6D' }} />}
+              <Menu style={{ width: 22, height: 22, color: 'var(--text-secondary)' }} />
+              {ticketBadge > 0 && <span style={{ position: 'absolute', top: 8, right: 8, width: 8, height: 8, borderRadius: '50%', background: '#FF5F6D' }} />}
             </button>
           </div>
         </div>
@@ -300,7 +311,10 @@ function TopHeader() {
         </div>
 
         <div style={{ padding: 12, flex: 1, overflowY: 'auto' }}>
-          {MORE_ITEMS.filter(item => item.path !== '/email' || isEnabled('email_enabled')).map(({ path, labelKey, icon: Icon }) => (
+          {MORE_ITEMS.filter(item => item.path !== '/email' || isEnabled('email_enabled')).map((item) => {
+            const { path, labelKey } = item;
+            const MenuIcon = item.icon;
+            return (
             <Link
               key={path}
               to={path}
@@ -315,7 +329,7 @@ function TopHeader() {
               }}
             >
               <div style={{ position: 'relative' }}>
-                <Icon style={{ width: 20, height: 20, opacity: 0.8 }} />
+                <MenuIcon style={{ width: 20, height: 20, opacity: 0.8 }} />
                 {path === '/support' && ticketBadge > 0 && (
                   <span style={{
                     position: 'absolute', top: -4, right: -6,
@@ -330,7 +344,8 @@ function TopHeader() {
               <span style={{ fontSize: 15, fontWeight: 500 }}>{t(labelKey)}</span>
               <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
             </Link>
-          ))}
+            );
+          })}
 
           <Link
             to="/pricing"
@@ -488,7 +503,7 @@ function LanguageSwitcher() {
 }
 
 function UpgradeButton({ mobile = false }) {
-  const { isFree, isBasic, isPro, loading } = useSubscription();
+  const { isBasic, isPro, loading } = useSubscription();
   const { t } = useTranslation();
 
   if (loading) return null;
@@ -602,11 +617,11 @@ function PWAInstallBanner() {
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
       padding: '12px 16px',
-      background: 'linear-gradient(135deg, rgba(139,92,246,0.95), rgba(99,102,241,0.95))',
+      background: 'linear-gradient(135deg, rgba(99,102,241,0.95), rgba(99,102,241,0.95))',
       backdropFilter: 'blur(12px)',
       display: 'flex', alignItems: 'center', gap: 12,
       animation: dismissed ? 'slideUp 0.3s ease forwards' : 'slideDown 0.4s cubic-bezier(0.16,1,0.3,1)',
-      boxShadow: '0 4px 24px rgba(139,92,246,0.3)',
+      boxShadow: '0 4px 24px rgba(99,102,241,0.3)',
     }}>
       <div style={{
         width: 40, height: 40, borderRadius: 10, overflow: 'hidden',
@@ -665,6 +680,8 @@ function AppContent() {
         maxWidth: 500, margin: '0 auto',
         padding: '16px 16px calc(var(--tab-bar-height) + var(--safe-area-bottom) + 16px)',
       } : {}}>
+        <Suspense fallback={<Spinner fullscreen size={40} />}>
+        <div key={location.pathname} className="page-enter">
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -691,9 +708,12 @@ function AppContent() {
           <Route path="/email" element={<PrivateRoute><EmailPage /></PrivateRoute>} />
           <Route path="/sektor/:type" element={<PrivateRoute><SektorDetailPage /></PrivateRoute>} />
         </Routes>
+        </div>
+        </Suspense>
       </main>
       {!isAuthPage && <BottomTabBar />}
       {!isAuthPage && <IntroGuide />}
+      {!isAuthPage && <CommandPalette />}
     </div>
   );
 }
@@ -712,21 +732,27 @@ function RtlWrapper({ children }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <PlanLimitProvider>
-              <FeatureFlagsProvider>
-                <RtlWrapper>
-                  <AppContent />
-                </RtlWrapper>
-              </FeatureFlagsProvider>
-            </PlanLimitProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ThemeProvider>
+          <ToastProvider>
+            <ConfirmDialogProvider>
+              <AuthProvider>
+                <SubscriptionProvider>
+                  <PlanLimitProvider>
+                    <FeatureFlagsProvider>
+                      <RtlWrapper>
+                        <AppContent />
+                      </RtlWrapper>
+                    </FeatureFlagsProvider>
+                  </PlanLimitProvider>
+                </SubscriptionProvider>
+              </AuthProvider>
+            </ConfirmDialogProvider>
+          </ToastProvider>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

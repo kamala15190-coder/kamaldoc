@@ -1,14 +1,14 @@
 import base64
-import json
-import httpx
-import os
-from pathlib import Path
-from PIL import Image
 import io
+import json
 import logging
+import os
 import re as _re
 from datetime import datetime
+
+import httpx
 from dotenv import load_dotenv
+from PIL import Image
 
 load_dotenv()
 
@@ -25,6 +25,7 @@ async def _log_mistral_usage(model: str, input_tokens: int, output_tokens: int):
     """Log Mistral API token usage to the database."""
     try:
         from database import get_db
+
         db = await get_db()
         try:
             await db.execute(
@@ -49,6 +50,7 @@ FORMATIERUNGSREGEL (STRIKT EINHALTEN):
 - Wenn du ein Datum einsetzen musst, verwende das heutige Datum: {heute}
 """
 
+
 def _build_system_msg():
     """Build a system message with current date and no-markdown rule."""
     heute = datetime.now().strftime("%d.%m.%Y")
@@ -57,7 +59,10 @@ def _build_system_msg():
 
 def _build_json_system_msg():
     """Build a system message for JSON-only responses (no prose rules)."""
-    return {"role": "system", "content": "Du bist ein Dokumentenanalyse-Assistent. Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Kein erklärender Text, keine Markdown-Formatierung, nur reines JSON."}
+    return {
+        "role": "system",
+        "content": "Du bist ein Dokumentenanalyse-Assistent. Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Kein erklärender Text, keine Markdown-Formatierung, nur reines JSON.",
+    }
 
 
 def extract_json_from_llm_response(text: str) -> dict:
@@ -78,7 +83,7 @@ def extract_json_from_llm_response(text: str) -> dict:
         pass
 
     # Fall 2: JSON in Markdown-Codeblock (```json ... ``` oder ``` ... ```)
-    match = _re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, _re.DOTALL)
+    match = _re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, _re.DOTALL)
     if match:
         try:
             return json.loads(match.group(1))
@@ -96,7 +101,7 @@ def extract_json_from_llm_response(text: str) -> dict:
             pass
 
         # Fall 4: Trailing commas entfernen und erneut versuchen
-        candidate_fixed = _re.sub(r',\s*([}\]])', r'\1', candidate)
+        candidate_fixed = _re.sub(r",\s*([}\]])", r"\1", candidate)
         try:
             return json.loads(candidate_fixed)
         except json.JSONDecodeError:
@@ -231,27 +236,28 @@ def image_to_base64(image_bytes: bytes) -> str:
     return base64.b64encode(image_bytes).decode("utf-8")
 
 
-
 def strip_markdown(text: str) -> str:
     """Remove common markdown formatting as safety net."""
     if not text:
         return text
     # Remove bold/italic markers
-    text = _re.sub(r'\*{1,3}(.+?)\*{1,3}', r'\1', text)
+    text = _re.sub(r"\*{1,3}(.+?)\*{1,3}", r"\1", text)
     # Remove heading markers
-    text = _re.sub(r'^#{1,6}\s+', '', text, flags=_re.MULTILINE)
+    text = _re.sub(r"^#{1,6}\s+", "", text, flags=_re.MULTILINE)
     # Remove horizontal rules
-    text = _re.sub(r'^-{3,}$', '', text, flags=_re.MULTILINE)
-    text = _re.sub(r'^\*{3,}$', '', text, flags=_re.MULTILINE)
+    text = _re.sub(r"^-{3,}$", "", text, flags=_re.MULTILINE)
+    text = _re.sub(r"^\*{3,}$", "", text, flags=_re.MULTILINE)
     # Remove code fences (but keep content)
-    text = _re.sub(r'```[a-z]*\n?', '', text)
+    text = _re.sub(r"```[a-z]*\n?", "", text)
     return text.strip()
 
 
 # --- Shared helper: call Mistral chat completions ---
 
-async def _mistral_chat(messages: list, model: str = None, temperature: float = 0.3,
-                         max_tokens: int = 4096, timeout: float = 120.0) -> str:
+
+async def _mistral_chat(
+    messages: list, model: str = None, temperature: float = 0.3, max_tokens: int = 4096, timeout: float = 120.0
+) -> str:
     """Send a chat completion request to Mistral AI and return the content."""
     if not MISTRAL_API_KEY:
         raise ValueError("MISTRAL_API_KEY Umgebungsvariable nicht gesetzt")
@@ -286,6 +292,7 @@ async def _mistral_chat(messages: list, model: str = None, temperature: float = 
 
 # --- OCR via Mistral OCR model ---
 
+
 async def _mistral_ocr(image_path: str) -> str:
     """Extract text from a document image using Mistral OCR endpoint (/v1/ocr)."""
     if not MISTRAL_API_KEY:
@@ -296,10 +303,7 @@ async def _mistral_ocr(image_path: str) -> str:
 
     payload = {
         "model": MISTRAL_OCR_MODEL,
-        "document": {
-            "type": "image_url",
-            "image_url": f"data:image/jpeg;base64,{b64}"
-        }
+        "document": {"type": "image_url", "image_url": f"data:image/jpeg;base64,{b64}"},
     }
 
     async with httpx.AsyncClient(timeout=120.0) as client:
@@ -332,6 +336,7 @@ async def _mistral_ocr(image_path: str) -> str:
 
 # --- Status check ---
 
+
 async def check_mistral_status() -> dict:
     """Mistral AI API Status pr\u00fcfen."""
     if not MISTRAL_API_KEY:
@@ -340,8 +345,7 @@ async def check_mistral_status() -> dict:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             resp = await client.get(
-                f"{MISTRAL_BASE_URL}/models",
-                headers={"Authorization": f"Bearer {MISTRAL_API_KEY}"}
+                f"{MISTRAL_BASE_URL}/models", headers={"Authorization": f"Bearer {MISTRAL_API_KEY}"}
             )
             if resp.status_code == 200:
                 data = resp.json()
@@ -359,6 +363,7 @@ async def check_mistral_status() -> dict:
 
 
 # --- Document analysis (two-step: OCR then analyze) ---
+
 
 async def ocr_image(image_path: str) -> str:
     """Public wrapper for OCR on a single image. Returns extracted text."""
@@ -385,7 +390,7 @@ async def _analyze_from_ocr_text(ocr_text: str) -> dict:
     # Step 2: Analyze extracted text with text model
     messages = [
         _build_json_system_msg(),
-        {"role": "user", "content": f"{ANALYSE_PROMPT}\n\nDokumententext:\n---\n{ocr_text}\n---"}
+        {"role": "user", "content": f"{ANALYSE_PROMPT}\n\nDokumententext:\n---\n{ocr_text}\n---"},
     ]
     content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
     logger.info(f"[LLM RAW Response] length={len(content)}, preview={content[:500]}")
@@ -408,11 +413,13 @@ async def _analyze_from_ocr_text(ocr_text: str) -> dict:
     elif he is None:
         result["handlung_erforderlich"] = False
 
-    logger.info(f"[LLM Parsed] kategorie={result.get('kategorie')}, "
-                f"handlung_erforderlich={result.get('handlung_erforderlich')}, "
-                f"handlung_beschreibung={result.get('handlung_beschreibung')}, "
-                f"absender={result.get('absender')}, "
-                f"betrag={result.get('betrag')}")
+    logger.info(
+        f"[LLM Parsed] kategorie={result.get('kategorie')}, "
+        f"handlung_erforderlich={result.get('handlung_erforderlich')}, "
+        f"handlung_beschreibung={result.get('handlung_beschreibung')}, "
+        f"absender={result.get('absender')}, "
+        f"betrag={result.get('betrag')}"
+    )
 
     return result
 
@@ -438,7 +445,10 @@ async def extract_expense_items(volltext: str) -> list:
         return []
 
     try:
-        messages = [_build_json_system_msg(), {"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"}]
+        messages = [
+            _build_json_system_msg(),
+            {"role": "user", "content": f"{EXPENSE_ITEMS_PROMPT}\n\nRechnungstext:\n{volltext}"},
+        ]
         content = await _mistral_chat(messages, temperature=0.1, max_tokens=4096)
 
         result = extract_json_from_llm_response(content)
@@ -452,22 +462,56 @@ async def extract_expense_items(volltext: str) -> list:
 
 # Mapping language codes to full language names for the prompt
 LANGUAGE_NAMES = {
-    "de": "Deutsch", "en": "English", "es": "Espa\u00f1ol", "fr": "Fran\u00e7ais",
-    "ar": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629 (Arabic)", "pt": "Portugu\u00eas", "tr": "T\u00fcrk\u00e7e", "it": "Italiano",
-    "pl": "Polski", "bs": "Bosanski", "hr": "Hrvatski", "sr": "Srpski",
-    "cs": "\u010ce\u0161tina", "sk": "Sloven\u010dina", "sl": "Sloven\u0161\u010dina", "nl": "Nederlands",
-    "ru": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian)", "uk": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 (Ukrainian)", "ro": "Rom\u00e2n\u0103",
-    "hu": "Magyar", "bg": "\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 (Bulgarian)", "el": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (Greek)",
-    "sv": "Svenska", "no": "Norsk", "da": "Dansk", "fi": "Suomi",
-    "hi": "\u0939\u093f\u0928\u094d\u0926\u0940 (Hindi)", "zh": "\u4e2d\u6587 (Chinese)", "ja": "\u65e5\u672c\u8a9e (Japanese)",
-    "ko": "\ud55c\uad6d\uc5b4 (Korean)", "id": "Indonesian", "sw": "Kiswahili",
-    "vi": "Ti\u1ebfng Vi\u1ec7t", "th": "\u0e44\u0e17\u0e22 (Thai)", "tl": "Tagalog",
-    "af": "Afrikaans", "ca": "Catal\u00e0", "eu": "Euskara", "gl": "Galego",
-    "et": "Eesti", "lv": "Latvie\u0161u", "lt": "Lietuvi\u0173",
-    "mk": "\u041c\u0430\u043a\u0435\u0434\u043e\u043d\u0441\u043a\u0438 (Macedonian)", "sq": "Shqip",
-    "be": "\u0411\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f (Belarusian)", "kk": "\u049a\u0430\u0437\u0430\u049b\u0448\u0430 (Kazakh)",
-    "az": "Az\u0259rbaycanca", "ka": "\u10e5\u10d0\u10e0\u10d7\u10e3\u10da\u10d8 (Georgian)",
-    "hy": "\u0540\u0561\u0575\u0565\u0580\u0565\u0576 (Armenian)", "he": "\u05e2\u05d1\u05e8\u05d9\u05ea (Hebrew)",
+    "de": "Deutsch",
+    "en": "English",
+    "es": "Espa\u00f1ol",
+    "fr": "Fran\u00e7ais",
+    "ar": "\u0627\u0644\u0639\u0631\u0628\u064a\u0629 (Arabic)",
+    "pt": "Portugu\u00eas",
+    "tr": "T\u00fcrk\u00e7e",
+    "it": "Italiano",
+    "pl": "Polski",
+    "bs": "Bosanski",
+    "hr": "Hrvatski",
+    "sr": "Srpski",
+    "cs": "\u010ce\u0161tina",
+    "sk": "Sloven\u010dina",
+    "sl": "Sloven\u0161\u010dina",
+    "nl": "Nederlands",
+    "ru": "\u0420\u0443\u0441\u0441\u043a\u0438\u0439 (Russian)",
+    "uk": "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 (Ukrainian)",
+    "ro": "Rom\u00e2n\u0103",
+    "hu": "Magyar",
+    "bg": "\u0411\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 (Bulgarian)",
+    "el": "\u0395\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac (Greek)",
+    "sv": "Svenska",
+    "no": "Norsk",
+    "da": "Dansk",
+    "fi": "Suomi",
+    "hi": "\u0939\u093f\u0928\u094d\u0926\u0940 (Hindi)",
+    "zh": "\u4e2d\u6587 (Chinese)",
+    "ja": "\u65e5\u672c\u8a9e (Japanese)",
+    "ko": "\ud55c\uad6d\uc5b4 (Korean)",
+    "id": "Indonesian",
+    "sw": "Kiswahili",
+    "vi": "Ti\u1ebfng Vi\u1ec7t",
+    "th": "\u0e44\u0e17\u0e22 (Thai)",
+    "tl": "Tagalog",
+    "af": "Afrikaans",
+    "ca": "Catal\u00e0",
+    "eu": "Euskara",
+    "gl": "Galego",
+    "et": "Eesti",
+    "lv": "Latvie\u0161u",
+    "lt": "Lietuvi\u0173",
+    "mk": "\u041c\u0430\u043a\u0435\u0434\u043e\u043d\u0441\u043a\u0438 (Macedonian)",
+    "sq": "Shqip",
+    "be": "\u0411\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f (Belarusian)",
+    "kk": "\u049a\u0430\u0437\u0430\u049b\u0448\u0430 (Kazakh)",
+    "az": "Az\u0259rbaycanca",
+    "ka": "\u10e5\u10d0\u10e0\u10d7\u10e3\u10da\u10d8 (Georgian)",
+    "hy": "\u0540\u0561\u0575\u0565\u0580\u0565\u0576 (Armenian)",
+    "he": "\u05e2\u05d1\u05e8\u05d9\u05ea (Hebrew)",
 }
 
 
@@ -481,17 +525,23 @@ ANTWORTTYP_PROMPTS = {
 }
 
 
-async def generate_reply(document: dict, einstellungen: dict = None, target_language: str = "de", hints: str = "", reply_type: str = "allgemein") -> str:
+async def generate_reply(
+    document: dict,
+    einstellungen: dict = None,
+    target_language: str = "de",
+    hints: str = "",
+    reply_type: str = "allgemein",
+) -> str:
     """Antwortbrief via Mistral AI generieren."""
     target_language_name = LANGUAGE_NAMES.get(target_language, "Deutsch")
 
     if einstellungen and any(einstellungen.values()):
         name = f"{einstellungen.get('vorname', '')} {einstellungen.get('nachname', '')}".strip()
-        adresse = einstellungen.get('adresse', '')
+        adresse = einstellungen.get("adresse", "")
         plz_ort = f"{einstellungen.get('plz', '')} {einstellungen.get('ort', '')}".strip()
-        email = einstellungen.get('email', '')
-        telefon = einstellungen.get('telefon', '')
-        parts = [f"Verwende folgende Absenderdaten f\u00fcr den Brief:"]
+        email = einstellungen.get("email", "")
+        telefon = einstellungen.get("telefon", "")
+        parts = ["Verwende folgende Absenderdaten f\u00fcr den Brief:"]
         if name:
             parts.append(f"- Name: {name}")
         if adresse:
@@ -510,16 +560,24 @@ async def generate_reply(document: dict, einstellungen: dict = None, target_lang
     typ_text = ANTWORTTYP_PROMPTS.get(reply_type, "")
     typ_instruction = f"\n\n**ANTWORTTYP:** {typ_text}" if typ_text else ""
 
-    hints_text = f"\n\n**WICHTIG - H\u00d6CHSTE PRIORIT\u00c4T** Der Benutzer hat folgende Kontext-Hinweise/Anweisungen gegeben, die UNBEDINGT im Brief ber\u00fccksichtigt und umgesetzt werden M\u00dcSSEN:\n\"{hints}\"\n\nDiese Anweisungen haben Vorrang vor allen anderen Informationen. Der generierte Brief MUSS den Inhalt dieser Hinweise widerspiegeln." if hints else ""
-    prompt = ANTWORT_PROMPT_TEMPLATE.format(
-        absender=document.get("absender", "Unbekannt"),
-        datum=document.get("datum", "Unbekannt"),
-        zusammenfassung=document.get("zusammenfassung", ""),
-        handlung_beschreibung=document.get("handlung_beschreibung", ""),
-        volltext=document.get("volltext", ""),
-        absender_info=absender_info,
-        target_language_name=target_language_name,
-    ) + typ_instruction + hints_text
+    hints_text = (
+        f'\n\n**WICHTIG - H\u00d6CHSTE PRIORIT\u00c4T** Der Benutzer hat folgende Kontext-Hinweise/Anweisungen gegeben, die UNBEDINGT im Brief ber\u00fccksichtigt und umgesetzt werden M\u00dcSSEN:\n"{hints}"\n\nDiese Anweisungen haben Vorrang vor allen anderen Informationen. Der generierte Brief MUSS den Inhalt dieser Hinweise widerspiegeln.'
+        if hints
+        else ""
+    )
+    prompt = (
+        ANTWORT_PROMPT_TEMPLATE.format(
+            absender=document.get("absender", "Unbekannt"),
+            datum=document.get("datum", "Unbekannt"),
+            zusammenfassung=document.get("zusammenfassung", ""),
+            handlung_beschreibung=document.get("handlung_beschreibung", ""),
+            volltext=document.get("volltext", ""),
+            absender_info=absender_info,
+            target_language_name=target_language_name,
+        )
+        + typ_instruction
+        + hints_text
+    )
 
     heute = datetime.now().strftime("%d.%m.%Y")
     prompt = prompt.replace("{heute}", heute)
@@ -709,8 +767,9 @@ async def get_contestable_elements(volltext: str, language: str = "de") -> list:
     content = await _mistral_chat(messages, temperature=0.2, max_tokens=3000)
 
     import re
+
     try:
-        match = re.search(r'\[.*\]', content, re.DOTALL)
+        match = re.search(r"\[.*\]", content, re.DOTALL)
         if match:
             return json.loads(match.group())
         return json.loads(content)
@@ -754,7 +813,9 @@ KEIN Text nach der Grussformel und Unterschriftszeile. Das Schreiben endet mit d
 FORMATIERUNG: Verwende KEIN Markdown (kein **, kein ###, kein ---). Schreibe reinen Klartext. Verwende KEINE Emojis."""
 
 
-async def generate_objection_letter(volltext: str, absender_daten: str, selected_elements: str, target_language: str = "Deutsch") -> str:
+async def generate_objection_letter(
+    volltext: str, absender_daten: str, selected_elements: str, target_language: str = "Deutsch"
+) -> str:
     """Widerspruchsschreiben generieren."""
     prompt = OBJECTION_LETTER_PROMPT.format(
         volltext=volltext,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Stethoscope, Upload, Loader2, FileText, Copy, Check,
@@ -16,6 +16,7 @@ export default function BefundAssistent() {
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); // 0-100, ~analyse_laeuft Progress
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState(null);
@@ -27,6 +28,8 @@ export default function BefundAssistent() {
   const [copiedTranslated, setCopiedTranslated] = useState(false);
   const [error, setError] = useState(null);
   const [targetLang, setTargetLang] = useState('de');
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
   const { handleApiError } = usePlanLimit();
 
   const fetchDocs = async () => {
@@ -48,24 +51,38 @@ export default function BefundAssistent() {
   const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
+    setUploadProgress(5);
     setError(null);
     try {
       const result = await uploadDocument(file, 'befund');
       setFile(null);
+      if (!mountedRef.current) return;
+      setUploadProgress(20);
       let doc = result;
-      for (let i = 0; i < 30; i++) {
+      const maxAttempts = 30;
+      for (let i = 0; i < maxAttempts; i++) {
         await new Promise(r => setTimeout(r, 2000));
+        if (!mountedRef.current) return;
         doc = await getDocument(result.id);
+        if (!mountedRef.current) return;
+        // 20% Upload + 80% Analyse
+        setUploadProgress(Math.min(95, 20 + Math.round(((i + 1) / maxAttempts) * 75)));
         if (doc.status !== 'analyse_laeuft') break;
       }
+      if (!mountedRef.current) return;
+      setUploadProgress(100);
       setSelectedDoc(doc);
       setVereinfacht(doc.vereinfacht || '');
       setTranslated('');
       fetchDocs();
     } catch (err) {
+      if (!mountedRef.current) return;
       if (!handleApiError(err)) setError(err.message || 'Upload fehlgeschlagen');
     } finally {
-      setUploading(false);
+      if (mountedRef.current) {
+        setUploading(false);
+        setUploadProgress(0);
+      }
     }
   };
 
@@ -118,7 +135,7 @@ export default function BefundAssistent() {
       } else {
         window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(text)}`);
       }
-    } catch (_) {}
+    } catch { /* ignore */ }
   };
   const selectDoc = async (doc) => {
     const full = await getDocument(doc.id);
@@ -152,6 +169,16 @@ export default function BefundAssistent() {
             {uploading ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Upload style={{ width: 16, height: 16 }} />}
             {uploading ? t('befund.uploading') : t('befund.uploadButton')}
           </button>
+          {uploading && (
+            <div style={{ marginTop: 2 }}>
+              <div style={{ height: 4, borderRadius: 2, background: 'var(--progress-track)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${uploadProgress}%`, background: 'var(--accent-gradient)', transition: 'width 0.6s ease' }} />
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, textAlign: 'center' }}>
+                {uploadProgress < 20 ? t('befund.uploading') : uploadProgress < 95 ? t('befund.analyzing', 'Wird analysiert...') : t('befund.finishing', 'Fast fertig...')}
+              </div>
+            </div>
+          )}
         </div>
         {error && <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--danger-text)' }}><AlertCircle style={{ width: 14, height: 14 }} />{error}</div>}
       </div>
@@ -237,7 +264,7 @@ export default function BefundAssistent() {
         </div>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(139,92,246,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '3px solid rgba(99,102,241,0.15)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
           </div>
         ) : docs.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px' }}>

@@ -5,7 +5,16 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores([
+    'dist',
+    'android/**',
+    'ios/**',
+    'node_modules',
+    '**/*.min.js',
+    'public/assets/**',
+    '**/build/**',
+    'src/assets/native-bridge.js',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useCallback, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +27,7 @@ export const PlanLimitProvider = ({ children }) => {
       return true;
     }
     return false;
-  }, [showLimitModal]);
+  }, [showLimitModal, t]);
 
   return (
     <PlanLimitContext.Provider value={{ handleApiError, showLimitModal }}>

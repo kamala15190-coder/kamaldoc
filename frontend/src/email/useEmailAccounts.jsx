@@ -69,7 +69,7 @@ export function useEmailAccounts() {
             try {
               const { Browser } = await import('@capacitor/browser');
               await Browser.close();
-            } catch (_) {}
+            } catch { /* ignore */ }
             await handleCallback(url);
           }
         });

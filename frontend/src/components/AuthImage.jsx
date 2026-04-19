@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import api from '../api';
 
 export default function AuthImage({ src, alt, className, onError, ...props }) {
   const [blobUrl, setBlobUrl] = useState(null);
   const [error, setError] = useState(false);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -11,7 +16,7 @@ export default function AuthImage({ src, alt, className, onError, ...props }) {
 
     if (!src) return;
 
-    setBlobUrl(null);
+    setBlobUrl(null); // eslint-disable-line react-hooks/set-state-in-effect
     setError(false);
 
     api.get(src, { responseType: 'blob' })
@@ -24,7 +29,7 @@ export default function AuthImage({ src, alt, className, onError, ...props }) {
       .catch(() => {
         if (!cancelled) {
           setError(true);
-          onError?.();
+          onErrorRef.current?.();
         }
       });
 

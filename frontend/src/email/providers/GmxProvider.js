@@ -4,15 +4,7 @@
  * Supports OAuth2 where available, falls back to app-password.
  */
 
-import { Capacitor } from '@capacitor/core';
 import { ImapProvider } from './ImapProvider';
-
-const REDIRECT_URI_WEB = `${window.location.origin}/email-callback/gmx`;
-const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/gmx';
-
-function getRedirectUri() {
-  return Capacitor.isNativePlatform() ? REDIRECT_URI_NATIVE : REDIRECT_URI_WEB;
-}
 
 export class GmxProvider extends ImapProvider {
   getImapConfig() {

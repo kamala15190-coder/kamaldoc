@@ -1,10 +1,9 @@
 import logging
 import os
-from typing import Optional
 
 import jwt
+from fastapi import Header, HTTPException
 from jwt import PyJWKClient
-from fastapi import HTTPException, Header
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +11,10 @@ logger = logging.getLogger(__name__)
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_JWT_SECRET = os.getenv("SUPABASE_JWT_SECRET", "")
 JWKS_URL = f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+
+# Opt-in Fallback auf HS256 (nur für lokale Entwicklung / Migrationsphase).
+# In Produktion IMMER leer lassen – JWKS ist der sichere Pfad.
+ALLOW_HS256_FALLBACK = os.getenv("ALLOW_HS256_FALLBACK", "").lower() in ("1", "true", "yes")
 
 # JWKS-Client mit Cache (holt Keys nur bei Bedarf neu)
 _jwks_client = PyJWKClient(JWKS_URL, cache_keys=True, lifespan=3600)
@@ -29,7 +32,7 @@ def _decode_jwks(token: str) -> dict:
 
 
 def _decode_hs256(token: str) -> dict:
-    """HS256 Fallback mit SUPABASE_JWT_SECRET."""
+    """HS256 Fallback mit SUPABASE_JWT_SECRET (nur wenn ALLOW_HS256_FALLBACK=1)."""
     if not SUPABASE_JWT_SECRET:
         raise jwt.InvalidTokenError("SUPABASE_JWT_SECRET nicht konfiguriert")
     return jwt.decode(
@@ -40,11 +43,11 @@ def _decode_hs256(token: str) -> dict:
     )
 
 
-async def get_current_user(authorization: Optional[str] = Header(None)) -> str:
+async def get_current_user(authorization: str | None = Header(None)) -> str:
     """
     Extrahiert und validiert JWT Token aus Authorization Header.
-    Versucht RS256 (JWKS) zuerst, dann HS256 als Fallback.
-    Gibt user_id zurück oder wirft 401 Unauthorized.
+    Primär: asymmetrische Validierung über Supabase JWKS (ES256/RS256).
+    Fallback auf HS256 nur, wenn ALLOW_HS256_FALLBACK=1 in ENV.
     """
     if not authorization:
         raise HTTPException(status_code=401, detail="Authorization header fehlt")
@@ -52,31 +55,34 @@ async def get_current_user(authorization: Optional[str] = Header(None)) -> str:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Ungültiges Authorization Format")
 
-    token = authorization.replace("Bearer ", "")
+    token = authorization[len("Bearer ") :]
 
-    # --- JWKS (ES256/RS256, primär) ---
+    # --- Primär: JWKS (ES256/RS256) ---
     try:
         payload = _decode_jwks(token)
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Ungültiger Token: user_id fehlt")
-        logger.info(f"JWT validiert (JWKS/ES256): user_id={user_id}")
-        return user_id
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token abgelaufen")
-    except Exception as rs256_err:
-        logger.debug(f"JWKS fehlgeschlagen: {rs256_err}, versuche HS256 Fallback...")
+    except Exception as jwks_err:
+        if not ALLOW_HS256_FALLBACK:
+            logger.warning(f"JWT-Validierung fehlgeschlagen (JWKS): {jwks_err}")
+            raise HTTPException(status_code=401, detail="Ungültiger Token")
 
-    # --- HS256 Fallback ---
-    try:
-        payload = _decode_hs256(token)
+        # --- Nur wenn explizit erlaubt: HS256-Fallback ---
+        logger.info(f"JWKS fehlgeschlagen ({jwks_err}), nutze HS256-Fallback (ALLOW_HS256_FALLBACK=1)")
+        try:
+            payload = _decode_hs256(token)
+        except jwt.ExpiredSignatureError:
+            raise HTTPException(status_code=401, detail="Token abgelaufen")
+        except jwt.InvalidTokenError as hs_err:
+            raise HTTPException(status_code=401, detail=f"Ungültiger Token: {hs_err}")
         user_id = payload.get("sub")
         if not user_id:
             raise HTTPException(status_code=401, detail="Ungültiger Token: user_id fehlt")
-        logger.info("JWT via HS256 Fallback validiert")
-        logger.info(f"JWT validiert (JWKS/ES256): user_id={user_id}")
+        logger.info(f"JWT validiert (HS256-Fallback): user_id={user_id}")
         return user_id
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token abgelaufen")
-    except jwt.InvalidTokenError as e:
-        raise HTTPException(status_code=401, detail=f"Ungültiger Token: {str(e)}")
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Ungültiger Token: user_id fehlt")
+    logger.debug(f"JWT validiert (JWKS): user_id={user_id}")
+    return user_id

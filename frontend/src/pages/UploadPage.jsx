@@ -7,6 +7,7 @@ import { uploadDocuments } from '../api';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { openNativeScanner, openNativeGallery } from '../utils/documentScannerHelper';
 import { fileToDataUrl } from '../utils/pdfBuilder';
+import Confetti from '../components/Confetti';
 
 function useIsMobile() {
   return useMemo(() => {
@@ -23,7 +24,7 @@ function FileStatusRow({ entry, index, total }) {
     : entry.status === 'error'
       ? <AlertCircle style={{ width: 16, height: 16, color: 'var(--danger)', flexShrink: 0 }} />
       : entry.status === 'uploading'
-        ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.25)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+        ? <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.25)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
         : <div style={{ width: 16, height: 16, borderRadius: '50%', border: '2px solid var(--border-glass-strong)', flexShrink: 0 }} />;
 
   return (
@@ -73,9 +74,19 @@ export default function UploadPage() {
   const [fileEntries, setFileEntries] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(null); // Allgemeiner Fehler (kein Plan, etc.)
+  const [celebrate, setCelebrate] = useState(false);
 
   const allDone = fileEntries.length > 0 && fileEntries.every(e => e.status === 'done' || e.status === 'error');
   const successCount = fileEntries.filter(e => e.status === 'done').length;
+
+  useEffect(() => {
+    if (allDone && successCount > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCelebrate(true);
+      const t = setTimeout(() => setCelebrate(false), 1100);
+      return () => clearTimeout(t);
+    }
+  }, [allDone, successCount]);
 
   // Single-file auto-redirect
   useEffect(() => {
@@ -111,9 +122,11 @@ export default function UploadPage() {
       pending.map(e => e.file),
       'standard',
       (idx, _total, _filename, status) => {
-        const file = pending[idx]?.file || pending[Math.max(0, idx - 1)]?.file;
+        if (status !== 'uploading') return;
+        const file = pending[idx]?.file;
+        if (!file) return;
         setFileEntries(prev => prev.map(e =>
-          e.file === file ? { ...e, status: status === 'uploading' ? 'uploading' : e.status } : e
+          e.file === file ? { ...e, status: 'uploading' } : e
         ));
       }
     );
@@ -267,7 +280,7 @@ export default function UploadPage() {
 
           {uploading && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0' }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(139,92,246,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ width: 20, height: 20, borderRadius: '50%', border: '2px solid rgba(99,102,241,0.2)', borderTopColor: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent-solid)' }}>{t('upload.uploading')}</span>
             </div>
           )}
@@ -320,35 +333,37 @@ export default function UploadPage() {
             </div>
           )}
 
-          {/* Mobile: Große Buttons */}
+          {/* Mobile: Hero-Canvas mit Kamera-Primary + Trio-Row */}
           {isMobile && (
             <div className="animate-fade-in-up">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="upload-hero">
                 <button
                   onClick={openCamera}
-                  className="btn-accent camera-glass-btn"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, borderRadius: 16, minHeight: 100, fontSize: 14, fontWeight: 600 }}
+                  className="upload-hero-btn"
+                  aria-label={t('upload.camera')}
                 >
-                  <Camera style={{ width: 28, height: 28 }} />
-                  {t('upload.camera')}
+                  <Camera style={{ width: 40, height: 40 }} />
                 </button>
-                <button
-                  onClick={openGallery}
-                  className="glass-card"
-                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, minHeight: 100, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer', border: '1px solid var(--border-glass-strong)' }}
-                >
-                  <ImageIcon style={{ width: 28, height: 28, color: 'var(--text-secondary)' }} />
-                  {t('upload.gallery')}
+                <div className="upload-hero-label">{t('upload.camera', 'Dokument scannen')}</div>
+                <div className="upload-hero-sub">{t('upload.heroSub', 'Brief fotografieren oder mehrseitige Dokumente direkt scannen')}</div>
+              </div>
+
+              <div className="upload-divider">{t('upload.or', 'oder')}</div>
+
+              <div className="upload-trio">
+                <button onClick={openGallery} className="upload-trio-btn" aria-label={t('upload.gallery')}>
+                  <ImageIcon style={{ width: 22, height: 22, color: 'var(--accent-solid)' }} />
+                  {t('upload.gallery', 'Galerie')}
+                </button>
+                <button onClick={openFileDialog} className="upload-trio-btn" aria-label={t('upload.document', 'Datei')}>
+                  <FileText style={{ width: 22, height: 22, color: 'var(--accent-solid)' }} />
+                  {t('upload.document', 'Datei')}
+                </button>
+                <button onClick={openFileDialog} className="upload-trio-btn" aria-label="PDF">
+                  <Upload style={{ width: 22, height: 22, color: 'var(--accent-solid)' }} />
+                  PDF
                 </button>
               </div>
-              <button
-                onClick={openFileDialog}
-                className="btn-ghost"
-                style={{ width: '100%', marginTop: 12, padding: '14px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}
-              >
-                <FileText style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
-                <span style={{ color: 'var(--text-secondary)' }}>{t('upload.document', 'Dokument')} / {t('upload.fileTypes')}</span>
-              </button>
             </div>
           )}
 
@@ -383,6 +398,7 @@ export default function UploadPage() {
         tabIndex={-1}
         onChange={handleFileInput}
       />
+      <Confetti show={celebrate} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
