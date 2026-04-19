@@ -6,7 +6,8 @@
     "studio": "remotion studio src/index.ts",
     "render:reel": "remotion render src/index.ts UseCaseReel ../kdoc_usecase_reel.mp4 --codec=h264 --crf=20",
     "render:marketing": "remotion render src/index.ts MarketingVideo ../kdoc_marketing_video.mp4 --codec=h264 --crf=20",
-    "render:v2": "remotion render src/index.ts ReelV2 ../kdoc_reel_v2.mp4 --codec=h264 --crf=19"
+    "render:v2": "remotion render src/index.ts ReelV2 ../kdoc_reel_v2.mp4 --codec=h264 --crf=19",
+    "render:v2timed": "remotion render src/index.ts ReelV2 ../kdoc_reel_v2_timed.mp4 --codec=h264 --crf=19"
   },
   "dependencies": {
     "@remotion/bundler": "^4.0.448",

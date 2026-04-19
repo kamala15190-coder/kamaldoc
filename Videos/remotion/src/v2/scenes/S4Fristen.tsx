@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, spring } from 'remotion';
 import { V2, SAFE } from '../brandV2';
 import { SceneShell, SceneTitle } from '../components/SceneShell';
 import { IconOrb, CalendarPulseIcon } from '../components/Icons';
@@ -10,15 +10,22 @@ const DEADLINES = [
   { title: 'Arztbefund Kontrolltermin', sub: 'Dr. Steiner', days: 28, urgent: false },
 ];
 
-/** SCENE 4 — Fristen cards slide in from right */
+/** SCENE 4 — Fristen: deadline cards + push notification slide-in (7.7s / 231 frames) */
 export const S4Fristen: React.FC = () => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
   const iconProg = spring({ frame: frame - 6, fps, config: { damping: 16, stiffness: 120 } });
-
-  // Pulse on urgent badge
   const pulse = (Math.sin(frame / 8) + 1) / 2;
+
+  // Extension: notification slides in from above (frame 100+)
+  const notifProg = spring({ frame: frame - 100, fps, config: { damping: 22, stiffness: 130, mass: 0.9 } });
+  const notifFadeOut = interpolate(frame, [172, 192], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const notifOpacity = notifProg * notifFadeOut;
+  const notifY = interpolate(notifProg, [0, 1], [-440, 0]);
+
+  // Footer text after notification fades
+  const footerProg = spring({ frame: frame - 176, fps, config: { damping: 18, stiffness: 120 } });
 
   return (
     <SceneShell glowY={46}>
@@ -28,27 +35,82 @@ export const S4Fristen: React.FC = () => {
         opacity: iconProg,
         transform: `translateY(${interpolate(iconProg, [0, 1], [20, 0])}px) scale(${interpolate(iconProg, [0, 1], [0.85, 1])})`,
       }}>
-        <IconOrb size={130}>
-          <CalendarPulseIcon size={66} />
-        </IconOrb>
+        <IconOrb size={130}><CalendarPulseIcon size={66} /></IconOrb>
       </div>
 
       <SceneTitle
         label="Fristen"
         headline={<>Nie wieder verpassen.</>}
-        sub={<>Automatische Erinnerungen für<br />Behörden, Verträge & mehr.</>}
+        sub={<>Automatische Erinnerungen f\u00fcr<br />Beh\u00f6rden, Vertr\u00e4ge & mehr.</>}
         topOffset={SAFE.top + 170}
       />
 
-      {/* Cards slide in from right */}
+      {/* Push notification — slides down from above into the title/cards gap */}
       <div style={{
-        position: 'absolute', left: SAFE.side, right: SAFE.side,
-        top: 1100, display: 'flex', flexDirection: 'column', gap: 18,
+        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 630,
+        opacity: notifOpacity,
+        transform: `translateY(${notifY}px)`,
+      }}>
+        <div style={{
+          borderRadius: 18,
+          background: V2.glassStrong,
+          border: `1px solid ${V2.border}`,
+          borderLeft: `3px solid ${V2.primary}`,
+          backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+          padding: '24px 28px',
+          display: 'flex', alignItems: 'flex-start', gap: 18,
+        }}>
+          {/* Bell icon */}
+          <div style={{
+            width: 52, height: 52, borderRadius: 14, flexShrink: 0,
+            background: 'rgba(99,89,255,0.2)', border: `1px solid ${V2.primary}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 26,
+          }}>
+            \uD83D\uDD14
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: V2.font, fontSize: 28, fontWeight: 700, color: V2.text,
+              marginBottom: 8, letterSpacing: -0.3,
+            }}>
+              Erinnerung gesendet
+            </div>
+            <div style={{
+              fontFamily: V2.font, fontSize: 26, color: V2.textMuted, lineHeight: 1.4,
+            }}>
+              Finanzamt \u00d6sterreich \u2014 Frist in 3 Tagen
+            </div>
+            <div style={{
+              fontFamily: V2.font, fontSize: 22, color: 'rgba(148,163,184,0.6)',
+              marginTop: 8,
+            }}>
+              Heute, 09:41
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer tagline */}
+      <div style={{
+        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 880,
+        opacity: footerProg,
+        transform: `translateY(${interpolate(footerProg, [0, 1], [12, 0])}px)`,
+        textAlign: 'center',
+        fontFamily: V2.font, fontSize: 34, fontWeight: 600,
+        color: V2.primaryLight, letterSpacing: -0.3,
+      }}>
+        Automatisch. Immer p\u00fcnktlich.
+      </div>
+
+      {/* Deadline cards */}
+      <div style={{
+        position: 'absolute', left: SAFE.side, right: SAFE.side, top: 1100,
+        display: 'flex', flexDirection: 'column', gap: 18,
       }}>
         {DEADLINES.map((d, i) => {
           const prog = spring({ frame: frame - (36 + i * 14), fps, config: { damping: 20, stiffness: 110 } });
           const x = interpolate(prog, [0, 1], [340, 0]);
-          const alpha = prog;
           const badgeBg = d.urgent ? 'rgba(239, 68, 68, 0.18)' : 'rgba(99, 89, 255, 0.18)';
           const badgeBorder = d.urgent ? 'rgba(239, 68, 68, 0.6)' : 'rgba(99, 89, 255, 0.6)';
           const badgeText = d.urgent ? '#FCA5A5' : V2.primaryLight;
@@ -56,11 +118,9 @@ export const S4Fristen: React.FC = () => {
 
           return (
             <div key={d.title} style={{
-              transform: `translateX(${x}px)`, opacity: alpha,
-              padding: '22px 26px',
-              borderRadius: 18,
-              background: V2.glassStrong,
-              border: `1px solid ${V2.border}`,
+              transform: `translateX(${x}px)`, opacity: prog,
+              padding: '22px 26px', borderRadius: 18,
+              background: V2.glassStrong, border: `1px solid ${V2.border}`,
               backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
               display: 'flex', alignItems: 'center', gap: 18,
             }}>
@@ -71,28 +131,25 @@ export const S4Fristen: React.FC = () => {
                 }}>
                   {d.title}
                 </div>
-                <div style={{
-                  fontFamily: V2.font, fontSize: 26, color: V2.textMuted, marginTop: 4,
-                }}>
+                <div style={{ fontFamily: V2.font, fontSize: 26, color: V2.textMuted, marginTop: 4 }}>
                   {d.sub}
                 </div>
               </div>
-              {/* Countdown badge */}
               <div style={{
                 padding: '12px 18px', borderRadius: 14,
-                background: badgeBg,
-                border: `1px solid ${badgeBorder}`,
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                minWidth: 110,
+                background: badgeBg, border: `1px solid ${badgeBorder}`,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 110,
                 transform: d.urgent ? `scale(${pulseScale})` : undefined,
               }}>
+                <div style={{ fontFamily: V2.font, fontSize: 46, fontWeight: 700, color: badgeText, lineHeight: 0.95 }}>
+                  {d.days}
+                </div>
                 <div style={{
-                  fontFamily: V2.font, fontSize: 46, fontWeight: 700, color: badgeText, lineHeight: 0.95,
-                }}>{d.days}</div>
-                <div style={{
-                  fontFamily: V2.font, fontSize: 20, fontWeight: 600, color: badgeText, letterSpacing: 1.5,
-                  textTransform: 'uppercase', marginTop: 2,
-                }}>Tage</div>
+                  fontFamily: V2.font, fontSize: 20, fontWeight: 600, color: badgeText,
+                  letterSpacing: 1.5, textTransform: 'uppercase', marginTop: 2,
+                }}>
+                  Tage
+                </div>
               </div>
             </div>
           );
