@@ -47,6 +47,7 @@ export function useEmailAccounts() {
   useEffect(() => {
     const cleanUrl = () => {
       try {
+        // Remove both query params and hash fragment (gmail_result token)
         window.history.replaceState(null, '', '/profil');
       } catch { /* ignore */ }
     };
@@ -55,11 +56,21 @@ export function useEmailAccounts() {
       const match = url.match(/email-callback\/(gmail|outlook|gmx|icloud|yahoo)/);
       if (!match) return;
 
-      // Idempotency guard — only process a given `code` once.
+      // Idempotency guard — only process a given callback once.
+      // Web Gmail uses hash fragment (#gmail_result / #gmail_error); other
+      // providers use query params (?code). Fall back to the full URL as key.
       let codeKey = null;
       try {
-        const parsed = new URL(url);
-        codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
+        const hashResult = window.location.hash.match(/[#&]gmail_result=([^&]+)/);
+        const hashError = window.location.hash.match(/[#&]gmail_error=([^&]+)/);
+        if (hashResult) {
+          codeKey = hashResult[1];
+        } else if (hashError) {
+          codeKey = `error:${hashError[1]}`;
+        } else {
+          const parsed = new URL(url);
+          codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
+        }
       } catch {
         codeKey = url;
       }

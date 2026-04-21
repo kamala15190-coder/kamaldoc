@@ -460,6 +460,103 @@ async def gmail_token_refresh(
     }
 
 
+@app.get("/auth/gmail/callback")
+async def gmail_oauth_callback_relay(
+    code: str = None,
+    state: str = None,
+    error: str = None,
+    error_description: str = None,
+):
+    """Backend relay for Gmail OAuth callback (web flow).
+
+    Google redirects here instead of directly to the frontend so that
+    Supabase's detectSessionInUrl never sees the authorization code and
+    cannot consume it. We exchange the code server-side with client_secret,
+    then redirect to the frontend with the result encoded in the URL hash
+    fragment (hash fragments are never sent to servers, so tokens stay safe).
+    """
+    import base64
+    import json
+    import httpx as _httpx
+    from urllib.parse import quote as _quote
+
+    callback_path = "/email-callback/gmail"
+
+    def _redirect_error(msg: str) -> RedirectResponse:
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}{callback_path}#gmail_error={_quote(msg)}",
+            status_code=302,
+        )
+
+    if error:
+        return _redirect_error(error_description or error)
+
+    if not code:
+        return _redirect_error("no_code_received")
+
+    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
+        logger.error("Gmail OAuth relay: GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET not set")
+        return _redirect_error("oauth_not_configured")
+
+    redirect_uri = f"{API_URL}/auth/gmail/callback"
+
+    try:
+        async with _httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "code": code,
+                    "client_id": GMAIL_CLIENT_ID,
+                    "client_secret": GMAIL_CLIENT_SECRET,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+    except Exception as exc:
+        logger.error(f"Gmail OAuth relay: token exchange exception: {exc}")
+        return _redirect_error("token_exchange_error")
+
+    if not resp.is_success:
+        detail = ""
+        try:
+            detail = resp.json().get("error_description") or resp.json().get("error") or ""
+        except Exception:
+            pass
+        logger.error(f"Gmail OAuth relay: token exchange failed ({resp.status_code}): {detail}")
+        return _redirect_error(f"token_exchange_failed: {detail}" if detail else "token_exchange_failed")
+
+    token_data = resp.json()
+    access_token = token_data.get("access_token", "")
+
+    email = ""
+    if access_token:
+        try:
+            async with _httpx.AsyncClient(timeout=10) as gclient:
+                profile_resp = await gclient.get(
+                    "https://www.googleapis.com/gmail/v1/users/me/profile",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+            if profile_resp.is_success:
+                email = profile_resp.json().get("emailAddress", "")
+        except Exception as exc:
+            logger.warning(f"Gmail OAuth relay: could not fetch profile: {exc}")
+
+    result_b64 = base64.urlsafe_b64encode(
+        json.dumps({
+            "state": state,
+            "email": email,
+            "access_token": access_token,
+            "refresh_token": token_data.get("refresh_token"),
+            "expires_in": token_data.get("expires_in", 3600),
+        }).encode()
+    ).decode()
+
+    return RedirectResponse(
+        url=f"{FRONTEND_URL}{callback_path}#gmail_result={result_b64}",
+        status_code=302,
+    )
+
+
 # --- Hilfsfunktionen ---
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".pdf"}

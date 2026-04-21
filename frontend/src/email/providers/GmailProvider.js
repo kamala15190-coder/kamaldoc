@@ -20,7 +20,9 @@ const GMAIL_CLIENT_ID_ANDROID = import.meta.env.VITE_GMAIL_CLIENT_ID_ANDROID || 
 // The account email is fetched from the Gmail profile endpoint after token exchange.
 const GMAIL_SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL_API = 'https://www.googleapis.com/gmail/v1';
-const REDIRECT_URI_WEB = `${window.location.origin}/email-callback/gmail`;
+// Web: backend relay URL — Google redirects here so Supabase never sees the code.
+// Native: deep link handled by Capacitor, Supabase doesn't intercept it.
+const REDIRECT_URI_WEB = `${API_BASE}/auth/gmail/callback`;
 const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/gmail';
 
 // Refresh the access token when it has less than this much time left.
@@ -280,9 +282,6 @@ export class GmailProvider {
     const state = crypto.randomUUID();
     sessionStorage.setItem('gmail_oauth_state', state);
 
-    // Google requires PKCE for public SPA clients (no client_secret available).
-    const { challenge } = await createPkcePair('gmail');
-
     const params = new URLSearchParams({
       client_id: getClientId(),
       redirect_uri: getRedirectUri(),
@@ -291,9 +290,15 @@ export class GmailProvider {
       access_type: 'offline',
       prompt: 'consent',
       state,
-      code_challenge: challenge,
-      code_challenge_method: 'S256',
     });
+
+    // Native: public client (no client_secret on-device) → PKCE required.
+    // Web: backend relay exchanges the code using client_secret → no PKCE needed.
+    if (Capacitor.isNativePlatform()) {
+      const { challenge } = await createPkcePair('gmail');
+      params.set('code_challenge', challenge);
+      params.set('code_challenge_method', 'S256');
+    }
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 
@@ -308,6 +313,52 @@ export class GmailProvider {
   }
 
   static async handleOAuthCallback(callbackUrl) {
+    // ---------- Web path ----------
+    // The backend relay received the code from Google, exchanged it server-side,
+    // and redirected here with the result in the URL hash fragment.
+    // Hash fragments are never sent to servers, so tokens travel safely.
+    if (!Capacitor.isNativePlatform()) {
+      const hash = window.location.hash;
+
+      const errorMatch = hash.match(/[#&]gmail_error=([^&]*)/);
+      if (errorMatch) {
+        throw new Error(decodeURIComponent(errorMatch[1]));
+      }
+
+      const resultMatch = hash.match(/[#&]gmail_result=([^&]*)/);
+      if (!resultMatch) {
+        throw new Error('No OAuth result in callback URL');
+      }
+
+      let result;
+      try {
+        // urlsafe base64 → standard base64 → JSON
+        const b64 = resultMatch[1].replace(/-/g, '+').replace(/_/g, '/');
+        result = JSON.parse(atob(b64));
+      } catch {
+        throw new Error('Invalid OAuth result data');
+      }
+
+      const savedState = sessionStorage.getItem('gmail_oauth_state');
+      if (result.state !== savedState) throw new Error('OAuth state mismatch');
+      sessionStorage.removeItem('gmail_oauth_state');
+
+      if (!result.email) throw new Error('Could not determine Gmail account address');
+
+      return {
+        provider: 'gmail',
+        email: result.email,
+        tokens: {
+          access_token: result.access_token,
+          refresh_token: result.refresh_token,
+          expires_at: Date.now() + (result.expires_in || 3600) * 1000,
+        },
+      };
+    }
+
+    // ---------- Native path ----------
+    // Deep link delivers the code directly; Supabase does not intercept it.
+    // PKCE was sent in the auth request, so we must include code_verifier here.
     const url = new URL(callbackUrl);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
@@ -323,7 +374,6 @@ export class GmailProvider {
     sessionStorage.removeItem('gmail_oauth_state');
 
     if (!code) {
-      // Provide a diagnostic message showing what params were received
       const receivedParams = [...url.searchParams.keys()].join(', ') || '(none)';
       throw new Error(`No authorization code received (params: ${receivedParams})`);
     }
@@ -331,7 +381,6 @@ export class GmailProvider {
     const codeVerifier = consumePkceVerifier('gmail');
     if (!codeVerifier) throw new Error('Missing PKCE verifier — please restart the OAuth flow');
 
-    // Exchange code via backend proxy so GMAIL_CLIENT_SECRET stays off the client.
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) throw new Error('Not authenticated');
 
@@ -344,7 +393,7 @@ export class GmailProvider {
       body: JSON.stringify({
         code,
         code_verifier: codeVerifier,
-        redirect_uri: getRedirectUri(),
+        redirect_uri: REDIRECT_URI_NATIVE,
       }),
     });
 
