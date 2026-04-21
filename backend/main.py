@@ -200,6 +200,10 @@ async def startup():
 
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
+# Separate Gmail-only OAuth client for mailbox connections (gmail.readonly scope).
+# Falls back to the sign-in client if not set, but a dedicated client is recommended.
+GMAIL_CLIENT_ID = os.getenv("GMAIL_CLIENT_ID", "") or GOOGLE_CLIENT_ID
+GMAIL_CLIENT_SECRET = os.getenv("GMAIL_CLIENT_SECRET", "") or GOOGLE_CLIENT_SECRET
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kamaldoc-flax.vercel.app")
 API_URL = os.getenv("API_URL", "https://api.kdoc.at")
 ANDROID_CALLBACK = os.getenv("ANDROID_CALLBACK", "at.kamaldoc.app://login-callback")
@@ -337,6 +341,123 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
         redirect_url = f"{FRONTEND_URL}/#access_token={quote(access_token)}&refresh_token={quote(refresh_token)}&expires_in={expires_in}&token_type={token_type}"
 
     return RedirectResponse(url=redirect_url)
+
+
+# --- Gmail OAuth Token-Exchange (server-side, client_secret bleibt geheim) ---
+
+
+class GmailTokenExchangeRequest(BaseModel):
+    code: str
+    code_verifier: str
+    redirect_uri: str
+
+
+class GmailTokenRefreshRequest(BaseModel):
+    refresh_token: str
+
+
+@app.post("/api/auth/gmail/token-exchange")
+async def gmail_token_exchange(
+    body: GmailTokenExchangeRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """Exchange a Gmail OAuth authorization code for access+refresh tokens.
+    Runs server-side so that GMAIL_CLIENT_SECRET is never exposed to the client.
+    PKCE (code_verifier) is forwarded for additional security."""
+    import base64 as _b64
+    import json as _json
+
+    import httpx as _httpx
+
+    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
+        raise HTTPException(status_code=503, detail="Gmail OAuth not configured on server")
+
+    async with _httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "code": body.code,
+                "client_id": GMAIL_CLIENT_ID,
+                "client_secret": GMAIL_CLIENT_SECRET,
+                "redirect_uri": body.redirect_uri,
+                "grant_type": "authorization_code",
+                "code_verifier": body.code_verifier,
+            },
+        )
+
+    if not resp.is_success:
+        detail = ""
+        try:
+            err = resp.json()
+            detail = err.get("error_description") or err.get("error") or ""
+        except Exception:
+            pass
+        logger.error(f"Gmail token exchange failed ({resp.status_code}): {detail}")
+        raise HTTPException(status_code=400, detail=f"Token exchange failed: {detail}" if detail else "Token exchange failed")
+
+    token_data = resp.json()
+
+    # Decode the id_token payload to extract the user's e-mail address without
+    # an extra network round-trip to the userinfo endpoint.
+    email = ""
+    id_token = token_data.get("id_token", "")
+    if id_token:
+        try:
+            payload_b64 = id_token.split(".")[1]
+            # Add padding for base64 decoder
+            padding = 4 - len(payload_b64) % 4
+            payload_b64 += "=" * (padding % 4)
+            profile = _json.loads(_b64.urlsafe_b64decode(payload_b64))
+            email = profile.get("email", "")
+        except Exception as e:
+            logger.warning(f"Could not decode id_token: {e}")
+
+    return {
+        "access_token": token_data.get("access_token"),
+        "refresh_token": token_data.get("refresh_token"),
+        "expires_in": token_data.get("expires_in", 3600),
+        "email": email,
+    }
+
+
+@app.post("/api/auth/gmail/token-refresh")
+async def gmail_token_refresh(
+    body: GmailTokenRefreshRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """Refresh a Gmail access token server-side so client_secret stays secure."""
+    import httpx as _httpx
+
+    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
+        raise HTTPException(status_code=503, detail="Gmail OAuth not configured on server")
+
+    async with _httpx.AsyncClient(timeout=15) as client:
+        resp = await client.post(
+            "https://oauth2.googleapis.com/token",
+            data={
+                "client_id": GMAIL_CLIENT_ID,
+                "client_secret": GMAIL_CLIENT_SECRET,
+                "grant_type": "refresh_token",
+                "refresh_token": body.refresh_token,
+            },
+        )
+
+    if not resp.is_success:
+        detail = ""
+        try:
+            err = resp.json()
+            detail = err.get("error_description") or err.get("error") or ""
+        except Exception:
+            pass
+        logger.warning(f"Gmail token refresh failed ({resp.status_code}): {detail}")
+        raise HTTPException(status_code=401, detail="Token refresh failed")
+
+    token_data = resp.json()
+    return {
+        "access_token": token_data.get("access_token"),
+        "refresh_token": token_data.get("refresh_token") or body.refresh_token,
+        "expires_in": token_data.get("expires_in", 3600),
+    }
 
 
 # --- Hilfsfunktionen ---

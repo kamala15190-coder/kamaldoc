@@ -6,6 +6,9 @@
 
 import { Capacitor } from '@capacitor/core';
 import { createPkcePair, consumePkceVerifier } from '../oauthPkce';
+import { supabase } from '../../supabaseClient';
+
+const API_BASE = 'https://api.kdoc.at';
 
 // These must be replaced with your actual Google OAuth2 Client IDs
 const GMAIL_CLIENT_ID_WEB = import.meta.env.VITE_GMAIL_CLIENT_ID || '';
@@ -244,26 +247,30 @@ export class GmailProvider {
   }
 
   /**
-   * Refresh the access token using the refresh token.
+   * Refresh the access token via the backend proxy (keeps client_secret off the client).
    */
   async refreshToken() {
     if (!this.refreshTokenValue) return null;
-    const res = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: getClientId(),
-        grant_type: 'refresh_token',
-        refresh_token: this.refreshTokenValue,
-      }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return {
-      access_token: data.access_token,
-      refresh_token: data.refresh_token || this.refreshTokenValue,
-      expires_at: Date.now() + (data.expires_in || 3600) * 1000,
-    };
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${API_BASE}/api/auth/gmail/token-refresh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({ refresh_token: this.refreshTokenValue }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token || this.refreshTokenValue,
+        expires_at: Date.now() + (data.expires_in || 3600) * 1000,
+      };
+    } catch {
+      return null;
+    }
   }
 
   // ---------- Static OAuth Flow ----------
@@ -315,55 +322,43 @@ export class GmailProvider {
     if (state !== savedState) throw new Error('OAuth state mismatch');
     sessionStorage.removeItem('gmail_oauth_state');
 
-    if (!code) throw new Error('No authorization code received');
+    if (!code) {
+      // Provide a diagnostic message showing what params were received
+      const receivedParams = [...url.searchParams.keys()].join(', ') || '(none)';
+      throw new Error(`No authorization code received (params: ${receivedParams})`);
+    }
 
     const codeVerifier = consumePkceVerifier('gmail');
-    if (!codeVerifier) throw new Error('Missing PKCE verifier');
+    if (!codeVerifier) throw new Error('Missing PKCE verifier — please restart the OAuth flow');
 
-    // Exchange code for tokens (PKCE, no client_secret).
-    const res = await fetch('https://oauth2.googleapis.com/token', {
+    // Exchange code via backend proxy so GMAIL_CLIENT_SECRET stays off the client.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('Not authenticated');
+
+    const res = await fetch(`${API_BASE}/api/auth/gmail/token-exchange`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: getClientId(),
-        redirect_uri: getRedirectUri(),
-        grant_type: 'authorization_code',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
         code,
         code_verifier: codeVerifier,
+        redirect_uri: getRedirectUri(),
       }),
     });
 
     if (!res.ok) {
       let detail = '';
       try {
-        const body = await res.json();
-        detail = body.error_description || body.error || '';
+        const errBody = await res.json();
+        detail = errBody.detail || '';
       } catch { /* not JSON */ }
       throw new Error(`Gmail token exchange failed (${res.status})${detail ? ': ' + detail : ''}`);
     }
-    const tokenData = await res.json();
 
-    // Resolve the user's email address. Prefer the id_token (no extra request)
-    // and fall back to the userinfo endpoint if for any reason it isn't present.
-    let email = '';
-    if (tokenData.id_token) {
-      try {
-        const payload = tokenData.id_token.split('.')[1];
-        const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-        email = json.email || '';
-      } catch { /* fall through */ }
-    }
-    if (!email) {
-      try {
-        const profileRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
-          headers: { Authorization: `Bearer ${tokenData.access_token}` },
-        });
-        if (profileRes.ok) {
-          const profile = await profileRes.json();
-          email = profile.email || '';
-        }
-      } catch { /* ignore */ }
-    }
+    const tokenData = await res.json();
+    const email = tokenData.email;
     if (!email) throw new Error('Could not determine Gmail account address');
 
     return {
