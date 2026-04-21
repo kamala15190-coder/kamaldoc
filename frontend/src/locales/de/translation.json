@@ -531,6 +531,8 @@
     "connectTitle": "verbinden",
     "connectButton": "Verbinden",
     "connectFailed": "Verbindung fehlgeschlagen",
+    "connectFailedWithReason": "Verbindung fehlgeschlagen: {{reason}}",
+    "connectSuccess": "{{provider}} verbunden: {{email}}",
     "disconnect": "Trennen",
     "cancel": "Abbrechen",
     "emailAddress": "E-Mail-Adresse",

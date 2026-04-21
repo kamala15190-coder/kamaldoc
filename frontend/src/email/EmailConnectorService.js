@@ -122,7 +122,18 @@ export async function disconnectAccount(accountId) {
 function createProvider(account) {
   const ProviderClass = PROVIDER_MAP[account.provider];
   if (!ProviderClass) throw new Error(`Unknown provider: ${account.provider}`);
-  return new ProviderClass(account);
+  const provider = new ProviderClass(account);
+  // Persist new tokens whenever the provider silently refreshes them
+  // (proactive expiry check). The provider assigns this only if supported.
+  provider.onTokensRefreshed = async (newTokens) => {
+    try {
+      await updateAccountTokens(account.id, newTokens);
+      account.tokens = newTokens;
+    } catch (err) {
+      console.error('Failed to persist refreshed tokens:', err);
+    }
+  };
+  return provider;
 }
 
 // ---------- Search ----------

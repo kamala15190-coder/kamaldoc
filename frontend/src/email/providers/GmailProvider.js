@@ -5,16 +5,22 @@
  */
 
 import { Capacitor } from '@capacitor/core';
+import { createPkcePair, consumePkceVerifier } from '../oauthPkce';
 
 // These must be replaced with your actual Google OAuth2 Client IDs
 const GMAIL_CLIENT_ID_WEB = import.meta.env.VITE_GMAIL_CLIENT_ID || '';
 const GMAIL_CLIENT_ID_IOS = import.meta.env.VITE_GMAIL_CLIENT_ID_IOS || GMAIL_CLIENT_ID_WEB;
 const GMAIL_CLIENT_ID_ANDROID = import.meta.env.VITE_GMAIL_CLIENT_ID_ANDROID || GMAIL_CLIENT_ID_WEB;
 
-const GMAIL_SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
+// openid + email give us the account address in the id_token so we do not need
+// the separate Google People/userinfo scope.
+const GMAIL_SCOPES = 'openid email https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL_API = 'https://www.googleapis.com/gmail/v1';
 const REDIRECT_URI_WEB = `${window.location.origin}/email-callback/gmail`;
 const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/gmail';
+
+// Refresh the access token when it has less than this much time left.
+const REFRESH_LEEWAY_MS = 60 * 1000;
 
 function getClientId() {
   if (!Capacitor.isNativePlatform()) return GMAIL_CLIENT_ID_WEB;
@@ -30,9 +36,31 @@ export class GmailProvider {
     this.account = account;
     this.accessToken = account.tokens?.access_token;
     this.refreshTokenValue = account.tokens?.refresh_token;
+    this.expiresAt = account.tokens?.expires_at || 0;
+    // Caller (EmailConnectorService) sets this to persist fresh tokens.
+    this.onTokensRefreshed = null;
+  }
+
+  /**
+   * Refresh proactively if the stored access token is close to expiring.
+   * Returns the (possibly new) token bundle, or null if refresh failed.
+   */
+  async _ensureFreshToken() {
+    if (this.accessToken && this.expiresAt - Date.now() > REFRESH_LEEWAY_MS) return null;
+    const refreshed = await this.refreshToken();
+    if (refreshed) {
+      this.accessToken = refreshed.access_token;
+      this.refreshTokenValue = refreshed.refresh_token || this.refreshTokenValue;
+      this.expiresAt = refreshed.expires_at;
+      if (this.onTokensRefreshed) {
+        try { await this.onTokensRefreshed(refreshed); } catch { /* persist best-effort */ }
+      }
+    }
+    return refreshed;
   }
 
   async _fetch(url, options = {}) {
+    await this._ensureFreshToken();
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -233,16 +261,19 @@ export class GmailProvider {
     const data = await res.json();
     return {
       access_token: data.access_token,
-      refresh_token: this.refreshTokenValue,
-      expires_at: Date.now() + data.expires_in * 1000,
+      refresh_token: data.refresh_token || this.refreshTokenValue,
+      expires_at: Date.now() + (data.expires_in || 3600) * 1000,
     };
   }
 
   // ---------- Static OAuth Flow ----------
 
-  static startOAuthFlow() {
+  static async startOAuthFlow() {
     const state = crypto.randomUUID();
     sessionStorage.setItem('gmail_oauth_state', state);
+
+    // Google requires PKCE for public SPA clients (no client_secret available).
+    const { challenge } = await createPkcePair('gmail');
 
     const params = new URLSearchParams({
       client_id: getClientId(),
@@ -252,14 +283,16 @@ export class GmailProvider {
       access_type: 'offline',
       prompt: 'consent',
       state,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+      include_granted_scopes: 'true',
     });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 
     if (Capacitor.isNativePlatform()) {
-      import('@capacitor/browser').then(({ Browser }) => {
-        Browser.open({ url: authUrl, presentationStyle: 'popover' });
-      });
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url: authUrl, presentationStyle: 'popover' });
     } else {
       window.location.href = authUrl;
     }
@@ -271,6 +304,12 @@ export class GmailProvider {
     const url = new URL(callbackUrl);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
+    const errorParam = url.searchParams.get('error');
+
+    if (errorParam) {
+      const desc = url.searchParams.get('error_description') || errorParam;
+      throw new Error(`Gmail authorization denied: ${desc}`);
+    }
 
     const savedState = sessionStorage.getItem('gmail_oauth_state');
     if (state !== savedState) throw new Error('OAuth state mismatch');
@@ -278,7 +317,10 @@ export class GmailProvider {
 
     if (!code) throw new Error('No authorization code received');
 
-    // Exchange code for tokens
+    const codeVerifier = consumePkceVerifier('gmail');
+    if (!codeVerifier) throw new Error('Missing PKCE verifier');
+
+    // Exchange code for tokens (PKCE, no client_secret).
     const res = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -287,25 +329,50 @@ export class GmailProvider {
         redirect_uri: getRedirectUri(),
         grant_type: 'authorization_code',
         code,
+        code_verifier: codeVerifier,
       }),
     });
 
-    if (!res.ok) throw new Error('Token exchange failed');
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const body = await res.json();
+        detail = body.error_description || body.error || '';
+      } catch { /* not JSON */ }
+      throw new Error(`Gmail token exchange failed (${res.status})${detail ? ': ' + detail : ''}`);
+    }
     const tokenData = await res.json();
 
-    // Get user email
-    const profileRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-      headers: { Authorization: `Bearer ${tokenData.access_token}` },
-    });
-    const profile = await profileRes.json();
+    // Resolve the user's email address. Prefer the id_token (no extra request)
+    // and fall back to the userinfo endpoint if for any reason it isn't present.
+    let email = '';
+    if (tokenData.id_token) {
+      try {
+        const payload = tokenData.id_token.split('.')[1];
+        const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+        email = json.email || '';
+      } catch { /* fall through */ }
+    }
+    if (!email) {
+      try {
+        const profileRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+          headers: { Authorization: `Bearer ${tokenData.access_token}` },
+        });
+        if (profileRes.ok) {
+          const profile = await profileRes.json();
+          email = profile.email || '';
+        }
+      } catch { /* ignore */ }
+    }
+    if (!email) throw new Error('Could not determine Gmail account address');
 
     return {
       provider: 'gmail',
-      email: profile.email,
+      email,
       tokens: {
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
-        expires_at: Date.now() + tokenData.expires_in * 1000,
+        expires_at: Date.now() + (tokenData.expires_in || 3600) * 1000,
       },
     };
   }

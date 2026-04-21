@@ -6,6 +6,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { useTranslation } from 'react-i18next';
+import { useToast } from '../hooks/useToast';
 import {
   getConnectedAccounts,
   disconnectAccount,
@@ -14,7 +16,14 @@ import {
   saveAccount,
 } from './EmailConnectorService';
 
+// Module-level guard: each authorization code must only be processed once,
+// even if React StrictMode mounts the effect twice or the user navigates
+// back to the callback URL. Keyed by the OAuth `code` query param.
+const processedCallbackCodes = new Set();
+
 export function useEmailAccounts() {
+  const { t } = useTranslation();
+  const toast = useToast();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(null); // provider name or null
@@ -36,17 +45,47 @@ export function useEmailAccounts() {
 
   // Handle OAuth callbacks (deep link on native, URL params on web)
   useEffect(() => {
+    const cleanUrl = () => {
+      try {
+        window.history.replaceState(null, '', '/profil');
+      } catch { /* ignore */ }
+    };
+
     const handleCallback = async (url) => {
       const match = url.match(/email-callback\/(gmail|outlook|gmx|icloud|yahoo)/);
       if (!match) return;
 
+      // Idempotency guard — only process a given `code` once.
+      let codeKey = null;
+      try {
+        const parsed = new URL(url);
+        codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
+      } catch {
+        codeKey = url;
+      }
+      if (processedCallbackCodes.has(codeKey)) return;
+      processedCallbackCodes.add(codeKey);
+
       const provider = match[1];
       setConnecting(provider);
       try {
-        await handleOAuthCallback(provider, url);
+        const result = await handleOAuthCallback(provider, url);
         await refresh();
+        if (result?.email) {
+          toast.success(
+            t('email.connectSuccess', '{{provider}} verbunden: {{email}}', {
+              provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+              email: result.email,
+            })
+          );
+        }
       } catch (err) {
         console.error(`OAuth callback failed for ${provider}:`, err);
+        toast.error(
+          t('email.connectFailedWithReason', 'Verbindung fehlgeschlagen: {{reason}}', {
+            reason: err?.message || 'unbekannter Fehler',
+          })
+        );
       } finally {
         setConnecting(null);
       }
@@ -54,10 +93,7 @@ export function useEmailAccounts() {
 
     // Web: check current URL on mount
     if (!Capacitor.isNativePlatform() && window.location.pathname.includes('email-callback')) {
-      handleCallback(window.location.href).then(() => {
-        // Clean up URL
-        window.history.replaceState(null, '', '/profil');
-      });
+      handleCallback(window.location.href).finally(cleanUrl);
     }
 
     // Native: listen for deep links
@@ -79,7 +115,7 @@ export function useEmailAccounts() {
     return () => {
       if (listener) listener.remove();
     };
-  }, [refresh]);
+  }, [refresh, toast, t]);
 
   /**
    * Start connecting an email account.
@@ -89,8 +125,8 @@ export function useEmailAccounts() {
   const connect = useCallback(async (providerName) => {
     setConnecting(providerName);
     try {
-      const result = startOAuthFlow(providerName);
-      if (result.mode === 'app_password') {
+      const result = await startOAuthFlow(providerName);
+      if (result?.mode === 'app_password') {
         // UI will show a form — don't close connecting state yet
         return result;
       }

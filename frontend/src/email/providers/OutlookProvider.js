@@ -5,6 +5,7 @@
  */
 
 import { Capacitor } from '@capacitor/core';
+import { createPkcePair, consumePkceVerifier } from '../oauthPkce';
 
 const MS_CLIENT_ID = import.meta.env.VITE_OUTLOOK_CLIENT_ID || '';
 const MS_TENANT = 'common'; // multi-tenant
@@ -12,6 +13,7 @@ const MS_SCOPES = 'Mail.Read User.Read offline_access';
 const GRAPH_API = 'https://graph.microsoft.com/v1.0';
 const REDIRECT_URI_WEB = `${window.location.origin}/email-callback/outlook`;
 const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/outlook';
+const REFRESH_LEEWAY_MS = 60 * 1000;
 
 function getRedirectUri() {
   return Capacitor.isNativePlatform() ? REDIRECT_URI_NATIVE : REDIRECT_URI_WEB;
@@ -22,9 +24,27 @@ export class OutlookProvider {
     this.account = account;
     this.accessToken = account.tokens?.access_token;
     this.refreshTokenValue = account.tokens?.refresh_token;
+    this.expiresAt = account.tokens?.expires_at || 0;
+    // Caller (EmailConnectorService) sets this to persist fresh tokens.
+    this.onTokensRefreshed = null;
+  }
+
+  async _ensureFreshToken() {
+    if (this.accessToken && this.expiresAt - Date.now() > REFRESH_LEEWAY_MS) return null;
+    const refreshed = await this.refreshToken();
+    if (refreshed) {
+      this.accessToken = refreshed.access_token;
+      this.refreshTokenValue = refreshed.refresh_token || this.refreshTokenValue;
+      this.expiresAt = refreshed.expires_at;
+      if (this.onTokensRefreshed) {
+        try { await this.onTokensRefreshed(refreshed); } catch { /* persist best-effort */ }
+      }
+    }
+    return refreshed;
   }
 
   async _fetch(url, options = {}) {
+    await this._ensureFreshToken();
     const res = await fetch(url, {
       ...options,
       headers: {
@@ -186,15 +206,18 @@ export class OutlookProvider {
     return {
       access_token: data.access_token,
       refresh_token: data.refresh_token || this.refreshTokenValue,
-      expires_at: Date.now() + data.expires_in * 1000,
+      expires_at: Date.now() + (data.expires_in || 3600) * 1000,
     };
   }
 
   // ---------- Static OAuth Flow ----------
 
-  static startOAuthFlow() {
+  static async startOAuthFlow() {
     const state = crypto.randomUUID();
     sessionStorage.setItem('outlook_oauth_state', state);
+
+    // Microsoft Entra requires PKCE for SPA/public clients.
+    const { challenge } = await createPkcePair('outlook');
 
     const params = new URLSearchParams({
       client_id: MS_CLIENT_ID,
@@ -203,14 +226,15 @@ export class OutlookProvider {
       scope: MS_SCOPES,
       state,
       prompt: 'consent',
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
     });
 
     const authUrl = `https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/authorize?${params}`;
 
     if (Capacitor.isNativePlatform()) {
-      import('@capacitor/browser').then(({ Browser }) => {
-        Browser.open({ url: authUrl, presentationStyle: 'popover' });
-      });
+      const { Browser } = await import('@capacitor/browser');
+      await Browser.open({ url: authUrl, presentationStyle: 'popover' });
     } else {
       window.location.href = authUrl;
     }
@@ -222,12 +246,21 @@ export class OutlookProvider {
     const url = new URL(callbackUrl);
     const code = url.searchParams.get('code');
     const state = url.searchParams.get('state');
+    const errorParam = url.searchParams.get('error');
+
+    if (errorParam) {
+      const desc = url.searchParams.get('error_description') || errorParam;
+      throw new Error(`Outlook authorization denied: ${desc}`);
+    }
 
     const savedState = sessionStorage.getItem('outlook_oauth_state');
     if (state !== savedState) throw new Error('OAuth state mismatch');
     sessionStorage.removeItem('outlook_oauth_state');
 
     if (!code) throw new Error('No authorization code received');
+
+    const codeVerifier = consumePkceVerifier('outlook');
+    if (!codeVerifier) throw new Error('Missing PKCE verifier');
 
     const res = await fetch(`https://login.microsoftonline.com/${MS_TENANT}/oauth2/v2.0/token`, {
       method: 'POST',
@@ -238,25 +271,36 @@ export class OutlookProvider {
         grant_type: 'authorization_code',
         code,
         scope: MS_SCOPES,
+        code_verifier: codeVerifier,
       }),
     });
 
-    if (!res.ok) throw new Error('Token exchange failed');
+    if (!res.ok) {
+      let detail = '';
+      try {
+        const body = await res.json();
+        detail = body.error_description || body.error || '';
+      } catch { /* not JSON */ }
+      throw new Error(`Outlook token exchange failed (${res.status})${detail ? ': ' + detail : ''}`);
+    }
     const tokenData = await res.json();
 
     // Get user profile
     const profileRes = await fetch(`${GRAPH_API}/me`, {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
+    if (!profileRes.ok) throw new Error('Could not fetch Outlook profile');
     const profile = await profileRes.json();
+    const email = profile.mail || profile.userPrincipalName;
+    if (!email) throw new Error('Could not determine Outlook account address');
 
     return {
       provider: 'outlook',
-      email: profile.mail || profile.userPrincipalName,
+      email,
       tokens: {
         access_token: tokenData.access_token,
         refresh_token: tokenData.refresh_token,
-        expires_at: Date.now() + tokenData.expires_in * 1000,
+        expires_at: Date.now() + (tokenData.expires_in || 3600) * 1000,
       },
     };
   }
