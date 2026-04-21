@@ -57,23 +57,22 @@ export function useEmailAccounts() {
       if (!match) return;
 
       // Idempotency guard — only process a given callback once.
-      // Web Gmail uses hash fragment (#gmail_result / #gmail_error); other
-      // providers use query params (?code). Fall back to the full URL as key.
-      let codeKey = null;
+      // Web Gmail:   hash fragment  #gmail_result=...  or  #gmail_error=...
+      // Native Gmail: query param   ?gmail_result=...  or  ?gmail_error=...
+      // Other providers: query param ?code=...
+      let codeKey = url; // fallback: full URL is always unique
       try {
+        const parsed = new URL(url);
+        const qResult = parsed.searchParams.get('gmail_result');
+        const qError  = parsed.searchParams.get('gmail_error');
         const hashResult = window.location.hash.match(/[#&]gmail_result=([^&]+)/);
-        const hashError = window.location.hash.match(/[#&]gmail_error=([^&]+)/);
-        if (hashResult) {
-          codeKey = hashResult[1];
-        } else if (hashError) {
-          codeKey = `error:${hashError[1]}`;
-        } else {
-          const parsed = new URL(url);
-          codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
-        }
-      } catch {
-        codeKey = url;
-      }
+        const hashError  = window.location.hash.match(/[#&]gmail_error=([^&]+)/);
+        if (qResult)        codeKey = qResult;
+        else if (qError)    codeKey = `err:${qError}`;
+        else if (hashResult) codeKey = hashResult[1];
+        else if (hashError)  codeKey = `err:${hashError[1]}`;
+        else codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
+      } catch { /* keep url as fallback */ }
       if (processedCallbackCodes.has(codeKey)) return;
       processedCallbackCodes.add(codeKey);
 

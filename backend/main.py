@@ -467,24 +467,35 @@ async def gmail_oauth_callback_relay(
     error: str = None,
     error_description: str = None,
 ):
-    """Backend relay for Gmail OAuth callback (web flow).
+    """Backend relay for Gmail OAuth callback (web + native Capacitor).
 
-    Google redirects here instead of directly to the frontend so that
-    Supabase's detectSessionInUrl never sees the authorization code and
-    cannot consume it. We exchange the code server-side with client_secret,
-    then redirect to the frontend with the result encoded in the URL hash
-    fragment (hash fragments are never sent to servers, so tokens stay safe).
+    Both platforms use this single HTTPS endpoint as redirect_uri so Google
+    never rejects it (custom-scheme URIs are not accepted by Web Application
+    clients). The backend exchanges the code with client_secret, then routes
+    back to the right destination based on the state prefix:
+
+      native:<uuid>  →  at.kamaldoc.app://email-callback/gmail?gmail_result=…
+      <uuid>         →  https://kdoc.at/email-callback/gmail#gmail_result=…
+
+    Web result lives in the hash fragment (not sent to servers).
+    Native result lives in query params (hash may be stripped on some Android).
     """
     import base64
     import json
     import httpx as _httpx
     from urllib.parse import quote as _quote
 
-    callback_path = "/email-callback/gmail"
+    is_native = isinstance(state, str) and state.startswith("native:")
 
     def _redirect_error(msg: str) -> RedirectResponse:
+        encoded = _quote(msg)
+        if is_native:
+            return RedirectResponse(
+                url=f"at.kamaldoc.app://email-callback/gmail?gmail_error={encoded}",
+                status_code=302,
+            )
         return RedirectResponse(
-            url=f"{FRONTEND_URL}{callback_path}#gmail_error={_quote(msg)}",
+            url=f"{FRONTEND_URL}/email-callback/gmail#gmail_error={encoded}",
             status_code=302,
         )
 
@@ -551,8 +562,13 @@ async def gmail_oauth_callback_relay(
         }).encode()
     ).decode()
 
+    if is_native:
+        return RedirectResponse(
+            url=f"at.kamaldoc.app://email-callback/gmail?gmail_result={result_b64}",
+            status_code=302,
+        )
     return RedirectResponse(
-        url=f"{FRONTEND_URL}{callback_path}#gmail_result={result_b64}",
+        url=f"{FRONTEND_URL}/email-callback/gmail#gmail_result={result_b64}",
         status_code=302,
     )
 

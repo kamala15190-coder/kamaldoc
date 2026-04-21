@@ -5,7 +5,6 @@
  */
 
 import { Capacitor } from '@capacitor/core';
-import { createPkcePair, consumePkceVerifier } from '../oauthPkce';
 import { supabase } from '../../supabaseClient';
 
 const API_BASE = 'https://api.kdoc.at';
@@ -20,10 +19,11 @@ const GMAIL_CLIENT_ID_ANDROID = import.meta.env.VITE_GMAIL_CLIENT_ID_ANDROID || 
 // The account email is fetched from the Gmail profile endpoint after token exchange.
 const GMAIL_SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL_API = 'https://www.googleapis.com/gmail/v1';
-// Web: backend relay URL — Google redirects here so Supabase never sees the code.
-// Native: deep link handled by Capacitor, Supabase doesn't intercept it.
-const REDIRECT_URI_WEB = `${API_BASE}/auth/gmail/callback`;
-const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/gmail';
+// Both web and native use this single HTTPS redirect URI.
+// Google's Web Application client only accepts HTTPS — custom schemes are rejected.
+// The backend relay detects the platform from the 'native:' state prefix and
+// routes back to the correct destination (web hash URL or deep link).
+const REDIRECT_URI_BACKEND = `${API_BASE}/auth/gmail/callback`;
 
 // Refresh the access token when it has less than this much time left.
 const REFRESH_LEEWAY_MS = 60 * 1000;
@@ -31,10 +31,6 @@ const REFRESH_LEEWAY_MS = 60 * 1000;
 function getClientId() {
   if (!Capacitor.isNativePlatform()) return GMAIL_CLIENT_ID_WEB;
   return Capacitor.getPlatform() === 'ios' ? GMAIL_CLIENT_ID_IOS : GMAIL_CLIENT_ID_ANDROID;
-}
-
-function getRedirectUri() {
-  return Capacitor.isNativePlatform() ? REDIRECT_URI_NATIVE : REDIRECT_URI_WEB;
 }
 
 export class GmailProvider {
@@ -279,26 +275,23 @@ export class GmailProvider {
   // ---------- Static OAuth Flow ----------
 
   static async startOAuthFlow() {
-    const state = crypto.randomUUID();
+    // Prefix 'native:' so the backend relay knows to redirect to the deep link
+    // instead of the web hash URL. The prefix is validated on callback.
+    const nonce = crypto.randomUUID();
+    const state = Capacitor.isNativePlatform() ? `native:${nonce}` : nonce;
     sessionStorage.setItem('gmail_oauth_state', state);
 
     const params = new URLSearchParams({
       client_id: getClientId(),
-      redirect_uri: getRedirectUri(),
+      redirect_uri: REDIRECT_URI_BACKEND,
       response_type: 'code',
       scope: GMAIL_SCOPES,
       access_type: 'offline',
       prompt: 'consent',
       state,
+      // No PKCE for either platform — the backend relay uses client_secret,
+      // which provides stronger security than PKCE alone.
     });
-
-    // Native: public client (no client_secret on-device) → PKCE required.
-    // Web: backend relay exchanges the code using client_secret → no PKCE needed.
-    if (Capacitor.isNativePlatform()) {
-      const { challenge } = await createPkcePair('gmail');
-      params.set('code_challenge', challenge);
-      params.set('code_challenge_method', 'S256');
-    }
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
 
@@ -357,66 +350,39 @@ export class GmailProvider {
     }
 
     // ---------- Native path ----------
-    // Deep link delivers the code directly; Supabase does not intercept it.
-    // PKCE was sent in the auth request, so we must include code_verifier here.
-    const url = new URL(callbackUrl);
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
-    const errorParam = url.searchParams.get('error');
+    // The backend relay exchanged the code server-side and redirected to
+    // at.kamaldoc.app://email-callback/gmail?gmail_result=BASE64
+    // Result is in query params (not hash) because Android may strip hash
+    // fragments from custom-scheme URIs.
+    const deepLink = new URL(callbackUrl);
 
-    if (errorParam) {
-      const desc = url.searchParams.get('error_description') || errorParam;
-      throw new Error(`Gmail authorization denied: ${desc}`);
+    const errorParam = deepLink.searchParams.get('gmail_error');
+    if (errorParam) throw new Error(decodeURIComponent(errorParam));
+
+    const resultParam = deepLink.searchParams.get('gmail_result');
+    if (!resultParam) throw new Error('No OAuth result in deep link');
+
+    let result;
+    try {
+      const b64 = resultParam.replace(/-/g, '+').replace(/_/g, '/');
+      result = JSON.parse(atob(b64));
+    } catch {
+      throw new Error('Invalid OAuth result data');
     }
 
     const savedState = sessionStorage.getItem('gmail_oauth_state');
-    if (state !== savedState) throw new Error('OAuth state mismatch');
+    if (result.state !== savedState) throw new Error('OAuth state mismatch');
     sessionStorage.removeItem('gmail_oauth_state');
 
-    if (!code) {
-      const receivedParams = [...url.searchParams.keys()].join(', ') || '(none)';
-      throw new Error(`No authorization code received (params: ${receivedParams})`);
-    }
-
-    const codeVerifier = consumePkceVerifier('gmail');
-    if (!codeVerifier) throw new Error('Missing PKCE verifier — please restart the OAuth flow');
-
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) throw new Error('Not authenticated');
-
-    const res = await fetch(`${API_BASE}/api/auth/gmail/token-exchange`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({
-        code,
-        code_verifier: codeVerifier,
-        redirect_uri: REDIRECT_URI_NATIVE,
-      }),
-    });
-
-    if (!res.ok) {
-      let detail = '';
-      try {
-        const errBody = await res.json();
-        detail = errBody.detail || '';
-      } catch { /* not JSON */ }
-      throw new Error(`Gmail token exchange failed (${res.status})${detail ? ': ' + detail : ''}`);
-    }
-
-    const tokenData = await res.json();
-    const email = tokenData.email;
-    if (!email) throw new Error('Could not determine Gmail account address');
+    if (!result.email) throw new Error('Could not determine Gmail account address');
 
     return {
       provider: 'gmail',
-      email,
+      email: result.email,
       tokens: {
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        expires_at: Date.now() + (tokenData.expires_in || 3600) * 1000,
+        access_token: result.access_token,
+        refresh_token: result.refresh_token,
+        expires_at: Date.now() + (result.expires_in || 3600) * 1000,
       },
     };
   }

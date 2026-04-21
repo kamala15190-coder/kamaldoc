@@ -56,5 +56,16 @@
 	<string>KamalDoc benötigt Zugriff auf deine Fotos um Dokumente hochzuladen.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>KamalDoc benötigt Zugriff um gescannte Dokumente in deiner Fotobibliothek zu speichern.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>at.kamaldoc.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>at.kamaldoc.app</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
