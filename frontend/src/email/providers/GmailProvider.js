@@ -15,9 +15,10 @@ const GMAIL_CLIENT_ID_WEB = import.meta.env.VITE_GMAIL_CLIENT_ID || '';
 const GMAIL_CLIENT_ID_IOS = import.meta.env.VITE_GMAIL_CLIENT_ID_IOS || GMAIL_CLIENT_ID_WEB;
 const GMAIL_CLIENT_ID_ANDROID = import.meta.env.VITE_GMAIL_CLIENT_ID_ANDROID || GMAIL_CLIENT_ID_WEB;
 
-// openid + email give us the account address in the id_token so we do not need
-// the separate Google People/userinfo scope.
-const GMAIL_SCOPES = 'openid email https://www.googleapis.com/auth/gmail.readonly';
+// Only request gmail.readonly — adding openid/email causes Google to return an
+// OIDC continuation redirect (with iss/authuser/prompt params but NO code).
+// The account email is fetched from the Gmail profile endpoint after token exchange.
+const GMAIL_SCOPES = 'https://www.googleapis.com/auth/gmail.readonly';
 const GMAIL_API = 'https://www.googleapis.com/gmail/v1';
 const REDIRECT_URI_WEB = `${window.location.origin}/email-callback/gmail`;
 const REDIRECT_URI_NATIVE = 'at.kamaldoc.app://email-callback/gmail';
@@ -292,7 +293,6 @@ export class GmailProvider {
       state,
       code_challenge: challenge,
       code_challenge_method: 'S256',
-      include_granted_scopes: 'true',
     });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;

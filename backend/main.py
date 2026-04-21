@@ -364,9 +364,6 @@ async def gmail_token_exchange(
     """Exchange a Gmail OAuth authorization code for access+refresh tokens.
     Runs server-side so that GMAIL_CLIENT_SECRET is never exposed to the client.
     PKCE (code_verifier) is forwarded for additional security."""
-    import base64 as _b64
-    import json as _json
-
     import httpx as _httpx
 
     if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
@@ -396,24 +393,27 @@ async def gmail_token_exchange(
         raise HTTPException(status_code=400, detail=f"Token exchange failed: {detail}" if detail else "Token exchange failed")
 
     token_data = resp.json()
+    access_token = token_data.get("access_token", "")
 
-    # Decode the id_token payload to extract the user's e-mail address without
-    # an extra network round-trip to the userinfo endpoint.
+    # Fetch the user's Gmail address from the Gmail profile endpoint.
+    # We only request gmail.readonly scope (no openid/email), so there is no
+    # id_token. The /gmail/v1/users/me/profile endpoint is available with
+    # gmail.readonly and returns the emailAddress directly.
     email = ""
-    id_token = token_data.get("id_token", "")
-    if id_token:
+    if access_token:
         try:
-            payload_b64 = id_token.split(".")[1]
-            # Add padding for base64 decoder
-            padding = 4 - len(payload_b64) % 4
-            payload_b64 += "=" * (padding % 4)
-            profile = _json.loads(_b64.urlsafe_b64decode(payload_b64))
-            email = profile.get("email", "")
+            async with _httpx.AsyncClient(timeout=10) as gclient:
+                profile_resp = await gclient.get(
+                    "https://www.googleapis.com/gmail/v1/users/me/profile",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                )
+            if profile_resp.is_success:
+                email = profile_resp.json().get("emailAddress", "")
         except Exception as e:
-            logger.warning(f"Could not decode id_token: {e}")
+            logger.warning(f"Could not fetch Gmail profile: {e}")
 
     return {
-        "access_token": token_data.get("access_token"),
+        "access_token": access_token,
         "refresh_token": token_data.get("refresh_token"),
         "expires_in": token_data.get("expires_in", 3600),
         "email": email,
