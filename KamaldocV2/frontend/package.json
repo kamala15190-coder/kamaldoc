@@ -1,0 +1,29 @@
+{
+  "name": "kdoc-frontend",
+  "version": "2.0.0",
+  "type": "module",
+  "private": true,
+  "description": "kdoc V2 — mobile-first document management UI",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "lint": "eslint src --ext .js,.jsx"
+  },
+  "dependencies": {
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/core": "^6.1.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/preferences": "^6.0.0",
+    "axios": "^1.7.0",
+    "lucide-react": "^0.460.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "vite": "^5.4.10"
+  }
+}

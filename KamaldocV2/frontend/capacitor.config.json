@@ -1,0 +1,17 @@
+{
+  "appId": "at.kdoc.app",
+  "appName": "kdoc",
+  "webDir": "dist",
+  "ios": {
+    "contentInset": "automatic"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false
+    }
+  }
+}
