@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#0E0F12" />
+  <title>kdoc — Click-Prototyp</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Optional desktop frame; auto-disappears on small screens -->
+  <div class="device-frame">
+    <div class="device-notch"></div>
+
+    <div id="app" class="app">
+
+      <!-- ============================================ -->
+      <!--                  SPLASH                      -->
+      <!-- ============================================ -->
+      <section class="screen splash" data-screen="splash" aria-label="Begrüßung">
+        <div class="splash-bg"></div>
+        <div class="splash-vignette"></div>
+        <div class="splash-grain"></div>
+
+        <div class="splash-stage">
+          <svg class="logomark" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F6C58A" />
+                <stop offset="55%" stop-color="#E89A52" />
+                <stop offset="100%" stop-color="#A85B23" />
+              </linearGradient>
+              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.4" result="b" />
+                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Outer envelope ring (subtle) -->
+            <circle class="ring" cx="60" cy="60" r="52"
+              stroke="url(#copperGrad)" stroke-width="0.6" stroke-opacity="0.35" />
+
+            <!-- Monogram K (3 strokes, drawn sequentially) -->
+            <g filter="url(#softGlow)" stroke="url(#copperGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+              <path class="stroke s1" d="M40 28 V92" />
+              <path class="stroke s2" d="M40 60 L78 28" />
+              <path class="stroke s3" d="M40 60 L82 92" />
+            </g>
+
+            <!-- Envelope flap hint (light line) -->
+            <path class="flap" d="M28 46 L60 66 L92 46"
+              stroke="url(#copperGrad)" stroke-width="0.8" stroke-opacity="0.6"
+              stroke-linecap="round" stroke-linejoin="round" fill="none" />
+          </svg>
+
+          <div class="wordmark">
+            <span class="wm-letter">k</span><span class="wm-letter">d</span><span class="wm-letter">o</span><span class="wm-letter">c</span>
+            <span class="wm-dot" aria-hidden="true">.</span>
+          </div>
+
+          <p class="tagline">
+            <span class="tl-line">Dein Postfach.</span>
+            <span class="tl-line">Endlich aufgeräumt.</span>
+          </p>
+        </div>
+
+        <div class="splash-sweep" aria-hidden="true"></div>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                  HOME                        -->
+      <!-- ============================================ -->
+      <section class="screen home" data-screen="home" aria-label="Übersicht">
+        <header class="top-bar">
+          <button class="icon-btn ghost" aria-label="Suche" data-action="open-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+          </button>
+          <div class="top-brand">
+            <span>kdoc<i>.</i></span>
+          </div>
+          <button class="avatar" aria-label="Profil" data-nav="profile">
+            <span>K</span>
+            <span class="dot" aria-hidden="true"></span>
+          </button>
+        </header>
+
+        <main class="home-scroll">
+          <!-- Greeting -->
+          <div class="greeting reveal" style="--d:0ms">
+            <p class="kicker">Mittwoch · 4. Mai</p>
+            <h1 class="display">
+              Guten Abend,<br /><em>Kamal.</em>
+            </h1>
+            <p class="lede">Drei Briefe warten auf dich. Einer wird heute fällig.</p>
+          </div>
+
+          <!-- Hero "Heute" Karte -->
+          <article class="card hero reveal" style="--d:80ms" data-nav="detail">
+            <div class="hero-tag">
+              <span class="pulse"></span>
+              Heute fällig
+            </div>
+            <h2 class="hero-title">Stadtwerke<br/>Strom-Rechnung</h2>
+            <div class="hero-meta">
+              <span class="amount">€ 184<small>,20</small></span>
+              <span class="due">15. Mai · in 11 Tagen</span>
+            </div>
+            <div class="hero-actions">
+              <button class="btn-primary">Erledigt markieren</button>
+              <button class="btn-ghost">
+                Details
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+            <div class="hero-orbit" aria-hidden="true"></div>
+          </article>
+
+          <!-- Stats -->
+          <div class="stats reveal" style="--d:160ms">
+            <div class="stat">
+              <span class="stat-num">3</span>
+              <span class="stat-lbl">Offen</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">€ 412</span>
+              <span class="stat-lbl">Diesen Monat</span>
+            </div>
+            <div class="stat">
+              <span class="stat-num">28</span>
+              <span class="stat-lbl">Im Archiv</span>
+            </div>
+          </div>
+
+          <!-- Section title -->
+          <div class="section-head reveal" style="--d:240ms">
+            <h3>Aufgaben</h3>
+            <button class="link-btn" data-nav="tasks">Alle ansehen</button>
+          </div>
+
+          <!-- Task list -->
+          <ul class="task-list">
+            <li class="task reveal" style="--d:300ms" data-nav="detail">
+              <span class="task-icon" data-color="amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8M16 17H8M10 9H8"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Stadtwerke · Strom</p>
+                <p class="task-sub">Rechnung · € 184,20 · 15. Mai</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+            <li class="task reveal" style="--d:360ms" data-nav="detail">
+              <span class="task-icon" data-color="petrol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Magistrat Wien</p>
+                <p class="task-sub">Behörde · Antwort bis 22. Mai</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+            <li class="task reveal" style="--d:420ms" data-nav="detail">
+              <span class="task-icon" data-color="rose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Dr. Reiter · MRT-Befund</p>
+                <p class="task-sub">Termin · 28. Mai, 09:30</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+          </ul>
+
+          <!-- Sektoren -->
+          <div class="section-head reveal" style="--d:500ms">
+            <h3>Sektoren</h3>
+          </div>
+
+          <div class="sectors">
+            <button class="sector reveal" style="--d:560ms" data-nav="sector">
+              <span class="sector-glyph">⌂</span>
+              <span class="sector-name">Behörde</span>
+              <span class="sector-count">4</span>
+            </button>
+            <button class="sector reveal" style="--d:620ms" data-nav="sector">
+              <span class="sector-glyph">+</span>
+              <span class="sector-name">Medizin</span>
+              <span class="sector-count">2</span>
+            </button>
+            <button class="sector reveal" style="--d:680ms" data-nav="sector">
+              <span class="sector-glyph">€</span>
+              <span class="sector-name">Ausgaben</span>
+              <span class="sector-count">12</span>
+            </button>
+            <button class="sector reveal" style="--d:740ms" data-nav="sector">
+              <span class="sector-glyph">@</span>
+              <span class="sector-name">E-Mail</span>
+              <span class="sector-count">7</span>
+            </button>
+          </div>
+
+          <div class="bottom-pad"></div>
+        </main>
+      </section>
+
+      <!-- ============================================ -->
+      <!--             DOCUMENT DETAIL                  -->
+      <!-- ============================================ -->
+      <section class="screen detail" data-screen="detail" aria-label="Dokument">
+        <header class="top-bar transparent">
+          <button class="icon-btn ghost" data-nav="home" aria-label="Zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="top-title">Rechnung</span>
+          <button class="icon-btn ghost" aria-label="Mehr">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+          </button>
+        </header>
+
+        <main class="detail-scroll">
+          <!-- Document hero with paper preview -->
+          <div class="doc-hero reveal" style="--d:0ms">
+            <div class="paper">
+              <div class="paper-line w70"></div>
+              <div class="paper-line w90"></div>
+              <div class="paper-line w50"></div>
+              <div class="paper-block"></div>
+              <div class="paper-line w80"></div>
+              <div class="paper-line w65"></div>
+              <div class="paper-stamp">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <div class="doc-glow"></div>
+          </div>
+
+          <!-- Editorial title -->
+          <div class="doc-meta reveal" style="--d:80ms">
+            <p class="kicker amber">Rechnung · Stadtwerke Wien</p>
+            <h1 class="display sm">€ 184<em>,20</em></h1>
+            <p class="lede">
+              Stromabrechnung Q1 — fällig <strong>15. Mai</strong>.
+              Lastschrift erteilt, Betrag wird automatisch eingezogen.
+            </p>
+          </div>
+
+          <!-- Key facts -->
+          <dl class="facts reveal" style="--d:160ms">
+            <div class="fact">
+              <dt>Absender</dt>
+              <dd>Wien Energie Vertrieb GmbH</dd>
+            </div>
+            <div class="fact">
+              <dt>Rechnungs-Nr.</dt>
+              <dd>2026-04-A-39812</dd>
+            </div>
+            <div class="fact">
+              <dt>Zeitraum</dt>
+              <dd>01.01.2026 – 31.03.2026</dd>
+            </div>
+            <div class="fact">
+              <dt>IBAN</dt>
+              <dd class="mono">AT12 3200 0009 ••• 3041</dd>
+            </div>
+          </dl>
+
+          <!-- AI summary card -->
+          <div class="ai-card reveal" style="--d:240ms">
+            <div class="ai-head">
+              <span class="ai-spark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>
+              </span>
+              <span>kdoc · Zusammenfassung</span>
+            </div>
+            <p>
+              Diese Rechnung ist <strong>höher als üblich</strong> (+18 % zum Vorjahr).
+              Vermutlich wegen Wintermonate. Keine Aktion nötig — Lastschrift greift am Stichtag.
+            </p>
+          </div>
+
+          <!-- Sticky action bar -->
+          <div class="action-stack reveal" style="--d:320ms">
+            <button class="btn-primary lg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Erledigt markieren
+            </button>
+            <button class="btn-ghost lg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              Antwortbrief schreiben lassen
+            </button>
+          </div>
+
+          <div class="bottom-pad"></div>
+        </main>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                 SECTORS                      -->
+      <!-- ============================================ -->
+      <section class="screen sector-screen" data-screen="sector" aria-label="Sektor">
+        <header class="top-bar transparent">
+          <button class="icon-btn ghost" data-nav="home" aria-label="Zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="top-title">Behörde</span>
+          <span style="width:42px"></span>
+        </header>
+
+        <main class="sector-scroll">
+          <div class="reveal" style="--d:0ms">
+            <p class="kicker">12 Dokumente · 4 offen</p>
+            <h1 class="display sm">Behörden-<br/><em>Assistent.</em></h1>
+            <p class="lede">Schreibe Anträge, Einsprüche und Anfragen. Mit deinen Daten und höflichem Ton.</p>
+          </div>
+
+          <div class="quick-actions reveal" style="--d:120ms">
+            <button class="quick-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+              Schreiben verfassen
+            </button>
+            <button class="quick-action">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg>
+              Behörde suchen
+            </button>
+          </div>
+
+          <div class="section-head reveal" style="--d:200ms">
+            <h3>Letzte Dokumente</h3>
+          </div>
+
+          <ul class="task-list">
+            <li class="task reveal" style="--d:260ms" data-nav="detail">
+              <span class="task-icon" data-color="petrol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Magistrat Wien · Meldebestätigung</p>
+                <p class="task-sub">Eingegangen 02. Mai</p>
+              </div>
+              <span class="chip">Offen</span>
+            </li>
+            <li class="task reveal" style="--d:320ms" data-nav="detail">
+              <span class="task-icon" data-color="petrol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Finanzamt · ESt-Bescheid 2025</p>
+                <p class="task-sub">Eingegangen 18. April</p>
+              </div>
+              <span class="chip muted">Erledigt</span>
+            </li>
+            <li class="task reveal" style="--d:380ms" data-nav="detail">
+              <span class="task-icon" data-color="petrol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">AMS · Anhörungsschreiben</p>
+                <p class="task-sub">Antwort bis 22. Mai</p>
+              </div>
+              <span class="chip">Offen</span>
+            </li>
+          </ul>
+
+          <div class="bottom-pad"></div>
+        </main>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                 SCAN / UPLOAD                -->
+      <!-- ============================================ -->
+      <section class="screen scan" data-screen="scan" aria-label="Scannen">
+        <header class="top-bar transparent dark">
+          <button class="icon-btn ghost light" data-nav="home" aria-label="Schließen">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <span class="top-title light">Dokument scannen</span>
+          <button class="icon-btn ghost light" aria-label="Blitz">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </button>
+        </header>
+
+        <div class="scan-stage">
+          <div class="scan-frame" aria-hidden="true">
+            <span class="corner tl"></span><span class="corner tr"></span>
+            <span class="corner bl"></span><span class="corner br"></span>
+            <div class="scan-laser"></div>
+          </div>
+          <div class="scan-paper">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <p class="scan-hint">Brief im Rahmen platzieren · automatisch erkannt</p>
+        </div>
+
+        <div class="scan-controls">
+          <button class="scan-side" aria-label="Galerie">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>
+          </button>
+          <button class="shutter" data-action="capture" aria-label="Aufnehmen">
+            <span class="shutter-ring"></span>
+            <span class="shutter-core"></span>
+          </button>
+          <button class="scan-side" aria-label="PDF">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                  TASKS                       -->
+      <!-- ============================================ -->
+      <section class="screen tasks" data-screen="tasks" aria-label="Aufgaben">
+        <header class="top-bar transparent">
+          <button class="icon-btn ghost" data-nav="home" aria-label="Zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="top-title">Aufgaben</span>
+          <span style="width:42px"></span>
+        </header>
+
+        <main class="tasks-scroll">
+          <div class="reveal" style="--d:0ms">
+            <p class="kicker">3 offen · 28 erledigt</p>
+            <h1 class="display sm">Was heute<br/><em>noch wartet.</em></h1>
+          </div>
+
+          <div class="filter-row reveal" style="--d:80ms">
+            <button class="filter active">Alle</button>
+            <button class="filter">Heute</button>
+            <button class="filter">Diese Woche</button>
+            <button class="filter">Überfällig</button>
+          </div>
+
+          <ul class="task-list">
+            <li class="task reveal" style="--d:140ms" data-nav="detail">
+              <span class="task-icon" data-color="amber">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Stadtwerke · Strom</p>
+                <p class="task-sub">€ 184,20 · Heute fällig</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+            <li class="task reveal" style="--d:200ms" data-nav="detail">
+              <span class="task-icon" data-color="petrol">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Magistrat Wien</p>
+                <p class="task-sub">Antwort bis 22. Mai</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+            <li class="task reveal" style="--d:260ms" data-nav="detail">
+              <span class="task-icon" data-color="rose">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+              </span>
+              <div class="task-body">
+                <p class="task-title">Dr. Reiter · MRT</p>
+                <p class="task-sub">Termin 28. Mai · 09:30</p>
+              </div>
+              <button class="task-check" aria-label="Erledigt"></button>
+            </li>
+          </ul>
+
+          <div class="section-head reveal" style="--d:340ms">
+            <h3>Erledigt · diese Woche</h3>
+          </div>
+
+          <ul class="task-list muted">
+            <li class="task done">
+              <span class="task-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div class="task-body"><p class="task-title">A1 · Mobilfunk</p><p class="task-sub">€ 29,90 · 02. Mai</p></div>
+            </li>
+            <li class="task done">
+              <span class="task-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
+              <div class="task-body"><p class="task-title">Wohnpark · Betriebskosten</p><p class="task-sub">€ 312,00 · 28. April</p></div>
+            </li>
+          </ul>
+
+          <div class="bottom-pad"></div>
+        </main>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                  PROFILE                     -->
+      <!-- ============================================ -->
+      <section class="screen profile" data-screen="profile" aria-label="Profil">
+        <header class="top-bar transparent">
+          <button class="icon-btn ghost" data-nav="home" aria-label="Zurück">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="top-title">Profil</span>
+          <span style="width:42px"></span>
+        </header>
+
+        <main class="profile-scroll">
+          <div class="profile-hero reveal" style="--d:0ms">
+            <div class="profile-avatar">K</div>
+            <h2 class="display sm" style="margin-top:18px">Kamal A.<em>.</em></h2>
+            <p class="lede">kdoc Pro · seit März 2026</p>
+          </div>
+
+          <div class="profile-section reveal" style="--d:80ms">
+            <h3>Konto</h3>
+            <ul class="row-list">
+              <li class="row">
+                <span class="row-icon">@</span>
+                <div class="row-body">
+                  <p class="row-title">E-Mail</p>
+                  <p class="row-sub">kamal.a@kdoc.app</p>
+                </div>
+                <span class="row-chev">›</span>
+              </li>
+              <li class="row">
+                <span class="row-icon">⌂</span>
+                <div class="row-body">
+                  <p class="row-title">Absenderdaten</p>
+                  <p class="row-sub">Für Antwortbriefe</p>
+                </div>
+                <span class="row-chev">›</span>
+              </li>
+              <li class="row">
+                <span class="row-icon">★</span>
+                <div class="row-body">
+                  <p class="row-title">Abo verwalten</p>
+                  <p class="row-sub">Pro · jährlich</p>
+                </div>
+                <span class="row-chev">›</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="profile-section reveal" style="--d:160ms">
+            <h3>Erscheinungsbild</h3>
+            <div class="theme-toggle">
+              <button class="theme-opt active">Onyx</button>
+              <button class="theme-opt">Pearl</button>
+              <button class="theme-opt">System</button>
+            </div>
+          </div>
+
+          <div class="profile-section reveal" style="--d:240ms">
+            <h3>Mehr</h3>
+            <ul class="row-list">
+              <li class="row"><span class="row-icon">?</span><div class="row-body"><p class="row-title">Support</p></div><span class="row-chev">›</span></li>
+              <li class="row"><span class="row-icon">⚖</span><div class="row-body"><p class="row-title">Datenschutz & AGB</p></div><span class="row-chev">›</span></li>
+              <li class="row danger"><span class="row-icon">↗</span><div class="row-body"><p class="row-title">Abmelden</p></div></li>
+            </ul>
+          </div>
+
+          <div class="bottom-pad"></div>
+        </main>
+      </section>
+
+      <!-- ============================================ -->
+      <!--                 BOTTOM NAV                   -->
+      <!-- ============================================ -->
+      <nav class="bottom-nav" aria-label="Hauptnavigation">
+        <button class="nav-item active" data-nav="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <span>Übersicht</span>
+        </button>
+        <button class="nav-item" data-nav="tasks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          <span>Aufgaben</span>
+        </button>
+
+        <button class="nav-fab" data-nav="scan" aria-label="Dokument scannen">
+          <span class="fab-ring"></span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+
+        <button class="nav-item" data-nav="sector">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+          <span>Sektoren</span>
+        </button>
+        <button class="nav-item" data-nav="profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+          <span>Profil</span>
+        </button>
+      </nav>
+
+      <!-- Toast / haptic feedback layer -->
+      <div class="toast" id="toast" aria-live="polite"></div>
+    </div>
+
+    <div class="device-glow"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
