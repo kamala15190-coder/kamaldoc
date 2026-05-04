@@ -211,12 +211,68 @@ mark { background: var(--amber-soft); color: var(--amber); padding: 0 2px; borde
   padding: 0 32px;
 }
 
+/* Emblem wraps logomark + orbit system, all centered on the same point */
+.emblem {
+  position: relative;
+  width: 240px;
+  height: 240px;
+  margin-bottom: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .logomark {
+  position: relative;
+  z-index: 5;
   width: 130px;
   height: 130px;
   display: block;
-  margin-bottom: 32px;
   filter: drop-shadow(0 0 24px rgba(232,154,82,0.25));
+}
+
+/* — Chronograph orbit system — */
+.orbit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-origin: center center;
+  opacity: 0;
+}
+
+.orbit circle, .orbit line {
+  stroke-opacity: 0.55;
+}
+
+.orbit-outer {
+  z-index: 1;
+  animation:
+    orbitFadeIn 1.2s 0.85s var(--ease-out) forwards,
+    orbitSpinCW 24s 0.85s linear infinite;
+}
+
+.orbit-inner {
+  z-index: 3;
+  animation:
+    orbitFadeIn 1.2s 1.15s var(--ease-out) forwards,
+    orbitSpinCCW 18s 1.15s linear infinite;
+}
+
+.orbit-ticks {
+  z-index: 2;
+  animation: orbitFadeIn 0.8s 1.55s var(--ease-out) forwards;
+}
+
+@keyframes orbitFadeIn {
+  to { opacity: 1; }
+}
+@keyframes orbitSpinCW {
+  to { transform: rotate(360deg); }
+}
+@keyframes orbitSpinCCW {
+  to { transform: rotate(-360deg); }
 }
 
 .logomark .ring {
@@ -307,26 +363,7 @@ mark { background: var(--amber-soft); color: var(--amber); padding: 0 2px; borde
 .tagline .tl-line:nth-child(1) { animation-delay: 2.20s; }
 .tagline .tl-line:nth-child(2) { animation-delay: 2.40s; color: var(--ink-2); }
 
-.splash-sweep {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(115deg,
-    transparent 30%,
-    rgba(232,154,82,0.18) 48%,
-    rgba(246,197,138,0.32) 50%,
-    rgba(232,154,82,0.18) 52%,
-    transparent 70%);
-  background-size: 250% 100%;
-  background-position: 200% 0;
-  mix-blend-mode: screen;
-  animation: sweep 1.8s 0.9s var(--ease) forwards;
-}
-.splash-sweep-2 {
-  animation: sweep 2.0s 2.4s var(--ease-out) forwards;
-  opacity: 0.6;
-}
-@keyframes sweep { to { background-position: -100% 0; } }
+/* Splash sweeps removed — replaced by orbit chronograph system above */
 
 /* ===================================================================
    TOP BAR
@@ -2431,7 +2468,7 @@ mark { background: var(--amber-soft); color: var(--amber); padding: 0 2px; borde
 .nav-item.active { color: var(--amber); }
 .nav-item.active span { color: var(--amber); }
 
-/* — FAB — multi-layered premium animation — */
+/* — FAB — single, continuous, very subtle aura breathe — */
 .nav-fab {
   position: relative;
   flex-shrink: 0;
@@ -2450,93 +2487,46 @@ mark { background: var(--amber-soft); color: var(--amber); padding: 0 2px; borde
     0 1px 0 rgba(255,255,255,0.25) inset,
     0 -1px 0 rgba(0,0,0,0.2) inset,
     0 14px 24px -8px var(--amber-glow);
-  transition: transform 0.32s var(--ease), box-shadow 0.32s var(--ease);
-  isolation: isolate;
+  transition: transform 0.2s var(--ease);
   overflow: visible;
 }
 
 .nav-fab .fab-icon {
   position: relative;
-  z-index: 4;
+  z-index: 3;
   width: 26px; height: 26px;
   stroke-width: 1.7;
   filter: drop-shadow(0 1px 0 rgba(255,255,255,0.3));
 }
 
-/* Layer 1: slow rotating conic gradient — polished metal lustre */
-.fab-lustre {
+/* Static hairline rim — gives visual depth, no animation */
+.fab-rim {
   position: absolute;
-  inset: -1px;
+  inset: -6px;
   border-radius: 50%;
-  background: conic-gradient(
-    from 0deg,
-    rgba(255, 220, 175, 0.55) 0deg,
-    rgba(232, 154, 82, 0.05) 60deg,
-    rgba(180, 100, 50, 0.35) 140deg,
-    rgba(232, 154, 82, 0.05) 220deg,
-    rgba(255, 220, 175, 0.55) 320deg,
-    rgba(255, 220, 175, 0.55) 360deg
-  );
-  animation: lustreSpin 14s linear infinite;
+  border: 0.5px solid rgba(241, 236, 227, 0.12);
+  pointer-events: none;
   z-index: 1;
-  pointer-events: none;
-  mix-blend-mode: overlay;
-}
-@keyframes lustreSpin { to { transform: rotate(360deg); } }
-
-/* Layer 2: subtle highlight pass — once every 8s, with long pause */
-.fab-shimmer {
-  position: absolute;
-  inset: 3px;
-  border-radius: 50%;
-  background: linear-gradient(115deg,
-    transparent 38%,
-    rgba(255, 245, 220, 0.35) 50%,
-    transparent 62%);
-  background-size: 250% 100%;
-  background-position: 200% 0;
-  animation: fabShimmer 8s ease-out 3.2s infinite;
-  z-index: 2;
-  pointer-events: none;
-  mix-blend-mode: screen;
-}
-@keyframes fabShimmer {
-  0% { background-position: 200% 0; opacity: 0; }
-  6% { opacity: 1; }
-  18% { background-position: -100% 0; opacity: 1; }
-  19% { opacity: 0; }
-  100% { background-position: -100% 0; opacity: 0; }
 }
 
-/* Layer 3: outer breathing rings */
-.fab-ring {
+/* Continuous gentle aura — 5.5s rhythm, ~4% scale, very low opacity range */
+.fab-aura {
   position: absolute;
-  inset: -8px;
+  inset: -10px;
   border-radius: 50%;
-  border: 1px solid var(--hairline-2);
+  border: 1px solid rgba(232, 154, 82, 0.30);
   pointer-events: none;
-  animation: fabBreathe 4s ease-in-out infinite;
   z-index: 0;
-}
-.fab-ring-2 {
-  inset: -14px;
-  border-color: rgba(232, 154, 82, 0.15);
-  animation-duration: 4s;
-  animation-delay: 0.4s;
-}
-@keyframes fabBreathe {
-  0%, 100% { opacity: 0.35; transform: scale(1); }
-  50% { opacity: 0.7; transform: scale(1.04); }
+  animation: fabBreathe 5.5s ease-in-out infinite;
 }
 
-.nav-fab:hover {
-  transform: translateY(-15px);
-  box-shadow:
-    0 1px 0 rgba(255,255,255,0.3) inset,
-    0 -1px 0 rgba(0,0,0,0.2) inset,
-    0 18px 32px -8px var(--amber-glow);
+@keyframes fabBreathe {
+  0%, 100% { opacity: 0.22; transform: scale(1); }
+  50%      { opacity: 0.62; transform: scale(1.04); }
 }
-.nav-fab:active { transform: translateY(-8px) scale(0.95); }
+
+/* Tap feedback only — no hover effects on mobile */
+.nav-fab:active { transform: translateY(-9px) scale(0.96); }
 
 /* ===================================================================
    REVEAL ANIMATIONS

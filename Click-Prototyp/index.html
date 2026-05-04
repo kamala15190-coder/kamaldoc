@@ -28,34 +28,62 @@
         <div class="splash-grain"></div>
 
         <div class="splash-stage">
-          <svg class="logomark" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#F6C58A" />
-                <stop offset="55%" stop-color="#E89A52" />
-                <stop offset="100%" stop-color="#A85B23" />
-              </linearGradient>
-              <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="2.4" result="b" />
-                <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-              </filter>
-            </defs>
+          <div class="emblem">
+            <!-- Outer orbit — rotates clockwise -->
+            <svg class="orbit orbit-outer" viewBox="0 0 240 240" aria-hidden="true">
+              <circle cx="120" cy="120" r="104" fill="none"
+                stroke="#E89A52" stroke-width="0.8"
+                stroke-dasharray="1.6 7" stroke-linecap="round" />
+            </svg>
 
-            <circle class="ring" cx="60" cy="60" r="52"
-              stroke="url(#copperGrad)" stroke-width="0.6" stroke-opacity="0.35" />
-            <circle class="ring-pulse" cx="60" cy="60" r="52"
-              stroke="url(#copperGrad)" stroke-width="0.4" stroke-opacity="0" fill="none" />
+            <!-- Inner orbit — rotates counter-clockwise -->
+            <svg class="orbit orbit-inner" viewBox="0 0 240 240" aria-hidden="true">
+              <circle cx="120" cy="120" r="78" fill="none"
+                stroke="#E89A52" stroke-width="1.1"
+                stroke-dasharray="4.5 11" stroke-linecap="round" />
+            </svg>
 
-            <g filter="url(#softGlow)" stroke="url(#copperGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-              <path class="stroke s1" d="M40 28 V92" />
-              <path class="stroke s2" d="M40 60 L78 28" />
-              <path class="stroke s3" d="M40 60 L82 92" />
-            </g>
+            <!-- Static tick marks at NSEW (chronograph style) -->
+            <svg class="orbit orbit-ticks" viewBox="0 0 240 240" aria-hidden="true">
+              <line x1="120" y1="22" x2="120" y2="32"
+                stroke="#E89A52" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="120" y1="218" x2="120" y2="208"
+                stroke="#E89A52" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="22" y1="120" x2="32" y2="120"
+                stroke="#E89A52" stroke-width="1.2" stroke-linecap="round" />
+              <line x1="218" y1="120" x2="208" y2="120"
+                stroke="#E89A52" stroke-width="1.2" stroke-linecap="round" />
+            </svg>
 
-            <path class="flap" d="M28 46 L60 66 L92 46"
-              stroke="url(#copperGrad)" stroke-width="0.8" stroke-opacity="0.6"
-              stroke-linecap="round" stroke-linejoin="round" fill="none" />
-          </svg>
+            <svg class="logomark" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <linearGradient id="copperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#F6C58A" />
+                  <stop offset="55%" stop-color="#E89A52" />
+                  <stop offset="100%" stop-color="#A85B23" />
+                </linearGradient>
+                <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2.4" result="b" />
+                  <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+                </filter>
+              </defs>
+
+              <circle class="ring" cx="60" cy="60" r="52"
+                stroke="url(#copperGrad)" stroke-width="0.6" stroke-opacity="0.35" />
+              <circle class="ring-pulse" cx="60" cy="60" r="52"
+                stroke="url(#copperGrad)" stroke-width="0.4" stroke-opacity="0" fill="none" />
+
+              <g filter="url(#softGlow)" stroke="url(#copperGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path class="stroke s1" d="M40 28 V92" />
+                <path class="stroke s2" d="M40 60 L78 28" />
+                <path class="stroke s3" d="M40 60 L82 92" />
+              </g>
+
+              <path class="flap" d="M28 46 L60 66 L92 46"
+                stroke="url(#copperGrad)" stroke-width="0.8" stroke-opacity="0.6"
+                stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
 
           <div class="wordmark">
             <span class="wm-letter">k</span><span class="wm-letter">d</span><span class="wm-letter">o</span><span class="wm-letter">c</span>
@@ -67,9 +95,6 @@
             <span class="tl-line">Endlich aufgeräumt.</span>
           </p>
         </div>
-
-        <div class="splash-sweep" aria-hidden="true"></div>
-        <div class="splash-sweep splash-sweep-2" aria-hidden="true"></div>
       </section>
 
       <!-- ============================================ -->
@@ -1193,10 +1218,8 @@
         </button>
 
         <button class="nav-fab" data-nav="scan" aria-label="Dokument scannen">
-          <span class="fab-lustre" aria-hidden="true"></span>
-          <span class="fab-shimmer" aria-hidden="true"></span>
-          <span class="fab-ring" aria-hidden="true"></span>
-          <span class="fab-ring fab-ring-2" aria-hidden="true"></span>
+          <span class="fab-rim" aria-hidden="true"></span>
+          <span class="fab-aura" aria-hidden="true"></span>
           <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>
             <circle cx="12" cy="12" r="3"/>
