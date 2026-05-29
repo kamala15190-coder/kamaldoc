@@ -1,0 +1,962 @@
+"""
+KamalDoc Subscription System
+- Plan management (free/basic/pro)
+- Usage tracking & enforcement
+- Stripe integration
+"""
+
+import logging
+import os
+from datetime import datetime, timedelta
+
+import stripe
+from fastapi import HTTPException, Request
+
+from database import get_db
+
+logger = logging.getLogger(__name__)
+
+# --- Stripe Config ---
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_BASIC_PRICE_ID = os.getenv("STRIPE_BASIC_PRICE_ID", "price_PLACEHOLDER")
+STRIPE_PRO_PRICE_ID = os.getenv("STRIPE_PRO_PRICE_ID", "price_PLACEHOLDER")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kamaldoc-flax.vercel.app")
+
+if STRIPE_SECRET_KEY:
+    stripe.api_key = STRIPE_SECRET_KEY
+
+# --- Plan Limits ---
+PLAN_LIMITS = {
+    "free": {
+        "documents_total": 10,
+        "documents_month": 10,
+        "ki_analyses_total": 10,
+        "ki_analyses_month": 10,
+        "behoerden_total": 2,
+        "behoerden_month": 2,
+        "befund_total": 2,
+        "befund_month": 2,
+        "doka_messages_month": 30,
+        "phishing_checks_month": 5,
+        "email_accounts": 1,
+        "expenses": False,
+        "push_notifications": False,
+        "reminder_options": [],
+    },
+    "basic": {
+        "documents_total": 50,
+        "documents_month": 50,
+        "ki_analyses_month": 50,
+        "behoerden_month": 10,
+        "befund_month": 10,
+        "doka_messages_month": 300,
+        "phishing_checks_month": 50,
+        "email_accounts": 3,
+        "expenses": True,
+        "push_notifications": True,
+        "reminder_options": [3],
+    },
+    "pro": {
+        "documents_total": None,  # unlimited
+        "ki_analyses_month": 500,
+        "behoerden_month": 50,
+        "befund_month": 50,
+        "doka_messages_month": 3000,
+        "phishing_checks_month": None,
+        "email_accounts": 10,
+        "expenses": True,
+        "push_notifications": True,
+        "reminder_options": [1, 3, 7],
+    },
+}
+
+
+# --- DB Helpers ---
+
+
+async def ensure_subscription(user_id: str):
+    """Ensure user has a subscription row. Creates 'free' if missing."""
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT plan FROM subscriptions WHERE user_id = ?", (user_id,))
+        row = await cursor.fetchone()
+        if not row:
+            await db.execute(
+                "INSERT INTO subscriptions (user_id, plan) VALUES (?, 'free')",
+                (user_id,),
+            )
+            await db.commit()
+    finally:
+        await db.close()
+
+
+async def ensure_usage(user_id: str):
+    """Ensure user has a usage_counters row."""
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT user_id, registration_date FROM usage_counters WHERE user_id = ?", (user_id,))
+        row = await cursor.fetchone()
+        if not row:
+            now = datetime.now().strftime("%Y-%m-%d")
+            await db.execute(
+                "INSERT INTO usage_counters (user_id, last_reset, registration_date) VALUES (?, ?, ?)",
+                (user_id, now, now),
+            )
+            await db.commit()
+        elif not row["registration_date"]:
+            now = datetime.now().strftime("%Y-%m-%d")
+            await db.execute(
+                "UPDATE usage_counters SET registration_date = ? WHERE user_id = ?",
+                (now, user_id),
+            )
+            await db.commit()
+    finally:
+        await db.close()
+
+
+async def get_user_plan(user_id: str) -> str:
+    """Get user's current plan, checking expiration."""
+    await ensure_subscription(user_id)
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT plan, expires_at, cancelled_at, pending_plan FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return "free"
+
+        plan = row["plan"]
+        expires_at = row["expires_at"]
+
+        # Check if paid plan has expired
+        if plan in ("basic", "pro") and expires_at:
+            try:
+                exp_date = datetime.fromisoformat(expires_at)
+                if exp_date < datetime.now():
+                    # Check for pending downgrade
+                    pending = row["pending_plan"] if "pending_plan" in row.keys() else None
+                    new_plan = pending or "free"
+                    await db.execute(
+                        "UPDATE subscriptions SET plan = ?, pending_plan = NULL, updated_at = ? WHERE user_id = ?",
+                        (new_plan, datetime.now().isoformat(), user_id),
+                    )
+                    await db.commit()
+                    logger.info(f"User {user_id} downgraded to {new_plan} (expired {expires_at})")
+                    return new_plan
+            except (ValueError, TypeError):
+                pass
+
+        return plan
+    finally:
+        await db.close()
+
+
+def _calc_reset_boundary(registration_date_str: str, now: datetime) -> datetime:
+    """Calculate the most recent monthly reset boundary based on the user's registration day."""
+    import calendar
+
+    try:
+        reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
+        reg_day = reg_date.day
+    except (ValueError, TypeError):
+        reg_day = 1
+
+    # Find the reset day in the current month (clamp to last day if needed)
+    _, last_day = calendar.monthrange(now.year, now.month)
+    reset_day = min(reg_day, last_day)
+    boundary_this_month = now.replace(day=reset_day, hour=0, minute=0, second=0, microsecond=0)
+
+    if now >= boundary_this_month:
+        return boundary_this_month
+    else:
+        # Use previous month's boundary
+        prev_month = now.month - 1 if now.month > 1 else 12
+        prev_year = now.year if now.month > 1 else now.year - 1
+        _, prev_last = calendar.monthrange(prev_year, prev_month)
+        prev_day = min(reg_day, prev_last)
+        return datetime(prev_year, prev_month, prev_day)
+
+
+def _calc_next_reset(registration_date_str: str, now: datetime) -> str:
+    """Calculate the next monthly reset date for display."""
+    import calendar
+
+    try:
+        reg_date = datetime.strptime(registration_date_str, "%Y-%m-%d")
+        reg_day = reg_date.day
+    except (ValueError, TypeError):
+        reg_day = 1
+
+    _, last_day = calendar.monthrange(now.year, now.month)
+    reset_day = min(reg_day, last_day)
+    boundary_this_month = now.replace(day=reset_day, hour=0, minute=0, second=0, microsecond=0)
+
+    if now < boundary_this_month:
+        return boundary_this_month.strftime("%Y-%m-%d")
+    else:
+        next_month = now.month + 1 if now.month < 12 else 1
+        next_year = now.year if now.month < 12 else now.year + 1
+        _, next_last = calendar.monthrange(next_year, next_month)
+        next_day = min(reg_day, next_last)
+        return datetime(next_year, next_month, next_day).strftime("%Y-%m-%d")
+
+
+async def get_usage(user_id: str) -> dict:
+    """Get user's usage counters, auto-resetting monthly counters if needed."""
+    await ensure_usage(user_id)
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT * FROM usage_counters WHERE user_id = ?", (user_id,))
+        row = await cursor.fetchone()
+        usage = dict(row)
+
+        now = datetime.now()
+        last_reset = usage.get("last_reset") or ""
+        reg_date = usage.get("registration_date") or last_reset or now.strftime("%Y-%m-%d")
+
+        try:
+            last_date = datetime.strptime(last_reset, "%Y-%m-%d")
+            boundary = _calc_reset_boundary(reg_date, now)
+            if last_date < boundary:
+                await db.execute(
+                    """UPDATE usage_counters
+                       SET documents_month = 0, ki_analyses_month = 0, behoerden_month = 0, befund_month = 0,
+                           doka_messages_month = 0, phishing_checks_month = 0, last_reset = ?
+                       WHERE user_id = ?""",
+                    (now.strftime("%Y-%m-%d"), user_id),
+                )
+                await db.commit()
+                usage["documents_month"] = 0
+                usage["ki_analyses_month"] = 0
+                usage["behoerden_month"] = 0
+                usage["befund_month"] = 0
+                usage["doka_messages_month"] = 0
+                usage["phishing_checks_month"] = 0
+                usage["last_reset"] = now.strftime("%Y-%m-%d")
+                logger.info(f"Monthly counters reset for user {user_id} (registration-day based)")
+        except (ValueError, TypeError):
+            pass
+
+        # Attach next reset date for frontend display
+        usage["next_reset"] = _calc_next_reset(reg_date, now)
+        usage["registration_date"] = reg_date
+
+        return usage
+    finally:
+        await db.close()
+
+
+ALLOWED_USAGE_FIELDS = {
+    "documents_total",
+    "documents_month",
+    "ki_analyses_total",
+    "ki_analyses_month",
+    "behoerden_month",
+    "befund_month",
+    "doka_messages_month",
+    "phishing_checks_month",
+}
+
+
+async def increment_usage(user_id: str, field: str, amount: int = 1):
+    """Increment a usage counter."""
+    if field not in ALLOWED_USAGE_FIELDS:
+        raise ValueError(f"Invalid usage field: {field}")
+    await ensure_usage(user_id)
+    db = await get_db()
+    try:
+        await db.execute(
+            f"UPDATE usage_counters SET {field} = {field} + ? WHERE user_id = ?",
+            (amount, user_id),
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+
+# --- Plan Enforcement ---
+
+
+async def check_upload_limit(user_id: str):
+    """Check if user can upload a document."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    usage = await get_usage(user_id)
+
+    # Check monthly limit (free plan)
+    max_month = limits.get("documents_month")
+    if max_month is not None:
+        current_month = usage.get("documents_month", 0)
+        if current_month >= max_month:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "UPLOAD_LIMIT",
+                    "message": f"Dokumenten-Monatslimit erreicht ({max_month}/Monat). Bitte upgraden.",
+                    "plan": plan,
+                    "limit": max_month,
+                    "used": current_month,
+                },
+            )
+
+    # Check total limit
+    max_docs = limits["documents_total"]
+    if max_docs is None:
+        return  # unlimited
+    if usage["documents_total"] >= max_docs:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "UPLOAD_LIMIT",
+                "message": f"Dokumenten-Limit erreicht ({max_docs}). Bitte upgraden.",
+                "plan": plan,
+                "limit": max_docs,
+                "used": usage["documents_total"],
+            },
+        )
+
+
+async def check_analysis_limit(user_id: str):
+    """Check if user can run KI analysis (monthly limit)."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    max_month = limits.get("ki_analyses_month")
+    if max_month is None:
+        return  # unlimited
+
+    usage = await get_usage(user_id)
+    current = usage.get("ki_analyses_month", 0)
+    if current >= max_month:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "ANALYSIS_LIMIT",
+                "message": f"KI-Analyse-Limit erreicht ({max_month}/Monat). Bitte upgraden.",
+                "plan": plan,
+                "limit": max_month,
+                "used": current,
+            },
+        )
+
+
+async def check_doka_limit(user_id: str):
+    """Check Doka chat message limit (monthly)."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    max_month = limits.get("doka_messages_month")
+    if max_month is None:
+        return  # unlimited
+
+    usage = await get_usage(user_id)
+    current = usage.get("doka_messages_month", 0)
+    if current >= max_month:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "DOKA_LIMIT",
+                "message": f"Doka-Nachrichten-Limit erreicht ({max_month}/Monat). Bitte upgraden.",
+                "plan": plan,
+                "limit": max_month,
+                "used": current,
+            },
+        )
+
+
+async def check_connector_limit(user_id: str):
+    """Check the connected-email-accounts limit (count of rows, not monthly)."""
+    plan = await get_user_plan(user_id)
+    max_accounts = PLAN_LIMITS[plan].get("email_accounts")
+    if max_accounts is None:
+        return
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT COUNT(*) AS cnt FROM connector_accounts WHERE user_id = ?", (user_id,)
+        )
+        row = await cursor.fetchone()
+        current = row["cnt"] if row else 0
+    finally:
+        await db.close()
+    if current >= max_accounts:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "CONNECTOR_LIMIT",
+                "message": f"E-Mail-Konten-Limit erreicht ({max_accounts}). Bitte upgraden.",
+                "plan": plan,
+                "limit": max_accounts,
+                "used": current,
+            },
+        )
+
+
+async def check_phishing_limit(user_id: str):
+    """Check phishing-check limit (monthly; Pro is unlimited)."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    max_month = limits.get("phishing_checks_month")
+    if max_month is None:
+        return  # unlimited
+
+    usage = await get_usage(user_id)
+    current = usage.get("phishing_checks_month", 0)
+    if current >= max_month:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "PHISHING_LIMIT",
+                "message": f"Phishing-Prüfungs-Limit erreicht ({max_month}/Monat). Bitte upgraden.",
+                "plan": plan,
+                "limit": max_month,
+                "used": current,
+            },
+        )
+
+
+async def check_behoerden_limit(user_id: str):
+    """Check Behörden-Assistent limit."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    usage = await get_usage(user_id)
+
+    if plan == "free":
+        max_total = limits.get("behoerden_total", 2)
+        if usage["behoerden_month"] >= max_total:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "BEHOERDEN_LIMIT",
+                    "message": f"Behörden-Assistent Limit erreicht ({max_total} gesamt). Bitte upgraden.",
+                    "plan": plan,
+                    "limit": max_total,
+                    "used": usage["behoerden_month"],
+                },
+            )
+    else:
+        max_month = limits.get("behoerden_month")
+        if max_month is not None and usage["behoerden_month"] >= max_month:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "BEHOERDEN_LIMIT",
+                    "message": f"Behörden-Assistent Monatslimit erreicht ({max_month}/Monat).",
+                    "plan": plan,
+                    "limit": max_month,
+                    "used": usage["behoerden_month"],
+                },
+            )
+
+
+async def check_befund_limit(user_id: str):
+    """Check Befund-Assistent limit."""
+    plan = await get_user_plan(user_id)
+    limits = PLAN_LIMITS[plan]
+    usage = await get_usage(user_id)
+
+    if plan == "free":
+        max_total = limits.get("befund_total", 2)
+        if usage["befund_month"] >= max_total:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "BEFUND_LIMIT",
+                    "message": f"Befund-Assistent Limit erreicht ({max_total} gesamt). Bitte upgraden.",
+                    "plan": plan,
+                    "limit": max_total,
+                    "used": usage["befund_month"],
+                },
+            )
+    else:
+        max_month = limits.get("befund_month")
+        if max_month is not None and usage["befund_month"] >= max_month:
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "code": "BEFUND_LIMIT",
+                    "message": f"Befund-Assistent Monatslimit erreicht ({max_month}/Monat).",
+                    "plan": plan,
+                    "limit": max_month,
+                    "used": usage["befund_month"],
+                },
+            )
+
+
+async def check_expenses_access(user_id: str):
+    """Check if user has access to expenses dashboard."""
+    plan = await get_user_plan(user_id)
+    if not PLAN_LIMITS[plan]["expenses"]:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "code": "EXPENSES_LOCKED",
+                "message": "Ausgaben-Dashboard ist ab Basic Plan verfügbar.",
+                "plan": plan,
+            },
+        )
+
+
+# --- Subscription Status ---
+
+
+async def get_subscription_status(user_id: str) -> dict:
+    """Get full subscription status for frontend."""
+    await ensure_subscription(user_id)
+    await ensure_usage(user_id)
+
+    plan = await get_user_plan(user_id)
+    usage = await get_usage(user_id)
+    limits = PLAN_LIMITS[plan]
+
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT * FROM subscriptions WHERE user_id = ?", (user_id,))
+        sub = dict(await cursor.fetchone())
+    finally:
+        await db.close()
+
+    return {
+        "plan": plan,
+        "expires_at": sub.get("expires_at"),
+        "cancelled_at": sub.get("cancelled_at"),
+        "pending_plan": sub.get("pending_plan"),
+        "started_at": sub.get("started_at"),
+        "stripe_subscription_id": sub.get("stripe_subscription_id"),
+        "limits": {
+            "documents_total": limits["documents_total"],
+            "ki_analyses_month": limits.get("ki_analyses_month"),
+            "behoerden": limits.get("behoerden_total") if plan == "free" else limits.get("behoerden_month"),
+            "befund": limits.get("befund_total") if plan == "free" else limits.get("befund_month"),
+            "expenses": limits["expenses"],
+            "push_notifications": limits["push_notifications"],
+            "reminder_options": limits["reminder_options"],
+        },
+        "usage": {
+            "documents_total": usage["documents_total"],
+            "documents_month": usage.get("documents_month", 0),
+            "ki_analyses_month": usage.get("ki_analyses_month", 0),
+            "behoerden_used": usage["behoerden_month"],
+            "befund_used": usage["befund_month"],
+            "next_reset": usage.get("next_reset"),
+            "registration_date": usage.get("registration_date"),
+        },
+    }
+
+
+# --- Downgrade ---
+
+
+async def downgrade_subscription(user_id: str, target_plan: str) -> dict:
+    """Schedule a downgrade to a lower plan. Atomic: Stripe first, then DB."""
+    PLAN_ORDER = {"free": 0, "basic": 1, "pro": 2}
+    current = await get_user_plan(user_id)
+
+    if target_plan not in PLAN_ORDER:
+        raise HTTPException(400, "Ungültiger Plan.")
+    if PLAN_ORDER[target_plan] >= PLAN_ORDER[current]:
+        raise HTTPException(400, "Downgrade ist nur auf einen niedrigeren Plan möglich.")
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        stripe_sub_id = row["stripe_subscription_id"] if row else None
+
+        # Atomic: Stripe action FIRST, then DB update
+        if stripe_sub_id and STRIPE_SECRET_KEY and STRIPE_SECRET_KEY != "sk_test_PLACEHOLDER":
+            try:
+                if target_plan == "free":
+                    # Cancel Stripe subscription at period end
+                    stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True)
+                    logger.info(f"[Stripe] Downgrade→free: cancel_at_period_end for {stripe_sub_id}")
+                else:
+                    # Downgrade pro→basic: update subscription price
+                    new_price_id = STRIPE_BASIC_PRICE_ID if target_plan == "basic" else STRIPE_PRO_PRICE_ID
+                    sub = stripe.Subscription.retrieve(stripe_sub_id)
+                    if sub and sub.get("items", {}).get("data"):
+                        item_id = sub["items"]["data"][0]["id"]
+                        stripe.Subscription.modify(
+                            stripe_sub_id,
+                            items=[{"id": item_id, "price": new_price_id}],
+                            proration_behavior="none",
+                        )
+                        logger.info(f"[Stripe] Downgrade→{target_plan}: updated price for {stripe_sub_id}")
+            except stripe.error.InvalidRequestError as e:
+                if e.code == "resource_missing":
+                    # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
+                    logger.warning(
+                        f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and downgrading locally for user {user_id}"
+                    )
+                    await db.execute(
+                        "UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,)
+                    )
+                else:
+                    logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
+                    raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
+            except Exception as e:
+                logger.error(f"[Stripe] Downgrade failed for user {user_id}: {e}", exc_info=True)
+                raise HTTPException(502, "Stripe-Downgrade fehlgeschlagen. Bitte versuche es erneut.")
+
+        now = datetime.now().isoformat()
+        await db.execute(
+            "UPDATE subscriptions SET pending_plan = ?, updated_at = ? WHERE user_id = ?",
+            (target_plan, now, user_id),
+        )
+        await db.commit()
+
+        expires_at = row["expires_at"] if row else None
+        logger.info(f"[Downgrade] Scheduled: user={user_id}, from={current}, to={target_plan}, expires={expires_at}")
+        return {
+            "message": f"Downgrade auf {target_plan} geplant.",
+            "pending_plan": target_plan,
+            "expires_at": expires_at,
+        }
+    finally:
+        await db.close()
+
+
+# --- Reactivate ---
+
+
+async def reactivate_subscription(user_id: str) -> dict:
+    """Reactivate a cancelled subscription."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT plan, cancelled_at, stripe_subscription_id, expires_at FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        if not row or row["plan"] == "free":
+            raise HTTPException(400, "Kein aktives Abo vorhanden.")
+        if not row["cancelled_at"]:
+            raise HTTPException(400, "Abo ist nicht gekündigt.")
+
+        stripe_sub_id = row["stripe_subscription_id"]
+        # Reactivate in Stripe (undo cancel_at_period_end)
+        if stripe_sub_id and STRIPE_SECRET_KEY:
+            try:
+                stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=False)
+            except Exception as e:
+                logger.error(f"Stripe reactivate error: {e}")
+
+        now = datetime.now().isoformat()
+        await db.execute(
+            "UPDATE subscriptions SET cancelled_at = NULL, pending_plan = NULL, updated_at = ? WHERE user_id = ?",
+            (now, user_id),
+        )
+        await db.commit()
+
+        logger.info(f"Subscription reactivated: user={user_id}, plan={row['plan']}")
+        return {
+            "message": "Abo reaktiviert.",
+            "plan": row["plan"],
+            "expires_at": row["expires_at"],
+        }
+    finally:
+        await db.close()
+
+
+# --- Stripe Checkout ---
+
+
+async def create_checkout_session(user_id: str, plan: str, source: str = "web") -> dict:
+    """Create Stripe Checkout Session for Basic or Pro plan."""
+    if not STRIPE_SECRET_KEY or STRIPE_SECRET_KEY == "sk_test_PLACEHOLDER":
+        raise HTTPException(400, "Stripe ist noch nicht konfiguriert.")
+
+    if plan not in ("basic", "pro"):
+        raise HTTPException(400, "Ungültiger Plan. Nur 'basic' oder 'pro' möglich.")
+
+    price_id = STRIPE_BASIC_PRICE_ID if plan == "basic" else STRIPE_PRO_PRICE_ID
+
+    # Get or create Stripe customer
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT stripe_customer_id FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        customer_id = row["stripe_customer_id"] if row else None
+
+        if not customer_id:
+            customer = stripe.Customer.create(metadata={"user_id": user_id})
+            customer_id = customer.id
+            await db.execute(
+                "UPDATE subscriptions SET stripe_customer_id = ? WHERE user_id = ?",
+                (customer_id, user_id),
+            )
+            await db.commit()
+    finally:
+        await db.close()
+
+    session = stripe.checkout.Session.create(
+        customer=customer_id,
+        mode="subscription",
+        line_items=[{"price": price_id, "quantity": 1}],
+        payment_method_types=["card", "paypal", "amazon_pay", "link"],
+        payment_method_options={
+            "card": {
+                "request_three_d_secure": "automatic",
+            },
+        },
+        success_url="at.kamaldoc.app://checkout-success"
+        if source == "android"
+        else f"{FRONTEND_URL}/profil?checkout=success",
+        cancel_url="at.kamaldoc.app://checkout-cancel"
+        if source == "android"
+        else f"{FRONTEND_URL}/pricing?checkout=cancel",
+        metadata={"user_id": user_id, "plan": plan},
+        custom_text={
+            "submit": {"message": "KamalDoc – Ihr Dokumenten-Assistent"},
+        },
+    )
+
+    return {"checkout_url": session.url, "session_id": session.id}
+
+
+async def cancel_subscription(user_id: str) -> dict:
+    """Cancel subscription (stays active until expires_at). Atomic: Stripe first, then DB."""
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT stripe_subscription_id, plan, expires_at FROM subscriptions WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cursor.fetchone()
+        if not row or row["plan"] == "free":
+            raise HTTPException(400, "Kein aktives Abo vorhanden.")
+
+        stripe_sub_id = row["stripe_subscription_id"]
+
+        # Atomic: Cancel in Stripe FIRST, then update DB
+        if stripe_sub_id and STRIPE_SECRET_KEY and STRIPE_SECRET_KEY != "sk_test_PLACEHOLDER":
+            try:
+                stripe.Subscription.modify(stripe_sub_id, cancel_at_period_end=True)
+                logger.info(f"[Stripe] Subscription {stripe_sub_id} set to cancel_at_period_end for user {user_id}")
+            except stripe.error.InvalidRequestError as e:
+                if e.code == "resource_missing":
+                    # Stale subscription ID (e.g. created in test mode) – clear it and proceed locally
+                    logger.warning(
+                        f"[Stripe] Subscription {stripe_sub_id} not found (stale ID), clearing and cancelling locally for user {user_id}"
+                    )
+                    await db.execute(
+                        "UPDATE subscriptions SET stripe_subscription_id = NULL WHERE user_id = ?", (user_id,)
+                    )
+                else:
+                    logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
+                    raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
+            except Exception as e:
+                logger.error(f"[Stripe] Cancel failed for user {user_id}: {e}", exc_info=True)
+                raise HTTPException(502, "Stripe-Kündigung fehlgeschlagen. Bitte versuche es erneut.")
+
+        now = datetime.now().isoformat()
+        await db.execute(
+            "UPDATE subscriptions SET cancelled_at = ?, updated_at = ? WHERE user_id = ?",
+            (now, now, user_id),
+        )
+        await db.commit()
+        logger.info(f"[Cancel] User {user_id} cancelled, active until {row['expires_at']}")
+
+        return {
+            "message": "Abo gekündigt. Bleibt aktiv bis zum Ende der Laufzeit.",
+            "expires_at": row["expires_at"],
+        }
+    finally:
+        await db.close()
+
+
+# --- Stripe Webhook ---
+
+
+async def handle_webhook(request: Request):
+    """Process Stripe webhook events."""
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature")
+
+    if not STRIPE_WEBHOOK_SECRET or STRIPE_WEBHOOK_SECRET == "whsec_PLACEHOLDER":
+        logger.warning("Stripe webhook secret not configured")
+        return {"status": "ignored"}
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
+    except stripe.error.SignatureVerificationError:
+        raise HTTPException(400, "Invalid signature")
+    except Exception as e:
+        raise HTTPException(400, f"Webhook error: {str(e)}")
+
+    event_type = event["type"]
+    data = event["data"]["object"]
+    logger.info(f"Stripe webhook: {event_type}")
+
+    if event_type == "checkout.session.completed":
+        await _handle_checkout_completed(data)
+    elif event_type == "invoice.payment_succeeded":
+        await _handle_payment_succeeded(data)
+    elif event_type == "invoice.payment_failed":
+        await _handle_payment_failed(data)
+    elif event_type == "customer.subscription.updated":
+        await _handle_subscription_updated(data)
+    elif event_type == "customer.subscription.deleted":
+        await _handle_subscription_deleted(data)
+
+    return {"status": "ok"}
+
+
+async def _handle_checkout_completed(session):
+    """Activate plan after successful checkout."""
+    user_id = session.get("metadata", {}).get("user_id")
+    plan = session.get("metadata", {}).get("plan")
+    stripe_sub_id = session.get("subscription")
+    customer_id = session.get("customer")
+
+    if not user_id or not plan:
+        logger.error("Checkout completed but missing user_id/plan in metadata")
+        return
+
+    now = datetime.now()
+    expires_at = (now + timedelta(days=30)).isoformat()
+
+    db = await get_db()
+    try:
+        await db.execute(
+            """UPDATE subscriptions SET
+                plan = ?, stripe_subscription_id = ?, stripe_customer_id = ?,
+                started_at = ?, expires_at = ?, cancelled_at = NULL, updated_at = ?
+               WHERE user_id = ?""",
+            (plan, stripe_sub_id, customer_id, now.isoformat(), expires_at, now.isoformat(), user_id),
+        )
+        await db.commit()
+        logger.info(f"Plan activated: user={user_id}, plan={plan}, expires={expires_at}")
+    finally:
+        await db.close()
+
+
+async def _handle_payment_succeeded(invoice):
+    """Extend subscription on successful payment."""
+    customer_id = invoice.get("customer")
+    if not customer_id:
+        return
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT user_id, plan FROM subscriptions WHERE stripe_customer_id = ?",
+            (customer_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            return
+
+        now = datetime.now()
+        expires_at = (now + timedelta(days=30)).isoformat()
+
+        await db.execute(
+            "UPDATE subscriptions SET expires_at = ?, cancelled_at = NULL, updated_at = ? WHERE user_id = ?",
+            (expires_at, now.isoformat(), row["user_id"]),
+        )
+        await db.commit()
+        logger.info(f"Payment succeeded, extended: user={row['user_id']}, expires={expires_at}")
+    finally:
+        await db.close()
+
+
+async def _handle_payment_failed(invoice):
+    """Log payment failure."""
+    customer_id = invoice.get("customer")
+    logger.warning(f"Payment failed for customer {customer_id}")
+
+
+async def _handle_subscription_updated(subscription):
+    """Sync DB when Stripe subscription changes (cancel_at_period_end, plan change, etc.)."""
+    customer_id = subscription.get("customer")
+    sub_id = subscription.get("id")
+    if not customer_id:
+        return
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT user_id, plan FROM subscriptions WHERE stripe_customer_id = ?",
+            (customer_id,),
+        )
+        row = await cursor.fetchone()
+        if not row:
+            logger.warning(f"[Webhook] subscription.updated for unknown customer {customer_id}")
+            return
+
+        user_id = row["user_id"]
+        now = datetime.now().isoformat()
+
+        # Sync cancel_at_period_end → cancelled_at
+        cancel_at_period_end = subscription.get("cancel_at_period_end", False)
+        if cancel_at_period_end:
+            await db.execute(
+                "UPDATE subscriptions SET cancelled_at = COALESCE(cancelled_at, ?), updated_at = ? WHERE user_id = ?",
+                (now, now, user_id),
+            )
+            logger.info(f"[Webhook] Subscription {sub_id} marked cancel_at_period_end for user {user_id}")
+        else:
+            # Reactivated — clear cancelled_at
+            await db.execute(
+                "UPDATE subscriptions SET cancelled_at = NULL, updated_at = ? WHERE user_id = ?",
+                (now, user_id),
+            )
+            logger.info(f"[Webhook] Subscription {sub_id} reactivated for user {user_id}")
+
+        # Sync plan from Stripe price
+        items = subscription.get("items", {}).get("data", [])
+        if items:
+            price_id = items[0].get("price", {}).get("id")
+            if price_id == STRIPE_BASIC_PRICE_ID and row["plan"] != "basic":
+                await db.execute(
+                    "UPDATE subscriptions SET plan = 'basic', updated_at = ? WHERE user_id = ?",
+                    (now, user_id),
+                )
+                logger.info(f"[Webhook] Plan synced to basic for user {user_id}")
+            elif price_id == STRIPE_PRO_PRICE_ID and row["plan"] != "pro":
+                await db.execute(
+                    "UPDATE subscriptions SET plan = 'pro', updated_at = ? WHERE user_id = ?",
+                    (now, user_id),
+                )
+                logger.info(f"[Webhook] Plan synced to pro for user {user_id}")
+
+        # Ensure stripe_subscription_id is current
+        await db.execute(
+            "UPDATE subscriptions SET stripe_subscription_id = ?, updated_at = ? WHERE user_id = ?",
+            (sub_id, now, user_id),
+        )
+        await db.commit()
+    finally:
+        await db.close()
+
+
+async def _handle_subscription_deleted(subscription):
+    """Handle subscription deletion from Stripe."""
+    customer_id = subscription.get("customer")
+    if not customer_id:
+        return
+
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT user_id FROM subscriptions WHERE stripe_customer_id = ?",
+            (customer_id,),
+        )
+        row = await cursor.fetchone()
+        if row:
+            now = datetime.now().isoformat()
+            await db.execute(
+                "UPDATE subscriptions SET plan = 'free', stripe_subscription_id = NULL, cancelled_at = ?, updated_at = ? WHERE user_id = ?",
+                (now, now, row["user_id"]),
+            )
+            await db.commit()
+            logger.info(f"Subscription deleted, downgraded: user={row['user_id']}")
+    finally:
+        await db.close()

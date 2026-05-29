@@ -1,0 +1,13 @@
+{
+  "appId": "at.kamaldoc.app",
+  "appName": "KamalDoc",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "App": {
+      "launchUrl": "at.kamaldoc.app://email-callback"
+    }
+  }
+}

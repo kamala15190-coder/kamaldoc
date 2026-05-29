@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KamalDoc</string>
+    <string name="title_activity_main">KamalDoc</string>
+    <string name="package_name">at.kamaldoc.app</string>
+    <string name="custom_url_scheme">at.kamaldoc.app</string>
+</resources>
