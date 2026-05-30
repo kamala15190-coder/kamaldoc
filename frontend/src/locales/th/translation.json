@@ -561,7 +561,21 @@
     "icloud_app_password_hint": "iCloud requires an app-specific password. Create one at Apple ID → Sign-In & Security → App-Specific Passwords.",
     "yahoo_app_password_hint": "Yahoo requires an app password. Create one at Yahoo Account Settings → Security → Generate App Password.",
     "connectFailedWithReason": "Connection failed: {{reason}}",
-    "connectSuccess": "Account connected successfully."
+    "connectSuccess": "Account connected successfully.",
+    "statusActive": "Active",
+    "statusTokenExpired": "Reconnect needed",
+    "statusError": "Error",
+    "neverSynced": "Not synced yet",
+    "sync": "Sync",
+    "noAccounts": "No mailboxes connected yet.",
+    "unavailable": "Email connection is currently unavailable.",
+    "addAccount": "Add mailbox",
+    "chooseProvider": "Choose a provider",
+    "comingSoon": "Coming soon",
+    "displayName": "Display name (optional)",
+    "displayNamePlaceholder": "e.g. Work, Private",
+    "imapServer": "IMAP server",
+    "port": "Port"
   },
   "splash": {
     "tagline1": "Your mailbox.",

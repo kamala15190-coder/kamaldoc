@@ -536,6 +536,48 @@ export async function sendDokaMessage(convId, { message, lawyerMode, language, f
   }
 }
 
+// --- E-Mail-Connectors (Phase F) — server-side, encrypted credentials ---
+
+// Provider-Metadaten + ob Server-Verschlüsselung bereit ist.
+export async function getConnectorMeta() {
+  const { data } = await api.get('/connectors/available');
+  return data; // { connectors: {...}, encryption_ready: bool }
+}
+
+export async function getConnectorAccounts() {
+  const { data } = await api.get('/connectors/accounts');
+  return data.accounts || [];
+}
+
+// IMAP/App-Passwort-Konto verbinden (Tokens/Passwort bleiben serverseitig, verschlüsselt).
+export async function connectImapAccount({ connector_type, display_name, email, password, host, port }) {
+  const { data } = await api.post('/connectors/imap/connect', {
+    connector_type, display_name, email, password, host, port,
+  });
+  return data;
+}
+
+// Serverseitigen OAuth-Flow starten (z. B. Gmail). Liefert die Google-Auth-URL.
+export async function startConnectorOAuth(connectorType, platform = 'web') {
+  const { data } = await api.post(`/connectors/${connectorType}/oauth/start`, { platform });
+  return data; // { auth_url }
+}
+
+export async function patchConnectorAccount(id, patch) {
+  const { data } = await api.patch(`/connectors/accounts/${id}`, patch);
+  return data;
+}
+
+export async function deleteConnectorAccount(id) {
+  const { data } = await api.delete(`/connectors/accounts/${id}`);
+  return data;
+}
+
+export async function syncConnectorAccount(id) {
+  const { data } = await api.post(`/connectors/accounts/${id}/sync`);
+  return data;
+}
+
 // --- Phishing-Prüfung (Phase E) ---
 
 export async function checkPhishing({ message, file, documentId, language } = {}) {

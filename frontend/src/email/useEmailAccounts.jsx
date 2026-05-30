@@ -1,7 +1,11 @@
 /**
- * useEmailAccounts Hook
- * React hook for managing connected email accounts.
- * Provides account list, connect/disconnect, and OAuth callback handling.
+ * useEmailAccounts — server-side connector accounts (Phase F).
+ *
+ * All credentials live encrypted on the backend. This hook only talks to the
+ * /api/connectors/* endpoints; tokens and passwords never pass through or rest
+ * in the frontend. OAuth providers (Gmail) use a fully server-side flow: we ask
+ * the backend for an auth URL, the provider redirects to the backend relay, and
+ * the relay stores the account before bouncing us back to /email-callback/*.
  */
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,104 +13,83 @@ import { Capacitor } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../hooks/useToast';
 import {
-  getConnectedAccounts,
-  disconnectAccount,
-  startOAuthFlow,
-  handleOAuthCallback,
-  saveAccount,
-} from './EmailConnectorService';
+  getConnectorAccounts,
+  getConnectorMeta,
+  connectImapAccount,
+  startConnectorOAuth,
+  deleteConnectorAccount,
+  syncConnectorAccount,
+  patchConnectorAccount,
+} from '../api';
 
-// Module-level guard: each authorization code must only be processed once,
-// even if React StrictMode mounts the effect twice or the user navigates
-// back to the callback URL. Keyed by the OAuth `code` query param.
-const processedCallbackCodes = new Set();
+// Only process a given OAuth callback once (React StrictMode double-mounts,
+// back-navigation). Keyed by the email/marker carried in the redirect.
+const processedCallbacks = new Set();
 
 export function useEmailAccounts() {
   const { t } = useTranslation();
   const toast = useToast();
   const [accounts, setAccounts] = useState([]);
+  const [connectors, setConnectors] = useState({});      // type -> meta from server
+  const [encryptionReady, setEncryptionReady] = useState(true);
   const [loading, setLoading] = useState(true);
-  const [connecting, setConnecting] = useState(null); // provider name or null
+  const [busy, setBusy] = useState(null);                // connector_type or account id currently working
 
   const refresh = useCallback(async () => {
     try {
-      const accs = await getConnectedAccounts();
+      const [accs, meta] = await Promise.all([getConnectorAccounts(), getConnectorMeta()]);
       setAccounts(accs);
+      setConnectors(meta.connectors || {});
+      setEncryptionReady(!!meta.encryption_ready);
     } catch (err) {
-      console.error('Failed to load email accounts:', err);
+      console.error('Failed to load connector accounts:', err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  useEffect(() => { refresh(); }, [refresh]);
 
-  // Handle OAuth callbacks (deep link on native, URL params on web)
+  // Handle the OAuth success/error bounce (web URL hash or native deep link).
   useEffect(() => {
     const cleanUrl = () => {
-      try {
-        // Remove both query params and hash fragment (gmail_result token)
-        window.history.replaceState(null, '', '/profil');
-      } catch { /* ignore */ }
+      try { window.history.replaceState(null, '', '/profil'); } catch { /* ignore */ }
     };
 
     const handleCallback = async (url) => {
-      const match = url.match(/email-callback\/(gmail|outlook|gmx|icloud|yahoo)/);
-      if (!match) return;
-
-      // Idempotency guard — only process a given callback once.
-      // Web Gmail:   hash fragment  #gmail_result=...  or  #gmail_error=...
-      // Native Gmail: query param   ?gmail_result=...  or  ?gmail_error=...
-      // Other providers: query param ?code=...
-      let codeKey = url; // fallback: full URL is always unique
+      if (!/email-callback\//.test(url)) return;
+      let connected = null, errorMsg = null, email = '';
       try {
-        const parsed = new URL(url);
-        const qResult = parsed.searchParams.get('gmail_result');
-        const qError  = parsed.searchParams.get('gmail_error');
-        const hashResult = window.location.hash.match(/[#&]gmail_result=([^&]+)/);
-        const hashError  = window.location.hash.match(/[#&]gmail_error=([^&]+)/);
-        if (qResult)        codeKey = qResult;
-        else if (qError)    codeKey = `err:${qError}`;
-        else if (hashResult) codeKey = hashResult[1];
-        else if (hashError)  codeKey = `err:${hashError[1]}`;
-        else codeKey = parsed.searchParams.get('code') || parsed.searchParams.get('error') || url;
-      } catch { /* keep url as fallback */ }
-      if (processedCallbackCodes.has(codeKey)) return;
-      processedCallbackCodes.add(codeKey);
+        const hash = (url.split('#')[1] || '');
+        const query = (url.split('?')[1] || '').split('#')[0];
+        const params = new URLSearchParams(hash || query);
+        connected = params.get('connected');
+        email = params.get('email') || '';
+        errorMsg = params.get('gmail_error') || params.get('error');
+      } catch { /* ignore */ }
 
-      const provider = match[1];
-      setConnecting(provider);
-      try {
-        const result = await handleOAuthCallback(provider, url);
+      const key = email || errorMsg || url;
+      if (processedCallbacks.has(key)) return;
+      processedCallbacks.add(key);
+
+      if (errorMsg) {
+        toast.error(t('email.connectFailedWithReason', { reason: decodeURIComponent(errorMsg) }));
+        return;
+      }
+      if (connected) {
         await refresh();
-        if (result?.email) {
-          toast.success(
-            t('email.connectSuccess', '{{provider}} verbunden: {{email}}', {
-              provider: provider.charAt(0).toUpperCase() + provider.slice(1),
-              email: result.email,
-            })
-          );
-        }
-      } catch (err) {
-        console.error(`OAuth callback failed for ${provider}:`, err);
-        toast.error(
-          t('email.connectFailedWithReason', 'Verbindung fehlgeschlagen: {{reason}}', {
-            reason: err?.message || 'unbekannter Fehler',
-          })
+        toast.success(
+          email
+            ? t('email.connectSuccess') + ` (${decodeURIComponent(email)})`
+            : t('email.connectSuccess')
         );
-      } finally {
-        setConnecting(null);
       }
     };
 
-    // Web: check current URL on mount
     if (!Capacitor.isNativePlatform() && window.location.pathname.includes('email-callback')) {
       handleCallback(window.location.href).finally(cleanUrl);
     }
 
-    // Native: listen for deep links
     let listener = null;
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/app').then(({ App }) => {
@@ -121,78 +104,86 @@ export function useEmailAccounts() {
         });
       });
     }
-
-    return () => {
-      if (listener) listener.remove();
-    };
+    return () => { if (listener) listener.remove(); };
   }, [refresh, toast, t]);
 
-  /**
-   * Start connecting an email account.
-   * For OAuth providers (gmail, outlook): opens browser.
-   * For app-password providers (gmx, icloud, yahoo): returns { mode: 'app_password' }.
-   */
-  const connect = useCallback(async (providerName) => {
-    setConnecting(providerName);
+  // Start a server-side OAuth flow (Gmail). Redirects the browser / opens the
+  // in-app browser to the provider; the backend relay finishes and stores it.
+  const startOAuth = useCallback(async (connectorType) => {
+    setBusy(connectorType);
     try {
-      const result = await startOAuthFlow(providerName);
-      if (result?.mode === 'app_password') {
-        // UI will show a form — don't close connecting state yet
-        return result;
+      const platform = Capacitor.isNativePlatform() ? 'native' : 'web';
+      const { auth_url } = await startConnectorOAuth(connectorType, platform);
+      if (!auth_url) throw new Error('no_auth_url');
+      if (Capacitor.isNativePlatform()) {
+        const { Browser } = await import('@capacitor/browser');
+        await Browser.open({ url: auth_url, presentationStyle: 'popover' });
+        setBusy(null);
+      } else {
+        window.location.href = auth_url; // full redirect; page unloads
       }
-      // OAuth flow opened in browser, wait for callback
-      return result;
     } catch (err) {
-      console.error(`Failed to start OAuth for ${providerName}:`, err);
-      setConnecting(null);
+      setBusy(null);
+      const reason = err?.response?.data?.detail || err?.message || '';
+      toast.error(t('email.connectFailedWithReason', { reason }));
       throw err;
     }
-  }, []);
+  }, [toast, t]);
 
-  /**
-   * Save manually entered credentials (for app-password providers).
-   */
-  const connectWithPassword = useCallback(async (provider, email, password) => {
-    setConnecting(provider);
+  // Connect an IMAP / app-password mailbox. Credentials go straight to the
+  // backend, which encrypts them at rest.
+  const connectImap = useCallback(async ({ connectorType, displayName, email, password, host, port }) => {
+    setBusy(connectorType);
     try {
-      await saveAccount({
-        provider,
-        email,
-        tokens: {
-          auth_type: 'password',
-          app_password: password,
-        },
+      await connectImapAccount({
+        connector_type: connectorType,
+        display_name: displayName || null,
+        email, password,
+        host: host || null,
+        port: port || 993,
       });
       await refresh();
     } catch (err) {
-      console.error(`Failed to connect ${provider}:`, err);
-      throw err;
+      const reason = err?.response?.data?.detail || err?.message || '';
+      throw new Error(reason || t('email.connectFailed'));
     } finally {
-      setConnecting(null);
+      setBusy(null);
+    }
+  }, [refresh, t]);
+
+  const remove = useCallback(async (accountId) => {
+    await deleteConnectorAccount(accountId);
+    await refresh();
+  }, [refresh]);
+
+  const sync = useCallback(async (accountId) => {
+    setBusy(accountId);
+    try {
+      await syncConnectorAccount(accountId);
+      await refresh();
+    } catch (err) {
+      console.error('Sync failed:', err);
+    } finally {
+      setBusy(null);
     }
   }, [refresh]);
 
-  /**
-   * Disconnect an email account and delete all stored tokens.
-   */
-  const disconnect = useCallback(async (accountId) => {
-    try {
-      await disconnectAccount(accountId);
-      await refresh();
-    } catch (err) {
-      console.error('Failed to disconnect account:', err);
-      throw err;
-    }
+  const rename = useCallback(async (accountId, displayName) => {
+    await patchConnectorAccount(accountId, { display_name: displayName });
+    await refresh();
   }, [refresh]);
 
   return {
     accounts,
+    connectors,
+    encryptionReady,
     loading,
-    connecting,
-    connect,
-    connectWithPassword,
-    disconnect,
+    busy,
+    startOAuth,
+    connectImap,
+    remove,
+    sync,
+    rename,
     refresh,
-    setConnecting,
   };
 }

@@ -561,7 +561,21 @@
     "to": "An",
     "attachments": "Anhänge",
     "icloud_app_password_hint": "iCloud erfordert ein App-spezifisches Passwort. Erstelle eines unter Apple ID → Anmelden & Sicherheit → App-spezifische Passwörter.",
-    "yahoo_app_password_hint": "Yahoo erfordert ein App-Passwort. Erstelle eines unter Yahoo Kontoeinstellungen → Sicherheit → App-Passwort generieren."
+    "yahoo_app_password_hint": "Yahoo erfordert ein App-Passwort. Erstelle eines unter Yahoo Kontoeinstellungen → Sicherheit → App-Passwort generieren.",
+    "statusActive": "Aktiv",
+    "statusTokenExpired": "Neu verbinden",
+    "statusError": "Fehler",
+    "neverSynced": "Noch nicht synchronisiert",
+    "sync": "Sync",
+    "noAccounts": "Noch keine Postfächer verbunden.",
+    "unavailable": "E-Mail-Verbindung ist derzeit nicht verfügbar.",
+    "addAccount": "Postfach hinzufügen",
+    "chooseProvider": "Anbieter wählen",
+    "comingSoon": "Demnächst",
+    "displayName": "Anzeigename (optional)",
+    "displayNamePlaceholder": "z. B. Arbeit, Privat",
+    "imapServer": "IMAP-Server",
+    "port": "Port"
   },
   "splash": {
     "tagline1": "Dein Postfach.",
