@@ -668,7 +668,9 @@ Schreibe NUR den vereinfachten Text, keine Einleitung wie 'Hier ist die Vereinfa
 Weise am Ende in einem kurzen Satz darauf hin, dass dies eine KI-gestuetzte Erklaerung ist und keine aerztliche Diagnose oder Beratung ersetzt."""
 
 BEFUND_TRANSLATE_PROMPT = """\u00dcbersetze den folgenden vereinfachten medizinischen Text vollst\u00e4ndig in {target_language_name}.
-Behalte die Struktur und Formatierung bei. \u00dcbersetze ALLES, auch Erkl\u00e4rungen in Klammern.
+Behalte die Struktur und Formatierung bei. \u00dcbersetze ALLES, auch Erkl\u00e4rungen in Klammern
+sowie ALLE \u00dcberschriften und Abschnittstitel (z. B. "Untersuchungsergebnisse:", "Zusammenfassung:").
+Lasse kein einziges Wort in der Ausgangssprache stehen.
 
 Text:
 ---
