@@ -11,7 +11,8 @@
     "support": "Помоћ и подршка",
     "menu": "Мени",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Пријава",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Учитавање...",
     "appName": "KamalDoc",
-    "appDesc": "Систем за управљање документима"
+    "appDesc": "Систем за управљање документима",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Преглед трошкова",
@@ -370,7 +372,8 @@
     "translateButton": "Преведи",
     "translating": "Превођење…",
     "previousDocs": "Претходни налази",
-    "noDocs": "Нема учитаних налаза"
+    "noDocs": "Нема учитаних налаза",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Осигурање",
@@ -438,7 +441,9 @@
     "befund50": "Макс. 50x Медицински помоћник / месец",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Basic план активан"
+    "basicActive": "Basic план активан",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Лимит достигнут",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

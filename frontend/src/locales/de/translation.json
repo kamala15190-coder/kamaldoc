@@ -11,7 +11,8 @@
     "email": "E-Mail verbinden",
     "menu": "Menü",
     "logout": "Abmelden",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Rechtliches"
   },
   "auth": {
     "login": "Anmelden",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Lädt...",
     "appName": "KamalDoc",
-    "appDesc": "Dokumenten-Management-System"
+    "appDesc": "Dokumenten-Management-System",
+    "aiGenerated": "KI-generiert"
   },
   "expenses": {
     "title": "Ausgaben-Dashboard",
@@ -370,7 +372,8 @@
     "translateButton": "Übersetzen",
     "translating": "Wird übersetzt…",
     "previousDocs": "Bisherige Befunde",
-    "noDocs": "Noch keine Befunde hochgeladen"
+    "noDocs": "Noch keine Befunde hochgeladen",
+    "medicalDisclaimer": "Hinweis: kdoc ersetzt keine ärztliche Beratung. KI-Analysen können Fehler enthalten – konsultiere bei medizinischen Entscheidungen immer eine Ärztin oder einen Arzt."
   },
   "expenseCategories": {
     "versicherung": "Versicherung",
@@ -438,7 +441,9 @@
     "basicActive": "Basic Plan aktiv",
     "proActive": "Pro Plan aktiv",
     "freeMonthly": "Max. 10 Dokumente/Monat",
-    "freeResets": "Kontingent wird monatlich zurückgesetzt"
+    "freeResets": "Kontingent wird monatlich zurückgesetzt",
+    "featureLockedIos": "Diese Funktion ist in deinem aktuellen Plan nicht enthalten.",
+    "withdrawalConsent": "Ich stimme ausdrücklich zu, dass die Leistung sofort beginnt, und bestätige, dass mein Widerrufsrecht mit Beginn der Ausführung erlischt."
   },
   "upgradeModal": {
     "limitReached": "Plan-Limit erreicht. Bitte upgraden.",
@@ -606,7 +611,8 @@
     "suggest3": "Welche Rechnungen sind noch offen?",
     "limitReached": "Doka-Limit erreicht. Bitte upgraden.",
     "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
-    "retry": "Erneut senden"
+    "retry": "Erneut senden",
+    "permanentDisclaimer": "Von Doka erstellte Texte sind KI-generiert und ersetzen keine rechtliche, steuerliche oder medizinische Beratung. Bitte vor Verwendung prüfen."
   },
   "phishing": {
     "title": "Phishing-Prüfung",

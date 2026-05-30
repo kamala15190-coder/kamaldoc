@@ -11,7 +11,8 @@
     "support": "Aiuto e supporto",
     "menu": "Menu",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Accedi",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Caricamento...",
     "appName": "KamalDoc",
-    "appDesc": "Sistema di gestione documentale"
+    "appDesc": "Sistema di gestione documentale",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Pannello spese",
@@ -370,7 +372,8 @@
     "translateButton": "Traduci",
     "translating": "Traduzione…",
     "previousDocs": "Referti precedenti",
-    "noDocs": "Nessun referto caricato"
+    "noDocs": "Nessun referto caricato",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Assicurazione",
@@ -438,7 +441,9 @@
     "befund50": "Max. 50x Assistente medico / mese",
     "freeMonthly": "Max. 10 documenti/mese",
     "freeResets": "La quota viene reimpostata mensilmente",
-    "basicActive": "Piano Basic attivo"
+    "basicActive": "Piano Basic attivo",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Limite raggiunto",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

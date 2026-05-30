@@ -5,7 +5,7 @@ import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import {
   Upload, LayoutDashboard, Archive, Menu, X, User, LogOut, DollarSign,
   MessageCircle, Stethoscope, Zap, Rocket, Crown, Headphones, Shield, Lock,
-  Plus, ChevronRight, Settings, Download, Mail
+  Plus, ChevronRight, Settings, Download, Mail, Scale
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from './hooks/useAuth.jsx';
@@ -33,6 +33,8 @@ const DatenschutzPage = lazy(() => import('./pages/DatenschutzPage'));
 const NutzungsbedingungenPage = lazy(() => import('./pages/NutzungsbedingungenPage'));
 const AGBPage = lazy(() => import('./pages/AGBPage'));
 const ImpressumPage = lazy(() => import('./pages/ImpressumPage'));
+const WiderrufPage = lazy(() => import('./pages/WiderrufPage'));
+const RechtlichesPage = lazy(() => import('./pages/RechtlichesPage'));
 const SupportPage = lazy(() => import('./pages/SupportPage'));
 const AdminPage = lazy(() => import('./pages/AdminPage'));
 const SektorDetailPage = lazy(() => import('./pages/SektorDetailPage'));
@@ -67,6 +69,7 @@ const MORE_ITEMS = [
   { path: '/ausgaben', labelKey: 'nav.expenses', icon: DollarSign },
   { path: '/email', labelKey: 'nav.email', icon: Mail },
   { path: '/support', labelKey: 'nav.support', icon: Headphones },
+  { path: '/rechtliches', labelKey: 'nav.legal', icon: Scale },
 ];
 
 function useIsAdmin() {
@@ -684,7 +687,7 @@ function PWAInstallBanner() {
 
 function AppContent() {
   const location = useLocation();
-  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/agb', '/impressum', '/forgot-password', '/reset-password'].includes(location.pathname);
+  const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/agb', '/impressum', '/widerruf', '/forgot-password', '/reset-password'].includes(location.pathname);
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -703,6 +706,8 @@ function AppContent() {
           <Route path="/nutzungsbedingungen" element={<NutzungsbedingungenPage />} />
           <Route path="/agb" element={<AGBPage />} />
           <Route path="/impressum" element={<ImpressumPage />} />
+          <Route path="/widerruf" element={<WiderrufPage />} />
+          <Route path="/rechtliches" element={<PrivateRoute><RechtlichesPage /></PrivateRoute>} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/" element={<PrivateRoute><Dashboard /></PrivateRoute>} />

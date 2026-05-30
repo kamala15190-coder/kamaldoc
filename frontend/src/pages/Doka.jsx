@@ -309,11 +309,10 @@ export default function Doka() {
           }} />
         </span>
       </button>
-      {lawyerMode && (
-        <p style={{ margin: '-6px 0 12px', fontSize: 11.5, color: 'var(--text-muted)' }}>
-          {t('doka.disclaimer', { defaultValue: 'Hinweis: Dies ist keine Rechtsberatung.' })}
-        </p>
-      )}
+      {/* Dauerhafter KI-/Rechtshinweis (Apple 5.x) — immer sichtbar, nicht nur im Anwalt-Modus */}
+      <p style={{ margin: '-6px 0 12px', fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+        {t('doka.permanentDisclaimer', { defaultValue: 'Von Doka erstellte Texte sind KI-generiert und ersetzen keine rechtliche, steuerliche oder medizinische Beratung. Bitte vor Verwendung prüfen.' })}
+      </p>
 
       {/* Conversation list (toggle) */}
       {showList && (

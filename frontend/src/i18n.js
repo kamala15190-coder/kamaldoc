@@ -108,6 +108,14 @@ const resources = {
   he: { translation: he },
 };
 
+// Rechtstexte (separater `legal`-Namespace, eine legal.json je Locale). Per glob
+// geladen, damit alle Sprachen automatisch erfasst werden (auch neu generierte).
+const legalModules = import.meta.glob('./locales/*/legal.json', { eager: true });
+for (const [filePath, mod] of Object.entries(legalModules)) {
+  const code = filePath.split('/')[2]; // ./locales/<code>/legal.json
+  if (resources[code]) resources[code].legal = mod.default || mod;
+}
+
 const SUPPORTED_LANGS = Object.keys(resources);
 
 i18n
@@ -116,6 +124,8 @@ i18n
   .init({
     resources,
     fallbackLng: 'en',
+    ns: ['translation', 'legal'],
+    defaultNS: 'translation',
     interpolation: {
       escapeValue: false,
     },

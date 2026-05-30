@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(agent-browser console *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:5173/datenschutz)",
+      "Bash(agent-browser --session clean1 open \"http://localhost:5173/datenschutz\" --init-script /tmp/no-sw.js)",
+      "Bash(agent-browser --session clean1 eval \"JSON.stringify\\({rootChildren: document.getElementById\\('root'\\).childElementCount, h1: document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null, errs: window.__ERRORS||[]}\\)\")",
+      "Bash(curl -s \"http://localhost:5173/src/i18n.js\")",
+      "Bash(agent-browser --session clean3 open \"http://localhost:5173/datenschutz\" --init-script /tmp/no-sw.js)",
+      "Bash(agent-browser --session clean3 eval \"JSON.stringify\\({rootChildren: document.getElementById\\('root'\\).childElementCount, h1: document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null, binding: !!document.body.innerText.match\\(/verbindlich|binding/i\\), errs: window.__ERRORS||[]}\\)\")",
+      "Bash(agent-browser --session clean3 eval \"JSON.stringify\\({rootChildren: document.getElementById\\('root'\\).childElementCount, h1: document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null, errs: window.__ERRORS||[]}\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:5173/node_modules/.vite/deps/i18next.js\")",
+      "Bash(agent-browser --session verifyOK open \"http://localhost:5173/datenschutz\" --init-script /tmp/no-sw.js)",
+      "Bash(agent-browser --session verifyOK eval \"JSON.stringify\\({rootChildren: document.getElementById\\('root'\\).childElementCount, h1: document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null, bindingShown: /verbindlich|binding/i.test\\(document.body.innerText\\), errs: window.__ERRORS||[]}\\)\")",
+      "Bash(agent-browser --session prev1 open \"http://localhost:4173/datenschutz\" --init-script /tmp/no-sw.js)",
+      "Bash(agent-browser --session prev1 eval \"JSON.stringify\\({rootChildren: document.getElementById\\('root'\\).childElementCount, h1: document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null, bindingShown: /verbindlich/i.test\\(document.body.innerText\\), errs: window.__ERRORS||[]}\\)\")",
+      "Bash(agent-browser --session prev1 screenshot /tmp/legal-de2.png)",
+      "Bash(agent-browser --session prev1 eval \"localStorage.setItem\\('kamaldoc_language','en'\\); location.reload\\(\\);\")",
+      "Bash(agent-browser --session prev1 eval \"document.querySelector\\('h1'\\)?document.querySelector\\('h1'\\).innerText:null\")",
+      "Bash(agent-browser --session prev1 screenshot /tmp/legal-en2.png)",
+      "Bash(agent-browser --session prev1 eval \"localStorage.setItem\\('kamaldoc_language','fr'\\); location.reload\\(\\);\")",
+      "Bash(git add *)",
+      "Bash(git commit -q -m ' *)"
+    ]
+  }
+}

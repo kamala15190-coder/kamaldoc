@@ -11,7 +11,8 @@
     "support": "도움말 및 지원",
     "menu": "메뉴",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "로그인",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "로딩 중...",
     "appName": "KamalDoc",
-    "appDesc": "문서 관리 시스템"
+    "appDesc": "문서 관리 시스템",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "지출 패널",
@@ -370,7 +372,8 @@
     "translateButton": "번역",
     "translating": "번역 중…",
     "previousDocs": "이전 진단서",
-    "noDocs": "업로드된 진단서 없음"
+    "noDocs": "업로드된 진단서 없음",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "보험",
@@ -438,7 +441,9 @@
     "befund50": "월 최대 50회 의료 어시스턴트",
     "freeMonthly": "월 최대 10개 문서",
     "freeResets": "할당량이 매월 초기화됩니다",
-    "basicActive": "Basic 플랜 활성"
+    "basicActive": "Basic 플랜 활성",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "한도 도달",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

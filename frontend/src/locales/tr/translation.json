@@ -11,7 +11,8 @@
     "support": "Yardım ve Destek",
     "menu": "Menü",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Giriş",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Yükleniyor...",
     "appName": "KamalDoc",
-    "appDesc": "Belge Yönetim Sistemi"
+    "appDesc": "Belge Yönetim Sistemi",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Gider Paneli",
@@ -370,7 +372,8 @@
     "translateButton": "Çevir",
     "translating": "Çevriliyor…",
     "previousDocs": "Önceki raporlar",
-    "noDocs": "Henüz yüklenen rapor yok"
+    "noDocs": "Henüz yüklenen rapor yok",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Sigorta",
@@ -438,7 +441,9 @@
     "befund50": "Maks. 50x Tıbbi asistan / ay",
     "freeMonthly": "Maks. 10 belge/ay",
     "freeResets": "Kota aylik olarak sifirlanir",
-    "basicActive": "Basic Plan aktif"
+    "basicActive": "Basic Plan aktif",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Limite ulaşıldı",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

@@ -11,7 +11,8 @@
     "support": "Tulong at Suporta",
     "menu": "Menu",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Mag-login",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Naglo-load...",
     "appName": "KamalDoc",
-    "appDesc": "Sistema ng pamamahala ng dokumento"
+    "appDesc": "Sistema ng pamamahala ng dokumento",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Panel ng gastusin",
@@ -370,7 +372,8 @@
     "translateButton": "Isalin",
     "translating": "Nagsasalin…",
     "previousDocs": "Mga nakaraang ulat",
-    "noDocs": "Walang mga ulat"
+    "noDocs": "Walang mga ulat",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Seguro",
@@ -438,7 +441,9 @@
     "befund50": "Max. 50x Katulong medikal / buwan",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Basic Plan aktibo"
+    "basicActive": "Basic Plan aktibo",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Naabot na ang limitasyon",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

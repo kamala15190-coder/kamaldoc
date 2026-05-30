@@ -11,7 +11,8 @@
     "support": "ヘルプとサポート",
     "menu": "メニュー",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "ログイン",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "読み込み中...",
     "appName": "KamalDoc",
-    "appDesc": "文書管理システム"
+    "appDesc": "文書管理システム",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "支出パネル",
@@ -370,7 +372,8 @@
     "translateButton": "翻訳",
     "translating": "翻訳中…",
     "previousDocs": "過去の診断書",
-    "noDocs": "アップロードされた診断書はありません"
+    "noDocs": "アップロードされた診断書はありません",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "保険",
@@ -438,7 +441,9 @@
     "befund50": "月50回までの医療アシスタント",
     "freeMonthly": "最大10ドキュメント/月",
     "freeResets": "クォータは毎月リセットされます",
-    "basicActive": "Basicプラン有効"
+    "basicActive": "Basicプラン有効",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "上限に達しました",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

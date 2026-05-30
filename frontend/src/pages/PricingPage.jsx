@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
@@ -63,6 +63,7 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [withdrawalConsent, setWithdrawalConsent] = useState(false);
 
   // Apple 3.1.1: keine Kauf-/Abo-Seite in der iOS-App.
   if (!purchasesAllowed()) return <Navigate to="/" replace />;
@@ -86,6 +87,12 @@ export default function PricingPage() {
         setSuccess(t('pricing.downgradeSuccess'));
         refresh();
       } else {
+        // EU-Widerrufsrecht: ausdrückliche Zustimmung zur Sofortleistung erforderlich
+        if (!withdrawalConsent) {
+          setError(t('pricing.withdrawalRequired', 'Bitte stimme dem Hinweis zum Widerrufsrecht zu, um fortzufahren.'));
+          setLoadingPlan(null);
+          return;
+        }
         const { checkout_url } = await createCheckout(planId);
         if (checkout_url) {
           if (Capacitor.isNativePlatform()) {
@@ -218,7 +225,16 @@ export default function PricingPage() {
         })}
       </div>
 
-      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 24 }}>
+      {/* EU-Widerrufsrecht: Verzicht-Zustimmung für digitale Sofortleistung */}
+      <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 20, padding: '12px 14px', borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', cursor: 'pointer' }}>
+        <input type="checkbox" checked={withdrawalConsent} onChange={(e) => setWithdrawalConsent(e.target.checked)} style={{ marginTop: 2, flexShrink: 0 }} />
+        <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          {t('pricing.withdrawalConsent')}{' '}
+          <Link to="/widerruf" style={{ color: 'var(--accent-solid)', textDecoration: 'none' }}>{t('legal:links.widerruf', { defaultValue: 'Widerrufsbelehrung' })}</Link>
+        </span>
+      </label>
+
+      <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 16 }}>
         {t('pricing.cancelAnytime')}
       </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

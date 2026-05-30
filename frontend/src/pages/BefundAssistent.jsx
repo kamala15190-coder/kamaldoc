@@ -156,6 +156,14 @@ export default function BefundAssistent() {
         </div>
       </div>
 
+      {/* Medizinischer Disclaimer — Apple Guideline 5.2.5 (Health). Dauerhaft sichtbar. */}
+      <div style={{ display: 'flex', gap: 8, padding: '12px 14px', marginBottom: 14, borderRadius: 10, background: 'var(--warning-soft)', border: '1px solid rgba(245,158,11,0.2)' }} className="animate-fade-in">
+        <AlertCircle style={{ width: 16, height: 16, color: 'var(--warning-text)', flexShrink: 0, marginTop: 1 }} />
+        <p style={{ fontSize: 12, color: 'var(--warning-text)', lineHeight: 1.5, margin: 0 }}>
+          {t('befund.medicalDisclaimer', 'Hinweis: kdoc ersetzt keine ärztliche Beratung. KI-Analysen können Fehler enthalten – konsultiere bei medizinischen Entscheidungen immer eine Ärztin oder einen Arzt.')}
+        </p>
+      </div>
+
       {/* Upload */}
       <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('befund.uploadTitle')}</h2>
@@ -215,6 +223,7 @@ export default function BefundAssistent() {
                       <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
                     </button>
                   </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>✨ {t('common.aiGenerated', 'KI-generiert')}</div>
                   <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{vereinfacht}</div>
                 </div>
               )}
@@ -248,6 +257,7 @@ export default function BefundAssistent() {
                         <Share2 style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
                       </button>
                     </div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8 }}>✨ {t('common.aiGenerated', 'KI-generiert')}</div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap', paddingRight: 50 }}>{translated}</div>
                   </div>
                 )}

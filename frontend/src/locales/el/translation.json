@@ -11,7 +11,8 @@
     "support": "Βοήθεια & Υποστήριξη",
     "menu": "Μενού",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Σύνδεση",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Φόρτωση...",
     "appName": "KamalDoc",
-    "appDesc": "Σύστημα διαχείρισης εγγράφων"
+    "appDesc": "Σύστημα διαχείρισης εγγράφων",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Πίνακας εξόδων",
@@ -370,7 +372,8 @@
     "translateButton": "Μετάφραση",
     "translating": "Μετάφραση…",
     "previousDocs": "Προηγούμενα ευρήματα",
-    "noDocs": "Δεν υπάρχουν ευρήματα"
+    "noDocs": "Δεν υπάρχουν ευρήματα",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Ασφάλεια",
@@ -438,7 +441,9 @@
     "befund50": "Μέγ. 50x Ιατρικός βοηθός / μήνα",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Πλάνο Basic ενεργό"
+    "basicActive": "Πλάνο Basic ενεργό",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Όριο επιτεύχθηκε",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

@@ -11,7 +11,8 @@
     "support": "المساعدة والدعم",
     "menu": "القائمة",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "جارٍ التحميل...",
     "appName": "KamalDoc",
-    "appDesc": "نظام إدارة المستندات"
+    "appDesc": "نظام إدارة المستندات",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "لوحة المصروفات",
@@ -370,7 +372,8 @@
     "translateButton": "ترجمة",
     "translating": "جاري الترجمة…",
     "previousDocs": "تقارير سابقة",
-    "noDocs": "لم يتم رفع تقارير بعد"
+    "noDocs": "لم يتم رفع تقارير بعد",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "تأمين",
@@ -438,7 +441,9 @@
     "befund50": "بحد أقصى 50x مساعد طبي / شهر",
     "freeMonthly": "10 مستندات/شهر كحد أقصى",
     "freeResets": "تتم إعادة تعيين الحصة شهريا",
-    "basicActive": "خطة Basic نشطة"
+    "basicActive": "خطة Basic نشطة",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "تم الوصول للحد",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

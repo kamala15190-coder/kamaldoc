@@ -11,7 +11,8 @@
     "support": "Palīdzība un atbalsts",
     "menu": "Izvēlne",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Pieslēgties",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Ielādē...",
     "appName": "KamalDoc",
-    "appDesc": "Dokumentu pārvaldības sistēma"
+    "appDesc": "Dokumentu pārvaldības sistēma",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Izdevumu pārskats",
@@ -370,7 +372,8 @@
     "translateButton": "Tulkot",
     "translating": "Tulko...",
     "previousDocs": "Iepriekšējie dokumenti",
-    "noDocs": "Vēl nav dokumentu"
+    "noDocs": "Vēl nav dokumentu",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Apdrošināšana",
@@ -438,7 +441,9 @@
     "befund50": "Maks. 50x Medicīniskais asistents / mēnesī",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Basic plāns aktīvs"
+    "basicActive": "Basic plāns aktīvs",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Limits sasniegts",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

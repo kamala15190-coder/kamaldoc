@@ -11,7 +11,8 @@
     "support": "सहायता और समर्थन",
     "menu": "मेनू",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "लॉग इन",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "लोड हो रहा है...",
     "appName": "KamalDoc",
-    "appDesc": "दस्तावेज़ प्रबंधन प्रणाली"
+    "appDesc": "दस्तावेज़ प्रबंधन प्रणाली",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "व्यय पैनल",
@@ -370,7 +372,8 @@
     "translateButton": "अनुवाद",
     "translating": "अनुवाद हो रहा…",
     "previousDocs": "पिछली रिपोर्ट",
-    "noDocs": "कोई रिपोर्ट नहीं"
+    "noDocs": "कोई रिपोर्ट नहीं",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "बीमा",
@@ -438,7 +441,9 @@
     "befund50": "अधिकतम 50x चिकित्सा सहायक / माह",
     "freeMonthly": "अधिकतम 10 दस्तावेज़/माह",
     "freeResets": "कोटा मासिक रूप से रीसेट होता है",
-    "basicActive": "Basic प्लान सक्रिय"
+    "basicActive": "Basic प्लान सक्रिय",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "सीमा पूरी हुई",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

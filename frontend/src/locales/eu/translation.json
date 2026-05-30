@@ -11,7 +11,8 @@
     "support": "Laguntza",
     "menu": "Menua",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "Saioa hasi",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "Kargatzen...",
     "appName": "KamalDoc",
-    "appDesc": "Dokumentuen Kudeaketa Sistema"
+    "appDesc": "Dokumentuen Kudeaketa Sistema",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "Gastuen panela",
@@ -370,7 +372,8 @@
     "translateButton": "Itzuli",
     "translating": "Itzultzen…",
     "previousDocs": "Aurreko txostenak",
-    "noDocs": "Txostenik ez"
+    "noDocs": "Txostenik ez",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "Asegurua",
@@ -438,7 +441,9 @@
     "befund50": "Gehienez 50x Mediku laguntzaile / hilabete",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Basic plana aktiboa"
+    "basicActive": "Basic plana aktiboa",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "Muga iritsi da",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",

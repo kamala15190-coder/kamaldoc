@@ -11,7 +11,8 @@
     "support": "დახმარება და მხარდაჭერა",
     "menu": "მენიუ",
     "email": "Connect Email",
-    "doka": "Doka"
+    "doka": "Doka",
+    "legal": "Legal"
   },
   "auth": {
     "login": "შესვლა",
@@ -315,7 +316,8 @@
   "common": {
     "loading": "იტვირთება...",
     "appName": "KamalDoc",
-    "appDesc": "დოკუმენტების მართვის სისტემა"
+    "appDesc": "დოკუმენტების მართვის სისტემა",
+    "aiGenerated": "AI-generated"
   },
   "expenses": {
     "title": "ხარჯების პანელი",
@@ -370,7 +372,8 @@
     "translateButton": "თარგმანი",
     "translating": "თარგმნა...",
     "previousDocs": "წინა დოკუმენტები",
-    "noDocs": "ჯერ არ არის დოკუმენტები"
+    "noDocs": "ჯერ არ არის დოკუმენტები",
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
   },
   "expenseCategories": {
     "versicherung": "დაზღვევა",
@@ -438,7 +441,9 @@
     "befund50": "მაქს. 50x სამედიცინო ასისტენტი / თვე",
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
-    "basicActive": "Basic გეგმა აქტიურია"
+    "basicActive": "Basic გეგმა აქტიურია",
+    "featureLockedIos": "This feature is not included in your current plan.",
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
   },
   "upgradeModal": {
     "limitReached": "ლიმიტი მიღწეულია",
@@ -606,7 +611,8 @@
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
   },
   "phishing": {
     "title": "Phishing check",
