@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MessageCircle, Send, Plus, Paperclip, Scale, Trash2, Loader2,
   Sparkles, X, ChevronLeft, FileText, Search, Mail, ShieldAlert, ChevronRight,
+  AlertTriangle, RotateCw,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -128,6 +129,7 @@ export default function Doka() {
   const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
   const abortRef = useRef(null);
+  const lastSentRef = useRef(null); // { text, file } — for the error-retry action
 
   useEffect(() => {
     getDokaConversations().then(setConversations).catch(() => {});
@@ -154,11 +156,14 @@ export default function Doka() {
     setError(null);
   };
 
-  const handleSend = async () => {
-    const text = input.trim();
-    if ((!text && !file) || streaming) return;
+  const handleSend = async (overrideText, overrideFile) => {
+    const isRetry = overrideText !== undefined;
+    const text = (isRetry ? overrideText : input).trim();
+    const sendFile = isRetry ? overrideFile : file;
+    if ((!text && !sendFile) || streaming) return;
 
     setError(null);
+    lastSentRef.current = { text, file: sendFile };
     let convId = activeId;
     try {
       if (!convId) {
@@ -172,14 +177,13 @@ export default function Doka() {
       return;
     }
 
-    const sentFile = file;
+    const sentFile = sendFile;
     const userMsg = {
       role: 'user', content: text,
       attachments: sentFile ? [{ filename: sentFile.name }] : null,
     };
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
-    setFile(null);
+    if (!isRetry) { setInput(''); setFile(null); }
     setStreaming(true);
     setStreamContent('');
     setStreamTools([]);
@@ -211,7 +215,8 @@ export default function Doka() {
             setStreamContent('');
             setStreamTools([]);
           } else if (ev.type === 'error') {
-            setError(ev.message || t('doka.errorGeneric', { defaultValue: 'Fehler.' }));
+            // Never surface raw backend error strings (e.g. Python tracebacks) to the user.
+            setError(t('doka.errorGeneric', { defaultValue: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.' }));
           }
         },
       });
@@ -396,10 +401,26 @@ export default function Doka() {
         )}
 
         {error && (
-          <div style={{
-            margin: '10px 0', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13,
+          <div role="alert" style={{
+            margin: '10px 0', padding: '12px 14px', borderRadius: 'var(--radius-md)', fontSize: 13,
             background: 'var(--danger-bg)', border: '1px solid var(--danger-border)', color: 'var(--danger-text)',
-          }}>{error}</div>
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <AlertTriangle style={{ width: 17, height: 17, flexShrink: 0 }} />
+            <span style={{ flex: 1, lineHeight: 1.4 }}>{error}</span>
+            {lastSentRef.current && !streaming && (
+              <button
+                onClick={() => { const l = lastSentRef.current; setError(null); if (l) handleSend(l.text, l.file); }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0, cursor: 'pointer',
+                  padding: '6px 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                  background: 'var(--bg-card)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)',
+                }}>
+                <RotateCw style={{ width: 13, height: 13 }} />
+                {t('doka.retry', { defaultValue: 'Erneut senden' })}
+              </button>
+            )}
+          </div>
         )}
       </div>
 

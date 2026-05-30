@@ -605,7 +605,8 @@
     "suggest2": "Fasse mein letztes Behördenschreiben zusammen.",
     "suggest3": "Welche Rechnungen sind noch offen?",
     "limitReached": "Doka-Limit erreicht. Bitte upgraden.",
-    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen."
+    "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+    "retry": "Erneut senden"
   },
   "phishing": {
     "title": "Phishing-Prüfung",

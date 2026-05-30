@@ -605,7 +605,8 @@
     "suggest2": "Summarize my latest authority letter.",
     "suggest3": "Which invoices are still unpaid?",
     "limitReached": "Doka limit reached. Please upgrade.",
-    "errorGeneric": "Something went wrong. Please try again."
+    "errorGeneric": "Something went wrong. Please try again.",
+    "retry": "Try again"
   },
   "phishing": {
     "title": "Phishing check",

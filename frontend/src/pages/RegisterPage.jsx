@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth.jsx'
 import { API_BASE_URL } from '../config'
 import { Mail, Lock, AlertCircle, Loader2, CheckCircle, Globe } from 'lucide-react'
 import { LANGUAGES } from '../languages'
+import Wordmark from '../components/Wordmark'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -126,7 +127,7 @@ export default function RegisterPage() {
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
       <div style={{ width: '100%', maxWidth: 400 }}>
         <div style={{ textAlign: 'center', marginBottom: 28 }} className="animate-fade-in">
-          <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 40, objectFit: 'contain', margin: '0 auto 8px' }} />
+          <Wordmark size={44} style={{ marginBottom: 8 }} />
           <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>{t('common.appDesc')}</p>
         </div>
 

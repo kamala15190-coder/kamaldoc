@@ -6,6 +6,7 @@ import { supabase } from '../supabaseClient'
 import { useAuth } from '../hooks/useAuth.jsx'
 import { API_BASE_URL } from '../config'
 import { Mail, Lock, AlertCircle, Loader2 } from 'lucide-react'
+import Wordmark from '../components/Wordmark'
 
 const GOOGLE_CLIENT_ID = '246007067980-44qma6u29hu8eiimp7f1n5akqo3k0j3p.apps.googleusercontent.com'
 
@@ -113,7 +114,7 @@ export default function LoginPage() {
       <div style={{ width: '100%', maxWidth: 400 }} className="login-card-enter">
         {/* Logo */}
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 40, objectFit: 'contain', margin: '0 auto 8px' }} />
+          <Wordmark size={44} style={{ marginBottom: 8 }} />
           <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('common.appDesc')}</p>
         </div>
 

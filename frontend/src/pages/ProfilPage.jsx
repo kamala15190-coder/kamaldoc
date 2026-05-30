@@ -306,7 +306,7 @@ export default function ProfilPage() {
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>{t('profile.themeDesc')}</p>
         <div
-          onClick={toggleTheme}
+          onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 16px', borderRadius: 12, cursor: 'pointer',

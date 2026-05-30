@@ -34,7 +34,7 @@ export default function DokumenteListe() {
     bg: isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
     border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
     text: isDark ? 'rgba(255,255,255,0.85)' : '#111827',
-    textMuted: isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.35)',
+    textMuted: isDark ? '#8E887C' : 'rgba(0,0,0,0.45)',
     textHint: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)',
     shadow: isDark ? 'none' : '0 1px 8px rgba(0,0,0,0.05)',
     divider: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
