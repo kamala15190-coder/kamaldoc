@@ -45,6 +45,8 @@ import { checkAdmin, getTicketUnreadCount } from './api';
 import { useFeatureFlags } from './hooks/useFeatureFlags.jsx';
 import IntroGuide from './components/IntroGuide';
 import Splash from './components/Splash';
+import Wordmark from './components/Wordmark';
+import { tapHaptic } from './utils/haptics';
 import ErrorBoundary from './components/ErrorBoundary';
 import Spinner from './components/Spinner';
 import { ConfirmDialogProvider } from './components/ConfirmDialog';
@@ -115,9 +117,13 @@ function BottomTabBar() {
       paddingBottom: 'var(--safe-area-bottom)',
     }}>
       <div style={{
-        display: 'flex',
+        /* 5 equal columns + centered items => the middle cell's centre is exactly
+           the container centre, so the FAB is mathematically centred regardless of
+           the (i18n-variable) label widths. `space-around` drifted ~10px right. */
+        display: 'grid',
+        gridTemplateColumns: 'repeat(5, 1fr)',
         alignItems: 'center',
-        justifyContent: 'space-around',
+        justifyItems: 'center',
         height: 'var(--tab-bar-height)',
         maxWidth: 500,
         margin: '0 auto',
@@ -145,7 +151,7 @@ function BottomTabBar() {
           }
 
           return (
-            <Link key={path} to={path} style={{
+            <Link key={path} to={path} onClick={() => tapHaptic()} style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center',
               gap: 3, textDecoration: 'none',
               padding: '6px 12px',
@@ -236,7 +242,7 @@ function TopHeader() {
           height: 56, maxWidth: 500, margin: '0 auto', position: 'relative',
         }}>
           <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <img src="/KDoc_Appheader.png" alt="KamalDoc" style={{ height: 30, objectFit: 'contain' }} />
+            <Wordmark size={26} />
           </Link>
 
           {!subLoading && (

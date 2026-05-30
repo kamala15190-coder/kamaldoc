@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import {
   MessageCircle, Send, Plus, Paperclip, Scale, Trash2, Loader2,
   Sparkles, X, ChevronLeft, FileText, Search, Mail, ShieldAlert, ChevronRight,
+  AlertTriangle, RotateCw,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   createDokaConversation, getDokaConversations, getDokaConversation,
   deleteDokaConversation, sendDokaMessage,
 } from '../api';
+import { tapHaptic } from '../utils/haptics';
 
 // --- Minimal, safe markdown → React renderer ---------------------------------
 // Doka answers in markdown (headings, lists, bold, inline code, links). We keep
@@ -124,10 +126,12 @@ export default function Doka() {
   const [streamTools, setStreamTools] = useState([]);
   const [showList, setShowList] = useState(false);
   const [error, setError] = useState(null);
+  const [bloom, setBloom] = useState(false); // one-shot avatar bloom when an answer lands
 
   const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
   const abortRef = useRef(null);
+  const lastSentRef = useRef(null); // { text, file } — for the error-retry action
 
   useEffect(() => {
     getDokaConversations().then(setConversations).catch(() => {});
@@ -154,11 +158,15 @@ export default function Doka() {
     setError(null);
   };
 
-  const handleSend = async () => {
-    const text = input.trim();
-    if ((!text && !file) || streaming) return;
+  const handleSend = async (overrideText, overrideFile) => {
+    const isRetry = overrideText !== undefined;
+    const text = (isRetry ? overrideText : input).trim();
+    const sendFile = isRetry ? overrideFile : file;
+    if ((!text && !sendFile) || streaming) return;
 
+    tapHaptic();
     setError(null);
+    lastSentRef.current = { text, file: sendFile };
     let convId = activeId;
     try {
       if (!convId) {
@@ -172,14 +180,13 @@ export default function Doka() {
       return;
     }
 
-    const sentFile = file;
+    const sentFile = sendFile;
     const userMsg = {
       role: 'user', content: text,
       attachments: sentFile ? [{ filename: sentFile.name }] : null,
     };
     setMessages((prev) => [...prev, userMsg]);
-    setInput('');
-    setFile(null);
+    if (!isRetry) { setInput(''); setFile(null); }
     setStreaming(true);
     setStreamContent('');
     setStreamTools([]);
@@ -210,8 +217,11 @@ export default function Doka() {
             }]);
             setStreamContent('');
             setStreamTools([]);
+            setBloom(true);
+            setTimeout(() => setBloom(false), 620);
           } else if (ev.type === 'error') {
-            setError(ev.message || t('doka.errorGeneric', { defaultValue: 'Fehler.' }));
+            // Never surface raw backend error strings (e.g. Python tracebacks) to the user.
+            setError(t('doka.errorGeneric', { defaultValue: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.' }));
           }
         },
       });
@@ -252,9 +262,11 @@ export default function Doka() {
     <div className="animate-fade-in" style={{ paddingBottom: 96 }}>
       {/* Header */}
       <div data-intro="doka" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <div style={{
+        <div className={bloom ? 'doka-bloom' : undefined} style={{
+          position: 'relative',
           width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)',
+          boxShadow: 'var(--glow-warm)',
         }}>
           <MessageCircle style={{ width: 19, height: 19, color: 'var(--amber)' }} />
         </div>
@@ -332,7 +344,7 @@ export default function Doka() {
       <div ref={scrollRef} style={{ minHeight: 200 }}>
         {!hasChat && (
           <div className="glass-card" style={{ padding: 22, textAlign: 'center' }}>
-            <div style={{
+            <div className="animate-pulse-glow" style={{
               width: 50, height: 50, borderRadius: 16, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)',
             }}>
@@ -387,8 +399,8 @@ export default function Doka() {
             }}>
               {streamContent
                 ? <MiniMarkdown text={streamContent} />
-                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)' }}>
-                    <Loader2 style={{ width: 15, height: 15, animation: 'spin 0.8s linear infinite' }} />
+                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)' }}>
+                    <span className="doka-dots" aria-hidden="true"><span /><span /><span /></span>
                     {t('doka.thinking', { defaultValue: 'Doka denkt nach …' })}
                   </span>}
             </div>
@@ -396,10 +408,26 @@ export default function Doka() {
         )}
 
         {error && (
-          <div style={{
-            margin: '10px 0', padding: '10px 14px', borderRadius: 'var(--radius-md)', fontSize: 13,
+          <div role="alert" style={{
+            margin: '10px 0', padding: '12px 14px', borderRadius: 'var(--radius-md)', fontSize: 13,
             background: 'var(--danger-bg)', border: '1px solid var(--danger-border)', color: 'var(--danger-text)',
-          }}>{error}</div>
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <AlertTriangle style={{ width: 17, height: 17, flexShrink: 0 }} />
+            <span style={{ flex: 1, lineHeight: 1.4 }}>{error}</span>
+            {lastSentRef.current && !streaming && (
+              <button
+                onClick={() => { const l = lastSentRef.current; setError(null); if (l) handleSend(l.text, l.file); }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5, flexShrink: 0, cursor: 'pointer',
+                  padding: '6px 10px', borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+                  background: 'var(--bg-card)', border: '1px solid var(--border-glass)', color: 'var(--text-primary)',
+                }}>
+                <RotateCw style={{ width: 13, height: 13 }} />
+                {t('doka.retry', { defaultValue: 'Erneut senden' })}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -462,7 +490,7 @@ function MessageBubble({ message, t }) {
         {!isUser && Array.isArray(message.tool_calls) && message.tool_calls.map((tc, i) => (
           <ToolCard key={i} name={tc.name} summary={tc.summary} pending={false} t={t} />
         ))}
-        <div style={{
+        <div className={isUser ? 'doka-user-in' : 'doka-msg-in'} style={{
           padding: '11px 14px', borderRadius: 'var(--radius-lg)', fontSize: 14,
           background: isUser ? 'var(--accent-gradient)' : 'var(--bg-card)',
           border: isUser ? 'none' : '1px solid var(--border-glass)',

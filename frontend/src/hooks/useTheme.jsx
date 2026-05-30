@@ -1,5 +1,6 @@
 ﻿/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { Capacitor } from '@capacitor/core';
 
 const ThemeContext = createContext({ theme: 'dark', toggleTheme: () => {} });
@@ -19,10 +20,10 @@ export function ThemeProvider({ children }) {
     if (Capacitor.isNativePlatform()) {
       import('@capacitor/status-bar').then(({ StatusBar, Style }) => {
         if (theme === 'dark') {
-          StatusBar.setBackgroundColor({ color: '#0a0f1a' }).catch(() => {});
+          StatusBar.setBackgroundColor({ color: '#0E0F12' }).catch(() => {});
           StatusBar.setStyle({ style: Style.Dark }).catch(() => {});
         } else {
-          StatusBar.setBackgroundColor({ color: '#f2f2f7' }).catch(() => {});
+          StatusBar.setBackgroundColor({ color: '#F4F1EA' }).catch(() => {});
           StatusBar.setStyle({ style: Style.Light }).catch(() => {});
         }
       }).catch(() => {});
@@ -39,7 +40,31 @@ export function ThemeProvider({ children }) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const toggleTheme = () => setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  // Spectacular theme switch: a circular reveal of the new theme expanding from
+  // the toggle's position, via the View Transitions API. Falls back to an instant
+  // switch when the API is unavailable or the user prefers reduced motion.
+  const toggleTheme = (origin) => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    const reduce = typeof window !== 'undefined'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (typeof document === 'undefined' || typeof document.startViewTransition !== 'function' || reduce) {
+      setTheme(next);
+      return;
+    }
+
+    const doc = document.documentElement;
+    const x = origin?.x ?? window.innerWidth / 2;
+    const y = origin?.y ?? 24;
+    const r = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+    doc.style.setProperty('--vt-x', `${x}px`);
+    doc.style.setProperty('--vt-y', `${y}px`);
+    doc.style.setProperty('--vt-r', `${r}px`);
+    doc.classList.add('theme-morphing');
+
+    const transition = document.startViewTransition(() => flushSync(() => setTheme(next)));
+    transition.finished.finally(() => doc.classList.remove('theme-morphing'));
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>

@@ -11,7 +11,6 @@ import AuthImage from '../components/AuthImage';
 import Skeleton from '../components/Skeleton';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../hooks/useTheme';
 import { formatLocalDate, parseUTC } from '../utils/dateUtils';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -22,14 +21,15 @@ const KATEGORIE_BADGE = {
   kontoauszug: 'badge-kontoauszug', vertrag: 'badge-vertrag', behoerde: 'badge-behoerde', sonstiges: 'badge-sonstiges',
 };
 
+// Harmonised, on-brand category palette (warm/muted, theme-aware where possible).
 const KATEGORIE_ICON = {
-  behoerde: { bg: 'rgba(232,154,82,0.12)', color: '#E89A52' },
-  brief: { bg: 'rgba(96,165,250,0.12)', color: '#60a5fa' },
-  rechnung: { bg: 'rgba(245,158,11,0.12)', color: '#F59E0B' },
-  lohnzettel: { bg: 'rgba(0,200,150,0.12)', color: '#00C896' },
-  kontoauszug: { bg: 'rgba(232,154,82,0.12)', color: '#B66B2C' },
-  vertrag: { bg: 'rgba(248,113,113,0.12)', color: '#f87171' },
-  sonstiges: { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af' },
+  behoerde: { bg: 'rgba(182,138,216,0.14)', color: '#B68AD8' },
+  brief: { bg: 'var(--petrol-soft)', color: 'var(--petrol)' },
+  rechnung: { bg: 'var(--amber-soft)', color: 'var(--amber)' },
+  lohnzettel: { bg: 'var(--success-soft)', color: 'var(--success)' },
+  kontoauszug: { bg: 'rgba(182,107,44,0.14)', color: '#B66B2C' },
+  vertrag: { bg: 'var(--rose-soft)', color: 'var(--rose)' },
+  sonstiges: { bg: 'var(--chip-bg)', color: 'var(--text-muted)' },
 };
 
 const SUBLINES_DE = [
@@ -89,8 +89,6 @@ function saveLayout(sections, userId) {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
   const { user } = useAuth();
   const userId = user?.id || '';
   const PAGE_SIZE = 20;
@@ -220,18 +218,19 @@ export default function Dashboard() {
   };
   const isOverdue = (dateStr) => dateStr ? parseUTC(dateStr) < new Date() : false;
 
-  // Theme colors
+  // Theme colors — sourced entirely from CSS tokens (warm Onyx/Pearl), so the
+  // surface follows the theme via CSS, not a JS isDark branch (no desync).
   const tc = {
-    bg: isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
-    border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
-    text: isDark ? 'rgba(255,255,255,0.85)' : '#111827',
-    textMuted: isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.35)',
-    textHint: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)',
-    shadow: isDark ? 'none' : '0 1px 8px rgba(0,0,0,0.05)',
-    heroBg: isDark ? 'rgba(232,154,82,0.12)' : 'rgba(232,154,82,0.06)',
-    heroBorder: isDark ? 'rgba(232,154,82,0.20)' : 'rgba(232,154,82,0.12)',
-    tileBg: isDark ? 'rgba(255,255,255,0.04)' : '#ffffff',
-    divider: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
+    bg: 'var(--bg-card)',
+    border: 'var(--border-glass)',
+    text: 'var(--text-primary)',
+    textMuted: 'var(--text-muted)',
+    textHint: 'var(--text-tertiary)',
+    shadow: 'var(--shadow-card)',
+    heroBg: 'var(--accent-soft)',
+    heroBorder: 'var(--accent-soft-border)',
+    tileBg: 'var(--bg-card)',
+    divider: 'var(--border-glass)',
   };
   const glassCard = {
     background: tc.bg, border: `0.5px solid ${tc.border}`, borderRadius: 18,
@@ -260,29 +259,29 @@ export default function Dashboard() {
   const sectionContent = {
     stats: (
       <div style={{ animation: 'scaleIn 0.4s ease both', animationDelay: '0.05s' }}>
-        <div onClick={() => navigate('/dokumente')} style={{ ...glassCard, background: tc.heroBg, border: `0.5px solid ${tc.heroBorder}`, padding: 20, marginBottom: 12, cursor: 'pointer', transition: 'transform 0.15s ease' }} className="tile-hover">
+        <div onClick={() => navigate('/dokumente')} style={{ ...glassCard, background: tc.heroBg, border: `0.5px solid ${tc.heroBorder}`, boxShadow: 'var(--glow-warm)', padding: 20, marginBottom: 12, cursor: 'pointer', transition: 'transform 0.15s ease' }} className="tile-hover">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <div style={{ fontSize: 12, color: tc.textMuted, marginBottom: 4 }}>{t('dashboard.documentsTotal')}</div>
-              <div style={{ fontSize: 44, fontWeight: 800, color: '#E89A52', lineHeight: 1, letterSpacing: '-1px' }}>{total}</div>
-              {thisWeekCount > 0 && <div style={{ fontSize: 12, color: '#E89A52', marginTop: 6, fontWeight: 500 }}>+{thisWeekCount} {t('dashboard.thisWeek')}</div>}
-              <div style={{ fontSize: 11, color: '#E89A52', marginTop: 6, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>{t('dashboard.showAll', 'Alle anzeigen')} <ChevronRight style={{ width: 12, height: 12 }} /></div>
+              <div style={{ fontSize: 44, fontWeight: 800, color: 'var(--amber)', lineHeight: 1, letterSpacing: '-1px' }}><CountUp value={total} /></div>
+              {thisWeekCount > 0 && <div style={{ fontSize: 12, color: 'var(--amber)', marginTop: 6, fontWeight: 500 }}>+{thisWeekCount} {t('dashboard.thisWeek')}</div>}
+              <div style={{ fontSize: 11, color: 'var(--amber)', marginTop: 6, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>{t('dashboard.showAll', 'Alle anzeigen')} <ChevronRight style={{ width: 12, height: 12 }} /></div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end' }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 11, color: tc.textMuted }}>{t('dashboard.open')}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#FF5F6D' }}>{offen}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--rose)' }}><CountUp value={offen} /></div>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: 11, color: tc.textMuted }}>{t('dashboard.done')}</div>
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#00C896' }}>{erledigtCount}</div>
+                <div style={{ fontSize: 22, fontWeight: 700, color: 'var(--success)' }}><CountUp value={erledigtCount} /></div>
               </div>
             </div>
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-          <TileCard icon={<Receipt style={{ width: 16, height: 16, color: '#F59E0B' }} />} iconBg="rgba(245,158,11,0.12)" value={rechnungen} label={t('dashboard.invoices')} tc={tc} onClick={() => navigate('/sektor/rechnungen')} />
-          <TileCard icon={<Mail style={{ width: 16, height: 16, color: '#00C896' }} />} iconBg="rgba(0,200,150,0.12)" value={briefe} label={t('dashboard.letters')} tc={tc} onClick={() => navigate('/sektor/briefe')} />
+          <TileCard icon={<Receipt style={{ width: 16, height: 16, color: 'var(--amber)' }} />} iconBg="var(--amber-soft)" value={rechnungen} label={t('dashboard.invoices')} tc={tc} onClick={() => navigate('/sektor/rechnungen')} />
+          <TileCard icon={<Mail style={{ width: 16, height: 16, color: 'var(--success)' }} />} iconBg="var(--success-soft)" value={briefe} label={t('dashboard.letters')} tc={tc} onClick={() => navigate('/sektor/briefe')} />
         </div>
         <div data-intro="phishing" onClick={() => navigate('/phishing')} className="tile-hover"
           style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
@@ -302,9 +301,9 @@ export default function Dashboard() {
     todos: (offeneTodos.length > 0 || manualTodos.length > 0) && (
       <div style={{ ...glassCard, marginBottom: 16, animation: 'fadeUp 0.4s ease both', animationDelay: '0.13s' }}>
         <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ClipboardList style={{ width: 14, height: 14, color: '#FF5F6D' }} />
+          <ClipboardList style={{ width: 14, height: 14, color: 'var(--rose)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{t('dashboard.openTasks')}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'rgba(255,95,109,0.12)', color: '#FF5F6D' }}>{offeneTodos.length + manualTodos.length}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'var(--rose-soft)', color: 'var(--rose)' }}>{offeneTodos.length + manualTodos.length}</span>
         </div>
         <div>
           {offeneTodos.map((todo, idx) => (
@@ -316,7 +315,7 @@ export default function Dashboard() {
               transform: dismissingIds.has(todo.id) ? 'translateX(40px)' : 'translateX(0)',
               animation: 'slideInLeft 0.3s ease both', animationDelay: `${idx * 0.06}s`,
             }} onClick={() => navigate(`/documents/${todo.id}`)}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: '#FF5F6D', animation: 'glowPulse 2s ease-in-out infinite' }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: 'var(--rose)', animation: 'glowPulse 2s ease-in-out infinite' }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{todo.absender || '\u2014'}</span>
@@ -324,11 +323,11 @@ export default function Dashboard() {
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                   <span style={{ fontSize: 11, color: tc.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{todo.handlung_beschreibung || '\u2014'}</span>
-                  {todo.faelligkeitsdatum && <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0, background: isOverdue(todo.faelligkeitsdatum) ? 'rgba(255,95,109,0.12)' : 'transparent', color: isOverdue(todo.faelligkeitsdatum) ? '#FF5F6D' : tc.textMuted }}>{formatLocalDate(todo.faelligkeitsdatum)}</span>}
+                  {todo.faelligkeitsdatum && <span style={{ fontSize: 10, fontWeight: 500, padding: '1px 6px', borderRadius: 4, flexShrink: 0, background: isOverdue(todo.faelligkeitsdatum) ? 'var(--rose-soft)' : 'transparent', color: isOverdue(todo.faelligkeitsdatum) ? 'var(--rose)' : tc.textMuted }}>{formatLocalDate(todo.faelligkeitsdatum)}</span>}
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleTodoDone(todo.id); }} disabled={dismissingIds.has(todo.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
-                <CheckCircle style={{ width: 18, height: 18, color: '#00C896' }} />
+                <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
               </button>
             </div>
           ))}
@@ -341,18 +340,18 @@ export default function Dashboard() {
               transform: dismissingIds.has(`m_${mt.id}`) ? 'translateX(40px)' : 'translateX(0)',
               animation: 'slideInLeft 0.3s ease both', animationDelay: `${(offeneTodos.length + idx) * 0.06}s`,
             }} onClick={() => navigate(`/documents/${mt.document_id}`)}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: '#E89A52' }} />
+              <div style={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, background: 'var(--amber)' }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mt.text}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
-                  <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: 'rgba(232,154,82,0.12)', color: '#E89A52' }}>{t('dashboard.manualTask')}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: 'rgba(232,154,82,0.12)', color: 'var(--amber)' }}>{t('dashboard.manualTask')}</span>
                   <span style={{ fontSize: 11, color: tc.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mt.absender || mt.dateiname || '\u2014'}</span>
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleManualTodoDone(mt.id); }} disabled={dismissingIds.has(`m_${mt.id}`)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', borderRadius: '50%' }}>
-                <CheckCircle style={{ width: 18, height: 18, color: '#00C896' }} />
+                <CheckCircle style={{ width: 18, height: 18, color: 'var(--success)' }} />
               </button>
             </div>
           ))}
@@ -369,7 +368,7 @@ export default function Dashboard() {
             background: tc.bg, border: `0.5px solid ${tc.border}`, color: tc.text, outline: 'none',
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: tc.shadow,
             transition: 'border-color 0.2s',
-          }} onFocus={e => e.target.style.borderColor = '#E89A52'} onBlur={e => e.target.style.borderColor = tc.border} />
+          }} onFocus={e => e.target.style.borderColor = 'var(--amber)'} onBlur={e => e.target.style.borderColor = tc.border} />
         </div>
         <div className="hide-scrollbar" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
           {[{ value: '', labelKey: 'dashboard.allCategories' },
@@ -379,7 +378,7 @@ export default function Dashboard() {
               padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer',
               transition: 'all 0.15s ease', border: '0.5px solid',
               background: kategorie === opt.value ? 'rgba(232,154,82,0.12)' : 'transparent',
-              color: kategorie === opt.value ? '#E89A52' : tc.textMuted,
+              color: kategorie === opt.value ? 'var(--amber)' : tc.textMuted,
               borderColor: kategorie === opt.value ? 'rgba(232,154,82,0.3)' : tc.border,
             }}>{t(opt.labelKey)}</button>
           ))}
@@ -434,7 +433,7 @@ export default function Dashboard() {
           <>
             <div style={{ ...glassCard, marginBottom: 16 }}>
               <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <FileText style={{ width: 14, height: 14, color: '#E89A52' }} />
+                <FileText style={{ width: 14, height: 14, color: 'var(--amber)' }} />
                 <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{t('dashboard.recentlyAdded')}</span>
               </div>
               {documents.map((doc, idx) => (
@@ -461,9 +460,9 @@ export default function Dashboard() {
     archiv: (
       <div style={{ ...glassCard, marginBottom: 16, animation: 'fadeUp 0.4s ease both', animationDelay: '0.37s' }}>
         <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Archive style={{ width: 14, height: 14, color: '#00C896' }} />
+          <Archive style={{ width: 14, height: 14, color: 'var(--success)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{t('dashboard.sectorArchiv')}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'rgba(0,200,150,0.12)', color: '#00C896' }}>{archivedDocs.length}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: 'var(--success-soft)', color: 'var(--success)' }}>{archivedDocs.length}</span>
         </div>
         {archivedDocs.length === 0 ? (
           <div style={{ padding: 20, textAlign: 'center' }}><p style={{ fontSize: 13, color: tc.textMuted, margin: 0 }}>{t('archive.noItems')}</p></div>
@@ -475,13 +474,13 @@ export default function Dashboard() {
                   <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.absender || '\u2014'}</span>
                   <span style={{ fontSize: 11, color: tc.textMuted, textDecoration: 'line-through', opacity: 0.6, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block' }}>{doc.handlung_beschreibung || '\u2014'}</span>
                 </div>
-                <CheckCircle style={{ width: 16, height: 16, color: '#00C896', flexShrink: 0 }} />
+                <CheckCircle style={{ width: 16, height: 16, color: 'var(--success)', flexShrink: 0 }} />
               </div>
             ))}
           </div>
         )}
         <div style={{ padding: '8px 16px', borderTop: `0.5px solid ${tc.divider}` }}>
-          <Link to="/archiv" style={{ fontSize: 12, fontWeight: 600, color: '#E89A52', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+          <Link to="/archiv" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
             {t('archive.title')} <ChevronRight style={{ width: 14, height: 14 }} />
           </Link>
         </div>
@@ -491,13 +490,13 @@ export default function Dashboard() {
     ausgaben: (
       <div style={{ ...glassCard, marginBottom: 16, animation: 'fadeUp 0.4s ease both', animationDelay: '0.45s' }}>
         <div style={{ padding: '12px 16px', borderBottom: `0.5px solid ${tc.divider}`, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <DollarSign style={{ width: 14, height: 14, color: '#F59E0B' }} />
+          <DollarSign style={{ width: 14, height: 14, color: 'var(--amber)' }} />
           <span style={{ fontSize: 13, fontWeight: 600, color: tc.text }}>{t('dashboard.sectorAusgaben')}</span>
         </div>
         {isFree ? (
           <div style={{ padding: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: tc.textMuted, margin: '0 0 8px' }}>{t('pricing.expensesLocked')}</p>
-            <Link to="/pricing" style={{ fontSize: 12, fontWeight: 600, color: '#E89A52', textDecoration: 'none' }}>{t('upgradeModal.upgradeButton')}</Link>
+            <Link to="/pricing" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none' }}>{t('upgradeModal.upgradeButton')}</Link>
           </div>
         ) : (
           <div style={{ padding: 16 }}>
@@ -507,10 +506,10 @@ export default function Dashboard() {
                   <span style={{ fontSize: 11, color: tc.textMuted }}>{new Date().getFullYear()}</span>
                   <p style={{ fontSize: 20, fontWeight: 700, color: tc.text, margin: '2px 0 0' }}>{Number(expenseSummary.total || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
                 </div>
-                <Link to="/ausgaben" style={{ fontSize: 12, fontWeight: 600, color: '#E89A52', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>{t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} /></Link>
+                <Link to="/ausgaben" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>{t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} /></Link>
               </div>
             ) : (
-              <Link to="/ausgaben" style={{ fontSize: 13, fontWeight: 600, color: '#E89A52', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>{t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} /></Link>
+              <Link to="/ausgaben" style={{ fontSize: 13, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>{t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} /></Link>
             )}
           </div>
         )}
@@ -530,18 +529,20 @@ export default function Dashboard() {
       `}</style>
 
 
-      {/* Greeting */}
-      <div style={{ marginBottom: 20, animation: 'fadeUp 0.4s ease both', animationDelay: '0.03s' }}>
-        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(44,44,46,0.55)', marginBottom: 2 }}>{dateStr}</div>
-        <div style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(44,44,46,0.55)' }}>{timeGreeting}</div>
-        <div style={{ fontSize: 20, fontWeight: 600, letterSpacing: '-0.4px', color: isDark ? '#f5f5f7' : '#2c2c2e', lineHeight: 1.3, marginTop: 2 }}>{subline}</div>
+      {/* Greeting — editorial Instrument-Serif hero */}
+      <div style={{ marginBottom: 22, animation: 'fadeUp 0.4s ease both', animationDelay: '0.03s' }}>
+        <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: '0.02em' }}>{dateStr} · {timeGreeting}</div>
+        <div style={{
+          fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 400, letterSpacing: '-0.018em',
+          color: 'var(--text-primary)', lineHeight: 1.08, marginTop: 6,
+        }}>{subline}</div>
       </div>
 
       {/* Edit mode toolbar */}
       {editMode && (
         <div style={{
           position: 'sticky', top: 56, zIndex: 40,
-          background: isDark ? 'rgba(10,15,26,0.85)' : 'rgba(255,255,255,0.9)',
+          background: 'var(--header-bg)',
           backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
           borderBottom: `0.5px solid ${tc.border}`, padding: '8px 16px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -560,7 +561,7 @@ export default function Dashboard() {
       {/* Add Sector Modal */}
       {showAddModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }} onClick={() => setShowAddModal(false)}>
-          <div style={{ background: isDark ? '#1a1f2e' : '#ffffff', borderRadius: 18, border: `0.5px solid ${tc.border}`, padding: 20, width: '100%', maxWidth: 320, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'var(--surface-elevated)', borderRadius: 18, border: `0.5px solid ${tc.border}`, padding: 20, width: '100%', maxWidth: 320, boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <span style={{ fontWeight: 600, fontSize: 16, color: tc.text }}>{t('dashboard.addSectorTitle')}</span>
               <button onClick={() => setShowAddModal(false)} style={{ background: 'none', border: 'none', fontSize: 18, color: tc.textMuted, cursor: 'pointer', padding: 4 }}>{'\u2715'}</button>
@@ -574,7 +575,7 @@ export default function Dashboard() {
                 cursor: sector.locked ? 'not-allowed' : 'pointer', border: `0.5px solid ${sector.locked ? tc.border : 'rgba(232,154,82,0.2)'}`,
               }}>
                 <span style={{ fontSize: 14, color: sector.locked ? tc.textMuted : tc.text }}>{sector.icon} {t('dashboard.sector' + sector.id.charAt(0).toUpperCase() + sector.id.slice(1))}</span>
-                {sector.locked && <span style={{ fontSize: 12, color: '#F59E0B' }}>{t('dashboard.sectorUpgrade')}</span>}
+                {sector.locked && <span style={{ fontSize: 12, color: 'var(--amber)' }}>{t('dashboard.sectorUpgrade')}</span>}
               </div>
             ))}
           </div>
@@ -584,12 +585,12 @@ export default function Dashboard() {
       {/* Confirm hide */}
       {confirmHide && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)' }} onClick={() => setConfirmHide(null)}>
-          <div style={{ background: isDark ? '#1a1f2e' : '#ffffff', borderRadius: 16, border: `0.5px solid ${tc.border}`, padding: 20, maxWidth: 300, width: '100%', margin: '0 16px' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'var(--surface-elevated)', borderRadius: 16, border: `0.5px solid ${tc.border}`, padding: 20, maxWidth: 300, width: '100%', margin: '0 16px' }} onClick={e => e.stopPropagation()}>
             <p style={{ fontSize: 14, fontWeight: 600, color: tc.text, margin: '0 0 4px' }}>{t('dashboard.hideSectorTitle')}</p>
             <p style={{ fontSize: 13, color: tc.textMuted, margin: '0 0 16px' }}>{t('dashboard.hideSectorDesc', { name: t('dashboard.sector' + confirmHide.charAt(0).toUpperCase() + confirmHide.slice(1)) })}</p>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button onClick={() => setConfirmHide(null)} className="btn-ghost" style={{ padding: '6px 14px', fontSize: 13, fontWeight: 500 }}>{t('dashboard.cancelButton')}</button>
-              <button onClick={() => hideSection(confirmHide)} style={{ padding: '6px 14px', fontSize: 13, fontWeight: 600, background: '#ef4444', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer' }}>{t('dashboard.hideButton')}</button>
+              <button onClick={() => hideSection(confirmHide)} style={{ padding: '6px 14px', fontSize: 13, fontWeight: 600, background: 'var(--danger)', color: 'white', border: 'none', borderRadius: 10, cursor: 'pointer' }}>{t('dashboard.hideButton')}</button>
             </div>
           </div>
         </div>
@@ -604,7 +605,7 @@ export default function Dashboard() {
               <SortableSection key={s.id} id={s.id} editMode={editMode} onRemove={() => setConfirmHide(s.id)}
                 sectorIcon={meta.icon} sectorLabel={t('dashboard.sector' + s.id.charAt(0).toUpperCase() + s.id.slice(1))}
                 isTouchDragging={touchDragging === s.id} touchOffsetY={touchDragging === s.id ? touchOffsetY : 0}
-                onTouchStart={(e) => handleTouchStart(e, s.id)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} tc={tc} isDark={isDark}>
+                onTouchStart={(e) => handleTouchStart(e, s.id)} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd} tc={tc}>
                 {sectionContent[s.id]}
               </SortableSection>
             );
@@ -627,6 +628,30 @@ export default function Dashboard() {
   );
 }
 
+// Animated number — counts up from 0 on mount (easeOutCubic), honours reduced motion.
+function CountUp({ value, duration = 900 }) {
+  const [display, setDisplay] = useState(0);
+  const fromRef = useRef(0);
+  useEffect(() => {
+    const from = fromRef.current;
+    if (from === value) return;
+    const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dur = reduce ? 0 : duration;
+    const start = performance.now();
+    let raf;
+    const tick = (now) => {
+      const p = dur === 0 ? 1 : Math.min(1, (now - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplay(Math.round(from + (value - from) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else fromRef.current = value;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration]);
+  return display;
+}
+
 function TileCard({ icon, iconBg, value, label, tc, onClick }) {
   return (
     <div className="tile-hover" onClick={onClick} style={{
@@ -635,7 +660,7 @@ function TileCard({ icon, iconBg, value, label, tc, onClick }) {
       padding: 16, cursor: 'pointer', transition: 'transform 0.15s ease',
     }}>
       <div style={{ width: 32, height: 32, borderRadius: 10, background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10 }}>{icon}</div>
-      <div style={{ fontSize: 24, fontWeight: 700, color: tc.text }}>{value}</div>
+      <div style={{ fontSize: 24, fontWeight: 700, color: tc.text }}><CountUp value={value} /></div>
       <div style={{ fontSize: 12, color: tc.textMuted }}>{label}</div>
     </div>
   );
@@ -655,18 +680,18 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
   return (
     <>
       {editMode && isOver && !isBeingDragged && (
-        <div style={{ height: 3, background: 'linear-gradient(90deg, #E89A52, #9B8FFF)', borderRadius: 2, margin: '4px 8px', boxShadow: '0 0 12px rgba(232,154,82,0.5)' }} />
+        <div style={{ height: 3, background: 'linear-gradient(90deg, var(--amber), #B66B2C)', borderRadius: 2, margin: '4px 8px', boxShadow: '0 0 12px rgba(232,154,82,0.5)' }} />
       )}
       <div ref={setNodeRef} style={style} {...(editMode ? { ...attributes, ...listeners } : {})}
         onTouchStart={editMode ? onTouchStart : undefined} onTouchMove={editMode ? onTouchMove : undefined} onTouchEnd={editMode ? onTouchEnd : undefined}>
         {editMode ? (
-          <div style={{ border: '2px solid #E89A52', borderRadius: 14, overflow: 'hidden', background: tc.bg, cursor: 'grab', marginBottom: 10 }}>
+          <div style={{ border: '2px solid var(--amber)', borderRadius: 14, overflow: 'hidden', background: tc.bg, cursor: 'grab', marginBottom: 10 }}>
             <div style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(232,154,82,0.08)' }}>
               <span style={{ fontSize: 16 }}>{sectorIcon}</span>
               <span style={{ fontWeight: 600, fontSize: 14, color: tc.text }}>{sectorLabel}</span>
               <span style={{ marginLeft: 'auto', color: tc.textMuted, fontSize: 11 }}>{t('dashboard.dragToMove')}</span>
               <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }} onPointerDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()} style={{
-                width: 22, height: 22, borderRadius: '50%', backgroundColor: '#ef4444', color: 'white', border: 'none',
+                width: 22, height: 22, borderRadius: '50%', backgroundColor: 'var(--danger)', color: 'white', border: 'none',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, lineHeight: 1, flexShrink: 0,
               }}><Minus className="w-3 h-3" /></button>
             </div>
@@ -708,7 +733,7 @@ function DocumentRow({ doc, tc, isLast, delay }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, textDecoration: done ? 'line-through' : 'none' }}>{doc.absender || doc.dateiname}</span>
-          {doc.handlung_erforderlich && !done && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5F6D', flexShrink: 0, animation: 'glowPulse 2s ease-in-out infinite' }} />}
+          {doc.handlung_erforderlich && !done && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rose)', flexShrink: 0, animation: 'glowPulse 2s ease-in-out infinite' }} />}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
           {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
@@ -729,10 +754,10 @@ function getDeadlinePill(deadline, done) {
   const now = new Date();
   const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays < 0) {
-    return { bg: 'rgba(239,68,68,0.14)', color: '#f87171', label: `vor ${Math.abs(diffDays)} T.` };
+    return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: `vor ${Math.abs(diffDays)} T.` };
   }
-  if (diffDays === 0) return { bg: 'rgba(239,68,68,0.18)', color: '#f87171', label: 'heute' };
-  if (diffDays <= 3) return { bg: 'rgba(245,158,11,0.15)', color: '#fbbf24', label: `${diffDays} T.` };
-  if (diffDays <= 14) return { bg: 'rgba(16,185,129,0.12)', color: '#34d399', label: `${diffDays} T.` };
+  if (diffDays === 0) return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: 'heute' };
+  if (diffDays <= 3) return { bg: 'var(--amber-soft)', color: 'var(--amber)', label: `${diffDays} T.` };
+  if (diffDays <= 14) return { bg: 'var(--success-soft)', color: 'var(--success)', label: `${diffDays} T.` };
   return null;
 }
