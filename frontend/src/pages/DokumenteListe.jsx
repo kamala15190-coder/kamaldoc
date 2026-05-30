@@ -3,25 +3,23 @@ import { Link } from 'react-router-dom';
 import { Search, FileText, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments } from '../api';
-import { useTheme } from '../hooks/useTheme';
 import { formatLocalDate } from '../utils/dateUtils';
 
+// Harmonised, on-brand category palette (matches Dashboard).
 const KATEGORIE_ICON = {
-  behoerde: { bg: 'rgba(232,154,82,0.12)', color: '#E89A52' },
-  brief: { bg: 'rgba(96,165,250,0.12)', color: '#60a5fa' },
-  rechnung: { bg: 'rgba(245,158,11,0.12)', color: '#F59E0B' },
-  lohnzettel: { bg: 'rgba(0,200,150,0.12)', color: '#00C896' },
-  kontoauszug: { bg: 'rgba(232,154,82,0.12)', color: '#B66B2C' },
-  vertrag: { bg: 'rgba(248,113,113,0.12)', color: '#f87171' },
-  sonstiges: { bg: 'rgba(156,163,175,0.12)', color: '#9ca3af' },
+  behoerde: { bg: 'rgba(182,138,216,0.14)', color: '#B68AD8' },
+  brief: { bg: 'var(--petrol-soft)', color: 'var(--petrol)' },
+  rechnung: { bg: 'var(--amber-soft)', color: 'var(--amber)' },
+  lohnzettel: { bg: 'var(--success-soft)', color: 'var(--success)' },
+  kontoauszug: { bg: 'rgba(182,107,44,0.14)', color: '#B66B2C' },
+  vertrag: { bg: 'var(--rose-soft)', color: 'var(--rose)' },
+  sonstiges: { bg: 'var(--chip-bg)', color: 'var(--text-muted)' },
 };
 
 const PAGE_SIZE = 30;
 
 export default function DokumenteListe() {
   const { t } = useTranslation();
-  const { theme } = useTheme();
-  const isDark = theme === 'dark';
 
   const [documents, setDocuments] = useState([]);
   const [total, setTotal] = useState(0);
@@ -31,13 +29,13 @@ export default function DokumenteListe() {
   const [kategorie, setKategorie] = useState('');
 
   const tc = {
-    bg: isDark ? 'rgba(255,255,255,0.03)' : '#ffffff',
-    border: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
-    text: isDark ? 'rgba(255,255,255,0.85)' : '#111827',
-    textMuted: isDark ? '#8E887C' : 'rgba(0,0,0,0.45)',
-    textHint: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)',
-    shadow: isDark ? 'none' : '0 1px 8px rgba(0,0,0,0.05)',
-    divider: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)',
+    bg: 'var(--bg-card)',
+    border: 'var(--border-glass)',
+    text: 'var(--text-primary)',
+    textMuted: 'var(--text-muted)',
+    textHint: 'var(--text-tertiary)',
+    shadow: 'var(--shadow-card)',
+    divider: 'var(--border-glass)',
   };
 
   const glassCard = {
@@ -84,7 +82,7 @@ export default function DokumenteListe() {
           <ArrowLeft style={{ width: 16, height: 16, color: tc.text }} />
         </Link>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 700, color: tc.text, margin: 0 }}>{t('dashboard.allDocuments', 'Alle Dokumente')}</h1>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 400, letterSpacing: '-0.018em', color: tc.text, margin: 0, lineHeight: 1.05 }}>{t('dashboard.allDocuments', 'Alle Dokumente')}</h1>
           <p style={{ fontSize: 12, color: tc.textMuted, margin: '2px 0 0' }}>
             {total} {t('dashboard.documentsTotal', 'Dokumente')}
           </p>
@@ -100,7 +98,7 @@ export default function DokumenteListe() {
             background: tc.bg, border: `0.5px solid ${tc.border}`, color: tc.text, outline: 'none',
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: tc.shadow,
             transition: 'border-color 0.2s',
-          }} onFocus={e => e.target.style.borderColor = '#E89A52'} onBlur={e => e.target.style.borderColor = tc.border} />
+          }} onFocus={e => e.target.style.borderColor = 'var(--amber)'} onBlur={e => e.target.style.borderColor = tc.border} />
         </div>
 
         {/* Category filter pills */}
@@ -112,7 +110,7 @@ export default function DokumenteListe() {
               padding: '4px 12px', borderRadius: 20, fontSize: 11, fontWeight: 500, whiteSpace: 'nowrap', cursor: 'pointer',
               transition: 'all 0.15s ease', border: '0.5px solid',
               background: kategorie === opt.value ? 'rgba(232,154,82,0.12)' : 'transparent',
-              color: kategorie === opt.value ? '#E89A52' : tc.textMuted,
+              color: kategorie === opt.value ? 'var(--amber)' : tc.textMuted,
               borderColor: kategorie === opt.value ? 'rgba(232,154,82,0.3)' : tc.border,
             }}>{t(opt.labelKey)}</button>
           ))}
@@ -122,7 +120,7 @@ export default function DokumenteListe() {
       {/* Document list */}
       {loading ? (
         <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(232,154,82,0.15)', borderTopColor: '#E89A52', animation: 'spin 0.8s linear infinite' }} />
+          <div style={{ width: 36, height: 36, borderRadius: '50%', border: '3px solid rgba(232,154,82,0.15)', borderTopColor: 'var(--amber)', animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : (
         <>
@@ -142,7 +140,7 @@ export default function DokumenteListe() {
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{doc.absender || doc.dateiname}</span>
-                        {doc.handlung_erforderlich && !doc.handlung_erledigt && <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#FF5F6D', flexShrink: 0 }} />}
+                        {doc.handlung_erforderlich && !doc.handlung_erledigt && <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rose)', flexShrink: 0 }} />}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                         {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}

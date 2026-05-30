@@ -125,6 +125,7 @@ export default function Doka() {
   const [streamTools, setStreamTools] = useState([]);
   const [showList, setShowList] = useState(false);
   const [error, setError] = useState(null);
+  const [bloom, setBloom] = useState(false); // one-shot avatar bloom when an answer lands
 
   const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
@@ -214,6 +215,8 @@ export default function Doka() {
             }]);
             setStreamContent('');
             setStreamTools([]);
+            setBloom(true);
+            setTimeout(() => setBloom(false), 620);
           } else if (ev.type === 'error') {
             // Never surface raw backend error strings (e.g. Python tracebacks) to the user.
             setError(t('doka.errorGeneric', { defaultValue: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.' }));
@@ -257,9 +260,11 @@ export default function Doka() {
     <div className="animate-fade-in" style={{ paddingBottom: 96 }}>
       {/* Header */}
       <div data-intro="doka" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <div style={{
+        <div className={bloom ? 'doka-bloom' : undefined} style={{
+          position: 'relative',
           width: 36, height: 36, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)',
+          boxShadow: 'var(--glow-warm)',
         }}>
           <MessageCircle style={{ width: 19, height: 19, color: 'var(--amber)' }} />
         </div>
@@ -392,8 +397,8 @@ export default function Doka() {
             }}>
               {streamContent
                 ? <MiniMarkdown text={streamContent} />
-                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--text-muted)' }}>
-                    <Loader2 style={{ width: 15, height: 15, animation: 'spin 0.8s linear infinite' }} />
+                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, color: 'var(--text-muted)' }}>
+                    <span className="doka-dots" aria-hidden="true"><span /><span /><span /></span>
                     {t('doka.thinking', { defaultValue: 'Doka denkt nach …' })}
                   </span>}
             </div>
@@ -483,7 +488,7 @@ function MessageBubble({ message, t }) {
         {!isUser && Array.isArray(message.tool_calls) && message.tool_calls.map((tc, i) => (
           <ToolCard key={i} name={tc.name} summary={tc.summary} pending={false} t={t} />
         ))}
-        <div style={{
+        <div className={isUser ? 'doka-user-in' : 'doka-msg-in'} style={{
           padding: '11px 14px', borderRadius: 'var(--radius-lg)', fontSize: 14,
           background: isUser ? 'var(--accent-gradient)' : 'var(--bg-card)',
           border: isUser ? 'none' : '1px solid var(--border-glass)',

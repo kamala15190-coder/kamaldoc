@@ -573,6 +573,51 @@ html, body, #root {
 .stagger-5 { animation-delay: 0.25s; }
 .stagger-6 { animation-delay: 0.3s; }
 
+/* ===== DOKA — conversation choreography ===== */
+@keyframes doka-user-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.doka-user-in { animation: doka-user-in 320ms var(--spring) both; }
+
+@keyframes doka-msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.doka-msg-in { animation: doka-msg-in 360ms var(--ease-out) both; }
+
+@keyframes doka-dot {
+  0%, 100% { opacity: 0.30; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-3px); }
+}
+.doka-dots { display: inline-flex; align-items: center; gap: 5px; }
+.doka-dots span {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--amber);
+  animation: doka-dot 1.1s ease-in-out infinite;
+}
+.doka-dots span:nth-child(2) { animation-delay: 0.16s; }
+.doka-dots span:nth-child(3) { animation-delay: 0.32s; }
+
+/* One-shot amber bloom behind Doka's avatar when an answer lands (dopamine). */
+@keyframes doka-bloom {
+  0% { opacity: 0; transform: scale(0.55); }
+  35% { opacity: 0.8; }
+  100% { opacity: 0; transform: scale(1.9); }
+}
+.doka-bloom::after {
+  content: '';
+  position: absolute; inset: -8px; border-radius: inherit; z-index: -1;
+  background: radial-gradient(circle, var(--amber-glow) 0%, transparent 70%);
+  animation: doka-bloom 600ms var(--ease-out) both;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doka-user-in, .doka-msg-in { animation: none !important; }
+  .doka-dots span { animation: none !important; opacity: 0.7 !important; }
+  .doka-bloom::after { display: none !important; }
+}
+
 /* ===== GLASS CARD ===== */
 
 .glass-card {
