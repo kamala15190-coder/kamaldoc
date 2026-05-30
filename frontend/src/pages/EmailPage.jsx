@@ -23,7 +23,7 @@ export default function EmailPage() {
         <div className="glass-card" style={{ padding: 24, textAlign: 'center' }}>
           <Mail style={{ width: 32, height: 32, color: 'var(--text-muted)', margin: '0 auto 12px' }} />
           <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>
-            Diese Funktion ist derzeit nicht verfügbar.
+            {t('email.unavailable', 'Diese Funktion ist derzeit nicht verfügbar.')}
           </p>
         </div>
       </div>
