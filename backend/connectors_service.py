@@ -236,6 +236,73 @@ async def _gmail_search(creds: dict, query, maxn) -> tuple[list[dict], dict | No
     return res, refreshed
 
 
+GRAPH_API = "https://graph.microsoft.com/v1.0/me"
+MS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+
+
+async def _refresh_outlook_token(creds: dict) -> dict | None:
+    client_id = os.getenv("OUTLOOK_CLIENT_ID", "")
+    client_secret = os.getenv("OUTLOOK_CLIENT_SECRET", "")
+    refresh = creds.get("refresh_token")
+    if not (client_id and refresh):
+        return None
+    data = {
+        "client_id": client_id, "refresh_token": refresh,
+        "grant_type": "refresh_token",
+        "scope": "https://graph.microsoft.com/Mail.Read offline_access",
+    }
+    if client_secret:
+        data["client_secret"] = client_secret
+    async with httpx.AsyncClient(timeout=20) as client:
+        resp = await client.post(MS_TOKEN_URL, data=data)
+    if resp.status_code != 200:
+        return None
+    tok = resp.json()
+    creds["access_token"] = tok.get("access_token", creds.get("access_token"))
+    if tok.get("refresh_token"):
+        creds["refresh_token"] = tok["refresh_token"]
+    return creds
+
+
+async def _outlook_search(creds: dict, query, maxn) -> tuple[list[dict], dict | None]:
+    """Microsoft Graph mailbox search. Returns (results, refreshed_creds_or_None)."""
+    refreshed = None
+
+    async def _do(token):
+        params = {"$top": maxn, "$select": "from,subject,receivedDateTime,bodyPreview"}
+        if query:
+            params["$search"] = f'"{query}"'
+        else:
+            params["$orderby"] = "receivedDateTime desc"
+        headers = {"Authorization": f"Bearer {token}", "ConsistencyLevel": "eventual"}
+        async with httpx.AsyncClient(timeout=25) as client:
+            resp = await client.get(f"{GRAPH_API}/messages", headers=headers, params=params)
+        if resp.status_code == 401:
+            return None
+        resp.raise_for_status()
+        out = []
+        for m in (resp.json().get("value") or [])[:maxn]:
+            sender = (m.get("from") or {}).get("emailAddress") or {}
+            frm = sender.get("address") or sender.get("name") or ""
+            if sender.get("name") and sender.get("address"):
+                frm = f"{sender['name']} <{sender['address']}>"
+            out.append({
+                "from": frm, "subject": m.get("subject", ""),
+                "date": m.get("receivedDateTime", ""), "snippet": m.get("bodyPreview", ""),
+            })
+        return out
+
+    res = await _do(creds.get("access_token", ""))
+    if res is None:
+        refreshed = await _refresh_outlook_token(creds)
+        if not refreshed:
+            raise PermissionError("outlook token expired")
+        res = await _do(refreshed["access_token"])
+        if res is None:
+            raise PermissionError("outlook token invalid after refresh")
+    return res, refreshed
+
+
 async def _search_one(row, query, maxn) -> list[dict]:
     account_id = row["id"]
     ctype = row["connector_type"]
@@ -250,6 +317,10 @@ async def _search_one(row, query, maxn) -> list[dict]:
         meta = AVAILABLE_CONNECTORS.get(ctype, {})
         if meta.get("auth") == "oauth" and ctype == "gmail":
             results, refreshed = await _gmail_search(creds, query, maxn)
+            if refreshed:
+                await _insert_account(row["user_id"], ctype, label, row["remote_account_id"], refreshed, ["search"])
+        elif meta.get("auth") == "oauth" and ctype == "outlook":
+            results, refreshed = await _outlook_search(creds, query, maxn)
             if refreshed:
                 await _insert_account(row["user_id"], ctype, label, row["remote_account_id"], refreshed, ["search"])
         elif meta.get("auth") == "imap" or ctype == "imap":

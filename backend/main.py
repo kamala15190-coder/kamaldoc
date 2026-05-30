@@ -289,6 +289,29 @@ async def _pop_oauth_state(token: str) -> bool:
         await db.close()
 
 
+async def _pop_oauth_state_payload(token: str) -> str | None:
+    """Return the stored payload if the state exists and is unexpired; consume it either way."""
+    now = datetime.now()
+    db = await get_db()
+    try:
+        cursor = await db.execute(
+            "SELECT payload, expires_at FROM oauth_states WHERE state = ?", (token,)
+        )
+        row = await cursor.fetchone()
+        await db.execute("DELETE FROM oauth_states WHERE state = ?", (token,))
+        await db.commit()
+        if not row:
+            return None
+        try:
+            if datetime.fromisoformat(row["expires_at"]) < now:
+                return None
+        except (ValueError, TypeError):
+            return None
+        return row["payload"]
+    finally:
+        await db.close()
+
+
 @app.get("/auth/google/login")
 async def google_login(platform: str = "web"):
     """Redirect user to Google OAuth with our own redirect_uri."""
@@ -546,7 +569,26 @@ async def gmail_oauth_callback_relay(
     import httpx as _httpx
     from urllib.parse import quote as _quote
 
-    is_native = isinstance(state, str) and state.startswith("native:")
+    # New server-side connector flow: the state is an opaque token we stored in
+    # oauth_states with a JSON payload carrying the authenticated user_id. If we
+    # find such a payload, tokens are persisted encrypted server-side and never
+    # travel back to the client. Otherwise we fall back to the legacy relay (still
+    # used by the deployed native app until it updates).
+    connector_ctx = None
+    if state:
+        payload_str = await _pop_oauth_state_payload(state)
+        if payload_str:
+            try:
+                _p = json.loads(payload_str)
+                if isinstance(_p, dict) and _p.get("v") == "connector" and _p.get("user_id"):
+                    connector_ctx = _p
+            except (json.JSONDecodeError, TypeError):
+                connector_ctx = None
+
+    is_native = (
+        connector_ctx.get("platform") == "native" if connector_ctx
+        else isinstance(state, str) and state.startswith("native:")
+    )
 
     def _redirect_error(msg: str) -> RedirectResponse:
         encoded = _quote(msg)
@@ -613,6 +655,30 @@ async def gmail_oauth_callback_relay(
         except Exception as exc:
             logger.warning(f"Gmail OAuth relay: could not fetch profile: {exc}")
 
+    # --- New server-side path: store encrypted, return only a success marker ---
+    if connector_ctx:
+        try:
+            from connectors_service import add_oauth_account
+            await add_oauth_account(
+                connector_ctx["user_id"], "gmail",
+                connector_ctx.get("display_name"), email,
+                {"access_token": access_token, "refresh_token": token_data.get("refresh_token")},
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error(f"Gmail OAuth relay: failed to store account: {exc}")
+            return _redirect_error("store_failed")
+        email_q = _quote(email or "")
+        if is_native:
+            return RedirectResponse(
+                url=f"at.kamaldoc.app://email-callback/gmail?connected=1&email={email_q}",
+                status_code=302,
+            )
+        return RedirectResponse(
+            url=f"{FRONTEND_URL}/email-callback/gmail#connected=1&email={email_q}",
+            status_code=302,
+        )
+
+    # --- Legacy relay path (deployed native app): tokens travel back to client ---
     result_b64 = base64.urlsafe_b64encode(
         json.dumps({
             "state": state,
@@ -3753,6 +3819,11 @@ class ConnectorPatch(BaseModel):
     status: str | None = None
 
 
+class ConnectorOAuthStartRequest(BaseModel):
+    platform: str = "web"          # "web" | "native"
+    display_name: str | None = None
+
+
 @app.get("/api/connectors/available")
 async def connectors_available(user_id: str = Depends(get_current_user)):
     from connectors_service import AVAILABLE_CONNECTORS
@@ -3796,6 +3867,58 @@ async def connectors_oauth_store(
     tokens = {"access_token": payload.access_token, "refresh_token": payload.refresh_token}
     account_id = await add_oauth_account(user_id, connector_type, payload.display_name, payload.email, tokens)
     return {"id": account_id, "status": "active"}
+
+
+@app.post("/api/connectors/{connector_type}/oauth/start")
+async def connectors_oauth_start(
+    connector_type: str,
+    payload: ConnectorOAuthStartRequest,
+    user_id: str = Depends(get_current_user),
+):
+    """Begin a fully server-side OAuth flow. Returns the provider auth URL.
+
+    The state is an opaque token stored in oauth_states with a JSON payload
+    carrying the authenticated user_id; the /auth/gmail/callback relay reads it
+    back to persist tokens encrypted server-side (tokens never reach the client).
+    """
+    import json as _json
+    import secrets
+    from urllib.parse import urlencode
+
+    from connectors_service import AVAILABLE_CONNECTORS
+    from crypto import encryption_available
+
+    if not encryption_available():
+        raise HTTPException(503, "Verschlüsselung nicht konfiguriert (CONNECTOR_MASTER_KEK fehlt).")
+    meta = AVAILABLE_CONNECTORS.get(connector_type)
+    if not meta or meta.get("auth") != "oauth":
+        raise HTTPException(400, "Kein OAuth-Anbieter.")
+    await check_connector_limit(user_id)
+
+    if connector_type == "gmail":
+        if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
+            raise HTTPException(503, "Gmail-OAuth ist serverseitig nicht konfiguriert.")
+        token = secrets.token_urlsafe(32)
+        state_payload = _json.dumps({
+            "v": "connector",
+            "user_id": user_id,
+            "platform": "native" if payload.platform == "native" else "web",
+            "type": "gmail",
+            "display_name": payload.display_name,
+        })
+        await _store_oauth_state(token, state_payload)
+        params = {
+            "client_id": GMAIL_CLIENT_ID,
+            "redirect_uri": f"{API_URL}/auth/gmail/callback",
+            "response_type": "code",
+            "scope": "https://www.googleapis.com/auth/gmail.readonly",
+            "access_type": "offline",
+            "prompt": "consent",
+            "state": token,
+        }
+        return {"auth_url": f"{GOOGLE_AUTH_URL}?{urlencode(params)}"}
+
+    raise HTTPException(501, f"OAuth für {connector_type} ist noch nicht verfügbar.")
 
 
 @app.patch("/api/connectors/accounts/{account_id}")
