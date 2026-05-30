@@ -10,6 +10,7 @@ import {
   createDokaConversation, getDokaConversations, getDokaConversation,
   deleteDokaConversation, sendDokaMessage,
 } from '../api';
+import { tapHaptic } from '../utils/haptics';
 
 // --- Minimal, safe markdown → React renderer ---------------------------------
 // Doka answers in markdown (headings, lists, bold, inline code, links). We keep
@@ -163,6 +164,7 @@ export default function Doka() {
     const sendFile = isRetry ? overrideFile : file;
     if ((!text && !sendFile) || streaming) return;
 
+    tapHaptic();
     setError(null);
     lastSentRef.current = { text, file: sendFile };
     let convId = activeId;
@@ -342,7 +344,7 @@ export default function Doka() {
       <div ref={scrollRef} style={{ minHeight: 200 }}>
         {!hasChat && (
           <div className="glass-card" style={{ padding: 22, textAlign: 'center' }}>
-            <div style={{
+            <div className="animate-pulse-glow" style={{
               width: 50, height: 50, borderRadius: 16, margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)',
             }}>

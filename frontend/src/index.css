@@ -1269,6 +1269,25 @@ button:active:not(:disabled), .btn-accent:active, .btn-ghost:active {
   transform: scale(0.97);
 }
 
+/* ===== ACCESSIBILITY — visible focus ring (WCAG) ===== */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--accent-solid);
+  outline-offset: 2px;
+}
+
+/* Tactile press depth for clickable cards/tiles (buttons handled above). */
+.tile-hover:active,
+.glass-card:active {
+  transform: scale(0.985);
+  transition: transform 0.12s ease;
+}
+
 /* Tab-bar indicator: smooth slide */
 .tab-indicator {
   transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1), opacity 200ms ease;

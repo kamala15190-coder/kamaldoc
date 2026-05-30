@@ -6,6 +6,7 @@ import { getEinstellungen, saveEinstellungen, cancelSubscription, reactivateSubs
 import { supabase } from '../supabaseClient';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
+import { tapHaptic } from '../utils/haptics';
 import { useConfirm } from '../hooks/useConfirm';
 import { useToast } from '../hooks/useToast';
 import EmailAccountSettings from '../email/EmailAccountSettings';
@@ -306,7 +307,7 @@ export default function ProfilPage() {
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 14px' }}>{t('profile.themeDesc')}</p>
         <div
-          onClick={(e) => toggleTheme({ x: e.clientX, y: e.clientY })}
+          onClick={(e) => { tapHaptic(); toggleTheme({ x: e.clientX, y: e.clientY }); }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '12px 16px', borderRadius: 12, cursor: 'pointer',
