@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   MessageCircle, Send, Plus, Paperclip, Scale, Trash2, Loader2,
-  Sparkles, X, ChevronLeft, FileText, Search, Mail,
+  Sparkles, X, ChevronLeft, FileText, Search, Mail, ShieldAlert, ChevronRight,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -43,7 +44,7 @@ function MiniMarkdown({ text }) {
     if (list) {
       const Tag = list.ordered ? 'ol' : 'ul';
       blocks.push(
-        <Tag key={`l${blocks.length}`} style={{ margin: '6px 0', paddingLeft: 20 }}>
+        <Tag key={`l${blocks.length}`} style={{ margin: '6px 0', paddingInlineStart: 20 }}>
           {list.items.map((it, idx) => <li key={idx} style={{ margin: '2px 0' }}>{renderInline(it, `li${blocks.length}-${idx}`)}</li>)}
         </Tag>
       );
@@ -111,6 +112,7 @@ function ToolCard({ name, summary, pending, t }) {
 
 export default function Doka() {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -260,6 +262,10 @@ export default function Doka() {
           <p className="kicker amber" style={{ margin: 0 }}>{t('doka.kicker', { defaultValue: 'KI-Begleiter' })}</p>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{t('doka.title', { defaultValue: 'Doka' })}</h1>
         </div>
+        <button onClick={() => navigate('/phishing')} className="no-touch-min" aria-label={t('doka.checkPhishing', { defaultValue: 'Phishing-Nachricht prüfen' })}
+          style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 10, padding: 8, cursor: 'pointer', color: 'var(--text-secondary)' }}>
+          <ShieldAlert style={{ width: 18, height: 18 }} />
+        </button>
         <button onClick={() => setShowList((s) => !s)} className="no-touch-min" aria-label={t('doka.conversations', { defaultValue: 'Unterhaltungen' })}
           style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 10, padding: 8, cursor: 'pointer', color: 'var(--text-secondary)' }}>
           <MessageCircle style={{ width: 18, height: 18 }} />
@@ -274,7 +280,7 @@ export default function Doka() {
       <button onClick={() => setLawyerMode((m) => !m)}
         style={{
           display: 'flex', alignItems: 'center', gap: 8, width: '100%', marginBottom: 12, cursor: 'pointer',
-          padding: '9px 12px', borderRadius: 'var(--radius-md)', textAlign: 'left',
+          padding: '9px 12px', borderRadius: 'var(--radius-md)', textAlign: 'start',
           background: lawyerMode ? 'var(--amber-soft)' : 'var(--bg-card)',
           border: `1px solid ${lawyerMode ? 'var(--accent-soft-border)' : 'var(--border-glass)'}`,
           color: lawyerMode ? 'var(--amber)' : 'var(--text-secondary)',
@@ -342,12 +348,25 @@ export default function Doka() {
               {suggestions.map((s, i) => (
                 <button key={i} onClick={() => setInput(s)}
                   style={{
-                    padding: '11px 14px', borderRadius: 'var(--radius-md)', textAlign: 'left', cursor: 'pointer',
+                    padding: '11px 14px', borderRadius: 'var(--radius-md)', textAlign: 'start', cursor: 'pointer',
                     background: 'var(--bg-card)', border: '1px solid var(--border-glass)', color: 'var(--text-secondary)', fontSize: 13.5,
                   }}>
                   {s}
                 </button>
               ))}
+              {/* Phishing entry point */}
+              <button onClick={() => navigate('/phishing')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', borderRadius: 'var(--radius-md)',
+                  textAlign: 'start', cursor: 'pointer', marginTop: 2,
+                  background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)', color: 'var(--text-primary)',
+                }}>
+                <ShieldAlert style={{ width: 18, height: 18, color: 'var(--amber)', flexShrink: 0 }} />
+                <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>
+                  {t('doka.checkPhishing', { defaultValue: 'Phishing-Nachricht prüfen' })}
+                </span>
+                <ChevronRight style={{ width: 16, height: 16, color: 'var(--text-muted)', flexShrink: 0 }} />
+              </button>
             </div>
           </div>
         )}

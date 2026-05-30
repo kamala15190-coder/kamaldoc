@@ -111,7 +111,7 @@ export default function EmailAccountSettings() {
         style={{
           display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 8,
           marginBottom: 14, width: '100%', background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
-          cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)', textAlign: 'left',
+          cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)', textAlign: 'start',
         }}
       >
         <Shield style={{ width: 12, height: 12, flexShrink: 0 }} />
@@ -271,7 +271,7 @@ export default function EmailAccountSettings() {
                     <div style={{ width: 32, height: 32, borderRadius: 8, background: `${meta.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Mail style={{ width: 14, height: 14, color: meta.color }} />
                     </div>
-                    <span style={{ flex: 1, textAlign: 'left', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
+                    <span style={{ flex: 1, textAlign: 'start', fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>
                       {srv.label || meta.name}
                     </span>
                     {soon ? (
@@ -314,7 +314,7 @@ export default function EmailAccountSettings() {
                 padding: 10, borderRadius: 8, marginBottom: 14, background: 'var(--warning-soft)',
                 border: '1px solid rgba(245,158,11,0.15)', fontSize: 12, color: 'var(--warning-text)', lineHeight: 1.5,
               }}>
-                <AlertCircle style={{ width: 12, height: 12, display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                <AlertCircle style={{ width: 12, height: 12, display: 'inline', verticalAlign: 'middle', marginInlineEnd: 4 }} />
                 {t(APP_PASSWORD_HINT[imapForm.type])}
               </div>
             )}
