@@ -784,6 +784,42 @@ def pdf_page_to_image(pdf_path: str, page_idx: int, output_path: str) -> str:
     return output_path
 
 
+async def ocr_file_multipage(file_path: str, ext: str, *, max_pages: int = 15) -> str:
+    """OCR a file. Multi-page PDFs are rendered and OCR'd page by page, then
+    combined (capped at max_pages to bound cost/latency). Non-PDFs go straight
+    to OCR. Mirrors the multi-page logic of the document-upload pipeline so Doka
+    attachments and phishing checks read the whole document, not just page 1."""
+    ext = ext.lower().lstrip(".")
+    if ext != "pdf":
+        return await ocr_image(file_path)
+
+    num_pages = await asyncio.to_thread(pdf_page_count, file_path)
+    if num_pages <= 1:
+        img_path = file_path + ".jpg"
+        await asyncio.to_thread(pdf_to_image, file_path, img_path)
+        try:
+            return await ocr_image(img_path)
+        finally:
+            try:
+                await asyncio.to_thread(os.remove, img_path)
+            except OSError:
+                pass
+
+    pages: list[str] = []
+    for i in range(min(num_pages, max_pages)):
+        page_img = f"{file_path}_page{i}.jpg"
+        await asyncio.to_thread(pdf_page_to_image, file_path, i, page_img)
+        try:
+            page_text = await ocr_image(page_img)
+        finally:
+            try:
+                await asyncio.to_thread(os.remove, page_img)
+            except OSError:
+                pass
+        pages.append(f"--- Seite {i + 1} ---\n{page_text}")
+    return "\n\n".join(pages)
+
+
 async def run_analysis(doc_id: int, image_path: str):
     """Asynchrone LLM-Analyse im Hintergrund."""
     logger.info(f"[Analyse] Starte Analyse für Dokument {doc_id}, Bild: {image_path}")
@@ -3592,16 +3628,7 @@ async def _doka_extract_attachment_text(upload: UploadFile) -> tuple[dict | None
         f.write(content)
 
     try:
-        if ext == ".pdf":
-            img_path = str(saved_path) + ".jpg"
-            pdf_to_image(str(saved_path), img_path)
-            text = await ocr_image(img_path)
-            try:
-                os.remove(img_path)
-            except OSError:
-                pass
-        else:
-            text = await ocr_image(str(saved_path))
+        text = await ocr_file_multipage(str(saved_path), ext)
     except Exception as exc:  # noqa: BLE001
         logger.warning("Doka attachment OCR failed: %s", exc)
         text = ""
@@ -3756,16 +3783,7 @@ async def phishing_check(
         with open(tmp_path, "wb") as f:
             f.write(raw)
         try:
-            if ext == ".pdf":
-                img_path = str(tmp_path) + ".jpg"
-                pdf_to_image(str(tmp_path), img_path)
-                content = await ocr_image(img_path)
-                try:
-                    os.remove(img_path)
-                except OSError:
-                    pass
-            else:
-                content = await ocr_image(str(tmp_path))
+            content = await ocr_file_multipage(str(tmp_path), ext)
         finally:
             try:
                 os.remove(tmp_path)
