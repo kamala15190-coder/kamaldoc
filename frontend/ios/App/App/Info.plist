@@ -50,6 +50,12 @@
 	<!-- Deaktiviert Firebase Auto-Swizzling damit Capacitor die APNs-Delegation übernehmen kann -->
 	<key>FirebaseAppDelegateProxyEnabled</key>
 	<false/>
+	<!-- App Transport Security: erzwingt HTTPS (TLS) für alle Verbindungen (api.kdoc.at). Keine Arbitrary Loads. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>KamalDoc benötigt Zugriff auf deine Kamera um Dokumente zu scannen.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

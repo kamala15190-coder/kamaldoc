@@ -11,6 +11,7 @@ import { useConfirm } from '../hooks/useConfirm';
 import { useToast } from '../hooks/useToast';
 import EmailAccountSettings from '../email/EmailAccountSettings';
 import { formatLocalDate } from '../utils/dateUtils';
+import { purchasesAllowed } from '../utils/platform';
 
 export default function ProfilPage() {
   const { t } = useTranslation();
@@ -260,6 +261,8 @@ export default function ProfilPage() {
         {reactivateSuccess && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle style={{ width: 14, height: 14, color: 'var(--success)' }} /><span style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 600 }}>{t('profile.reactivateSuccess')}</span></div>}
         {reactivateError && <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><AlertCircle style={{ width: 14, height: 14, color: 'var(--danger)' }} /><span style={{ fontSize: 13, color: 'var(--danger-text)' }}>{typeof reactivateError === 'string' ? reactivateError : t('profile.reactivateFailed')}</span></div>}
 
+        {/* Apple 3.1.1: Abo-Verwaltung/Kauf-Buttons nur auf Web & Android. Plan-Status + Verbrauch bleiben read-only. */}
+        {purchasesAllowed() && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {isFree && (
             <Link to="/pricing" className="btn-accent" style={{ padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
@@ -297,6 +300,7 @@ export default function ProfilPage() {
             </button>
           )}
         </div>
+        )}
       </div>
 
       {/* Section: Appearance / Theme Toggle */}

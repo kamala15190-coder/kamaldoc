@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, FileText, LayoutDashboard, Archive, DollarSign, MessageCircle, Stethoscope, Upload as UploadIcon, User, Settings, HelpCircle, Rocket, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments } from '../api';
+import { purchasesAllowed } from '../utils/platform';
 
 const ACTION_ICON_SIZE = 18;
 
@@ -61,7 +62,8 @@ export default function CommandPalette() {
     { id: 'befund', icon: Stethoscope, label: t('nav.befund'), to: '/befund' },
     { id: 'email', icon: Mail, label: 'E-Mail', to: '/email' },
     { id: 'profil', icon: User, label: t('nav.profil'), to: '/profil' },
-    { id: 'pricing', icon: Rocket, label: t('pricing.title', 'Abo'), to: '/pricing' },
+    // Apple 3.1.1: Abo-/Pricing-Eintrag nur auf Web & Android
+    ...(purchasesAllowed() ? [{ id: 'pricing', icon: Rocket, label: t('pricing.title', 'Abo'), to: '/pricing' }] : []),
     { id: 'support', icon: HelpCircle, label: t('nav.support'), to: '/support' },
     { id: 'settings', icon: Settings, label: t('settings.title', 'Einstellungen'), to: '/profil' },
   ], [t]);

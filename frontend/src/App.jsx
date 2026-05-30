@@ -47,6 +47,7 @@ import IntroGuide from './components/IntroGuide';
 import Splash from './components/Splash';
 import Wordmark from './components/Wordmark';
 import { tapHaptic } from './utils/haptics';
+import { purchasesAllowed } from './utils/platform';
 import ErrorBoundary from './components/ErrorBoundary';
 import Spinner from './components/Spinner';
 import { ConfirmDialogProvider } from './components/ConfirmDialog';
@@ -246,9 +247,10 @@ function TopHeader() {
           </Link>
 
           {!subLoading && (
-            <div onClick={() => navigate('/pricing')} style={{
+            <div onClick={() => { if (purchasesAllowed()) navigate('/pricing'); }} style={{
               position: 'absolute', left: '50%', transform: 'translateX(-50%)',
-              display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20, cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 4, padding: '4px 10px', borderRadius: 20,
+              cursor: purchasesAllowed() ? 'pointer' : 'default',
               fontSize: 11, fontWeight: 600, letterSpacing: '0.02em', whiteSpace: 'nowrap',
               background: isPro ? 'rgba(232,154,82,0.12)' : isBasic ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.05)',
               border: isPro ? '0.5px solid rgba(232,154,82,0.25)' : isBasic ? '0.5px solid rgba(245,158,11,0.20)' : '0.5px solid var(--border-glass)',
@@ -259,7 +261,8 @@ function TopHeader() {
                 {isBasic && <Zap style={{ width: 12, height: 12 }} />}
                 {isFree && <Lock style={{ width: 12, height: 12 }} />}
               </>
-              {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : t('pricing.upgradePlan')}
+              {/* Auf iOS (kein Kauf) zeigt das Free-Badge nur den Plan-Namen, kein Upgrade-Steering */}
+              {isPro ? t('pricing.proActive') : isBasic ? t('pricing.basicActive') : (purchasesAllowed() ? t('pricing.upgradePlan') : t('pricing.free'))}
             </div>
           )}
 
@@ -355,6 +358,8 @@ function TopHeader() {
             );
           })}
 
+          {/* Apple 3.1.1: Upgrade-Menüpunkt nur auf Web & Android */}
+          {purchasesAllowed() && (
           <Link
             to="/pricing"
             onClick={() => setMoreOpen(false)}
@@ -369,6 +374,7 @@ function TopHeader() {
             <span style={{ fontSize: 15, fontWeight: 500 }}>{t('pricing.upgrade')}</span>
             <ChevronRight style={{ width: 16, height: 16, marginLeft: 'auto', opacity: 0.3 }} />
           </Link>
+          )}
 
           {isAdmin && (
             <Link

@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { Check, X, Zap, Rocket, Lock, Loader2, ArrowDown, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useSubscription } from '../hooks/useSubscription';
 import { useTheme } from '../hooks/useTheme';
 import { createCheckout, downgradeSubscription } from '../api';
 import { Capacitor } from '@capacitor/core';
+import { purchasesAllowed } from '../utils/platform';
 import { formatLocalDate } from '../utils/dateUtils';
 
 const PLAN_ORDER = { free: 0, basic: 1, pro: 2 };
@@ -61,6 +63,9 @@ export default function PricingPage() {
   const [loadingPlan, setLoadingPlan] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+
+  // Apple 3.1.1: keine Kauf-/Abo-Seite in der iOS-App.
+  if (!purchasesAllowed()) return <Navigate to="/" replace />;
 
   const isDowngrade = (planId) => PLAN_ORDER[planId] < PLAN_ORDER[currentPlan];
 

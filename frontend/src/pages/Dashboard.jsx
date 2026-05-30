@@ -12,6 +12,7 @@ import Skeleton from '../components/Skeleton';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
 import { formatLocalDate, parseUTC } from '../utils/dateUtils';
+import { purchasesAllowed } from '../utils/platform';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -496,7 +497,10 @@ export default function Dashboard() {
         {isFree ? (
           <div style={{ padding: 20, textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: tc.textMuted, margin: '0 0 8px' }}>{t('pricing.expensesLocked')}</p>
-            <Link to="/pricing" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none' }}>{t('upgradeModal.upgradeButton')}</Link>
+            {/* Apple 3.1.1: Upgrade-Link nur auf Web & Android */}
+            {purchasesAllowed() && (
+              <Link to="/pricing" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none' }}>{t('upgradeModal.upgradeButton')}</Link>
+            )}
           </div>
         ) : (
           <div style={{ padding: 16 }}>
@@ -569,7 +573,7 @@ export default function Dashboard() {
             {availableSectors.length === 0 ? (
               <p style={{ fontSize: 14, color: tc.textMuted, textAlign: 'center', padding: '16px 0' }}>{t('dashboard.allSectorsVisible')}</p>
             ) : availableSectors.map(sector => (
-              <div key={sector.id} onClick={() => { if (sector.locked) { navigate('/pricing'); setShowAddModal(false); return; } showSection(sector.id); }} style={{
+              <div key={sector.id} onClick={() => { if (sector.locked) { if (purchasesAllowed()) navigate('/pricing'); setShowAddModal(false); return; } showSection(sector.id); }} style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 12, marginBottom: 8, borderRadius: 10,
                 background: sector.locked ? tc.tileBg : 'rgba(232,154,82,0.08)', opacity: sector.locked ? 0.5 : 1,
                 cursor: sector.locked ? 'not-allowed' : 'pointer', border: `0.5px solid ${sector.locked ? tc.border : 'rgba(232,154,82,0.2)'}`,

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Lock, Zap } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { purchasesAllowed } from '../utils/platform';
 
 export default function UpgradePrompt({ messageKey, minPlan = 'basic', className = '' }) {
   const { t } = useTranslation();
@@ -13,17 +14,26 @@ export default function UpgradePrompt({ messageKey, minPlan = 'basic', className
       <h3 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8, textAlign: 'center' }}>
         {t(messageKey || 'pricing.featureLocked')}
       </h3>
-      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, textAlign: 'center', maxWidth: 300 }}>
-        {t('pricing.upgradeDesc', { plan: minPlan === 'pro' ? 'Pro' : 'Basic' })}
-      </p>
-      <Link
-        to="/pricing"
-        className="btn-accent"
-        style={{ padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-      >
-        <Zap style={{ width: 16, height: 16 }} />
-        {t('pricing.upgradeNow')}
-      </Link>
+      {/* Apple 3.1.1: kein Upgrade-CTA/-Link auf iOS */}
+      {purchasesAllowed() ? (
+        <>
+          <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 24, textAlign: 'center', maxWidth: 300 }}>
+            {t('pricing.upgradeDesc', { plan: minPlan === 'pro' ? 'Pro' : 'Basic' })}
+          </p>
+          <Link
+            to="/pricing"
+            className="btn-accent"
+            style={{ padding: '12px 28px', fontSize: 14, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+          >
+            <Zap style={{ width: 16, height: 16 }} />
+            {t('pricing.upgradeNow')}
+          </Link>
+        </>
+      ) : (
+        <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 300 }}>
+          {t('pricing.featureLockedIos', 'Diese Funktion ist in deinem aktuellen Plan nicht enthalten.')}
+        </p>
+      )}
     </div>
   );
 }
@@ -37,14 +47,16 @@ export function UpgradeOverlay({ messageKey }) {
       <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12, textAlign: 'center', padding: '0 16px' }}>
         {t(messageKey || 'pricing.featureLocked')}
       </p>
-      <Link
-        to="/pricing"
-        className="btn-accent"
-        style={{ padding: '8px 20px', fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5 }}
-      >
-        <Zap style={{ width: 14, height: 14 }} />
-        {t('pricing.upgradeNow')}
-      </Link>
+      {purchasesAllowed() && (
+        <Link
+          to="/pricing"
+          className="btn-accent"
+          style={{ padding: '8px 20px', fontSize: 13, fontWeight: 600, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+        >
+          <Zap style={{ width: 14, height: 14 }} />
+          {t('pricing.upgradeNow')}
+        </Link>
+      )}
     </div>
   );
 }

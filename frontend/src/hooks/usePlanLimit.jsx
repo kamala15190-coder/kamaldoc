@@ -3,6 +3,7 @@ import { useState, useCallback, createContext, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Zap } from 'lucide-react';
+import { purchasesAllowed } from '../utils/platform';
 
 const PlanLimitContext = createContext({});
 
@@ -51,15 +52,18 @@ export const PlanLimitProvider = ({ children }) => {
             <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '20px' }}>
               {t('upgradeModal.description')}
             </p>
-            <button onClick={() => { closeModal(); navigate('/pricing'); }} style={{
-              width: '100%', padding: '12px',
-              backgroundColor: '#2563eb', color: 'white',
-              borderRadius: '10px', border: 'none',
-              fontWeight: '600', fontSize: '15px', cursor: 'pointer',
-              marginBottom: '8px',
-            }}>
-              {t('upgradeModal.upgradeButton')}
-            </button>
+            {/* Apple 3.1.1: kein Upgrade-CTA auf iOS */}
+            {purchasesAllowed() && (
+              <button onClick={() => { closeModal(); navigate('/pricing'); }} style={{
+                width: '100%', padding: '12px',
+                backgroundColor: '#2563eb', color: 'white',
+                borderRadius: '10px', border: 'none',
+                fontWeight: '600', fontSize: '15px', cursor: 'pointer',
+                marginBottom: '8px',
+              }}>
+                {t('upgradeModal.upgradeButton')}
+              </button>
+            )}
             <button onClick={closeModal} style={{
               width: '100%', padding: '10px',
               backgroundColor: 'transparent', color: '#6b7280',
