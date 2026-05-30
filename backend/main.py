@@ -22,6 +22,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from auth import get_current_user
 from database import DATA_DIR, DB_PATH, get_db, init_db, permanent_admin_id
+from doka_service import stream_doka_response
 from llm_service import (
     analyze_document,
     analyze_document_from_text,
