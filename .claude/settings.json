@@ -20,7 +20,9 @@
       "Bash(agent-browser --session prev1 screenshot /tmp/legal-en2.png)",
       "Bash(agent-browser --session prev1 eval \"localStorage.setItem\\('kamaldoc_language','fr'\\); location.reload\\(\\);\")",
       "Bash(git add *)",
-      "Bash(git commit -q -m ' *)"
+      "Bash(git commit -q -m ' *)",
+      "Bash(agent-browser resize *)",
+      "Bash(agent-browser)"
     ]
   }
 }
