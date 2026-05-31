@@ -163,7 +163,10 @@ export default function Doka() {
   };
 
   const handleSend = async (overrideText, overrideFile) => {
-    const isRetry = overrideText !== undefined;
+    // Retry passes an explicit string. A bare onClick would pass a SyntheticEvent
+    // here — guard on the type so an event can never be treated as retry text
+    // (calling .trim() on it threw and silently killed the whole send).
+    const isRetry = typeof overrideText === 'string';
     const text = (isRetry ? overrideText : input).trim();
     const sendFile = isRetry ? overrideFile : file;
     if ((!text && !sendFile) || streaming) return;
@@ -490,7 +493,7 @@ export default function Doka() {
             className="input-dark"
             style={{ flex: 1, resize: 'none', maxHeight: 120, padding: '11px 14px', borderRadius: 16, fontSize: 15, lineHeight: 1.4 }}
           />
-          <button onClick={handleSend} disabled={streaming || (!input.trim() && !file)} className="no-touch-min"
+          <button onClick={() => handleSend()} disabled={streaming || (!input.trim() && !file)} className="no-touch-min"
             aria-label={t('doka.send', { defaultValue: 'Senden' })}
             style={{
               flexShrink: 0, borderRadius: 12, padding: 11, cursor: streaming ? 'default' : 'pointer', border: 'none',
