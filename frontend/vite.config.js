@@ -6,7 +6,14 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
     charset: 'utf8',
-    chunkSizeWarningLimit: 800,
+    // Intentionally high: the main chunk carries all 50 locales' translation +
+    // legal JSON (~3 MB raw) eagerly. For this Capacitor app every locale ships
+    // inside the native binary regardless of chunking, so eager loading does NOT
+    // increase install size — it guarantees zero flash-of-untranslated-content and
+    // instant *offline* language switching, which lazy per-locale fetches cannot.
+    // The limit is raised (not the architecture changed) so the size signal stays
+    // visible without a misleading warning. See i18n.js for the loading rationale.
+    chunkSizeWarningLimit: 4000,
     rollupOptions: {
       output: {
         // Manuelles Chunking NUR für Leaf-Libraries ohne interne Deps auf React-Ökosystem.

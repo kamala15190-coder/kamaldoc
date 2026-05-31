@@ -19,7 +19,6 @@ export async function initPushNotifications() {
   // Nur auf nativen Plattformen (Android/iOS) aktivieren
   const Capacitor = window.Capacitor;
   if (!Capacitor?.isNativePlatform()) {
-    console.log('[Push] Nicht auf nativer Plattform – Push übersprungen');
     return;
   }
 
@@ -46,11 +45,9 @@ export async function initPushNotifications() {
 
     // Token empfangen und an Backend senden
     PushNotifications.addListener('registration', async (token) => {
-      console.log('[Push] Token erhalten:', token.value);
       try {
         const platform = Capacitor.getPlatform?.() || 'android';
         await registerPushToken(token.value, platform);
-        console.log('[Push] Token erfolgreich beim Backend registriert');
       } catch (err) {
         console.error('[Push] Token-Registrierung fehlgeschlagen:', err);
       }
@@ -61,15 +58,9 @@ export async function initPushNotifications() {
       console.error('[Push] Registrierungsfehler:', error);
     });
 
-    // Notification empfangen (App im Vordergrund)
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('[Push] Notification empfangen:', notification);
-    });
-
-    // Notification angetippt
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('[Push] Notification angetippt:', notification);
-    });
+    // Foreground presentation (banner/sound/badge) and tap handling are done
+    // natively (AppDelegate on iOS, Capacitor default on Android). No JS-side
+    // logging listeners are registered in production.
 
   } catch (err) {
     console.warn('[Push] Capacitor Push Plugin nicht verfügbar:', err.message);
