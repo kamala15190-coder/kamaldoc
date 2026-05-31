@@ -7,6 +7,7 @@ import { uploadDocuments } from '../api';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import { openNativeScanner, openNativeGallery } from '../utils/documentScannerHelper';
 import { fileToDataUrl } from '../utils/pdfBuilder';
+import { pickDocuments } from '../utils/attachmentSources';
 import Confetti from '../components/Confetti';
 
 function useIsMobile() {
@@ -220,7 +221,17 @@ export default function UploadPage() {
     navigate('/scan', { state: { openGallery: true } });
   };
 
-  const openFileDialog = () => {
+  const openFileDialog = async () => {
+    // Nativ: echter Dokumenten-Browser (SAF / UIDocumentPicker) für PDF + Bilder.
+    if (Capacitor.isNativePlatform()) {
+      const files = await pickDocuments({
+        multiple: true,
+        types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+      });
+      if (files.length) addFiles(files);
+      return;
+    }
+    // Web: nativer Datei-Dialog des Browsers.
     const el = fileInputRef.current;
     if (el) { el.value = ''; el.click(); }
   };

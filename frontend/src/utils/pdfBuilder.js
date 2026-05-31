@@ -5,9 +5,11 @@ import { PDFDocument } from 'pdf-lib'
  * Each page: { type: 'image', dataUrl: '...' } or { type: 'pdf', arrayBuffer: ArrayBuffer }
  * Returns a File object.
  */
-export async function buildPdf(pages, fileName = 'Scan.pdf') {
+export async function buildPdf(pages, fileName = 'Scan.pdf', onProgress = null) {
   const pdfDoc = await PDFDocument.create()
 
+  const total = pages.length
+  let done = 0
   for (const page of pages) {
     if (page.type === 'pdf') {
       // Copy pages from existing PDF
@@ -49,6 +51,12 @@ export async function buildPdf(pages, fileName = 'Scan.pdf') {
       const y = (A4_H - h) / 2
 
       pdfPage.drawImage(img, { x, y, width: w, height: h })
+    }
+    done += 1
+    if (onProgress) {
+      onProgress(done, total)
+      // Dem UI-Thread bei vielen Seiten Luft geben (kein Freeze bei 30+ Seiten).
+      await new Promise((r) => setTimeout(r, 0))
     }
   }
 

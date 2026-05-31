@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn } from 'lucide-react'
 import { useAttachmentPicker } from '../components/AttachmentPicker'
@@ -228,7 +228,7 @@ function CreateTicket({ onBack }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const { openPicker, picker } = useAttachmentPicker({
-    fileAccept: 'image/jpeg,image/png,image/gif,image/webp,image/bmp',
+    allowedTypes: 'images',
     onFile: (f) => {
       if (f && f.size > 5 * 1024 * 1024) { setError(t('support.fileTooLarge')); return; }
       setFile(f || null);
@@ -336,7 +336,13 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
   const [sending, setSending] = useState(false)
   const [accepting, setAccepting] = useState(false)
   const [file, setFile] = useState(null)
-  const fileRef = useRef(null)
+  const { openPicker, picker } = useAttachmentPicker({
+    allowedTypes: 'images',
+    onFile: (f) => {
+      if (f && f.size > 5 * 1024 * 1024) { alert(t('support.fileTooLarge', { defaultValue: 'Max 5MB' })); return; }
+      setFile(f || null);
+    },
+  })
   const isClosed = ticket.status === 'abgeschlossen'
   const isResolved = ticket.status === 'bearbeitet'
   const st = STATUS_COLORS[ticket.status] || STATUS_COLORS['erstellt']
@@ -348,7 +354,6 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
       await addTicketMessage(ticket.id, newMsg, file)
       setNewMsg('')
       setFile(null)
-      if (fileRef.current) fileRef.current.value = ''
       onRefresh()
     } catch (err) { console.error(err) }
     finally { setSending(false) }
@@ -427,18 +432,14 @@ function TicketDetail({ ticket, messages: initialMessages, onBack, onRefresh, st
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6, padding: '6px 10px', borderRadius: 6, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
               <Paperclip style={{ width: 12, height: 12, color: 'var(--accent-solid)' }} />
               <span style={{ fontSize: 11, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
-              <button onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ''; }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1 }}>
+              <button onClick={() => setFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 1 }}>
                 <X style={{ width: 12, height: 12, color: 'var(--text-muted)' }} />
               </button>
             </div>
           )}
           <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style={{ display: 'none' }} onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f && f.size > 5 * 1024 * 1024) { alert('Max 5MB'); if (fileRef.current) fileRef.current.value = ''; return; }
-              setFile(f || null);
-            }} />
-            <button onClick={() => fileRef.current?.click()} style={{ background: 'none', border: '1px solid var(--border-glass)', borderRadius: 10, padding: '10px', cursor: 'pointer', flexShrink: 0 }}>
+            {picker}
+            <button onClick={openPicker} style={{ background: 'none', border: '1px solid var(--border-glass)', borderRadius: 10, padding: '10px', cursor: 'pointer', flexShrink: 0 }}>
               <Paperclip style={{ width: 16, height: 16, color: 'var(--text-muted)' }} />
             </button>
             <textarea value={newMsg} onChange={(e) => setNewMsg(e.target.value)} className="input-dark" placeholder={t('support.writeMessage')} rows={2} style={{ flex: 1, resize: 'none', fontSize: 13 }} disabled={sending} />

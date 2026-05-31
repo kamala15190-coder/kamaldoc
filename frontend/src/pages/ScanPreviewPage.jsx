@@ -1,12 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Plus, Check, Trash2, Camera, ImageIcon, FileText, Loader2, ArrowLeft, RotateCcw, Upload } from 'lucide-react'
+import { Plus, Check, Trash2, Camera, ImageIcon, FileText, Loader2, ArrowLeft, RotateCcw, Upload, FileUp } from 'lucide-react'
 import { Capacitor } from '@capacitor/core'
 import { buildPdf, fileToDataUrl, fileToArrayBuffer, extractPdfPages } from '../utils/pdfBuilder'
 import { uploadDocument } from '../api'
 import { usePlanLimit } from '../hooks/usePlanLimit'
 import { openNativeScanner, openNativeGallery } from '../utils/documentScannerHelper'
+import { pickDocuments, compressImageDataUrl } from '../utils/attachmentSources'
 import Confetti from '../components/Confetti'
 import {
   DndContext,
@@ -37,6 +38,7 @@ export default function ScanPreviewPage() {
   })
   const [activeIdx, setActiveIdx] = useState(() => (initState.initialPages?.length || 1) - 1)
   const [building, setBuilding] = useState(false)
+  const [buildProgress, setBuildProgress] = useState({ done: 0, total: 0 })
   const [uploading, setUploading] = useState(false)
   const [uploadDone, setUploadDone] = useState(false)
   const [error, setError] = useState(null)
@@ -67,7 +69,21 @@ export default function ScanPreviewPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
   )
 
-  // Add pages from files (gallery multi-select)
+  // Bild-DataURL → komprimierte Seite (hält 30+ Seiten speicherschlank).
+  const imageToPage = useCallback(async (dataUrl) => ({
+    id: genId(), type: 'image', dataUrl: await compressImageDataUrl(dataUrl),
+  }), [])
+
+  const appendPages = useCallback((newPages) => {
+    if (!newPages.length) return
+    setPages(prev => {
+      const updated = [...prev, ...newPages]
+      setActiveIdx(updated.length - 1) // springe zur letzten neu hinzugefügten Seite
+      return updated
+    })
+  }, [])
+
+  // Add pages from files (gallery / document multi-select)
   const addFilesFromPicker = useCallback(async (fileList) => {
     const newPages = []
     for (const file of fileList) {
@@ -77,16 +93,11 @@ export default function ScanPreviewPage() {
         extracted.forEach(p => newPages.push({ id: genId(), ...p }))
       } else if (file.type.startsWith('image/')) {
         const dataUrl = await fileToDataUrl(file)
-        newPages.push({ id: genId(), type: 'image', dataUrl })
+        newPages.push(await imageToPage(dataUrl))
       }
     }
-    if (newPages.length === 0) return
-    setPages(prev => {
-      const updated = [...prev, ...newPages]
-      setActiveIdx(updated.length - 1) // springe zur letzten neu hinzugefügten Seite
-      return updated
-    })
-  }, [])
+    appendPages(newPages)
+  }, [imageToPage, appendPages])
 
   /**
    * "Seite hinzufügen" via camera.
@@ -102,12 +113,9 @@ export default function ScanPreviewPage() {
     if (Capacitor.isNativePlatform()) {
       const result = await openNativeScanner()
       if (result?.pages?.length) {
-        const newPages = result.pages.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
-        setPages(prev => {
-          const updated = [...prev, ...newPages]
-          setActiveIdx(updated.length - 1)
-          return updated
-        })
+        const newPages = []
+        for (const dataUrl of result.pages) newPages.push(await imageToPage(dataUrl))
+        appendPages(newPages)
       }
       return
     }
@@ -121,11 +129,7 @@ export default function ScanPreviewPage() {
       const file = e.target.files?.[0]
       if (file) {
         const dataUrl = await fileToDataUrl(file)
-        setPages(prev => {
-          const updated = [...prev, { id: genId(), type: 'image', dataUrl }]
-          setActiveIdx(updated.length - 1)
-          return updated
-        })
+        appendPages([await imageToPage(dataUrl)])
       }
     }
     input.click()
@@ -140,16 +144,33 @@ export default function ScanPreviewPage() {
     if (Capacitor.isNativePlatform()) {
       const result = await openNativeGallery()
       if (result?.images?.length) {
-        const newPages = result.images.map(dataUrl => ({ id: genId(), type: 'image', dataUrl }))
-        setPages(prev => {
-          const updated = [...prev, ...newPages]
-          setActiveIdx(updated.length - 1)
-          return updated
-        })
+        const newPages = []
+        for (const dataUrl of result.images) newPages.push(await imageToPage(dataUrl))
+        appendPages(newPages)
       }
       return
     }
     // Web fallback: file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+      fileInputRef.current.click()
+    }
+  }
+
+  /**
+   * "Dokument" — vorhandene Datei (PDF/Bild) aus dem Dateisystem in die Scan-Session holen.
+   * Native: echter Dokumenten-Browser (SAF / UIDocumentPicker).
+   * Web: dasselbe versteckte File-Input (akzeptiert Bild + PDF).
+   */
+  const openDocumentPicker = async () => {
+    if (Capacitor.isNativePlatform()) {
+      const files = await pickDocuments({
+        multiple: true,
+        types: ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'],
+      })
+      if (files.length) await addFilesFromPicker(files)
+      return
+    }
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
       fileInputRef.current.click()
@@ -201,11 +222,12 @@ export default function ScanPreviewPage() {
   const handleFinish = async () => {
     if (pages.length === 0) return
     setBuilding(true)
+    setBuildProgress({ done: 0, total: pages.length })
     setError(null)
     try {
       const baseName = (fileName || '').trim() || `Scan_${new Date().toISOString().slice(0, 10)}`
       const safeName = baseName.toLowerCase().endsWith('.pdf') ? baseName : `${baseName}.pdf`
-      const pdfFile = await buildPdf(pages, safeName)
+      const pdfFile = await buildPdf(pages, safeName, (d, total) => setBuildProgress({ done: d, total }))
       setBuilding(false)
       setUploading(true)
       const result = await uploadDocument(pdfFile)
@@ -249,6 +271,16 @@ export default function ScanPreviewPage() {
             {t('upload.gallery', 'Aus Galerie')}
           </button>
         </div>
+
+        {/* Dritte Option: vorhandenes Dokument (PDF/Bild) aus dem Dateisystem */}
+        <button onClick={openDocumentPicker} className="glass-card" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+          width: '100%', marginTop: 12, padding: '16px 20px', fontSize: 14, fontWeight: 600,
+          color: 'var(--text-primary)', cursor: 'pointer', border: '1px solid var(--border-glass-strong)',
+        }}>
+          <FileUp style={{ width: 20, height: 20, color: 'var(--text-secondary)' }} />
+          {t('attach.uploadFile', 'Dokument hochladen')}
+        </button>
 
         <input ref={fileInputRef} type="file" multiple accept="image/jpeg,image/png,application/pdf"
           style={{ display: 'none' }} onChange={handleGalleryFiles} />
@@ -351,10 +383,15 @@ export default function ScanPreviewPage() {
             }}>
               <Plus style={{ width: 16, height: 16 }} /> {t('upload.addPage', 'Seite hinzufügen')}
             </button>
-            <button onClick={openGalleryPicker} className="btn-ghost" style={{
+            <button onClick={openGalleryPicker} className="btn-ghost" aria-label={t('upload.gallery', 'Aus Galerie')} style={{
               padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <ImageIcon style={{ width: 16, height: 16 }} />
+            </button>
+            <button onClick={openDocumentPicker} className="btn-ghost" aria-label={t('attach.uploadFile', 'Dokument hochladen')} style={{
+              padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <FileUp style={{ width: 16, height: 16 }} />
             </button>
             <button onClick={handleFinish} disabled={pages.length === 0} className="btn-accent" style={{
               flex: 1, padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 600,
@@ -369,7 +406,9 @@ export default function ScanPreviewPage() {
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '14px 0' }}>
             <Loader2 style={{ width: 18, height: 18, color: 'var(--accent-solid)', animation: 'spin 0.8s linear infinite' }} />
             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-solid)' }}>
-              {building ? (t('upload.buildingPdf', 'PDF wird erstellt...')) : (t('upload.uploading', 'Wird hochgeladen...'))}
+              {building
+                ? `${t('upload.buildingPdf', 'PDF wird erstellt...')}${buildProgress.total > 1 ? ` ${buildProgress.done}/${buildProgress.total}` : ''}`
+                : (t('upload.uploading', 'Wird hochgeladen...'))}
             </span>
           </div>
         )}

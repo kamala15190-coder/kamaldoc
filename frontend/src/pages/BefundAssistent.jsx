@@ -10,11 +10,13 @@ import { REPLY_LANGUAGES } from '../languages';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import CollapsibleSection from '../components/CollapsibleSection';
 import { formatLocalDate } from '../utils/dateUtils';
+import { useAttachmentPicker } from '../components/AttachmentPicker';
 
 export default function BefundAssistent() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [file, setFile] = useState(null);
+  const { openPicker, picker } = useAttachmentPicker({ onFile: (f) => setFile(f || null) });
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0); // 0-100, ~analyse_laeuft Progress
   const [docs, setDocs] = useState([]);
@@ -168,11 +170,11 @@ export default function BefundAssistent() {
       <div className="glass-card animate-fade-in-up" style={{ padding: 16, marginBottom: 14 }}>
         <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 10px' }}>{t('befund.uploadTitle')}</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <label style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '2px dashed var(--border-glass)', borderRadius: 10, cursor: 'pointer', transition: 'border-color 0.15s' }}>
+          <button type="button" onClick={openPicker} style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', border: '2px dashed var(--border-glass)', borderRadius: 10, cursor: 'pointer', transition: 'border-color 0.15s', background: 'transparent', textAlign: 'start', width: '100%' }}>
             <Upload style={{ width: 18, height: 18, color: 'var(--text-muted)' }} />
             <span style={{ fontSize: 13, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file ? file.name : t('befund.chooseFile')}</span>
-            <input type="file" style={{ display: 'none' }} accept=".jpg,.jpeg,.png,.pdf" onChange={e => setFile(e.target.files[0] || null)} />
-          </label>
+          </button>
+          {picker}
           <button onClick={handleUpload} disabled={!file || uploading} className="btn-accent" style={{ width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: (!file || uploading) ? 0.5 : 1 }}>
             {uploading ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 0.8s linear infinite' }} /> : <Upload style={{ width: 16, height: 16 }} />}
             {uploading ? t('befund.uploading') : t('befund.uploadButton')}
