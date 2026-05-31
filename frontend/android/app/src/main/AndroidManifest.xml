@@ -3,13 +3,17 @@
           xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Permissions -->
+    <!--
+         Gallery/photo selection uses the Android Photo Picker (PickVisualMedia)
+         via @capacitor/camera, which requires NO storage or media permissions.
+         READ_MEDIA_IMAGES / READ_MEDIA_VIDEO / READ_EXTERNAL_STORAGE /
+         READ_MEDIA_VISUAL_USER_SELECTED were therefore removed for Play Store
+         compliance. CAMERA stays — it is needed for taking photos directly.
+    -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <!-- Declare camera as optional so ChromeOS/tablets without camera are supported -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
