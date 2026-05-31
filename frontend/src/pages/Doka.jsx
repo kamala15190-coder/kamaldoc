@@ -12,6 +12,7 @@ import {
 } from '../api';
 import { tapHaptic } from '../utils/haptics';
 import { useAttachmentPicker } from '../components/AttachmentPicker';
+import { useSubscription } from '../hooks/useSubscription';
 
 // --- Minimal, safe markdown → React renderer ---------------------------------
 // Doka answers in markdown (headings, lists, bold, inline code, links). We keep
@@ -116,6 +117,7 @@ function ToolCard({ name, summary, pending, t }) {
 export default function Doka() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { refresh: refreshSubscription } = useSubscription();
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -221,6 +223,9 @@ export default function Doka() {
             setStreamTools([]);
             setBloom(true);
             setTimeout(() => setBloom(false), 620);
+            // Doka-Token-Verbrauch wurde serverseitig verbucht – Abo-Status neu
+            // laden, damit der Zähler im Profil sofort aktuell ist.
+            refreshSubscription();
           } else if (ev.type === 'error') {
             // Never surface raw backend error strings (e.g. Python tracebacks) to the user.
             setError(t('doka.errorGeneric', { defaultValue: 'Etwas ist schiefgelaufen. Bitte erneut versuchen.' }));

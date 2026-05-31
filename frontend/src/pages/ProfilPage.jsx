@@ -101,6 +101,12 @@ export default function ProfilPage() {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [searchParams] = useSearchParams();
 
+  // Always refetch on open so the usage counters (e.g. Doka tokens) reflect
+  // the latest server-side consumption, not a stale value from app start.
+  useEffect(() => {
+    refreshSub();
+  }, [refreshSub]);
+
   // Refresh subscription after checkout success
   useEffect(() => {
     if (searchParams.get('checkout') === 'success') {
