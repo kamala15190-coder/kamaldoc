@@ -13,6 +13,12 @@ import EmailAccountSettings from '../email/EmailAccountSettings';
 import { formatLocalDate } from '../utils/dateUtils';
 import { purchasesAllowed } from '../utils/platform';
 
+// Doka-Tokens sind in KEINEM Plan unbegrenzt (free 50k / basic 500k / pro 3 Mio.
+// pro Monat). Fällt das Backend-Feld `limits.doka_tokens` aus (z. B. ältere
+// API-Version), greift dieser plan-basierte Fallback, damit das Profil nie
+// fälschlich „Unbegrenzt" anzeigt.
+const DOKA_TOKEN_LIMITS = { free: 50000, basic: 500000, pro: 3000000 };
+
 export default function ProfilPage() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
@@ -232,7 +238,7 @@ export default function ProfilPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} monthly={isFree} />
               <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_month || 0} max={limits.ki_analyses_month} monthly={true} />
-              <UsageStat label={t('profile.usageDokaTokens')} used={usage.doka_tokens_used || 0} max={limits.doka_tokens} monthly={true} />
+              <UsageStat label={t('profile.usageDokaTokens')} used={usage.doka_tokens_used || 0} max={limits.doka_tokens ?? DOKA_TOKEN_LIMITS[plan] ?? DOKA_TOKEN_LIMITS.free} monthly={true} />
               <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} monthly={!isFree || true} />
             </div>
             {usage.next_reset && (
