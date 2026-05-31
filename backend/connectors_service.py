@@ -329,7 +329,7 @@ async def _search_one(row, query, maxn) -> list[dict]:
                 creds["email"], creds["password"], query, maxn,
             )
         else:
-            return []  # outlook etc. not yet implemented
+            return []  # unknown connector type
         await _mark_account(account_id, status="active", error=None, synced=True)
         for r in results:
             r["account"] = label

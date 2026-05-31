@@ -226,7 +226,7 @@ export default function ProfilPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <UsageStat label={t('profile.usageDocs')} used={usage.documents_total || 0} max={limits.documents_total} monthly={isFree} />
               <UsageStat label={t('profile.usageKI')} used={usage.ki_analyses_month || 0} max={limits.ki_analyses_month} monthly={true} />
-              <UsageStat label={t('profile.usageBehoerde')} used={usage.behoerden_used || 0} max={limits.behoerden} monthly={!isFree || true} />
+              <UsageStat label={t('profile.usageDokaTokens')} used={usage.doka_tokens_used || 0} max={limits.doka_tokens} monthly={true} />
               <UsageStat label={t('profile.usageBefund')} used={usage.befund_used || 0} max={limits.befund} monthly={!isFree || true} />
             </div>
             {usage.next_reset && (
@@ -521,16 +521,17 @@ export default function ProfilPage() {
 }
 
 function UsageStat({ label, used, max, monthly }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0;
   const isUnlimited = max === null || max === undefined;
   const isHigh = !isUnlimited && pct >= 80;
+  const fmt = (n) => Number(n || 0).toLocaleString(i18n.language);
 
   return (
     <div style={{ padding: 10, borderRadius: 10, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
       <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>{label}</div>
       <div style={{ fontSize: 17, fontWeight: 700, color: isHigh ? '#ef4444' : 'var(--text-primary)' }}>
-        {used}{isUnlimited ? '' : `/${max}`}
+        {fmt(used)}{isUnlimited ? '' : `/${fmt(max)}`}
       </div>
       {isUnlimited ? (
         <div style={{ fontSize: 11, color: 'var(--success-text)', fontWeight: 600, marginTop: 2 }}>{t('profile.unlimited')}</div>

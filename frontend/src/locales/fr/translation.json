@@ -10,9 +10,9 @@
     "logout": "Déconnexion",
     "support": "Aide et support",
     "menu": "Menu",
-    "email": "Connect Email",
+    "email": "Connecter l’e-mail",
     "doka": "Doka",
-    "legal": "Legal"
+    "legal": "Mentions légales"
   },
   "auth": {
     "login": "Connexion",
@@ -69,7 +69,7 @@
     "requestNewLink": "Demander un nouveau lien",
     "setNewPassword": "Enregistrer le mot de passe",
     "saving": "Enregistrement...",
-    "impressum": "Legal Notice"
+    "impressum": "Mentions légales"
   },
   "dashboard": {
     "openTasks": "Tâches ouvertes",
@@ -121,7 +121,11 @@
     "subline4": "Vos documents vous attendent",
     "subline5": "Soyons productifs aujourd'hui",
     "subline6": "Bien organisé, c est déjà gagné",
-    "subline7": "Votre bureau numérique vous attend"
+    "subline7": "Votre bureau numérique vous attend",
+    "allDocuments": "Tous les documents",
+    "manualTask": "Manuel",
+    "noDocumentsTitle": "C’est parti !",
+    "showAll": "Tout afficher"
   },
   "upload": {
     "title": "Télécharger un document",
@@ -145,7 +149,10 @@
     "addPage": "Ajouter une page",
     "finish": "Terminé",
     "buildingPdf": "Création du PDF...",
-    "pageCount": "{{count}} pages"
+    "pageCount": "{{count}} pages",
+    "document": "Fichier",
+    "heroSub": "Photographie un courrier ou scanne directement des documents multipages",
+    "or": "ou"
   },
   "document": {
     "back": "Retour",
@@ -215,7 +222,15 @@
     "share": "Partager",
     "translateSection": "Traduire le document",
     "translateBtn": "Traduire",
-    "translatingDoc": "Traduction..."
+    "translatingDoc": "Traduction...",
+    "confirmDeleteTitle": "Supprimer le document ?",
+    "deleteFailed": "Échec de la suppression",
+    "deleted": "Document supprimé",
+    "ocrLowQuality": "La reconnaissance de texte a renvoyé très peu de contenu. Téléverse une photo plus nette, idéalement sans reflets et bien éclairée.",
+    "replyTypeCancellation": "Résiliation",
+    "replyTypeComplaint": "Réclamation",
+    "replyTypeGeneral": "Général",
+    "replyTypePayment": "Confirmation de paiement"
   },
   "archive": {
     "title": "Archives",
@@ -264,7 +279,6 @@
     "cancelFailed": "Échec de l'annulation",
     "usageDocs": "Documents",
     "usageKI": "Analyses IA / Mois",
-    "usageBehoerde": "Assist. admin.",
     "usageBefund": "Assist. médical",
     "unlimited": "Illimité",
     "reactivate": "Réactiver l'abonnement",
@@ -297,7 +311,12 @@
     "installApp": "Installer l application",
     "installAppDesc": "Installez KamalDoc comme application native sur votre smartphone.",
     "downloadAndroid": "Télécharger l APK Android",
-    "iosComingSoon": "iOS - Bientôt disponible"
+    "iosComingSoon": "iOS - Bientôt disponible",
+    "cancelSubscription": "Résilier",
+    "cancelSuccess": "Abonnement résilié",
+    "confirmCancelTitle": "Résilier l’abonnement ?",
+    "deleteAccountFailed": "Échec de la suppression du compte",
+    "usageDokaTokens": "Jetons Doka"
   },
   "categories": {
     "brief": "Lettre",
@@ -317,7 +336,11 @@
     "loading": "Chargement...",
     "appName": "KamalDoc",
     "appDesc": "Système de gestion documentaire",
-    "aiGenerated": "AI-generated"
+    "aiGenerated": "Généré par IA",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "searching": "Recherche…",
+    "close": "Fermer"
   },
   "expenses": {
     "title": "Tableau de bord des dépenses",
@@ -373,7 +396,9 @@
     "translating": "Traduction…",
     "previousDocs": "Rapports précédents",
     "noDocs": "Aucun rapport téléchargé",
-    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
+    "medicalDisclaimer": "Remarque : kdoc ne remplace pas un avis médical. Les analyses de l’IA peuvent contenir des erreurs – consulte toujours un médecin pour les décisions médicales.",
+    "analyzing": "Analyse…",
+    "finishing": "Presque terminé…"
   },
   "expenseCategories": {
     "versicherung": "Assurance",
@@ -416,8 +441,6 @@
     "docsUnlimited": "Documents illimités",
     "ki10": "Max. 10 analyses IA au total",
     "kiUnlimited": "Analyses IA illimitées",
-    "behoerde2": "2x Assist. admin. au total",
-    "behoerde10": "10x Assist. admin. / mois",
     "behoerdeUnlimited": "Assist. admin. illimités",
     "befund2": "2x Assist. médical au total",
     "befund10": "10x Assist. médical / mois",
@@ -437,13 +460,16 @@
     "proActive": "Plan Pro actif",
     "ki50": "Max. 50 analyses IA / mois",
     "ki500": "Max. 500 analyses IA / mois",
-    "behoerde50": "Max. 50x Assistant autorités / mois",
     "befund50": "Max. 50x Assistant médical / mois",
     "freeMonthly": "Max. 10 documents/mois",
     "freeResets": "Le quota est reinitialise mensuellement",
     "basicActive": "Plan Basic actif",
-    "featureLockedIos": "This feature is not included in your current plan.",
-    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
+    "featureLockedIos": "Cette fonction n’est pas incluse dans ton forfait actuel.",
+    "withdrawalConsent": "J’accepte expressément que la prestation commence immédiatement et je confirme que mon droit de rétractation expire dès le début de l’exécution.",
+    "withdrawalRequired": "Pour continuer, accepte la note sur le droit de rétractation.",
+    "dokaTokensFree": "50 000 jetons Doka / mois",
+    "dokaTokensBasic": "500 000 jetons Doka / mois",
+    "dokaTokensPro": "3 M de jetons Doka / mois"
   },
   "upgradeModal": {
     "limitReached": "Limite atteinte",
@@ -452,7 +478,7 @@
     "close": "Fermer"
   },
   "support": {
-    "title": "Support",
+    "title": "Assistance",
     "subtitle": "Décrivez votre problème et nous vous aiderons.",
     "priority": "Priorité",
     "priorityLow": "Basse",
@@ -492,11 +518,13 @@
     "writeMessage": "Écrire un message...",
     "ticketClosedMsg": "Ticket fermé",
     "you": "Vous",
-    "supportTeam": "Support",
+    "supportTeam": "Assistance",
     "attachFile": "Joindre un fichier",
     "fileAttached": "Fichier joint",
     "back": "Retour",
-    "fileTooLarge": "Fichier trop volumineux (max. 5 Mo)"
+    "fileTooLarge": "Fichier trop volumineux (max. 5 Mo)",
+    "imageClickToEnlarge": "Touche pour agrandir",
+    "loadingImage": "Chargement de l’image …"
   },
   "intro": {
     "step1Title": "Choisir la langue",
@@ -529,12 +557,12 @@
     "step6Hint": "Facultatif – modifiable à tout moment dans votre profil.",
     "step6Save": "Enregistrer & Continuer",
     "step6Skip": "Passer",
-    "phishingTitle": "Phishing check",
-    "phishingDesc": "Unsure about a message? Let Doka detect scams & phishing — with a risk gauge and clear flags.",
-    "emailTitle": "Email accounts",
-    "emailDesc": "Connect your inboxes (Gmail, IMAP & more). Doka can then search your emails too.",
-    "searchTitle": "Quick search",
-    "searchDesc": "Find any document instantly via global search — available anytime."
+    "phishingTitle": "Vérification de phishing",
+    "phishingDesc": "Un message douteux ? Laisse Doka repérer arnaques et phishing, avec une jauge de risque et des indices clairs.",
+    "emailTitle": "Comptes e-mail",
+    "emailDesc": "Connecte tes boîtes mail (Gmail, IMAP, etc.). Doka pourra alors aussi chercher dans tes e-mails.",
+    "searchTitle": "Recherche rapide",
+    "searchDesc": "Trouve n’importe quel document instantanément grâce à la recherche globale, accessible à tout moment."
   },
   "email": {
     "connectedAccounts": "Boîtes mail connectées",
@@ -552,17 +580,17 @@
     "privacyDetail1": "KamalDoc lit uniquement vos e-mails – il n'envoie, ne supprime ni ne modifie jamais aucun message.",
     "privacyDetail2": "Aucun contenu d'e-mail n'est stocké sur nos serveurs. Les recherches sont effectuées en direct auprès de votre fournisseur.",
     "privacyDetail3": "Vous pouvez déconnecter une boîte mail à tout moment – toutes les informations d'identification stockées seront immédiatement et totalement supprimées.",
-    "manage": "manage",
-    "searchPlaceholderCombined": "Search documents & emails…",
-    "filterAll": "All",
+    "manage": "gérer",
+    "searchPlaceholderCombined": "Rechercher dans les documents et e-mails…",
+    "filterAll": "Tous",
     "filterDocuments": "Documents",
-    "filterEmails": "Emails",
-    "results": "Email Results",
-    "noSubject": "(No Subject)",
-    "preview": "Email Preview",
-    "previewError": "Failed to load email",
-    "to": "To",
-    "attachments": "Attachments",
+    "filterEmails": "E-mails",
+    "results": "Résultats e-mail",
+    "noSubject": "(Sans objet)",
+    "preview": "Aperçu de l’e-mail",
+    "previewError": "Impossible de charger l’e-mail",
+    "to": "À",
+    "attachments": "Pièces jointes",
     "icloud_app_password_hint": "iCloud nécessite un mot de passe spécifique à l'application. Créez-en un dans Apple ID → Connexion et sécurité → Mots de passe d'application.",
     "yahoo_app_password_hint": "Yahoo nécessite un mot de passe d'application. Créez-en un dans Paramètres du compte Yahoo → Sécurité → Générer un mot de passe d'application.",
     "connectFailedWithReason": "Échec de la connexion : {{reason}}",
@@ -583,56 +611,89 @@
     "port": "Port"
   },
   "splash": {
-    "tagline1": "Your mailbox.",
-    "tagline2": "Finally sorted.",
-    "a11yLabel": "kdoc – Welcome"
+    "tagline1": "Ta boîte mail.",
+    "tagline2": "Enfin rangé.",
+    "a11yLabel": "kdoc – Bienvenue"
   },
   "doka": {
-    "kicker": "AI companion",
+    "kicker": "Compagnon IA",
     "title": "Doka",
-    "emptyTitle": "Your AI companion is coming soon",
-    "emptyDesc": "Doka answers questions about your documents and emails — with sources cited.",
-    "capDocs": "Searches your documents and cites the source.",
-    "capEmail": "Includes your connected email inboxes.",
-    "capLawyer": "Lawyer mode for authority & legal matters.",
-    "newChat": "New chat",
+    "emptyTitle": "Ton compagnon IA arrive bientôt",
+    "emptyDesc": "Doka répond aux questions sur tes documents et e-mails, avec sources à l’appui.",
+    "capDocs": "Cherche dans tes documents et cite la source.",
+    "capEmail": "Inclut les boîtes mail connectées.",
+    "capLawyer": "Mode Avocat pour les questions administratives et juridiques.",
+    "newChat": "Nouvelle conversation",
     "conversations": "Conversations",
-    "noConversations": "No conversations yet.",
-    "untitled": "New chat",
-    "placeholder": "Ask Doka something …",
-    "send": "Send",
-    "attach": "Attach file",
-    "lawyerMode": "Lawyer mode",
-    "disclaimer": "Note: this is not legal advice.",
-    "thinking": "Doka is thinking …",
-    "emptyChatTitle": "Ask Doka",
-    "suggest1": "Which deadlines do I have open?",
-    "suggest2": "Summarize my latest authority letter.",
-    "suggest3": "Which invoices are still unpaid?",
-    "limitReached": "Doka limit reached. Please upgrade.",
-    "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again",
-    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
+    "noConversations": "Aucune conversation pour l’instant.",
+    "untitled": "Nouvelle conversation",
+    "placeholder": "Demande quelque chose à Doka …",
+    "send": "Envoyer",
+    "lawyerMode": "Mode Avocat",
+    "disclaimer": "Remarque : ceci ne constitue pas un conseil juridique.",
+    "thinking": "Doka réfléchit …",
+    "emptyChatTitle": "Demande à Doka",
+    "suggest1": "Quelles échéances ai-je en cours ?",
+    "suggest2": "Résume mon dernier courrier administratif.",
+    "suggest3": "Quelles factures sont encore impayées ?",
+    "limitReached": "Limite de Doka atteinte. Améliore ton forfait.",
+    "errorGeneric": "Une erreur est survenue. Réessaie.",
+    "retry": "Renvoyer",
+    "permanentDisclaimer": "Les textes créés par Doka sont générés par IA et ne remplacent pas un conseil juridique, fiscal ou médical. Vérifie-les avant utilisation.",
+    "checkPhishing": "Vérifier un message de phishing",
+    "lawyerInfoOpen": "En savoir plus sur le mode Avocat",
+    "lawyerInfoTitle": "Mode Avocat",
+    "lawyerInfoIntro": "Le mode Avocat oriente Doka vers les documents juridiques : décisions, contrats et courriers officiels.",
+    "lawyerInfoChangesTitle": "Ce qui change",
+    "lawyerInfoChanges": "Doka lit les documents juridiques plus en profondeur : il explique les articles en langage clair, évalue ta situation juridique, repère les points contestables et, sur demande, rédige une lettre de contestation avec tes coordonnées d’expéditeur.",
+    "lawyerInfoBetterTitle": "Ce que Doka fait mieux",
+    "lawyerInfoBetter": "Des explications juridiques plus précises, des évaluations structurées et des brouillons de courriers plus corrects sur le plan formel que dans le mode normal.",
+    "lawyerInfoLimitsTitle": "Ce qui est limité",
+    "lawyerInfoLimits": "L’accent est clairement mis sur les sujets juridiques : la discussion informelle passe au second plan et les réponses deviennent plus formelles et prudentes.",
+    "lawyerInfoLegal": "Doka est une IA et ne remplace ni un conseil juridique, ni un médecin ou un conseiller financier. Vérifie soigneusement tout contenu avant de l’utiliser.",
+    "lawyerInfoClose": "Compris"
   },
   "phishing": {
-    "title": "Phishing check",
-    "dashboardHint": "Check a suspicious message",
-    "kicker": "Security check",
-    "intro": "Paste a suspicious message or upload a screenshot/PDF.",
-    "placeholder": "Paste a suspicious email or SMS here …",
-    "upload": "File",
-    "check": "Check now",
-    "analyzing": "Analyzing …",
-    "limitReached": "Limit reached. Please upgrade.",
-    "error": "Check failed. Please try again.",
+    "title": "Vérification de phishing",
+    "dashboardHint": "Vérifier un message suspect",
+    "kicker": "Contrôle de sécurité",
+    "intro": "Colle un message suspect ou téléverse une capture/un PDF.",
+    "placeholder": "Colle ici un e-mail ou SMS suspect …",
+    "check": "Vérifier maintenant",
+    "analyzing": "Analyse …",
+    "limitReached": "Limite atteinte. Améliore ton forfait.",
+    "error": "La vérification a échoué. Réessaie.",
     "scaleRisk": "Phishing",
-    "scaleSafe": "Safe",
-    "verdictSafe": "Safe",
-    "verdictSuspicious": "Suspicious",
+    "scaleSafe": "Sûr",
+    "verdictSafe": "Sûr",
+    "verdictSuspicious": "Suspect",
     "verdictPhishing": "Phishing",
-    "whyTitle": "How this verdict was reached",
-    "newCheck": "New",
-    "report": "Report as phishing",
-    "reportSubject": "Phishing report"
+    "whyTitle": "Comment ce verdict a été obtenu",
+    "newCheck": "Nouveau",
+    "report": "Signaler comme phishing",
+    "reportSubject": "Signalement de phishing"
+  },
+  "pwa": {
+    "install": "Installer",
+    "installDesc": "Ajoutez-la à l’écran d’accueil pour un accès rapide",
+    "installTitle": "Installer l’app KamalDoc"
+  },
+  "search": {
+    "commandPalettePlaceholder": "Rechercher ou saisir une commande…",
+    "emptyHint": "Saisis ou choisis une commande",
+    "go": "Aller à",
+    "navigate": "naviguer",
+    "noResults": "Aucun résultat",
+    "open": "Ouvrir"
+  },
+  "settings": {
+    "title": "Paramètres"
+  },
+  "attach": {
+    "title": "Ajouter une pièce jointe",
+    "takePhoto": "Prendre une photo",
+    "fromGallery": "Choisir dans la galerie",
+    "uploadFile": "Téléverser un fichier",
+    "cancel": "Annuler"
   }
 }

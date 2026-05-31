@@ -38,6 +38,7 @@ PLAN_LIMITS = {
         "befund_total": 2,
         "befund_month": 2,
         "doka_messages_month": 30,
+        "doka_tokens_month": 50_000,
         "phishing_checks_month": 5,
         "email_accounts": 1,
         "expenses": False,
@@ -51,6 +52,7 @@ PLAN_LIMITS = {
         "behoerden_month": 10,
         "befund_month": 10,
         "doka_messages_month": 300,
+        "doka_tokens_month": 500_000,
         "phishing_checks_month": 50,
         "email_accounts": 3,
         "expenses": True,
@@ -63,6 +65,7 @@ PLAN_LIMITS = {
         "behoerden_month": 50,
         "befund_month": 50,
         "doka_messages_month": 3000,
+        "doka_tokens_month": 3_000_000,
         "phishing_checks_month": None,
         "email_accounts": 10,
         "expenses": True,
@@ -224,7 +227,7 @@ async def get_usage(user_id: str) -> dict:
                 await db.execute(
                     """UPDATE usage_counters
                        SET documents_month = 0, ki_analyses_month = 0, behoerden_month = 0, befund_month = 0,
-                           doka_messages_month = 0, phishing_checks_month = 0, last_reset = ?
+                           doka_messages_month = 0, doka_tokens_month = 0, phishing_checks_month = 0, last_reset = ?
                        WHERE user_id = ?""",
                     (now.strftime("%Y-%m-%d"), user_id),
                 )
@@ -234,6 +237,7 @@ async def get_usage(user_id: str) -> dict:
                 usage["behoerden_month"] = 0
                 usage["befund_month"] = 0
                 usage["doka_messages_month"] = 0
+                usage["doka_tokens_month"] = 0
                 usage["phishing_checks_month"] = 0
                 usage["last_reset"] = now.strftime("%Y-%m-%d")
                 logger.info(f"Monthly counters reset for user {user_id} (registration-day based)")
@@ -257,6 +261,7 @@ ALLOWED_USAGE_FIELDS = {
     "behoerden_month",
     "befund_month",
     "doka_messages_month",
+    "doka_tokens_month",
     "phishing_checks_month",
 }
 
@@ -343,21 +348,22 @@ async def check_analysis_limit(user_id: str):
 
 
 async def check_doka_limit(user_id: str):
-    """Check Doka chat message limit (monthly)."""
+    """Check the monthly Doka token budget. Tokens (not message count) are the
+    Doka quota — they refill monthly and gate access once exhausted."""
     plan = await get_user_plan(user_id)
     limits = PLAN_LIMITS[plan]
-    max_month = limits.get("doka_messages_month")
+    max_month = limits.get("doka_tokens_month")
     if max_month is None:
         return  # unlimited
 
     usage = await get_usage(user_id)
-    current = usage.get("doka_messages_month", 0)
+    current = usage.get("doka_tokens_month", 0)
     if current >= max_month:
         raise HTTPException(
             status_code=403,
             detail={
                 "code": "DOKA_LIMIT",
-                "message": f"Doka-Nachrichten-Limit erreicht ({max_month}/Monat). Bitte upgraden.",
+                "message": f"Doka-Token-Kontingent erreicht ({max_month}/Monat). Bitte upgraden.",
                 "plan": plan,
                 "limit": max_month,
                 "used": current,
@@ -527,7 +533,7 @@ async def get_subscription_status(user_id: str) -> dict:
         "limits": {
             "documents_total": limits["documents_total"],
             "ki_analyses_month": limits.get("ki_analyses_month"),
-            "behoerden": limits.get("behoerden_total") if plan == "free" else limits.get("behoerden_month"),
+            "doka_tokens": limits.get("doka_tokens_month"),
             "befund": limits.get("befund_total") if plan == "free" else limits.get("befund_month"),
             "expenses": limits["expenses"],
             "push_notifications": limits["push_notifications"],
@@ -537,7 +543,7 @@ async def get_subscription_status(user_id: str) -> dict:
             "documents_total": usage["documents_total"],
             "documents_month": usage.get("documents_month", 0),
             "ki_analyses_month": usage.get("ki_analyses_month", 0),
-            "behoerden_used": usage["behoerden_month"],
+            "doka_tokens_used": usage.get("doka_tokens_month", 0),
             "befund_used": usage["befund_month"],
             "next_reset": usage.get("next_reset"),
             "registration_date": usage.get("registration_date"),

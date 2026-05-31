@@ -10,9 +10,9 @@
     "logout": "تسجيل الخروج",
     "support": "المساعدة والدعم",
     "menu": "القائمة",
-    "email": "Connect Email",
+    "email": "ربط البريد",
     "doka": "Doka",
-    "legal": "Legal"
+    "legal": "الشؤون القانونية"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -28,7 +28,7 @@
     "hasAccount": "مسجل بالفعل؟",
     "registerNow": "سجّل الآن",
     "loginNow": "سجّل الدخول الآن",
-    "emailPlaceholder": "your@email.com",
+    "emailPlaceholder": "name@email.com",
     "passwordPlaceholder": "••••••••",
     "passwordMinLength": "6 أحرف على الأقل",
     "passwordConfirmPlaceholder": "تأكيد كلمة المرور",
@@ -69,7 +69,7 @@
     "requestNewLink": "طلب رابط جديد",
     "setNewPassword": "حفظ كلمة المرور",
     "saving": "جاري الحفظ...",
-    "impressum": "Legal Notice"
+    "impressum": "بيانات الناشر"
   },
   "dashboard": {
     "openTasks": "المهام المفتوحة",
@@ -121,7 +121,11 @@
     "subline4": "مستنداتك في انتظارك",
     "subline5": "لنكن منتجين اليوم",
     "subline6": "التنظيم الجيد نصف النجاح",
-    "subline7": "مكتبك الرقمي في انتظارك"
+    "subline7": "مكتبك الرقمي في انتظارك",
+    "allDocuments": "جميع المستندات",
+    "manualTask": "يدوي",
+    "noDocumentsTitle": "هيا نبدأ!",
+    "showAll": "عرض الكل"
   },
   "upload": {
     "title": "رفع مستند",
@@ -145,7 +149,10 @@
     "addPage": "إضافة صفحة",
     "finish": "تم",
     "buildingPdf": "جارٍ إنشاء PDF...",
-    "pageCount": "{{count}} صفحات"
+    "pageCount": "{{count}} صفحات",
+    "document": "ملف",
+    "heroSub": "صوّر رسالة أو امسح المستندات متعددة الصفحات مباشرةً",
+    "or": "أو"
   },
   "document": {
     "back": "رجوع",
@@ -215,7 +222,15 @@
     "share": "مشاركة",
     "translateSection": "ترجمة المستند",
     "translateBtn": "ترجمة",
-    "translatingDoc": "جارٍ الترجمة..."
+    "translatingDoc": "جارٍ الترجمة...",
+    "confirmDeleteTitle": "حذف المستند؟",
+    "deleteFailed": "فشل الحذف",
+    "deleted": "تم حذف المستند",
+    "ocrLowQuality": "استخرج التعرف على النص محتوى قليلًا جدًا. يُرجى رفع صورة أوضح، ويفضّل دون انعكاسات وبإضاءة جيدة.",
+    "replyTypeCancellation": "إلغاء",
+    "replyTypeComplaint": "شكوى",
+    "replyTypeGeneral": "عام",
+    "replyTypePayment": "تأكيد الدفع"
   },
   "archive": {
     "title": "الأرشيف",
@@ -264,7 +279,6 @@
     "cancelFailed": "فشل الإلغاء",
     "usageDocs": "المستندات",
     "usageKI": "تحليلات الذكاء الاصطناعي / شهر",
-    "usageBehoerde": "مساعد رسمي",
     "usageBefund": "مساعد طبي",
     "unlimited": "غير محدود",
     "reactivate": "إعادة تفعيل الاشتراك",
@@ -297,7 +311,12 @@
     "installApp": "تثبيت التطبيق",
     "installAppDesc": "قم بتثبيت KamalDoc كتطبيق أصلي على هاتفك الذكي.",
     "downloadAndroid": "تحميل APK أندرويد",
-    "iosComingSoon": "iOS - قريبًا"
+    "iosComingSoon": "iOS - قريبًا",
+    "cancelSubscription": "إلغاء الاشتراك",
+    "cancelSuccess": "تم إلغاء الاشتراك",
+    "confirmCancelTitle": "إلغاء الاشتراك؟",
+    "deleteAccountFailed": "فشل حذف الحساب",
+    "usageDokaTokens": "رموز Doka"
   },
   "categories": {
     "brief": "رسالة",
@@ -317,7 +336,11 @@
     "loading": "جارٍ التحميل...",
     "appName": "KamalDoc",
     "appDesc": "نظام إدارة المستندات",
-    "aiGenerated": "AI-generated"
+    "aiGenerated": "أُنشئ بالذكاء الاصطناعي",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "searching": "جارٍ البحث…",
+    "close": "إغلاق"
   },
   "expenses": {
     "title": "لوحة المصروفات",
@@ -373,7 +396,9 @@
     "translating": "جاري الترجمة…",
     "previousDocs": "تقارير سابقة",
     "noDocs": "لم يتم رفع تقارير بعد",
-    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
+    "medicalDisclaimer": "ملاحظة: لا يغني kdoc عن الاستشارة الطبية. قد تحتوي تحليلات الذكاء الاصطناعي على أخطاء – استشر دائمًا طبيبًا للقرارات الطبية.",
+    "analyzing": "جارٍ التحليل…",
+    "finishing": "شارف على الانتهاء…"
   },
   "expenseCategories": {
     "versicherung": "تأمين",
@@ -416,8 +441,6 @@
     "docsUnlimited": "مستندات غير محدودة",
     "ki10": "حد أقصى 10 تحليلات ذكاء اصطناعي",
     "kiUnlimited": "تحليلات غير محدودة",
-    "behoerde2": "2x مساعد رسمي",
-    "behoerde10": "10x مساعد رسمي / شهر",
     "behoerdeUnlimited": "مساعد رسمي غير محدود",
     "befund2": "2x مساعد طبي",
     "befund10": "10x مساعد طبي / شهر",
@@ -437,13 +460,16 @@
     "proActive": "خطة Pro نشطة",
     "ki50": "بحد أقصى 50 تحليل AI / شهر",
     "ki500": "بحد أقصى 500 تحليل AI / شهر",
-    "behoerde50": "بحد أقصى 50x مساعد السلطات / شهر",
     "befund50": "بحد أقصى 50x مساعد طبي / شهر",
     "freeMonthly": "10 مستندات/شهر كحد أقصى",
     "freeResets": "تتم إعادة تعيين الحصة شهريا",
     "basicActive": "خطة Basic نشطة",
-    "featureLockedIos": "This feature is not included in your current plan.",
-    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
+    "featureLockedIos": "هذه الميزة غير متضمَّنة في خطتك الحالية.",
+    "withdrawalConsent": "أوافق صراحةً على أن تبدأ الخدمة فورًا وأؤكد أن حقي في الانسحاب يسقط بمجرد بدء التنفيذ.",
+    "withdrawalRequired": "للمتابعة، يُرجى الموافقة على إشعار حق الانسحاب.",
+    "dokaTokensFree": "50٬000 رمز Doka / شهريًا",
+    "dokaTokensBasic": "500٬000 رمز Doka / شهريًا",
+    "dokaTokensPro": "3 ملايين رمز Doka / شهريًا"
   },
   "upgradeModal": {
     "limitReached": "تم الوصول للحد",
@@ -496,7 +522,9 @@
     "attachFile": "إرفاق ملف",
     "fileAttached": "تم إرفاق الملف",
     "back": "رجوع",
-    "fileTooLarge": "الملف كبير جداً (الحد الأقصى 5 ميجابايت)"
+    "fileTooLarge": "الملف كبير جداً (الحد الأقصى 5 ميجابايت)",
+    "imageClickToEnlarge": "اضغط للتكبير",
+    "loadingImage": "جارٍ تحميل الصورة …"
   },
   "intro": {
     "step1Title": "اختيار اللغة",
@@ -529,12 +557,12 @@
     "step6Hint": "اختياري – يمكن تغييره في أي وقت من الملف الشخصي.",
     "step6Save": "حفظ والمتابعة",
     "step6Skip": "تخطي",
-    "phishingTitle": "Phishing check",
-    "phishingDesc": "Unsure about a message? Let Doka detect scams & phishing — with a risk gauge and clear flags.",
-    "emailTitle": "Email accounts",
-    "emailDesc": "Connect your inboxes (Gmail, IMAP & more). Doka can then search your emails too.",
-    "searchTitle": "Quick search",
-    "searchDesc": "Find any document instantly via global search — available anytime."
+    "phishingTitle": "فحص التصيّد",
+    "phishingDesc": "غير متأكد من رسالة؟ دع Doka يكتشف الاحتيال والتصيّد، مع مؤشر مخاطر وإشارات واضحة.",
+    "emailTitle": "حسابات البريد",
+    "emailDesc": "اربط صناديق بريدك (Gmail وIMAP والمزيد). عندئذٍ يمكن لـ Doka البحث في بريدك أيضًا.",
+    "searchTitle": "بحث سريع",
+    "searchDesc": "اعثر على أي مستند فورًا عبر البحث الشامل المتاح دائمًا."
   },
   "email": {
     "connectedAccounts": "صناديق البريد المتصلة",
@@ -552,17 +580,17 @@
     "privacyDetail1": "يقرأ KamalDoc بريدك فقط – ولن يرسل أو يحذف أو يعدّل أي رسائل.",
     "privacyDetail2": "لا يتم تخزين محتوى الرسائل على خوادمنا. تُجرى عمليات البحث مباشرة مع مزوّد خدمتك.",
     "privacyDetail3": "يمكنك قطع الاتصال بأي صندوق بريد في أي وقت – وسيتم حذف جميع بيانات الاعتماد المخزّنة فوراً وبالكامل.",
-    "manage": "manage",
-    "searchPlaceholderCombined": "Search documents & emails…",
-    "filterAll": "All",
-    "filterDocuments": "Documents",
-    "filterEmails": "Emails",
-    "results": "Email Results",
-    "noSubject": "(No Subject)",
-    "preview": "Email Preview",
-    "previewError": "Failed to load email",
-    "to": "To",
-    "attachments": "Attachments",
+    "manage": "إدارة",
+    "searchPlaceholderCombined": "ابحث في المستندات والبريد…",
+    "filterAll": "الكل",
+    "filterDocuments": "المستندات",
+    "filterEmails": "رسائل البريد",
+    "results": "نتائج البريد",
+    "noSubject": "(بدون موضوع)",
+    "preview": "معاينة البريد",
+    "previewError": "تعذّر تحميل البريد",
+    "to": "إلى",
+    "attachments": "المرفقات",
     "icloud_app_password_hint": "يتطلب iCloud كلمة مرور خاصة بالتطبيق. أنشئها من Apple ID ← تسجيل الدخول والأمان ← كلمات مرور خاصة بالتطبيقات.",
     "yahoo_app_password_hint": "يتطلب Yahoo كلمة مرور للتطبيق. أنشئها من إعدادات حساب Yahoo ← الأمان ← إنشاء كلمة مرور التطبيق.",
     "connectFailedWithReason": "فشل الاتصال: {{reason}}",
@@ -583,56 +611,89 @@
     "port": "المنفذ"
   },
   "splash": {
-    "tagline1": "Your mailbox.",
-    "tagline2": "Finally sorted.",
-    "a11yLabel": "kdoc – Welcome"
+    "tagline1": "بريدك الوارد.",
+    "tagline2": "مرتّب أخيرًا.",
+    "a11yLabel": "kdoc – ترحيب"
   },
   "doka": {
-    "kicker": "AI companion",
+    "kicker": "رفيق ذكي",
     "title": "Doka",
-    "emptyTitle": "Your AI companion is coming soon",
-    "emptyDesc": "Doka answers questions about your documents and emails — with sources cited.",
-    "capDocs": "Searches your documents and cites the source.",
-    "capEmail": "Includes your connected email inboxes.",
-    "capLawyer": "Lawyer mode for authority & legal matters.",
-    "newChat": "New chat",
-    "conversations": "Conversations",
-    "noConversations": "No conversations yet.",
-    "untitled": "New chat",
-    "placeholder": "Ask Doka something …",
-    "send": "Send",
-    "attach": "Attach file",
-    "lawyerMode": "Lawyer mode",
-    "disclaimer": "Note: this is not legal advice.",
-    "thinking": "Doka is thinking …",
-    "emptyChatTitle": "Ask Doka",
-    "suggest1": "Which deadlines do I have open?",
-    "suggest2": "Summarize my latest authority letter.",
-    "suggest3": "Which invoices are still unpaid?",
-    "limitReached": "Doka limit reached. Please upgrade.",
-    "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again",
-    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
+    "emptyTitle": "رفيقك الذكي قادم قريبًا",
+    "emptyDesc": "يجيب Doka عن أسئلتك حول مستنداتك وبريدك مع ذكر المصادر.",
+    "capDocs": "يبحث في مستنداتك ويذكر المصدر.",
+    "capEmail": "يشمل صناديق البريد المتصلة.",
+    "capLawyer": "وضع المحامي للمسائل الإدارية والقانونية.",
+    "newChat": "محادثة جديدة",
+    "conversations": "المحادثات",
+    "noConversations": "لا توجد محادثات بعد.",
+    "untitled": "محادثة جديدة",
+    "placeholder": "اسأل Doka شيئًا …",
+    "send": "إرسال",
+    "lawyerMode": "وضع المحامي",
+    "disclaimer": "ملاحظة: هذه ليست استشارة قانونية.",
+    "thinking": "Doka يفكّر …",
+    "emptyChatTitle": "اسأل Doka",
+    "suggest1": "ما المواعيد النهائية المعلّقة لديّ؟",
+    "suggest2": "لخّص آخر خطاب رسمي لي.",
+    "suggest3": "ما الفواتير التي لا تزال غير مدفوعة؟",
+    "limitReached": "تم بلوغ حد Doka. يُرجى الترقية.",
+    "errorGeneric": "حدث خطأ ما. حاول مرة أخرى.",
+    "retry": "إعادة الإرسال",
+    "permanentDisclaimer": "النصوص التي ينشئها Doka مُولّدة بالذكاء الاصطناعي ولا تغني عن الاستشارة القانونية أو الضريبية أو الطبية. راجِعها قبل الاستخدام.",
+    "checkPhishing": "فحص رسالة تصيّد",
+    "lawyerInfoOpen": "المزيد عن وضع المحامي",
+    "lawyerInfoTitle": "وضع المحامي",
+    "lawyerInfoIntro": "يوجّه وضع المحامي تطبيق Doka نحو المستندات القانونية: القرارات والعقود والمراسلات الرسمية.",
+    "lawyerInfoChangesTitle": "ما الذي يتغيّر",
+    "lawyerInfoChanges": "يقرأ Doka المستندات القانونية بعمق أكبر: يشرح المواد بلغة مبسّطة، ويقيّم وضعك القانوني، ويكتشف النقاط القابلة للطعن، وعند الطلب يصوغ خطاب اعتراض ببيانات المُرسِل الخاصة بك.",
+    "lawyerInfoBetterTitle": "ما الذي يُتقنه Doka أكثر",
+    "lawyerInfoBetter": "شروحات قانونية أدق، وتقييمات منظّمة، ومسوّدات خطابات أكثر صحة من الناحية الشكلية مقارنة بالوضع العادي.",
+    "lawyerInfoLimitsTitle": "ما الذي يُقيَّد",
+    "lawyerInfoLimits": "ينصبّ التركيز بوضوح على المواضيع القانونية، فيتراجع الحديث العام، وتصبح الإجابات أكثر رسمية وحذرًا.",
+    "lawyerInfoLegal": "إنّ Doka ذكاء اصطناعي ولا يغني عن الاستشارة القانونية، ولا عن الطبيب أو المستشار المالي. يُرجى مراجعة كل المخرجات بعناية قبل استخدامها.",
+    "lawyerInfoClose": "فهمت"
   },
   "phishing": {
-    "title": "Phishing check",
-    "dashboardHint": "Check a suspicious message",
-    "kicker": "Security check",
-    "intro": "Paste a suspicious message or upload a screenshot/PDF.",
-    "placeholder": "Paste a suspicious email or SMS here …",
-    "upload": "File",
-    "check": "Check now",
-    "analyzing": "Analyzing …",
-    "limitReached": "Limit reached. Please upgrade.",
-    "error": "Check failed. Please try again.",
-    "scaleRisk": "Phishing",
-    "scaleSafe": "Safe",
-    "verdictSafe": "Safe",
-    "verdictSuspicious": "Suspicious",
-    "verdictPhishing": "Phishing",
-    "whyTitle": "How this verdict was reached",
-    "newCheck": "New",
-    "report": "Report as phishing",
-    "reportSubject": "Phishing report"
+    "title": "فحص التصيّد",
+    "dashboardHint": "فحص رسالة مشبوهة",
+    "kicker": "فحص أمني",
+    "intro": "الصق رسالة مشبوهة أو ارفع لقطة شاشة/ملف PDF.",
+    "placeholder": "الصق هنا بريدًا أو رسالة نصية مشبوهة …",
+    "check": "تحقّق الآن",
+    "analyzing": "جارٍ التحليل …",
+    "limitReached": "تم بلوغ الحد. يُرجى الترقية.",
+    "error": "فشل الفحص. حاول مرة أخرى.",
+    "scaleRisk": "تصيّد",
+    "scaleSafe": "آمن",
+    "verdictSafe": "آمن",
+    "verdictSuspicious": "مشبوه",
+    "verdictPhishing": "تصيّد",
+    "whyTitle": "كيف تم التوصل إلى هذا التقييم",
+    "newCheck": "جديد",
+    "report": "الإبلاغ كتصيّد",
+    "reportSubject": "بلاغ تصيّد"
+  },
+  "pwa": {
+    "install": "تثبيت",
+    "installDesc": "أضِفه إلى الشاشة الرئيسية للوصول السريع",
+    "installTitle": "تثبيت تطبيق KamalDoc"
+  },
+  "search": {
+    "commandPalettePlaceholder": "ابحث أو اكتب أمرًا…",
+    "emptyHint": "اكتب أو اختر أمرًا",
+    "go": "الذهاب إلى",
+    "navigate": "التنقل",
+    "noResults": "لا توجد نتائج",
+    "open": "فتح"
+  },
+  "settings": {
+    "title": "الإعدادات"
+  },
+  "attach": {
+    "title": "إضافة مرفق",
+    "takePhoto": "التقاط صورة",
+    "fromGallery": "الاختيار من المعرض",
+    "uploadFile": "رفع ملف",
+    "cancel": "إلغاء"
   }
 }

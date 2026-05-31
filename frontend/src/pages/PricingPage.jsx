@@ -19,7 +19,7 @@ const PLANS = [
     features: [
       { key: 'pricing.docs10', included: true },
       { key: 'pricing.ki10', included: true },
-      { key: 'pricing.behoerde2', included: true },
+      { key: 'pricing.dokaTokensFree', included: true },
       { key: 'pricing.befund2', included: true },
       { key: 'pricing.expenses', included: false },
       { key: 'pricing.push', included: false },
@@ -33,7 +33,7 @@ const PLANS = [
     features: [
       { key: 'pricing.docs50', included: true },
       { key: 'pricing.ki50', included: true },
-      { key: 'pricing.behoerde10', included: true },
+      { key: 'pricing.dokaTokensBasic', included: true },
       { key: 'pricing.befund10', included: true },
       { key: 'pricing.expenses', included: true },
       { key: 'pricing.push3days', included: true },
@@ -47,7 +47,7 @@ const PLANS = [
     features: [
       { key: 'pricing.docsUnlimited', included: true },
       { key: 'pricing.ki500', included: true },
-      { key: 'pricing.behoerde50', included: true },
+      { key: 'pricing.dokaTokensPro', included: true },
       { key: 'pricing.befund50', included: true },
       { key: 'pricing.expenses', included: true },
       { key: 'pricing.pushAll', included: true },
@@ -208,7 +208,7 @@ export default function PricingPage() {
                 onClick={() => handleSelect(plan.id)}
                 disabled={isCurrent || loadingPlan === plan.id}
                 style={{
-                  width: '100%', padding: '14px 0', borderRadius: 10,
+                  width: '100%', padding: '12px 0', borderRadius: 10,
                   fontSize: 14, fontWeight: 600, cursor: isCurrent ? 'default' : 'pointer',
                   transition: 'all 0.15s ease', opacity: (isCurrent || loadingPlan === plan.id) ? 0.7 : 1,
                   ...btnStyle,

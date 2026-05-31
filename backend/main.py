@@ -239,6 +239,10 @@ GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 # Falls back to the sign-in client if not set, but a dedicated client is recommended.
 GMAIL_CLIENT_ID = os.getenv("GMAIL_CLIENT_ID", "") or GOOGLE_CLIENT_ID
 GMAIL_CLIENT_SECRET = os.getenv("GMAIL_CLIENT_SECRET", "") or GOOGLE_CLIENT_SECRET
+# Outlook / Microsoft Graph mailbox connector (Mail.Read). The connector becomes
+# available the moment OUTLOOK_CLIENT_ID is set — no code change needed.
+OUTLOOK_CLIENT_ID = os.getenv("OUTLOOK_CLIENT_ID", "")
+OUTLOOK_CLIENT_SECRET = os.getenv("OUTLOOK_CLIENT_SECRET", "")  # optional for public clients
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kamaldoc-flax.vercel.app")
 API_URL = os.getenv("API_URL", "https://api.kdoc.at")
 ANDROID_CALLBACK = os.getenv("ANDROID_CALLBACK", "at.kamaldoc.app://login-callback")
@@ -247,6 +251,8 @@ SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY", "")
 
 GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
 GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+MS_AUTH_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
+MS_TOKEN_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 
 
 # OAuth state store — SQLite-backed (H2), TTL 10 min. Survives multiple workers
@@ -699,6 +705,114 @@ async def gmail_oauth_callback_relay(
         url=f"{FRONTEND_URL}/email-callback/gmail#gmail_result={result_b64}",
         status_code=302,
     )
+
+
+@app.get("/auth/outlook/callback")
+async def outlook_oauth_callback_relay(
+    code: str = None,
+    state: str = None,
+    error: str = None,
+    error_description: str = None,
+):
+    """Backend relay for the Outlook / Microsoft Graph mailbox OAuth flow.
+
+    Mirrors the Gmail relay but is connector-only (no legacy token-to-client
+    path): it exchanges the code with the optional client secret, reads the
+    account address from Microsoft Graph /me, and persists the tokens encrypted
+    server-side before bouncing back to /email-callback/outlook. The matching
+    search path (_outlook_search) already lives in connectors_service.py.
+    """
+    import json
+    import httpx as _httpx
+    from urllib.parse import quote as _quote
+
+    connector_ctx = None
+    if state:
+        payload_str = await _pop_oauth_state_payload(state)
+        if payload_str:
+            try:
+                _p = json.loads(payload_str)
+                if isinstance(_p, dict) and _p.get("v") == "connector" and _p.get("user_id"):
+                    connector_ctx = _p
+            except (json.JSONDecodeError, TypeError):
+                connector_ctx = None
+
+    is_native = bool(connector_ctx and connector_ctx.get("platform") == "native")
+
+    def _redirect(fragment: str) -> RedirectResponse:
+        if is_native:
+            return RedirectResponse(url=f"at.kamaldoc.app://email-callback/outlook?{fragment}", status_code=302)
+        return RedirectResponse(url=f"{FRONTEND_URL}/email-callback/outlook#{fragment}", status_code=302)
+
+    def _redirect_error(msg: str) -> RedirectResponse:
+        return _redirect(f"error={_quote(msg)}")
+
+    if error:
+        return _redirect_error(error_description or error)
+    if not code:
+        return _redirect_error("no_code_received")
+    if not connector_ctx:
+        return _redirect_error("invalid_state")
+    if not OUTLOOK_CLIENT_ID:
+        logger.error("Outlook OAuth relay: OUTLOOK_CLIENT_ID not set")
+        return _redirect_error("oauth_not_configured")
+
+    data = {
+        "code": code,
+        "client_id": OUTLOOK_CLIENT_ID,
+        "redirect_uri": f"{API_URL}/auth/outlook/callback",
+        "grant_type": "authorization_code",
+        "scope": "https://graph.microsoft.com/Mail.Read offline_access",
+    }
+    if OUTLOOK_CLIENT_SECRET:
+        data["client_secret"] = OUTLOOK_CLIENT_SECRET
+
+    try:
+        async with _httpx.AsyncClient(timeout=15) as client:
+            resp = await client.post(MS_TOKEN_URL, data=data)
+    except Exception as exc:
+        logger.error(f"Outlook OAuth relay: token exchange exception: {exc}")
+        return _redirect_error("token_exchange_error")
+
+    if not resp.is_success:
+        detail = ""
+        try:
+            detail = resp.json().get("error_description") or resp.json().get("error") or ""
+        except Exception:
+            pass
+        logger.error(f"Outlook OAuth relay: token exchange failed ({resp.status_code}): {detail}")
+        return _redirect_error(f"token_exchange_failed: {detail}" if detail else "token_exchange_failed")
+
+    token_data = resp.json()
+    access_token = token_data.get("access_token", "")
+
+    email = ""
+    if access_token:
+        try:
+            async with _httpx.AsyncClient(timeout=10) as gclient:
+                profile_resp = await gclient.get(
+                    "https://graph.microsoft.com/v1.0/me",
+                    headers={"Authorization": f"Bearer {access_token}"},
+                    params={"$select": "mail,userPrincipalName"},
+                )
+            if profile_resp.is_success:
+                prof = profile_resp.json()
+                email = prof.get("mail") or prof.get("userPrincipalName") or ""
+        except Exception as exc:
+            logger.warning(f"Outlook OAuth relay: could not fetch profile: {exc}")
+
+    try:
+        from connectors_service import add_oauth_account
+        await add_oauth_account(
+            connector_ctx["user_id"], "outlook",
+            connector_ctx.get("display_name"), email,
+            {"access_token": access_token, "refresh_token": token_data.get("refresh_token")},
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.error(f"Outlook OAuth relay: failed to store account: {exc}")
+        return _redirect_error("store_failed")
+
+    return _redirect(f"connected=1&email={_quote(email or '')}")
 
 
 # --- Hilfsfunktionen ---
@@ -3725,6 +3839,8 @@ async def doka_send_message(
             await db2.close()
         try:
             await increment_usage(user_id, "doka_messages_month")
+            # Token-Kontingent: tatsächlich verbrauchte Tokens (Ein- + Ausgabe) abrechnen.
+            await increment_usage(user_id, "doka_tokens_month", (t_in or 0) + (t_out or 0))
         except Exception:  # noqa: BLE001
             pass
 
@@ -3847,7 +3963,17 @@ class ConnectorOAuthStartRequest(BaseModel):
 async def connectors_available(user_id: str = Depends(get_current_user)):
     from connectors_service import AVAILABLE_CONNECTORS
     from crypto import encryption_available
-    return {"connectors": AVAILABLE_CONNECTORS, "encryption_ready": encryption_available()}
+    # OAuth providers are only "available" once their server-side credentials are
+    # configured; IMAP/password providers are always available. The frontend uses
+    # this flag to gate the picker (e.g. Outlook stays "coming soon" until the
+    # OUTLOOK_CLIENT_ID is set in the server .env). No redeploy needed to flip it.
+    oauth_ready = {"gmail": bool(GMAIL_CLIENT_ID), "outlook": bool(OUTLOOK_CLIENT_ID)}
+    connectors = {}
+    for ctype, meta in AVAILABLE_CONNECTORS.items():
+        m = dict(meta)
+        m["available"] = oauth_ready.get(ctype, False) if meta.get("auth") == "oauth" else True
+        connectors[ctype] = m
+    return {"connectors": connectors, "encryption_ready": encryption_available()}
 
 
 @app.get("/api/connectors/accounts")
@@ -3936,6 +4062,29 @@ async def connectors_oauth_start(
             "state": token,
         }
         return {"auth_url": f"{GOOGLE_AUTH_URL}?{urlencode(params)}"}
+
+    if connector_type == "outlook":
+        if not OUTLOOK_CLIENT_ID:
+            raise HTTPException(503, "Outlook-OAuth ist serverseitig nicht konfiguriert.")
+        token = secrets.token_urlsafe(32)
+        state_payload = _json.dumps({
+            "v": "connector",
+            "user_id": user_id,
+            "platform": "native" if payload.platform == "native" else "web",
+            "type": "outlook",
+            "display_name": payload.display_name,
+        })
+        await _store_oauth_state(token, state_payload)
+        params = {
+            "client_id": OUTLOOK_CLIENT_ID,
+            "redirect_uri": f"{API_URL}/auth/outlook/callback",
+            "response_type": "code",
+            "response_mode": "query",
+            "scope": "https://graph.microsoft.com/Mail.Read offline_access",
+            "prompt": "consent",
+            "state": token,
+        }
+        return {"auth_url": f"{MS_AUTH_URL}?{urlencode(params)}"}
 
     raise HTTPException(501, f"OAuth für {connector_type} ist noch nicht verfügbar.")
 

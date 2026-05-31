@@ -121,7 +121,11 @@
     "subline4": "Deine Dokumente warten",
     "subline5": "Heute wird produktiv",
     "subline6": "Gut organisiert ist halb gewonnen",
-    "subline7": "Dein digitales Büro wartet"
+    "subline7": "Dein digitales Büro wartet",
+    "allDocuments": "Alle Dokumente",
+    "manualTask": "Manuell",
+    "noDocumentsTitle": "Los geht's!",
+    "showAll": "Alle anzeigen"
   },
   "upload": {
     "title": "Dokument hochladen",
@@ -145,7 +149,10 @@
     "addPage": "Seite hinzufügen",
     "finish": "Fertig",
     "buildingPdf": "PDF wird erstellt...",
-    "pageCount": "{{count}} Seiten"
+    "pageCount": "{{count}} Seiten",
+    "document": "Datei",
+    "heroSub": "Brief fotografieren oder mehrseitige Dokumente direkt scannen",
+    "or": "oder"
   },
   "document": {
     "back": "Zurück",
@@ -215,7 +222,15 @@
     "reminderFreeLocked": "Push-Notifications ab Basic Plan",
     "translateSection": "Dokument übersetzen",
     "translateBtn": "Übersetzen",
-    "translatingDoc": "Wird übersetzt..."
+    "translatingDoc": "Wird übersetzt...",
+    "confirmDeleteTitle": "Dokument löschen?",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "deleted": "Dokument gelöscht",
+    "ocrLowQuality": "Die Texterkennung lieferte nur wenig Inhalt. Bitte lade ein schärferes Foto hoch – idealerweise ohne Reflexionen und gut ausgeleuchtet.",
+    "replyTypeCancellation": "Kündigung",
+    "replyTypeComplaint": "Reklamation",
+    "replyTypeGeneral": "Allgemein",
+    "replyTypePayment": "Zahlungsbestätigung"
   },
   "archive": {
     "title": "Archiv",
@@ -269,7 +284,6 @@
     "usageDocs": "Dokumente",
     "usageKI": "KI-Analysen / Monat",
     "nextReset": "Nächster Reset: {{date}}",
-    "usageBehoerde": "Behörden-Ass.",
     "usageBefund": "Befund-Ass.",
     "unlimited": "Unbegrenzt",
     "perMonth": "/ Monat",
@@ -297,7 +311,12 @@
     "iosComingSoon": "iOS - Bald verfügbar",
     "systemTheme": "Systemdesign",
     "thisMonth": "diesen Monat",
-    "monthlyReset": "Kontingent wird monatlich zurückgesetzt"
+    "monthlyReset": "Kontingent wird monatlich zurückgesetzt",
+    "cancelSubscription": "Kündigen",
+    "cancelSuccess": "Abo gekündigt",
+    "confirmCancelTitle": "Abo kündigen?",
+    "deleteAccountFailed": "Account-Löschung fehlgeschlagen",
+    "usageDokaTokens": "Doka-Tokens"
   },
   "categories": {
     "brief": "Brief",
@@ -317,7 +336,11 @@
     "loading": "Lädt...",
     "appName": "KamalDoc",
     "appDesc": "Dokumenten-Management-System",
-    "aiGenerated": "KI-generiert"
+    "aiGenerated": "KI-generiert",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "searching": "Suche…",
+    "close": "Schließen"
   },
   "expenses": {
     "title": "Ausgaben-Dashboard",
@@ -373,7 +396,9 @@
     "translating": "Wird übersetzt…",
     "previousDocs": "Bisherige Befunde",
     "noDocs": "Noch keine Befunde hochgeladen",
-    "medicalDisclaimer": "Hinweis: kdoc ersetzt keine ärztliche Beratung. KI-Analysen können Fehler enthalten – konsultiere bei medizinischen Entscheidungen immer eine Ärztin oder einen Arzt."
+    "medicalDisclaimer": "Hinweis: kdoc ersetzt keine ärztliche Beratung. KI-Analysen können Fehler enthalten – konsultiere bei medizinischen Entscheidungen immer eine Ärztin oder einen Arzt.",
+    "analyzing": "Wird analysiert...",
+    "finishing": "Fast fertig..."
   },
   "expenseCategories": {
     "versicherung": "Versicherung",
@@ -422,9 +447,6 @@
     "ki50": "Max. 50 KI-Analysen / Monat",
     "ki500": "Max. 500 KI-Analysen / Monat",
     "kiUnlimited": "Unbegrenzte KI-Analyse",
-    "behoerde2": "2x Behörden-Assistent / Monat",
-    "behoerde10": "10x Behörden-Assistent / Monat",
-    "behoerde50": "Max. 50x Behörden-Assistenten / Monat",
     "behoerdeUnlimited": "Unbegrenzte Behörden-Assistenten",
     "befund2": "2x Befund-Assistent / Monat",
     "befund10": "10x Befund-Assistent / Monat",
@@ -443,7 +465,11 @@
     "freeMonthly": "Max. 10 Dokumente/Monat",
     "freeResets": "Kontingent wird monatlich zurückgesetzt",
     "featureLockedIos": "Diese Funktion ist in deinem aktuellen Plan nicht enthalten.",
-    "withdrawalConsent": "Ich stimme ausdrücklich zu, dass die Leistung sofort beginnt, und bestätige, dass mein Widerrufsrecht mit Beginn der Ausführung erlischt."
+    "withdrawalConsent": "Ich stimme ausdrücklich zu, dass die Leistung sofort beginnt, und bestätige, dass mein Widerrufsrecht mit Beginn der Ausführung erlischt.",
+    "withdrawalRequired": "Bitte stimme dem Hinweis zum Widerrufsrecht zu, um fortzufahren.",
+    "dokaTokensFree": "50.000 Doka-Tokens / Monat",
+    "dokaTokensBasic": "500.000 Doka-Tokens / Monat",
+    "dokaTokensPro": "3 Mio. Doka-Tokens / Monat"
   },
   "upgradeModal": {
     "limitReached": "Plan-Limit erreicht. Bitte upgraden.",
@@ -496,7 +522,9 @@
     "attachFile": "Datei anhängen",
     "fileAttached": "Datei angehängt",
     "back": "Zurück",
-    "fileTooLarge": "Datei zu groß (max. 5MB)"
+    "fileTooLarge": "Datei zu groß (max. 5MB)",
+    "imageClickToEnlarge": "Zum Vergrößern tippen",
+    "loadingImage": "Bild wird geladen …"
   },
   "intro": {
     "step1Title": "Sprache einstellen",
@@ -601,7 +629,6 @@
     "untitled": "Neue Unterhaltung",
     "placeholder": "Frag Doka etwas …",
     "send": "Senden",
-    "attach": "Datei anhängen",
     "lawyerMode": "Rechtsanwalt-Modus",
     "disclaimer": "Hinweis: Dies ist keine Rechtsberatung.",
     "thinking": "Doka denkt nach …",
@@ -612,7 +639,19 @@
     "limitReached": "Doka-Limit erreicht. Bitte upgraden.",
     "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
     "retry": "Erneut senden",
-    "permanentDisclaimer": "Von Doka erstellte Texte sind KI-generiert und ersetzen keine rechtliche, steuerliche oder medizinische Beratung. Bitte vor Verwendung prüfen."
+    "permanentDisclaimer": "Von Doka erstellte Texte sind KI-generiert und ersetzen keine rechtliche, steuerliche oder medizinische Beratung. Bitte vor Verwendung prüfen.",
+    "checkPhishing": "Phishing-Nachricht prüfen",
+    "lawyerInfoOpen": "Mehr über den Rechtsanwalt-Modus",
+    "lawyerInfoTitle": "Rechtsanwalt-Modus",
+    "lawyerInfoIntro": "Der Rechtsanwalt-Modus richtet Doka auf juristische Schreiben aus – Bescheide, Verträge, Behördenpost.",
+    "lawyerInfoChangesTitle": "Was sich ändert",
+    "lawyerInfoChanges": "Doka liest juristische Dokumente tiefer: erklärt Paragraphen verständlich, schätzt deine rechtliche Lage ein, findet anfechtbare Punkte und entwirft auf Wunsch ein Widerspruchsschreiben mit deinen Absenderdaten.",
+    "lawyerInfoBetterTitle": "Was Doka besser kann",
+    "lawyerInfoBetter": "Präzisere rechtliche Erklärungen, strukturierte Einschätzungen und formgerechtere Schreiben-Entwürfe als im normalen Modus.",
+    "lawyerInfoLimitsTitle": "Was eingeschränkt ist",
+    "lawyerInfoLimits": "Der Fokus liegt klar auf rechtlichen Themen – allgemeiner Plausch tritt zurück, und Antworten fallen formeller und vorsichtiger aus.",
+    "lawyerInfoLegal": "Doka ist eine KI und ersetzt keine Rechtsberatung – und auch keinen Arzt oder Finanzberater. Alle Ausgaben vor der Verwendung sorgfältig prüfen.",
+    "lawyerInfoClose": "Verstanden"
   },
   "phishing": {
     "title": "Phishing-Prüfung",
@@ -620,7 +659,6 @@
     "kicker": "Sicherheits-Check",
     "intro": "Füge eine verdächtige Nachricht ein oder lade einen Screenshot/ein PDF hoch.",
     "placeholder": "Verdächtige E-Mail oder SMS hier einfügen …",
-    "upload": "Datei",
     "check": "Jetzt prüfen",
     "analyzing": "Analysiere …",
     "limitReached": "Limit erreicht. Bitte upgraden.",
@@ -634,5 +672,28 @@
     "newCheck": "Neu",
     "report": "Als Phishing melden",
     "reportSubject": "Phishing-Meldung"
+  },
+  "pwa": {
+    "install": "Installieren",
+    "installDesc": "Zum Startbildschirm hinzufügen für schnellen Zugriff",
+    "installTitle": "KamalDoc-App installieren"
+  },
+  "search": {
+    "commandPalettePlaceholder": "Suchen oder Befehl eingeben…",
+    "emptyHint": "Tippe oder wähle einen Befehl",
+    "go": "Gehe zu",
+    "navigate": "navigieren",
+    "noResults": "Keine Treffer",
+    "open": "Öffnen"
+  },
+  "settings": {
+    "title": "Einstellungen"
+  },
+  "attach": {
+    "title": "Anhang hinzufügen",
+    "takePhoto": "Foto aufnehmen",
+    "fromGallery": "Aus Galerie wählen",
+    "uploadFile": "Datei hochladen",
+    "cancel": "Abbrechen"
   }
 }

@@ -334,6 +334,7 @@ async def init_db():
             "ALTER TABLE usage_counters ADD COLUMN documents_month INTEGER DEFAULT 0",
             "ALTER TABLE usage_counters ADD COLUMN doka_messages_month INTEGER DEFAULT 0",
             "ALTER TABLE usage_counters ADD COLUMN phishing_checks_month INTEGER DEFAULT 0",
+            "ALTER TABLE usage_counters ADD COLUMN doka_tokens_month INTEGER DEFAULT 0",
         ]
         for migration in migrations:
             try:

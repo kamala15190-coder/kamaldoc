@@ -121,7 +121,11 @@
     "subline4": "Your documents await",
     "subline5": "Let's be productive today",
     "subline6": "Well organized is half the battle",
-    "subline7": "Your digital office awaits"
+    "subline7": "Your digital office awaits",
+    "allDocuments": "All documents",
+    "manualTask": "Manual",
+    "noDocumentsTitle": "Let's go!",
+    "showAll": "Show all"
   },
   "upload": {
     "title": "Upload Document",
@@ -145,7 +149,10 @@
     "addPage": "Add page",
     "finish": "Done",
     "buildingPdf": "Building PDF...",
-    "pageCount": "{{count}} pages"
+    "pageCount": "{{count}} pages",
+    "document": "File",
+    "heroSub": "Photograph a letter or scan multi-page documents directly",
+    "or": "or"
   },
   "document": {
     "back": "Back",
@@ -215,7 +222,15 @@
     "reminderFreeLocked": "Push notifications from Basic plan",
     "translateSection": "Translate Document",
     "translateBtn": "Translate",
-    "translatingDoc": "Translating..."
+    "translatingDoc": "Translating...",
+    "confirmDeleteTitle": "Delete document?",
+    "deleteFailed": "Deletion failed",
+    "deleted": "Document deleted",
+    "ocrLowQuality": "Text recognition returned very little content. Please upload a sharper photo — ideally without reflections and well lit.",
+    "replyTypeCancellation": "Cancellation",
+    "replyTypeComplaint": "Complaint",
+    "replyTypeGeneral": "General",
+    "replyTypePayment": "Payment confirmation"
   },
   "archive": {
     "title": "Archive",
@@ -269,7 +284,6 @@
     "usageDocs": "Documents",
     "usageKI": "AI Analyses / Month",
     "nextReset": "Next reset: {{date}}",
-    "usageBehoerde": "Authority Ass.",
     "usageBefund": "Medical Ass.",
     "unlimited": "Unlimited",
     "perMonth": "/ month",
@@ -297,7 +311,12 @@
     "installApp": "Install app",
     "installAppDesc": "Install KamalDoc as a native app on your smartphone.",
     "downloadAndroid": "Download Android APK",
-    "iosComingSoon": "iOS - Coming soon"
+    "iosComingSoon": "iOS - Coming soon",
+    "cancelSubscription": "Cancel subscription",
+    "cancelSuccess": "Subscription cancelled",
+    "confirmCancelTitle": "Cancel subscription?",
+    "deleteAccountFailed": "Account deletion failed",
+    "usageDokaTokens": "Doka tokens"
   },
   "categories": {
     "brief": "Letter",
@@ -317,7 +336,11 @@
     "loading": "Loading...",
     "appName": "KamalDoc",
     "appDesc": "Document Management System",
-    "aiGenerated": "AI-generated"
+    "aiGenerated": "AI-generated",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "searching": "Searching…",
+    "close": "Close"
   },
   "expenses": {
     "title": "Expenses Dashboard",
@@ -373,7 +396,9 @@
     "translating": "Translating…",
     "previousDocs": "Previous reports",
     "noDocs": "No medical reports uploaded yet",
-    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
+    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions.",
+    "analyzing": "Analyzing…",
+    "finishing": "Almost done…"
   },
   "expenseCategories": {
     "versicherung": "Insurance",
@@ -422,9 +447,6 @@
     "ki50": "Max. 50 AI analyses / month",
     "ki500": "Max. 500 AI analyses / month",
     "kiUnlimited": "Unlimited AI analysis",
-    "behoerde2": "2x Authority Assistant / month",
-    "behoerde10": "10x Authority Assistant / month",
-    "behoerde50": "Max. 50x Authority Assistants / month",
     "behoerdeUnlimited": "Unlimited Authority Assistants",
     "befund2": "2x Medical Assistant total",
     "befund10": "10x Medical Assistant / month",
@@ -443,7 +465,11 @@
     "freeMonthly": "Max. 10 documents/month",
     "freeResets": "Quota resets monthly",
     "featureLockedIos": "This feature is not included in your current plan.",
-    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
+    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins.",
+    "withdrawalRequired": "Please agree to the right-of-withdrawal notice to continue.",
+    "dokaTokensFree": "50,000 Doka tokens / month",
+    "dokaTokensBasic": "500,000 Doka tokens / month",
+    "dokaTokensPro": "3M Doka tokens / month"
   },
   "upgradeModal": {
     "limitReached": "Plan limit reached. Please upgrade.",
@@ -496,7 +522,9 @@
     "attachFile": "Attach file",
     "fileAttached": "File attached",
     "back": "Back",
-    "fileTooLarge": "File too large (max. 5MB)"
+    "fileTooLarge": "File too large (max. 5MB)",
+    "imageClickToEnlarge": "Tap to enlarge",
+    "loadingImage": "Loading image …"
   },
   "intro": {
     "step1Title": "Set Language",
@@ -601,7 +629,6 @@
     "untitled": "New chat",
     "placeholder": "Ask Doka something …",
     "send": "Send",
-    "attach": "Attach file",
     "lawyerMode": "Lawyer mode",
     "disclaimer": "Note: this is not legal advice.",
     "thinking": "Doka is thinking …",
@@ -612,7 +639,19 @@
     "limitReached": "Doka limit reached. Please upgrade.",
     "errorGeneric": "Something went wrong. Please try again.",
     "retry": "Try again",
-    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
+    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use.",
+    "checkPhishing": "Check phishing message",
+    "lawyerInfoOpen": "More about Lawyer mode",
+    "lawyerInfoTitle": "Lawyer mode",
+    "lawyerInfoIntro": "Lawyer mode focuses Doka on legal documents – notices, contracts and official letters.",
+    "lawyerInfoChangesTitle": "What changes",
+    "lawyerInfoChanges": "Doka reads legal documents more deeply: it explains clauses in plain language, assesses your legal situation, finds contestable points and, on request, drafts an objection letter using your sender details.",
+    "lawyerInfoBetterTitle": "What Doka does better",
+    "lawyerInfoBetter": "More precise legal explanations, structured assessments and more formally correct letter drafts than in normal mode.",
+    "lawyerInfoLimitsTitle": "What is limited",
+    "lawyerInfoLimits": "The focus is clearly on legal matters – casual chit-chat takes a back seat and answers become more formal and more cautious.",
+    "lawyerInfoLegal": "Doka is an AI and does not replace legal advice – nor a doctor or financial adviser. Please review all output carefully before using it.",
+    "lawyerInfoClose": "Got it"
   },
   "phishing": {
     "title": "Phishing check",
@@ -620,7 +659,6 @@
     "kicker": "Security check",
     "intro": "Paste a suspicious message or upload a screenshot/PDF.",
     "placeholder": "Paste a suspicious email or SMS here …",
-    "upload": "File",
     "check": "Check now",
     "analyzing": "Analyzing …",
     "limitReached": "Limit reached. Please upgrade.",
@@ -634,5 +672,28 @@
     "newCheck": "New",
     "report": "Report as phishing",
     "reportSubject": "Phishing report"
+  },
+  "pwa": {
+    "install": "Install",
+    "installDesc": "Add to home screen for quick access",
+    "installTitle": "Install the KamalDoc app"
+  },
+  "search": {
+    "commandPalettePlaceholder": "Search or type a command…",
+    "emptyHint": "Type or pick a command",
+    "go": "Go to",
+    "navigate": "navigate",
+    "noResults": "No results",
+    "open": "Open"
+  },
+  "settings": {
+    "title": "Settings"
+  },
+  "attach": {
+    "title": "Add attachment",
+    "takePhoto": "Take photo",
+    "fromGallery": "Choose from gallery",
+    "uploadFile": "Upload file",
+    "cancel": "Cancel"
   }
 }

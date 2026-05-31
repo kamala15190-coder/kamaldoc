@@ -10,9 +10,9 @@
     "logout": "Çıkış",
     "support": "Yardım ve Destek",
     "menu": "Menü",
-    "email": "Connect Email",
+    "email": "E-postayı bağla",
     "doka": "Doka",
-    "legal": "Legal"
+    "legal": "Yasal"
   },
   "auth": {
     "login": "Giriş",
@@ -69,7 +69,7 @@
     "requestNewLink": "Yeni bağlantı iste",
     "setNewPassword": "Şifreyi kaydet",
     "saving": "Kaydediliyor...",
-    "impressum": "Legal Notice"
+    "impressum": "Künye"
   },
   "dashboard": {
     "openTasks": "Açık Görevler",
@@ -121,7 +121,11 @@
     "subline4": "Belgelerin seni bekliyor",
     "subline5": "Bugün verimli olalım",
     "subline6": "İyi organize olmak işin yarısı",
-    "subline7": "Dijital ofisinin seni bekliyor"
+    "subline7": "Dijital ofisinin seni bekliyor",
+    "allDocuments": "Tüm belgeler",
+    "manualTask": "Manuel",
+    "noDocumentsTitle": "Hadi başlayalım!",
+    "showAll": "Tümünü göster"
   },
   "upload": {
     "title": "Belge Yükle",
@@ -145,7 +149,10 @@
     "addPage": "Sayfa ekle",
     "finish": "Bitti",
     "buildingPdf": "PDF oluşturuluyor...",
-    "pageCount": "{{count}} sayfa"
+    "pageCount": "{{count}} sayfa",
+    "document": "Dosya",
+    "heroSub": "Bir mektubu fotoğrafla veya çok sayfalı belgeleri doğrudan tara",
+    "or": "veya"
   },
   "document": {
     "back": "Geri",
@@ -215,7 +222,15 @@
     "share": "Paylaş",
     "translateSection": "Belgeyi çevir",
     "translateBtn": "Çevir",
-    "translatingDoc": "Çevriliyor..."
+    "translatingDoc": "Çevriliyor...",
+    "confirmDeleteTitle": "Belge silinsin mi?",
+    "deleteFailed": "Silme başarısız",
+    "deleted": "Belge silindi",
+    "ocrLowQuality": "Metin tanıma çok az içerik döndürdü. Lütfen daha net bir fotoğraf yükle; tercihen yansımasız ve iyi aydınlatılmış.",
+    "replyTypeCancellation": "İptal",
+    "replyTypeComplaint": "Şikayet",
+    "replyTypeGeneral": "Genel",
+    "replyTypePayment": "Ödeme onayı"
   },
   "archive": {
     "title": "Arşiv",
@@ -264,7 +279,6 @@
     "cancelFailed": "İptal başarısız",
     "usageDocs": "Belgeler",
     "usageKI": "AI Analizler / Ay",
-    "usageBehoerde": "Resmi Asist.",
     "usageBefund": "Tıbbi Asist.",
     "unlimited": "Sınırsız",
     "reactivate": "Aboneliği yeniden etkinleştir",
@@ -297,7 +311,12 @@
     "installApp": "Uygulamayı yükle",
     "installAppDesc": "KamalDoc u akıllı telefonuna yerel uygulama olarak yükle.",
     "downloadAndroid": "Android APK indir",
-    "iosComingSoon": "iOS - Yakında"
+    "iosComingSoon": "iOS - Yakında",
+    "cancelSubscription": "İptal et",
+    "cancelSuccess": "Abonelik iptal edildi",
+    "confirmCancelTitle": "Abonelik iptal edilsin mi?",
+    "deleteAccountFailed": "Hesap silinemedi",
+    "usageDokaTokens": "Doka jetonu"
   },
   "categories": {
     "brief": "Mektup",
@@ -317,7 +336,11 @@
     "loading": "Yükleniyor...",
     "appName": "KamalDoc",
     "appDesc": "Belge Yönetim Sistemi",
-    "aiGenerated": "AI-generated"
+    "aiGenerated": "Yapay zekâ ile oluşturuldu",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "searching": "Aranıyor…",
+    "close": "Kapat"
   },
   "expenses": {
     "title": "Gider Paneli",
@@ -373,7 +396,9 @@
     "translating": "Çevriliyor…",
     "previousDocs": "Önceki raporlar",
     "noDocs": "Henüz yüklenen rapor yok",
-    "medicalDisclaimer": "Note: kdoc is no substitute for medical advice. AI analyses may contain errors – always consult a doctor for medical decisions."
+    "medicalDisclaimer": "Not: kdoc tıbbi tavsiyenin yerine geçmez. Yapay zekâ analizleri hata içerebilir – tıbbi kararlar için her zaman bir doktora danış.",
+    "analyzing": "Analiz ediliyor…",
+    "finishing": "Neredeyse bitti…"
   },
   "expenseCategories": {
     "versicherung": "Sigorta",
@@ -416,8 +441,6 @@
     "docsUnlimited": "Sınırsız belgeler",
     "ki10": "Maks. 10 AI analizi toplamda",
     "kiUnlimited": "Sınırsız AI analizleri",
-    "behoerde2": "2x Resmi Asist. toplamda",
-    "behoerde10": "10x Resmi Asist. / ay",
     "behoerdeUnlimited": "Sınırsız Resmi Asist.",
     "befund2": "2x Tıbbi Asist. toplamda",
     "befund10": "10x Tıbbi Asist. / ay",
@@ -437,13 +460,16 @@
     "proActive": "Pro Plan aktif",
     "ki50": "Maks. 50 AI analiz / ay",
     "ki500": "Maks. 500 AI analiz / ay",
-    "behoerde50": "Maks. 50x Resmi asistan / ay",
     "befund50": "Maks. 50x Tıbbi asistan / ay",
     "freeMonthly": "Maks. 10 belge/ay",
     "freeResets": "Kota aylik olarak sifirlanir",
     "basicActive": "Basic Plan aktif",
-    "featureLockedIos": "This feature is not included in your current plan.",
-    "withdrawalConsent": "I expressly agree that the service begins immediately and confirm that my right of withdrawal expires once performance begins."
+    "featureLockedIos": "Bu özellik mevcut planına dahil değil.",
+    "withdrawalConsent": "Hizmetin hemen başlamasını açıkça kabul ediyor ve ifaya başlanmasıyla cayma hakkımın sona erdiğini onaylıyorum.",
+    "withdrawalRequired": "Devam etmek için cayma hakkı bildirimini kabul et.",
+    "dokaTokensFree": "Ayda 50.000 Doka jetonu",
+    "dokaTokensBasic": "Ayda 500.000 Doka jetonu",
+    "dokaTokensPro": "Ayda 3 milyon Doka jetonu"
   },
   "upgradeModal": {
     "limitReached": "Limite ulaşıldı",
@@ -496,7 +522,9 @@
     "attachFile": "Dosya ekle",
     "fileAttached": "Dosya eklendi",
     "back": "Geri",
-    "fileTooLarge": "Dosya çok büyük (maks. 5MB)"
+    "fileTooLarge": "Dosya çok büyük (maks. 5MB)",
+    "imageClickToEnlarge": "Büyütmek için dokun",
+    "loadingImage": "Görsel yükleniyor …"
   },
   "intro": {
     "step1Title": "Dil Ayarla",
@@ -529,12 +557,12 @@
     "step6Hint": "İsteğe bağlı – profilde her zaman değiştirilebilir.",
     "step6Save": "Kaydet & Devam",
     "step6Skip": "Atla",
-    "phishingTitle": "Phishing check",
-    "phishingDesc": "Unsure about a message? Let Doka detect scams & phishing — with a risk gauge and clear flags.",
-    "emailTitle": "Email accounts",
-    "emailDesc": "Connect your inboxes (Gmail, IMAP & more). Doka can then search your emails too.",
-    "searchTitle": "Quick search",
-    "searchDesc": "Find any document instantly via global search — available anytime."
+    "phishingTitle": "Phishing kontrolü",
+    "phishingDesc": "Bir mesajdan emin değil misin? Doka dolandırıcılık ve oltalamayı tespit etsin; risk göstergesi ve net işaretlerle.",
+    "emailTitle": "E-posta hesapları",
+    "emailDesc": "Posta kutularını bağla (Gmail, IMAP ve daha fazlası). Böylece Doka e-postalarında da arama yapabilir.",
+    "searchTitle": "Hızlı arama",
+    "searchDesc": "Genel arama ile her belgeyi anında bul – her zaman erişilebilir."
   },
   "email": {
     "connectedAccounts": "Bağlı Posta Kutuları",
@@ -552,17 +580,17 @@
     "privacyDetail1": "KamalDoc yalnızca e-postalarınızı okur – asla e-posta göndermez, silmez veya değiştirmez.",
     "privacyDetail2": "Sunucularımızda hiçbir e-posta içeriği saklanmaz. Aramalar doğrudan sağlayıcınızla canlı olarak yapılır.",
     "privacyDetail3": "Bir posta kutusunun bağlantısını istediğiniz zaman kesebilirsiniz – saklanan tüm kimlik bilgileri anında ve tamamen silinir.",
-    "manage": "manage",
-    "searchPlaceholderCombined": "Search documents & emails…",
-    "filterAll": "All",
-    "filterDocuments": "Documents",
-    "filterEmails": "Emails",
-    "results": "Email Results",
-    "noSubject": "(No Subject)",
-    "preview": "Email Preview",
-    "previewError": "Failed to load email",
-    "to": "To",
-    "attachments": "Attachments",
+    "manage": "yönet",
+    "searchPlaceholderCombined": "Belgelerde ve e-postalarda ara…",
+    "filterAll": "Tümü",
+    "filterDocuments": "Belgeler",
+    "filterEmails": "E-postalar",
+    "results": "E-posta sonuçları",
+    "noSubject": "(Konu yok)",
+    "preview": "E-posta önizlemesi",
+    "previewError": "E-posta yüklenemedi",
+    "to": "Kime",
+    "attachments": "Ekler",
     "icloud_app_password_hint": "iCloud, uygulamaya özel bir parola gerektirir. Apple ID → Oturum Açma ve Güvenlik → Uygulamaya Özel Parolalar bölümünden oluşturun.",
     "yahoo_app_password_hint": "Yahoo, bir uygulama parolası gerektirir. Yahoo Hesap Ayarları → Güvenlik → Uygulama Parolası Oluştur bölümünden oluşturun.",
     "connectFailedWithReason": "Bağlantı başarısız: {{reason}}",
@@ -583,56 +611,89 @@
     "port": "Bağlantı noktası"
   },
   "splash": {
-    "tagline1": "Your mailbox.",
-    "tagline2": "Finally sorted.",
-    "a11yLabel": "kdoc – Welcome"
+    "tagline1": "Posta kutun.",
+    "tagline2": "Sonunda düzenli.",
+    "a11yLabel": "kdoc – Hoş geldin"
   },
   "doka": {
-    "kicker": "AI companion",
+    "kicker": "Yapay zekâ yardımcısı",
     "title": "Doka",
-    "emptyTitle": "Your AI companion is coming soon",
-    "emptyDesc": "Doka answers questions about your documents and emails — with sources cited.",
-    "capDocs": "Searches your documents and cites the source.",
-    "capEmail": "Includes your connected email inboxes.",
-    "capLawyer": "Lawyer mode for authority & legal matters.",
-    "newChat": "New chat",
-    "conversations": "Conversations",
-    "noConversations": "No conversations yet.",
-    "untitled": "New chat",
-    "placeholder": "Ask Doka something …",
-    "send": "Send",
-    "attach": "Attach file",
-    "lawyerMode": "Lawyer mode",
-    "disclaimer": "Note: this is not legal advice.",
-    "thinking": "Doka is thinking …",
-    "emptyChatTitle": "Ask Doka",
-    "suggest1": "Which deadlines do I have open?",
-    "suggest2": "Summarize my latest authority letter.",
-    "suggest3": "Which invoices are still unpaid?",
-    "limitReached": "Doka limit reached. Please upgrade.",
-    "errorGeneric": "Something went wrong. Please try again.",
-    "retry": "Try again",
-    "permanentDisclaimer": "Texts created by Doka are AI-generated and are no substitute for legal, tax or medical advice. Please review before use."
+    "emptyTitle": "Yapay zekâ yardımcın çok yakında",
+    "emptyDesc": "Doka, belgelerin ve e-postaların hakkındaki soruları kaynak göstererek yanıtlar.",
+    "capDocs": "Belgelerinde arar ve kaynağı belirtir.",
+    "capEmail": "Bağlı posta kutularını da kapsar.",
+    "capLawyer": "İdari ve hukuki konular için Avukat modu.",
+    "newChat": "Yeni sohbet",
+    "conversations": "Sohbetler",
+    "noConversations": "Henüz sohbet yok.",
+    "untitled": "Yeni sohbet",
+    "placeholder": "Doka’ya bir şey sor …",
+    "send": "Gönder",
+    "lawyerMode": "Avukat modu",
+    "disclaimer": "Not: bu hukuki tavsiye değildir.",
+    "thinking": "Doka düşünüyor …",
+    "emptyChatTitle": "Doka’ya sor",
+    "suggest1": "Hangi son tarihlerim açık?",
+    "suggest2": "Son resmi yazımı özetle.",
+    "suggest3": "Hangi faturalar hâlâ ödenmedi?",
+    "limitReached": "Doka sınırına ulaşıldı. Lütfen yükselt.",
+    "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+    "retry": "Tekrar gönder",
+    "permanentDisclaimer": "Doka tarafından oluşturulan metinler yapay zekâ üretimidir ve hukuki, mali veya tıbbi tavsiyenin yerine geçmez. Kullanmadan önce kontrol et.",
+    "checkPhishing": "Phishing mesajını kontrol et",
+    "lawyerInfoOpen": "Avukat modu hakkında daha fazla bilgi",
+    "lawyerInfoTitle": "Avukat modu",
+    "lawyerInfoIntro": "Avukat modu, Doka’yı hukuki belgelere yönlendirir: kararlar, sözleşmeler ve resmi yazışmalar.",
+    "lawyerInfoChangesTitle": "Neler değişir",
+    "lawyerInfoChanges": "Doka hukuki belgeleri daha derin okur: maddeleri anlaşılır biçimde açıklar, hukuki durumunu değerlendirir, itiraz edilebilecek noktaları bulur ve istersen gönderen bilgilerinle bir itiraz dilekçesi hazırlar.",
+    "lawyerInfoBetterTitle": "Doka neyi daha iyi yapar",
+    "lawyerInfoBetter": "Normal moda göre daha kesin hukuki açıklamalar, yapılandırılmış değerlendirmeler ve biçimsel olarak daha doğru yazı taslakları.",
+    "lawyerInfoLimitsTitle": "Neler sınırlanır",
+    "lawyerInfoLimits": "Odak açıkça hukuki konulardadır; gündelik sohbet geri planda kalır ve yanıtlar daha resmi ve temkinli olur.",
+    "lawyerInfoLegal": "Doka bir yapay zekâdır; hukuki danışmanlığın, doktorun veya mali danışmanın yerini tutmaz. Kullanmadan önce tüm çıktıları dikkatle kontrol et.",
+    "lawyerInfoClose": "Anladım"
   },
   "phishing": {
-    "title": "Phishing check",
-    "dashboardHint": "Check a suspicious message",
-    "kicker": "Security check",
-    "intro": "Paste a suspicious message or upload a screenshot/PDF.",
-    "placeholder": "Paste a suspicious email or SMS here …",
-    "upload": "File",
-    "check": "Check now",
-    "analyzing": "Analyzing …",
-    "limitReached": "Limit reached. Please upgrade.",
-    "error": "Check failed. Please try again.",
+    "title": "Phishing kontrolü",
+    "dashboardHint": "Şüpheli bir mesajı kontrol et",
+    "kicker": "Güvenlik kontrolü",
+    "intro": "Şüpheli bir mesajı yapıştır veya ekran görüntüsü/PDF yükle.",
+    "placeholder": "Şüpheli e-posta veya SMS’i buraya yapıştır …",
+    "check": "Şimdi kontrol et",
+    "analyzing": "Analiz ediliyor …",
+    "limitReached": "Sınıra ulaşıldı. Lütfen yükselt.",
+    "error": "Kontrol başarısız oldu. Tekrar dene.",
     "scaleRisk": "Phishing",
-    "scaleSafe": "Safe",
-    "verdictSafe": "Safe",
-    "verdictSuspicious": "Suspicious",
+    "scaleSafe": "Güvenli",
+    "verdictSafe": "Güvenli",
+    "verdictSuspicious": "Şüpheli",
     "verdictPhishing": "Phishing",
-    "whyTitle": "How this verdict was reached",
-    "newCheck": "New",
-    "report": "Report as phishing",
-    "reportSubject": "Phishing report"
+    "whyTitle": "Bu değerlendirmeye nasıl ulaşıldı",
+    "newCheck": "Yeni",
+    "report": "Phishing olarak bildir",
+    "reportSubject": "Phishing bildirimi"
+  },
+  "pwa": {
+    "install": "Yükle",
+    "installDesc": "Hızlı erişim için ana ekrana ekle",
+    "installTitle": "KamalDoc uygulamasını yükle"
+  },
+  "search": {
+    "commandPalettePlaceholder": "Ara veya komut yaz…",
+    "emptyHint": "Bir komut yaz veya seç",
+    "go": "Şuna git",
+    "navigate": "gezin",
+    "noResults": "Sonuç yok",
+    "open": "Aç"
+  },
+  "settings": {
+    "title": "Ayarlar"
+  },
+  "attach": {
+    "title": "Ek ekle",
+    "takePhoto": "Fotoğraf çek",
+    "fromGallery": "Galeriden seç",
+    "uploadFile": "Dosya yükle",
+    "cancel": "İptal"
   }
 }

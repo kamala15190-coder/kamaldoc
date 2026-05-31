@@ -17,9 +17,6 @@ import { providerMeta, APP_PASSWORD_HINT } from './connectorMeta';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
 import { formatLocalDate } from '../utils/dateUtils';
 
-// Outlook has no server-side OAuth credentials yet → offered as "coming soon".
-const COMING_SOON = new Set(['outlook']);
-
 export default function EmailAccountSettings() {
   const { t } = useTranslation();
   const { isEnabled } = useFeatureFlags();
@@ -48,7 +45,7 @@ export default function EmailAccountSettings() {
   };
 
   const handlePick = async (type, meta) => {
-    if (COMING_SOON.has(type)) return;
+    if (meta.available === false) return;  // OAuth provider not yet configured server-side
     if (meta.auth === 'oauth') {
       setPicking(false);
       try { await startOAuth(type); } catch { /* toast handled in hook */ }
@@ -255,7 +252,7 @@ export default function EmailAccountSettings() {
               {providerTypes.map((type) => {
                 const meta = providerMeta(type);
                 const srv = connectors[type] || {};
-                const soon = COMING_SOON.has(type);
+                const soon = srv.available === false;  // server gates OAuth providers by configured credentials
                 const isBusy = busy === type;
                 return (
                   <button

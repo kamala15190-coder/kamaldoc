@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ShieldAlert, ShieldCheck, ShieldQuestion, Paperclip, X, Loader2, Flag, RotateCcw, AlertTriangle, Check } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { checkPhishing } from '../api';
+import { useAttachmentPicker } from '../components/AttachmentPicker';
 
 const VERDICTS = {
   safe: { color: 'var(--success)', soft: 'var(--success-soft)', Icon: ShieldCheck, key: 'verdictSafe', fallback: 'Sicher' },
@@ -19,7 +20,7 @@ export default function Phishing() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [animScore, setAnimScore] = useState(0);
-  const fileRef = useRef(null);
+  const { openPicker, picker } = useAttachmentPicker({ onFile: setFile });
 
   const run = async ({ message, attachedFile, documentId } = {}) => {
     setLoading(true);
@@ -110,13 +111,12 @@ export default function Phishing() {
             </div>
           )}
           <div style={{ display: 'flex', gap: 10 }}>
-            <input ref={fileRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }}
-              onChange={(e) => { if (e.target.files?.[0]) { setFile(e.target.files[0]); } e.target.value = ''; }} />
-            <button onClick={() => fileRef.current?.click()} className="btn-ghost" style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <Paperclip style={{ width: 16, height: 16 }} /> {t('phishing.upload', { defaultValue: 'Datei' })}
+            <button onClick={openPicker} className="btn-ghost" aria-label={t('attach.title', { defaultValue: 'Anhang hinzufügen' })}
+              style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 14px' }}>
+              <Paperclip style={{ width: 17, height: 17 }} />
             </button>
             <button onClick={() => run({ message: text, attachedFile: file })} disabled={!text.trim() && !file}
-              className="btn-accent" style={{ flex: 1, opacity: (!text.trim() && !file) ? 0.6 : 1 }}>
+              className="btn-accent" style={{ flex: 1, padding: '9px 16px', fontSize: 13.5, opacity: (!text.trim() && !file) ? 0.6 : 1 }}>
               {t('phishing.check', { defaultValue: 'Jetzt prüfen' })}
             </button>
           </div>
@@ -199,6 +199,7 @@ export default function Phishing() {
           </div>
         </div>
       )}
+      {picker}
     </div>
   );
 }

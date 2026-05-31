@@ -556,8 +556,12 @@ export default function Dashboard() {
             {t('dashboard.addSector')}
           </button>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <button onClick={resetLayout} style={{ fontSize: 13, color: tc.textMuted, background: 'none', border: 'none', cursor: 'pointer' }}>{t('dashboard.resetLayout')}</button>
-            <button onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }} className="btn-accent" style={{ fontSize: 13, padding: '6px 16px' }}>{t('dashboard.editDone')}</button>
+            <button onClick={resetLayout} style={{ fontSize: 12.5, color: tc.textMuted, background: 'none', border: 'none', cursor: 'pointer' }}>{t('dashboard.resetLayout')}</button>
+            <button onClick={() => { setEditMode(false); setShowAddModal(false); setConfirmHide(null); }}
+              style={{
+                fontSize: 12.5, fontWeight: 600, padding: '6px 14px', borderRadius: 999, cursor: 'pointer',
+                background: 'var(--amber-soft)', color: 'var(--amber)', border: '1px solid var(--accent-soft-border)',
+              }}>{t('dashboard.editDone')}</button>
           </div>
         </div>
       )}
@@ -694,10 +698,13 @@ function SortableSection({ id, editMode, onRemove, children, sectorIcon, sectorL
               <span style={{ fontSize: 16 }}>{sectorIcon}</span>
               <span style={{ fontWeight: 600, fontSize: 14, color: tc.text }}>{sectorLabel}</span>
               <span style={{ marginLeft: 'auto', color: tc.textMuted, fontSize: 11 }}>{t('dashboard.dragToMove')}</span>
-              <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }} onPointerDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()} style={{
-                width: 22, height: 22, borderRadius: '50%', backgroundColor: 'var(--danger)', color: 'white', border: 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: 14, lineHeight: 1, flexShrink: 0,
-              }}><Minus className="w-3 h-3" /></button>
+              <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRemove(); }} onPointerDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}
+                className="no-touch-min" aria-label={t('dashboard.hideButton', { defaultValue: 'Ausblenden' })} style={{
+                width: 26, height: 26, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--danger-soft)', color: 'var(--danger)', border: '1px solid var(--danger-border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', lineHeight: 1,
+                transition: 'background 0.15s ease, transform 0.12s ease',
+              }}><Minus style={{ width: 15, height: 15, strokeWidth: 2.4 }} /></button>
             </div>
           </div>
         ) : children}

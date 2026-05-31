@@ -56,12 +56,12 @@ export default function CommandPalette() {
   const actions = useMemo(() => [
     { id: 'dash', icon: LayoutDashboard, label: t('nav.dashboard'), to: '/' },
     { id: 'upload', icon: UploadIcon, label: t('nav.upload'), to: '/upload' },
-    { id: 'archiv', icon: Archive, label: t('nav.archiv'), to: '/archiv' },
-    { id: 'ausgaben', icon: DollarSign, label: t('nav.ausgaben', 'Ausgaben'), to: '/ausgaben' },
+    { id: 'archiv', icon: Archive, label: t('nav.archive'), to: '/archiv' },
+    { id: 'ausgaben', icon: DollarSign, label: t('nav.expenses'), to: '/ausgaben' },
     { id: 'doka', icon: MessageCircle, label: t('nav.doka'), to: '/doka' },
     { id: 'befund', icon: Stethoscope, label: t('nav.befund'), to: '/befund' },
-    { id: 'email', icon: Mail, label: 'E-Mail', to: '/email' },
-    { id: 'profil', icon: User, label: t('nav.profil'), to: '/profil' },
+    { id: 'email', icon: Mail, label: t('nav.email'), to: '/email' },
+    { id: 'profil', icon: User, label: t('nav.profile'), to: '/profil' },
     // Apple 3.1.1: Abo-/Pricing-Eintrag nur auf Web & Android
     ...(purchasesAllowed() ? [{ id: 'pricing', icon: Rocket, label: t('pricing.title', 'Abo'), to: '/pricing' }] : []),
     { id: 'support', icon: HelpCircle, label: t('nav.support'), to: '/support' },

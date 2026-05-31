@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn } from 'lucide-react'
+import { useAttachmentPicker } from '../components/AttachmentPicker'
 import { createTicket, getTickets, getTicket, addTicketMessage, acceptTicket, fetchTicketFileUrl } from '../api'
 import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils'
 
@@ -226,7 +227,13 @@ function CreateTicket({ onBack }) {
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const fileRef = useRef(null)
+  const { openPicker, picker } = useAttachmentPicker({
+    fileAccept: 'image/jpeg,image/png,image/gif,image/webp,image/bmp',
+    onFile: (f) => {
+      if (f && f.size > 5 * 1024 * 1024) { setError(t('support.fileTooLarge')); return; }
+      setFile(f || null);
+    },
+  })
 
   const canSubmit = message.length >= 10
 
@@ -289,25 +296,16 @@ function CreateTicket({ onBack }) {
 
           {/* File attachment (images only, max 5MB) */}
           <div>
-            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp,image/bmp" style={{ display: 'none' }} onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f && f.size > 5 * 1024 * 1024) {
-                setError(t('support.fileTooLarge'));
-                if (fileRef.current) fileRef.current.value = '';
-                return;
-              }
-              setFile(f || null);
-            }} />
             {file ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 8, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)' }}>
                 <Paperclip style={{ width: 14, height: 14, color: 'var(--accent-solid)', flexShrink: 0 }} />
                 <span style={{ fontSize: 12, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
-                <button type="button" onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ''; }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+                <button type="button" onClick={() => setFile(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
                   <X style={{ width: 14, height: 14, color: 'var(--text-muted)' }} />
                 </button>
               </div>
             ) : (
-              <button type="button" onClick={() => fileRef.current?.click()} style={{
+              <button type="button" onClick={openPicker} style={{
                 display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8,
                 background: 'var(--bg-glass)', border: '1px solid var(--border-glass)',
                 color: 'var(--text-secondary)', fontSize: 12, fontWeight: 500, cursor: 'pointer',
@@ -316,9 +314,10 @@ function CreateTicket({ onBack }) {
               </button>
             )}
           </div>
+          {picker}
 
           <button type="submit" disabled={loading || !canSubmit} className="btn-accent" style={{
-            width: '100%', padding: '14px 0', fontSize: 15, fontWeight: 600,
+            width: '100%', padding: '12px 0', fontSize: 14, fontWeight: 600,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             opacity: (loading || !canSubmit) ? 0.5 : 1,
           }}>

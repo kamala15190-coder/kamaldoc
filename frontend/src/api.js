@@ -144,11 +144,6 @@ export async function generateObjection(id, selectedElements, targetLanguage = '
   return data;
 }
 
-export async function getBehoerdenResults(id) {
-  const { data } = await api.get(`/documents/${id}/behoerden-results`);
-  return data;
-}
-
 export async function deleteAccount() {
   const { data } = await api.delete('/account');
   return data;

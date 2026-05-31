@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MessageCircle, Send, Plus, Paperclip, Scale, Trash2, Loader2,
   Sparkles, X, ChevronLeft, FileText, Search, Mail, ShieldAlert, ChevronRight,
-  AlertTriangle, RotateCw,
+  AlertTriangle, RotateCw, Info, Check, Minus,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -11,6 +11,7 @@ import {
   deleteDokaConversation, sendDokaMessage,
 } from '../api';
 import { tapHaptic } from '../utils/haptics';
+import { useAttachmentPicker } from '../components/AttachmentPicker';
 
 // --- Minimal, safe markdown → React renderer ---------------------------------
 // Doka answers in markdown (headings, lists, bold, inline code, links). We keep
@@ -127,11 +128,12 @@ export default function Doka() {
   const [showList, setShowList] = useState(false);
   const [error, setError] = useState(null);
   const [bloom, setBloom] = useState(false); // one-shot avatar bloom when an answer lands
+  const [showLawyerInfo, setShowLawyerInfo] = useState(false); // info modal for the lawyer mode
 
-  const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
   const abortRef = useRef(null);
   const lastSentRef = useRef(null); // { text, file } — for the error-retry action
+  const { openPicker, picker } = useAttachmentPicker({ onFile: setFile });
 
   useEffect(() => {
     getDokaConversations().then(setConversations).catch(() => {});
@@ -288,27 +290,48 @@ export default function Doka() {
         </button>
       </div>
 
-      {/* Lawyer mode toggle */}
-      <button onClick={() => setLawyerMode((m) => !m)}
+      {/* Lawyer mode row — Text öffnet das Info-Modal, der Schalter toggelt den Modus */}
+      <div
         style={{
-          display: 'flex', alignItems: 'center', gap: 8, width: '100%', marginBottom: 12, cursor: 'pointer',
-          padding: '9px 12px', borderRadius: 'var(--radius-md)', textAlign: 'start',
+          display: 'flex', alignItems: 'center', gap: 8, width: '100%', marginBottom: 12,
+          padding: '7px 8px 7px 12px', borderRadius: 'var(--radius-md)',
           background: lawyerMode ? 'var(--amber-soft)' : 'var(--bg-card)',
           border: `1px solid ${lawyerMode ? 'var(--accent-soft-border)' : 'var(--border-glass)'}`,
           color: lawyerMode ? 'var(--amber)' : 'var(--text-secondary)',
         }}>
         <Scale style={{ width: 16, height: 16, flexShrink: 0 }} />
-        <span style={{ flex: 1, fontSize: 13.5, fontWeight: 600 }}>{t('doka.lawyerMode', { defaultValue: 'Rechtsanwalt-Modus' })}</span>
-        <span style={{
-          width: 38, height: 22, borderRadius: 999, padding: 2, transition: 'background 0.2s',
-          background: lawyerMode ? 'var(--amber)' : 'var(--progress-track)',
-        }}>
+        <button
+          type="button"
+          onClick={() => { tapHaptic(); setShowLawyerInfo(true); }}
+          aria-label={t('doka.lawyerInfoOpen', { defaultValue: 'Mehr über den Rechtsanwalt-Modus' })}
+          className="no-touch-min"
+          style={{
+            flex: 1, display: 'inline-flex', alignItems: 'center', gap: 6, minWidth: 0,
+            background: 'none', border: 'none', padding: '4px 0', cursor: 'pointer', textAlign: 'start',
+            color: 'inherit', font: 'inherit',
+          }}>
+          <span style={{ fontSize: 13.5, fontWeight: 600 }}>{t('doka.lawyerMode', { defaultValue: 'Rechtsanwalt-Modus' })}</span>
+          <Info style={{ width: 14, height: 14, opacity: 0.65, flexShrink: 0 }} />
+        </button>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={lawyerMode}
+          aria-label={t('doka.lawyerMode', { defaultValue: 'Rechtsanwalt-Modus' })}
+          onClick={() => { tapHaptic(); setLawyerMode((m) => !m); }}
+          className="no-touch-min"
+          style={{ background: 'none', border: 'none', padding: 6, cursor: 'pointer', flexShrink: 0, display: 'flex' }}>
           <span style={{
-            display: 'block', width: 18, height: 18, borderRadius: 999, background: '#fff',
-            transform: lawyerMode ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s',
-          }} />
-        </span>
-      </button>
+            width: 38, height: 22, borderRadius: 999, padding: 2, transition: 'background 0.2s', display: 'block',
+            background: lawyerMode ? 'var(--amber)' : 'var(--progress-track)',
+          }}>
+            <span style={{
+              display: 'block', width: 18, height: 18, borderRadius: 999, background: '#fff',
+              transform: lawyerMode ? 'translateX(16px)' : 'translateX(0)', transition: 'transform 0.2s',
+            }} />
+          </span>
+        </button>
+      </div>
       {/* Dauerhafter KI-/Rechtshinweis (Apple 5.x) — immer sichtbar, nicht nur im Anwalt-Modus */}
       <p style={{ margin: '-6px 0 12px', fontSize: 11.5, color: 'var(--text-muted)', lineHeight: 1.5 }}>
         {t('doka.permanentDisclaimer', { defaultValue: 'Von Doka erstellte Texte sind KI-generiert und ersetzen keine rechtliche, steuerliche oder medizinische Beratung. Bitte vor Verwendung prüfen.' })}
@@ -449,9 +472,7 @@ export default function Doka() {
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-          <input ref={fileInputRef} type="file" accept="image/*,application/pdf" style={{ display: 'none' }}
-            onChange={(e) => { if (e.target.files?.[0]) setFile(e.target.files[0]); e.target.value = ''; }} />
-          <button onClick={() => fileInputRef.current?.click()} className="no-touch-min" aria-label={t('doka.attach', { defaultValue: 'Datei anhängen' })}
+          <button onClick={openPicker} className="no-touch-min" aria-label={t('attach.title', { defaultValue: 'Anhang hinzufügen' })}
             style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glass)', borderRadius: 12, padding: 10, cursor: 'pointer', color: 'var(--text-secondary)', flexShrink: 0 }}>
             <Paperclip style={{ width: 18, height: 18 }} />
           </button>
@@ -477,6 +498,94 @@ export default function Doka() {
           </button>
         </div>
       </div>
+
+      {/* Rechtsanwalt-Modus — Info-Modal (öffnet beim Klick auf den Text) */}
+      {showLawyerInfo && (
+        <div
+          role="dialog" aria-modal="true" aria-labelledby="lawyer-info-title"
+          onClick={() => setShowLawyerInfo(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 10000,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: 'max(16px, env(safe-area-inset-bottom))',
+            background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+            animation: 'fadeIn 150ms ease',
+          }}>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 420, maxHeight: '85vh', overflowY: 'auto',
+              background: 'var(--surface-elevated, var(--bg-secondary))',
+              border: '1px solid var(--border-glass-strong)', borderRadius: 20, padding: 22,
+              boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
+              animation: 'pop-in 180ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+            }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                background: 'var(--amber-soft)', border: '1px solid var(--accent-soft-border)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Scale style={{ width: 20, height: 20, color: 'var(--amber)' }} />
+              </div>
+              <h3 id="lawyer-info-title" style={{ flex: 1, margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {t('doka.lawyerInfoTitle', { defaultValue: 'Rechtsanwalt-Modus' })}
+              </h3>
+              <button onClick={() => setShowLawyerInfo(false)} aria-label={t('common.close', { defaultValue: 'Schließen' })}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4, flexShrink: 0 }}>
+                <X style={{ width: 20, height: 20 }} />
+              </button>
+            </div>
+
+            <p style={{ margin: '0 0 16px', fontSize: 13.5, lineHeight: 1.55, color: 'var(--text-secondary)' }}>
+              {t('doka.lawyerInfoIntro', { defaultValue: 'Der Rechtsanwalt-Modus richtet Doka auf juristische Schreiben aus – Bescheide, Verträge, Behördenpost.' })}
+            </p>
+
+            {[
+              { Icon: Scale, color: 'var(--amber)', bg: 'var(--amber-soft)', border: 'var(--accent-soft-border)',
+                title: t('doka.lawyerInfoChangesTitle', { defaultValue: 'Was sich ändert' }),
+                text: t('doka.lawyerInfoChanges', { defaultValue: 'Doka liest juristische Dokumente tiefer: erklärt Paragraphen verständlich, schätzt deine rechtliche Lage ein, findet anfechtbare Punkte und entwirft auf Wunsch ein Widerspruchsschreiben mit deinen Absenderdaten.' }) },
+              { Icon: Check, color: 'var(--success)', bg: 'var(--success-soft)', border: 'var(--success-border)',
+                title: t('doka.lawyerInfoBetterTitle', { defaultValue: 'Was Doka besser kann' }),
+                text: t('doka.lawyerInfoBetter', { defaultValue: 'Präzisere rechtliche Erklärungen, strukturierte Einschätzungen und formgerechtere Schreiben-Entwürfe als im normalen Modus.' }) },
+              { Icon: Minus, color: 'var(--text-muted)', bg: 'var(--bg-glass)', border: 'var(--border-glass)',
+                title: t('doka.lawyerInfoLimitsTitle', { defaultValue: 'Was eingeschränkt ist' }),
+                text: t('doka.lawyerInfoLimits', { defaultValue: 'Der Fokus liegt klar auf rechtlichen Themen – allgemeiner Plausch tritt zurück, und Antworten fallen formeller und vorsichtiger aus.' }) },
+            ].map((s, i) => (
+              <div key={i} style={{ display: 'flex', gap: 11, marginBottom: 12 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                  background: s.bg, border: `1px solid ${s.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <s.Icon style={{ width: 15, height: 15, color: s.color }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: '2px 0 2px', fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>{s.title}</p>
+                  <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.5, color: 'var(--text-secondary)' }}>{s.text}</p>
+                </div>
+              </div>
+            ))}
+
+            <div style={{
+              display: 'flex', gap: 10, padding: '11px 13px', borderRadius: 'var(--radius-md)', marginTop: 4, marginBottom: 16,
+              background: 'var(--danger-bg)', border: '1px solid var(--danger-border)',
+            }}>
+              <AlertTriangle style={{ width: 16, height: 16, color: 'var(--danger-text)', flexShrink: 0, marginTop: 1 }} />
+              <p style={{ margin: 0, fontSize: 12, lineHeight: 1.5, color: 'var(--danger-text)' }}>
+                {t('doka.lawyerInfoLegal', { defaultValue: 'Doka ist eine KI und ersetzt keine Rechtsberatung – und auch keinen Arzt oder Finanzberater. Alle Ausgaben vor der Verwendung sorgfältig prüfen.' })}
+              </p>
+            </div>
+
+            <button onClick={() => setShowLawyerInfo(false)} className="btn-accent"
+              style={{ width: '100%', padding: '11px 0', fontSize: 14, fontWeight: 600 }}>
+              {t('doka.lawyerInfoClose', { defaultValue: 'Verstanden' })}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {picker}
     </div>
   );
 }
