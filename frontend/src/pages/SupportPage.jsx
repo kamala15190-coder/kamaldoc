@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn } from 'lucide-react'
+import { Send, CheckCircle, AlertCircle, Loader2, Headphones, ChevronRight, ArrowLeft, MessageCircle, Paperclip, X, ZoomIn, Plus } from 'lucide-react'
 import { useAttachmentPicker } from '../components/AttachmentPicker'
 import { createTicket, getTickets, getTicket, addTicketMessage, acceptTicket, fetchTicketFileUrl } from '../api'
 import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils'
@@ -166,8 +166,31 @@ export default function SupportPage() {
             <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '2px 0 0' }}>{t('support.subtitle')}</p>
           </div>
         </div>
-        <button onClick={() => setView('create')} className="btn-accent" style={{ padding: '8px 16px', fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-          <Send style={{ width: 14, height: 14 }} /> {t('support.newTicketBtn')}
+        <button
+          onClick={() => setView('create')}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0,
+            padding: '7px 13px', borderRadius: 999, cursor: 'pointer', whiteSpace: 'nowrap',
+            fontSize: 12.5, fontWeight: 600, letterSpacing: '0.01em',
+            color: 'var(--accent-solid)', background: 'var(--accent-soft)',
+            border: '1px solid var(--accent-soft-border)',
+            boxShadow: '0 1px 10px rgba(232,154,82,0.12)',
+            transition: 'all 0.22s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--accent-solid)'
+            e.currentTarget.style.color = '#fff'
+            e.currentTarget.style.borderColor = 'var(--accent-solid)'
+            e.currentTarget.style.boxShadow = '0 2px 16px rgba(232,154,82,0.35)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'var(--accent-soft)'
+            e.currentTarget.style.color = 'var(--accent-solid)'
+            e.currentTarget.style.borderColor = 'var(--accent-soft-border)'
+            e.currentTarget.style.boxShadow = '0 1px 10px rgba(232,154,82,0.12)'
+          }}
+        >
+          <Plus style={{ width: 14, height: 14, strokeWidth: 2.5 }} /> {t('support.newTicketBtn')}
         </button>
       </div>
 
