@@ -2788,8 +2788,8 @@ _MISTRAL_PRICING_FALLBACK = {"input": 2.00, "output": 6.00}
 # Menschenlesbare Labels für die Admin-Übersicht.
 MISTRAL_MODEL_LABELS = {
     "mistral-ocr-latest": "OCR · Dokument-Scan",
-    "mistral-large-latest": "Text · Large (Doka)",
-    "mistral-small-latest": "Text · Small",
+    "mistral-small-latest": "Text · Doka & Analysen",
+    "mistral-large-latest": "Text · Large",
     "pixtral-large-latest": "Vision · Pixtral",
 }
 
