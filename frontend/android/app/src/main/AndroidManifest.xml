@@ -96,6 +96,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"></meta-data>
         </provider>
+
+        <!--
+             ML Kit Document Scanner — Orientation-Override (Android 16+ Compliance).
+             Die Library (play-services-mlkit-document-scanner) deklariert ihre
+             unsichtbare Delegate-Activity fest mit android:screenOrientation="portrait".
+             Ab Android 16 wird eine feste Ausrichtung auf großen Displays
+             (Tablets/Foldables) ignoriert und von Google Play als Kompatibilitäts-
+             problem gemeldet. Da wir die Library-Deklaration nicht direkt entfernen
+             können, überschreiben wir das Attribut per Manifest-Merger auf
+             "unspecified". tools:replace ersetzt gezielt nur screenOrientation;
+             alle übrigen Attribute der Library-Activity (exported, theme, …) bleiben.
+        -->
+        <activity
+            android:name="com.google.mlkit.vision.documentscanner.internal.GmsDocumentScanningDelegateActivity"
+            android:screenOrientation="unspecified"
+            tools:replace="android:screenOrientation" />
     </application>
 
 </manifest>

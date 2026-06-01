@@ -40,6 +40,10 @@ repositories {
 
 dependencies {
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    // Liefert androidx.activity.EdgeToEdge für die Edge-to-Edge-Aktivierung in
+    // MainActivity (Android 15+). appcompat zieht activity zwar transitiv mit,
+    // die explizite Deklaration garantiert aber, dass die EdgeToEdge-API verfügbar ist.
+    implementation "androidx.activity:activity:$androidxActivityVersion"
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
