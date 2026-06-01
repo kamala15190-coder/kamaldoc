@@ -17,11 +17,24 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   useEffect(() => {
+    let mounted = true
+    const safeHandle = (session) => { if (mounted) handleSession(session) }
+
+    // Safety net: never let the app hang on an unresolved auth check. On native
+    // the session is read from @capacitor/preferences and a stale token may
+    // trigger a network refresh; if any of that stalls, fall back to "logged out"
+    // after 8s so the user reaches the login screen instead of an infinite
+    // loading state. onAuthStateChange still updates `user` if a session arrives
+    // later, so this can only ever release the UI, never lose a valid session.
+    let watchdog = setTimeout(() => { if (mounted) setLoading(false) }, 8000)
+    const clearWatchdog = () => { if (watchdog) { clearTimeout(watchdog); watchdog = null } }
+
     // 1) Listen for auth changes FIRST (before getSession)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      handleSession(session)
+      clearWatchdog()
+      safeHandle(session)
     })
 
     // 2) Helper: extract tokens from a URL hash fragment
@@ -35,45 +48,52 @@ export const AuthProvider = ({ children }) => {
 
     // 3) On web: handle OAuth redirect — PKCE (?code=) or implicit (#access_token)
     const initSession = async () => {
-      // PKCE flow: exchange code for session
-      const url = new URL(window.location.href)
-      const code = url.searchParams.get('code')
-      if (code) {
-        url.searchParams.delete('code')
-        window.history.replaceState(null, '', url.pathname + url.search + window.location.hash)
-        try {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+      try {
+        // PKCE flow: exchange code for session
+        const url = new URL(window.location.href)
+        const code = url.searchParams.get('code')
+        if (code) {
+          url.searchParams.delete('code')
+          window.history.replaceState(null, '', url.pathname + url.search + window.location.hash)
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+            if (!error && data?.session) {
+              safeHandle(data.session)
+              return
+            }
+          } catch { /* fall through */ }
+        }
+
+        // Implicit flow: extract tokens from hash fragment (redirect-based fallback)
+        const hash = window.location.hash?.substring(1)
+        const tokens = extractTokensFromHash(hash)
+        if (tokens) {
+          window.history.replaceState(null, '', window.location.pathname + window.location.search)
+          const { data, error } = await supabase.auth.setSession(tokens)
           if (!error && data?.session) {
-            handleSession(data.session)
+            safeHandle(data.session)
             return
           }
-        } catch { /* fall through */ }
-      }
-
-      // Implicit flow: extract tokens from hash fragment (redirect-based fallback)
-      const hash = window.location.hash?.substring(1)
-      const tokens = extractTokensFromHash(hash)
-      if (tokens) {
-        window.history.replaceState(null, '', window.location.pathname + window.location.search)
-        const { data, error } = await supabase.auth.setSession(tokens)
-        if (!error && data?.session) {
-          handleSession(data.session)
-          return
         }
-      }
 
-      // Fallback: normal session check
-      const { data: { session } } = await supabase.auth.getSession()
-      handleSession(session)
+        // Fallback: normal session check (reads from native Preferences / localStorage)
+        const { data: { session } } = await supabase.auth.getSession()
+        safeHandle(session)
+      } catch {
+        // Storage/network failure during init → treat as logged out, don't hang.
+        safeHandle(null)
+      } finally {
+        clearWatchdog()
+      }
     }
     initSession()
 
-    // 4) Refresh session when tab becomes visible again (prevents stale state)
+    // 4) Refresh session when tab/app becomes visible again (prevents stale state)
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          handleSession(session)
-        })
+        supabase.auth.getSession()
+          .then(({ data: { session } }) => { safeHandle(session) })
+          .catch(() => { /* ignore */ })
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
@@ -96,19 +116,21 @@ export const AuthProvider = ({ children }) => {
             if (tokens) {
               const { data, error } = await supabase.auth.setSession(tokens)
               if (!error && data?.session) {
-                handleSession(data.session)
+                safeHandle(data.session)
                 return
               }
             }
             // Fallback
             const { data: { session } } = await supabase.auth.getSession()
-            handleSession(session)
+            safeHandle(session)
           }
         })
       })
     }
 
     return () => {
+      mounted = false
+      clearWatchdog()
       subscription.unsubscribe()
       document.removeEventListener('visibilitychange', onVisibilityChange)
       if (appUrlListener) appUrlListener.remove()

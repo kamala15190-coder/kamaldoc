@@ -687,12 +687,19 @@ function PWAInstallBanner() {
 
 function AppContent() {
   const location = useLocation();
+  const { user } = useAuth();
   const isAuthPage = ['/login', '/register', '/datenschutz', '/nutzungsbedingungen', '/agb', '/impressum', '/widerruf', '/forgot-password', '/reset-password'].includes(location.pathname);
+  // The app chrome (header, tab bar, intro, command palette) belongs to the
+  // authenticated area. Gate it on a confirmed user — not just the pathname — so
+  // an unauthenticated start (PrivateRoute redirecting to /login) never flashes
+  // the dashboard shell. By the time AppContent renders, AuthGate has already
+  // resolved the auth state, so `user` is reliable here.
+  const showChrome = !!user && !isAuthPage;
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
       <PWAInstallBanner />
-      {!isAuthPage && <TopHeader />}
+      {showChrome && <TopHeader />}
       <main style={!isAuthPage ? {
         maxWidth: 500, margin: '0 auto',
         padding: '16px 16px calc(var(--tab-bar-height) + var(--safe-area-bottom) + 16px)',
@@ -731,9 +738,9 @@ function AppContent() {
         </div>
         </Suspense>
       </main>
-      {!isAuthPage && <BottomTabBar />}
-      {!isAuthPage && <IntroGuide />}
-      {!isAuthPage && <CommandPalette />}
+      {showChrome && <BottomTabBar />}
+      {showChrome && <IntroGuide />}
+      {showChrome && <CommandPalette />}
     </div>
   );
 }
@@ -750,35 +757,76 @@ function RtlWrapper({ children }) {
   return children;
 }
 
-function App() {
-  // Cold-start splash: play once per browser session (sessionStorage flag).
-  const [showSplash, setShowSplash] = useState(() => {
+// Clean, brand-coloured full-screen loader shown while the auth state is still
+// resolving after the splash has played. Deliberately NOT the dashboard shell.
+function BootLoader() {
+  return (
+    <div style={{
+      minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-primary)',
+    }}>
+      <div style={{
+        width: 40, height: 40, borderRadius: '50%',
+        border: '3px solid rgba(232,154,82,0.2)',
+        borderTopColor: 'var(--accent-solid)',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
+// Gate between "app booted" and "app usable". Lives INSIDE AuthProvider so it can
+// read the auth state. Three states:
+//   1. Cold start  → play the cosmetic splash once per session. The auth check
+//      runs underneath, so for a logged-in user the session is usually known by
+//      the time the animation ends.
+//   2. Auth still resolving (slow native Preferences read / token refresh) → show
+//      a clean BootLoader. The app chrome and protected routes are NEVER mounted
+//      while auth is unknown, so the dashboard can't appear before login.
+//   3. Auth resolved → render the real app; the router decides login vs dashboard.
+// The splash is an overlay sibling: once auth resolves it mounts the app
+// underneath (so a logged-in dashboard can prefetch its data during the splash),
+// while still hiding any pre-auth state behind the BootLoader.
+function AuthGate({ children }) {
+  const { loading } = useAuth();
+  const [splashActive, setSplashActive] = useState(() => {
     try { return !sessionStorage.getItem('kdoc_splash_seen'); }
     catch { return false; }
   });
 
   const handleSplashDone = () => {
     try { sessionStorage.setItem('kdoc_splash_seen', '1'); } catch { /* ignore */ }
-    setShowSplash(false);
+    setSplashActive(false);
   };
 
   return (
+    <>
+      {splashActive && <Splash onDone={handleSplashDone} />}
+      {loading ? <BootLoader /> : children}
+    </>
+  );
+}
+
+function App() {
+  return (
     <ErrorBoundary>
-      {showSplash && <Splash onDone={handleSplashDone} />}
       <BrowserRouter>
         <ThemeProvider>
           <ToastProvider>
             <ConfirmDialogProvider>
               <AuthProvider>
-                <SubscriptionProvider>
-                  <PlanLimitProvider>
-                    <FeatureFlagsProvider>
-                      <RtlWrapper>
-                        <AppContent />
-                      </RtlWrapper>
-                    </FeatureFlagsProvider>
-                  </PlanLimitProvider>
-                </SubscriptionProvider>
+                <AuthGate>
+                  <SubscriptionProvider>
+                    <PlanLimitProvider>
+                      <FeatureFlagsProvider>
+                        <RtlWrapper>
+                          <AppContent />
+                        </RtlWrapper>
+                      </FeatureFlagsProvider>
+                    </PlanLimitProvider>
+                  </SubscriptionProvider>
+                </AuthGate>
               </AuthProvider>
             </ConfirmDialogProvider>
           </ToastProvider>
