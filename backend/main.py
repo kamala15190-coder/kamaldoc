@@ -2769,13 +2769,43 @@ async def admin_change_plan(data: dict, user_id: str = Depends(get_current_user)
 
 # --- Admin Finance Overview ---
 
-USD_TO_EUR = 0.92
+USD_TO_EUR = float(os.getenv("MISTRAL_USD_TO_EUR", "0.92"))
 
-# Mistral pricing per 1M tokens (USD)
+# Mistral-Preise in USD pro 1 Mio. Tokens (input/output getrennt).
+# Quelle: https://mistral.ai/pricing — bei Modell-/Preiswechsel hier pflegen.
+# OCR wird mangels Seiten-Logging token-basiert approximiert; da wir output=0
+# loggen, wirkt nur der input-Satz.
 MISTRAL_PRICING = {
-    "mistral-ocr-latest": {"combined": 2.00},  # $2.00/1M tokens (input+output)
+    "mistral-ocr-latest":   {"input": 2.00, "output": 2.00},
+    "mistral-large-latest": {"input": 2.00, "output": 6.00},
     "mistral-small-latest": {"input": 0.10, "output": 0.30},
+    "pixtral-large-latest": {"input": 2.00, "output": 6.00},
 }
+# Konservativer Fallback (Large-Tarif), damit Kosten unbekannter/neuer Modelle
+# nie stillschweigend auf 0 fallen.
+_MISTRAL_PRICING_FALLBACK = {"input": 2.00, "output": 6.00}
+
+# Menschenlesbare Labels für die Admin-Übersicht.
+MISTRAL_MODEL_LABELS = {
+    "mistral-ocr-latest": "OCR · Dokument-Scan",
+    "mistral-large-latest": "Text · Large (Doka)",
+    "mistral-small-latest": "Text · Small",
+    "pixtral-large-latest": "Vision · Pixtral",
+}
+
+
+def _mistral_price_for(model: str) -> dict:
+    """Pricing für ein Modell: exakter Treffer, sonst Heuristik, sonst Fallback."""
+    if model in MISTRAL_PRICING:
+        return MISTRAL_PRICING[model]
+    m = (model or "").lower()
+    if "ocr" in m:
+        return MISTRAL_PRICING["mistral-ocr-latest"]
+    if "small" in m:
+        return MISTRAL_PRICING["mistral-small-latest"]
+    if "large" in m or "pixtral" in m:
+        return MISTRAL_PRICING["mistral-large-latest"]
+    return _MISTRAL_PRICING_FALLBACK
 
 
 @app.get("/api/admin/finance-overview")
@@ -2826,43 +2856,51 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
     pro_revenue = pro_count * pro_unit_price
     total_revenue = basic_revenue + pro_revenue
 
-    # --- Mistral: usage for current month from local DB ---
+    # --- Mistral: Verbrauch des laufenden Monats aus der lokalen DB ---
+    # Datengetrieben: ALLE tatsächlich geloggten Modelle werden gruppiert und
+    # je Modell mit dem passenden Tarif bepreist (kein '%small%'-Filter mehr,
+    # der mistral-large still verschluckte).
     now = datetime.now()
     current_month = now.strftime("%Y-%m")
     month_start = f"{current_month}-01 00:00:00"
 
-    ocr_cost = 0.0
-    small_cost = 0.0
+    model_breakdown = []
+    total_cost_usd = 0.0
 
     db = await get_db()
     try:
-        # Sum OCR tokens for current month
         cursor = await db.execute(
-            "SELECT COALESCE(SUM(input_tokens + output_tokens), 0) as total FROM mistral_usage WHERE model LIKE '%ocr%' AND created_at >= ?",
+            """SELECT model,
+                      COALESCE(SUM(input_tokens), 0)  AS inp,
+                      COALESCE(SUM(output_tokens), 0) AS outp
+                 FROM mistral_usage
+                WHERE created_at >= ?
+                GROUP BY model""",
             (month_start,),
         )
-        row = await cursor.fetchone()
-        ocr_tokens = row["total"] if row else 0
-        ocr_cost = (ocr_tokens / 1_000_000) * MISTRAL_PRICING["mistral-ocr-latest"]["combined"]
-
-        # Sum small model tokens for current month
-        cursor = await db.execute(
-            "SELECT COALESCE(SUM(input_tokens), 0) as inp, COALESCE(SUM(output_tokens), 0) as outp FROM mistral_usage WHERE model LIKE '%small%' AND created_at >= ?",
-            (month_start,),
-        )
-        row = await cursor.fetchone()
-        if row:
-            pricing = MISTRAL_PRICING["mistral-small-latest"]
-            small_cost = (row["inp"] / 1_000_000) * pricing["input"] + (row["outp"] / 1_000_000) * pricing["output"]
+        for r in await cursor.fetchall():
+            inp = r["inp"] or 0
+            outp = r["outp"] or 0
+            if not inp and not outp:
+                continue
+            price = _mistral_price_for(r["model"])
+            cost_usd = (inp / 1_000_000) * price["input"] + (outp / 1_000_000) * price["output"]
+            total_cost_usd += cost_usd
+            model_breakdown.append({
+                "model": r["model"],
+                "label": MISTRAL_MODEL_LABELS.get(r["model"], r["model"]),
+                "input_tokens": inp,
+                "output_tokens": outp,
+                "cost": round(cost_usd * USD_TO_EUR, 2),
+            })
     except Exception as e:
         logger.error(f"[Finance] Mistral DB usage error: {e}")
     finally:
         await db.close()
 
-    # Convert USD to EUR
-    ocr_cost_eur = round(ocr_cost * USD_TO_EUR, 2)
-    small_cost_eur = round(small_cost * USD_TO_EUR, 2)
-    total_cost_eur = round((ocr_cost + small_cost) * USD_TO_EUR, 2)
+    # Teuerste Modelle zuerst.
+    model_breakdown.sort(key=lambda m: m["cost"], reverse=True)
+    total_cost_eur = round(total_cost_usd * USD_TO_EUR, 2)
 
     net = round(total_revenue - total_cost_eur, 2)
 
@@ -2875,10 +2913,10 @@ async def admin_finance_overview(user_id: str = Depends(get_current_user)):
             "total_revenue": round(total_revenue, 2),
         },
         "mistral": {
-            "ocr_cost": ocr_cost_eur,
-            "small_cost": small_cost_eur,
+            "models": model_breakdown,
             "total_cost": total_cost_eur,
             "month": current_month,
+            "usd_to_eur": USD_TO_EUR,
         },
         "net": net,
     }

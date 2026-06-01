@@ -8,6 +8,7 @@ import {
   adminGetFeatureFlags, adminSetFeatureFlag,
 } from '../api'
 import { formatLocalDateTime, formatLocalDate } from '../utils/dateUtils'
+import { useConfirm } from '../hooks/useConfirm'
 
 // Prüft ob ein Dateiname eine Bild-Erweiterung hat
 function isImageFile(fileName) {
@@ -91,35 +92,37 @@ function AdminTicketAttachment({ fileUrl, fileName }) {
 const cardStyle = {
   background: 'var(--bg-glass-strong)',
   border: '1px solid var(--border-glass)',
-  borderRadius: 16,
-  padding: 24,
-  marginBottom: 20,
+  borderRadius: 14,
+  padding: 18,
+  marginBottom: 12,
 }
 
 const inputStyle = {
   flex: 1,
-  padding: '10px 14px',
-  borderRadius: 10,
+  padding: '8px 12px',
+  borderRadius: 9,
   border: '1px solid var(--border-glass)',
   background: 'var(--bg-glass)',
   color: 'var(--text-primary)',
-  fontSize: 13,
+  fontSize: 12.5,
   outline: 'none',
 }
 
+// Buttons bewusst kompakt – diese Seite ist nur für den Eigentümer.
 const btnAccent = {
-  display: 'flex', alignItems: 'center', gap: 6,
-  padding: '10px 18px', borderRadius: 10, border: 'none',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+  padding: '7px 13px', borderRadius: 9, border: 'none',
   background: 'var(--accent-solid)', color: '#fff',
-  fontWeight: 600, fontSize: 13, cursor: 'pointer',
-  opacity: 1, transition: 'opacity 0.2s',
+  fontWeight: 600, fontSize: 12.5, cursor: 'pointer', whiteSpace: 'nowrap',
+  transition: 'opacity 0.2s, background 0.2s',
 }
 
 const btnDanger = {
-  display: 'flex', alignItems: 'center', gap: 4,
-  padding: '6px 12px', borderRadius: 8, border: 'none',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+  padding: '6px 11px', borderRadius: 8, border: 'none',
   background: 'var(--danger-soft)', color: 'var(--danger)',
-  fontWeight: 600, fontSize: 11, cursor: 'pointer',
+  fontWeight: 600, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap',
+  transition: 'opacity 0.2s',
 }
 
 const btnGhost = {
@@ -130,8 +133,8 @@ const btnGhost = {
 }
 
 const sectionTitle = {
-  fontSize: 15, fontWeight: 600, color: 'var(--text-primary)',
-  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+  fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '0.01em',
+  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
 }
 
 const msgStyle = (type) => ({
@@ -139,24 +142,51 @@ const msgStyle = (type) => ({
   color: type === 'success' ? '#34d399' : '#ef4444',
 })
 
+// Schlichte Label/Wert-Zeile für die Finanzübersicht.
+function StatRow({ label, value, color, strong, indent }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+      padding: '5px 0', paddingLeft: indent ? 12 : 0,
+    }}>
+      <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>{label}</span>
+      <span style={{
+        fontSize: 12.5, fontWeight: strong ? 700 : 600,
+        color: color || 'var(--text-primary)', fontVariantNumeric: 'tabular-nums',
+      }}>{value}</span>
+    </div>
+  )
+}
+
+// Kompakte Token-Anzeige: 1.234.567 → „1,2 Mio." · 12.300 → „12k".
+function fmtTokens(n) {
+  const v = Number(n || 0)
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1).replace('.', ',')} Mio.`
+  if (v >= 1_000) return `${Math.round(v / 1_000)}k`
+  return String(v)
+}
+
 export default function AdminPage() {
   return (
-    <div style={{ padding: '0 4px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+    <div style={{ padding: '0 4px', maxWidth: 760, margin: '0 auto' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 18 }}>
         <div style={{
-          width: 38, height: 38, borderRadius: 10,
+          width: 34, height: 34, borderRadius: 10,
           background: 'var(--accent-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Shield style={{ width: 20, height: 20, color: 'var(--accent-solid)' }} />
+          <Shield style={{ width: 18, height: 18, color: 'var(--accent-solid)' }} />
         </div>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Admin-Bereich</h1>
+        <div>
+          <h1 style={{ fontSize: 19, fontWeight: 700, color: 'var(--text-primary)', margin: 0, lineHeight: 1.1 }}>Admin-Bereich</h1>
+          <p style={{ fontSize: 11.5, color: 'var(--text-muted)', margin: '3px 0 0' }}>Nur für Eigentümer · intern</p>
+        </div>
       </div>
 
+      <FinanceOverviewSection />
       <TicketManagementSection />
       <ChangePlanSection />
-      <AdminManagementSection />
-      <FinanceOverviewSection />
       <EmailFeatureFlagsSection />
+      <AdminManagementSection />
     </div>
   )
 }
@@ -173,7 +203,7 @@ function FinanceOverviewSection() {
       .finally(() => setLoading(false))
   }, [])
 
-  const fmt = (v) => v.toFixed(2).replace('.', ',')
+  const fmt = (v) => Number(v ?? 0).toFixed(2).replace('.', ',')
 
   return (
     <div style={cardStyle}>
@@ -196,29 +226,53 @@ function FinanceOverviewSection() {
       )}
 
       {data && (
-        <div style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 2, color: 'var(--text-primary)' }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>Aktive Abos</div>
-          <div style={{ paddingLeft: 8 }}>
-            <div>├─ kdoc Basic: <span style={{ fontWeight: 600 }}>{data.stripe.basic_count}</span> Abos = <span style={{ fontWeight: 600 }}>{fmt(data.stripe.basic_revenue)} €/Mo</span></div>
-            <div>├─ kdoc Pro: <span style={{ fontWeight: 600 }}>{data.stripe.pro_count}</span> Abos = <span style={{ fontWeight: 600 }}>{fmt(data.stripe.pro_revenue)} €/Mo</span></div>
-            <div>└─ Gesamt Stripe: <span style={{ fontWeight: 700 }}>{fmt(data.stripe.total_revenue)} €/Mo</span></div>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', marginBottom: 2 }}>
+            Einnahmen
           </div>
+          <StatRow label={`Basic · ${data.stripe.basic_count} Abos`} value={`${fmt(data.stripe.basic_revenue)} €`} indent />
+          <StatRow label={`Pro · ${data.stripe.pro_count} Abos`} value={`${fmt(data.stripe.pro_revenue)} €`} indent />
+          <StatRow label="Gesamt / Monat" value={`${fmt(data.stripe.total_revenue)} €`} color="#34d399" strong />
 
-          <div style={{ fontWeight: 700, marginTop: 12, marginBottom: 4 }}>
-            Mistral Kosten ({data.mistral.month})
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--text-muted)', margin: '12px 0 2px' }}>
+            Mistral-Kosten · {data.mistral.month}
           </div>
-          <div style={{ paddingLeft: 8 }}>
-            <div>├─ mistral-ocr-latest: <span style={{ fontWeight: 600, color: 'var(--danger)' }}>- {fmt(data.mistral.ocr_cost)} €</span></div>
-            <div>└─ mistral-small-latest: <span style={{ fontWeight: 600, color: 'var(--danger)' }}>- {fmt(data.mistral.small_cost)} €</span></div>
-          </div>
+          {(data.mistral.models || []).length === 0 ? (
+            <StatRow label="Keine Nutzung diesen Monat" value="0,00 €" indent />
+          ) : (
+            data.mistral.models.map(m => (
+              <div key={m.model} style={{
+                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                padding: '5px 0', paddingLeft: 12,
+              }}>
+                <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                  {m.label}
+                  <span style={{ fontSize: 10.5, color: 'var(--text-muted)', marginLeft: 6 }}>
+                    {fmtTokens((m.input_tokens || 0) + (m.output_tokens || 0))} Tok.
+                  </span>
+                </span>
+                <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--danger)', fontVariantNumeric: 'tabular-nums' }}>
+                  − {fmt(m.cost)} €
+                </span>
+              </div>
+            ))
+          )}
+          <StatRow label="Kosten / Monat" value={`− ${fmt(data.mistral.total_cost)} €`} color="var(--danger)" strong />
 
           <div style={{
-            borderTop: '1px solid var(--border-glass)', marginTop: 12, paddingTop: 10,
-            fontSize: 15, fontWeight: 700,
-            color: data.net >= 0 ? '#34d399' : '#ef4444',
+            borderTop: '1px solid var(--border-glass)', marginTop: 10, paddingTop: 10,
+            display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           }}>
-            Netto Monat: {data.net >= 0 ? '+' : ''}{fmt(data.net)} €
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Netto Monat</span>
+            <span style={{
+              fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums',
+              color: data.net >= 0 ? '#34d399' : '#ef4444',
+            }}>{data.net >= 0 ? '+' : ''}{fmt(data.net)} €</span>
           </div>
+
+          <p style={{ fontSize: 10, color: 'var(--text-muted)', margin: '10px 0 0' }}>
+            Mistral-Preise pro Modell · Kurs {fmt(data.mistral.usd_to_eur)} €/$ · Stripe-Erlöse netto
+          </p>
         </div>
       )}
     </div>
@@ -339,6 +393,7 @@ function AdminManagementSection() {
   const [newEmail, setNewEmail] = useState('')
   const [adding, setAdding] = useState(false)
   const [msg, setMsg] = useState(null)
+  const confirm = useConfirm()
 
   const fetchAdmins = async () => {
     try {
@@ -369,7 +424,14 @@ function AdminManagementSection() {
   }
 
   const handleRemove = async (userId) => {
-    if (!confirm('Admin wirklich entfernen?')) return
+    const ok = await confirm({
+      title: 'Admin entfernen?',
+      message: 'Dieser Nutzer verliert sofort alle Admin-Rechte.',
+      confirmLabel: 'Entfernen',
+      cancelLabel: 'Abbrechen',
+      variant: 'danger',
+    })
+    if (!ok) return
     try {
       await removeAdmin(userId)
       setAdmins(prev => prev.filter(a => a.user_id !== userId))
@@ -424,7 +486,7 @@ function AdminManagementSection() {
           onKeyDown={e => e.key === 'Enter' && handleAdd()}
           style={inputStyle} placeholder="neue-admin@email.com" />
         <button onClick={handleAdd} disabled={adding || !newEmail}
-          style={{ ...btnAccent, background: '#22c55e', opacity: (adding || !newEmail) ? 0.5 : 1 }}>
+          style={{ ...btnAccent, opacity: (adding || !newEmail) ? 0.5 : 1 }}>
           {adding ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <UserPlus style={{ width: 14, height: 14 }} />}
           Admin hinzufügen
         </button>
@@ -588,6 +650,7 @@ function TicketManagementSection() {
   const [msg, setMsg] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [closedOpen, setClosedOpen] = useState(false)
+  const confirm = useConfirm()
 
   const fetchTickets = async () => {
     try {
@@ -635,7 +698,14 @@ function TicketManagementSection() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Ticket und alle zugehörigen Nachrichten/Dateien wirklich endgültig löschen?')) return
+    const ok = await confirm({
+      title: 'Ticket löschen?',
+      message: 'Ticket samt allen Nachrichten und Dateien wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.',
+      confirmLabel: 'Endgültig löschen',
+      cancelLabel: 'Abbrechen',
+      variant: 'danger',
+    })
+    if (!ok) return
     setDeleting(true)
     try {
       await adminDeleteTicket(selected.id)
@@ -692,7 +762,7 @@ function TicketManagementSection() {
         {/* Reply as admin */}
         <div style={{ display: 'flex', gap: 6, marginBottom: 16 }}>
           <input type="text" value={newMsg} onChange={e => setNewMsg(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMsg()} style={inputStyle} placeholder="Nachricht an User..." />
-          <button onClick={handleSendMsg} disabled={sendingMsg || !newMsg.trim()} style={{ ...btnAccent, background: '#10B981', opacity: (sendingMsg || !newMsg.trim()) ? 0.5 : 1 }}>
+          <button onClick={handleSendMsg} disabled={sendingMsg || !newMsg.trim()} style={{ ...btnAccent, opacity: (sendingMsg || !newMsg.trim()) ? 0.5 : 1 }}>
             {sendingMsg ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Send style={{ width: 14, height: 14 }} />}
           </button>
         </div>
@@ -710,7 +780,7 @@ function TicketManagementSection() {
               {saving ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <CheckCircle style={{ width: 14, height: 14 }} />}
               Status aktualisieren
             </button>
-            <button onClick={handleDelete} disabled={deleting} style={{ ...btnDanger, padding: '10px 14px', fontSize: 12, opacity: deleting ? 0.5 : 1 }}>
+            <button onClick={handleDelete} disabled={deleting} style={{ ...btnDanger, padding: '7px 12px', fontSize: 12, opacity: deleting ? 0.5 : 1 }}>
               {deleting ? <Loader2 style={{ width: 14, height: 14, animation: 'spin 0.8s linear infinite' }} /> : <Trash2 style={{ width: 14, height: 14 }} />}
               Ticket löschen
             </button>
