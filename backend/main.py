@@ -99,6 +99,12 @@ _PROD_ORIGINS = [
     "https://kdoc.at",
     "https://www.kdoc.at",
     "https://api.kdoc.at",
+    # Native app WebView origins. capacitor.config sets androidScheme: 'https',
+    # so the Android WebView's origin is 'https://localhost' (NOT capacitor://).
+    # iOS keeps the default capacitor:// scheme. Both must be allowed in PRODUCTION
+    # — otherwise every api.kdoc.at call from the installed app is CORS-blocked and
+    # surfaces as axios "Network Error" (empty dashboard, failed uploads).
+    "https://localhost",
     "capacitor://localhost",
     "ionic://localhost",
 ]
