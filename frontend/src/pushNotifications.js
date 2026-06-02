@@ -1,4 +1,12 @@
+import { registerPlugin } from '@capacitor/core';
 import { registerPushToken } from './api';
+
+// Custom native plugin (Android): reports whether a Firebase default app is
+// actually initialized (i.e. google-services.json is present). Registered ONCE at
+// module level, mirroring the proven DocumentScanner pattern. On platforms without
+// the native implementation, method calls reject with "not implemented" — we only
+// invoke it on Android (guarded by Capacitor.isPluginAvailable) where it exists.
+const FirebaseStatus = registerPlugin('FirebaseStatus');
 
 /**
  * Push Notifications via Capacitor.
@@ -30,6 +38,32 @@ export async function initPushNotifications() {
       return;
     }
 
+    // CRASH-GUARD (Android): Ohne google-services.json ist Firebase NICHT
+    // initialisiert. PushNotifications.register() ruft dann nativ
+    // FirebaseMessaging.getInstance() auf, was eine IllegalStateException wirft –
+    // Capacitor wirft diese als unbehandelte RuntimeException auf einem
+    // Hintergrund-Thread erneut → die App stürzt SOFORT beim "Zulassen" ab.
+    // Ein JS-try/catch kann einen nativen Thread-Crash NICHT abfangen, deshalb
+    // müssen wir hier proaktiv prüfen und Push sonst sauber überspringen.
+    // (iOS nutzt APNs statt Firebase und braucht diese Prüfung nicht.)
+    const platform = Capacitor.getPlatform?.() || 'android';
+    if (platform === 'android') {
+      if (!Capacitor.isPluginAvailable?.('FirebaseStatus')) {
+        console.warn('[Push] FirebaseStatus-Plugin nicht verfügbar – Push übersprungen');
+        return;
+      }
+      try {
+        const res = await FirebaseStatus.isAvailable();
+        if (!res?.available) {
+          console.warn('[Push] Firebase (google-services.json) nicht konfiguriert – Push deaktiviert, kein register()');
+          return;
+        }
+      } catch (e) {
+        console.warn('[Push] Firebase-Verfügbarkeitsprüfung fehlgeschlagen – Push übersprungen:', e?.message);
+        return;
+      }
+    }
+
     // Berechtigung anfragen
     const permResult = await PushNotifications.requestPermissions();
     if (permResult.receive !== 'granted') {
@@ -43,10 +77,9 @@ export async function initPushNotifications() {
     // Registrierung starten
     await PushNotifications.register();
 
-    // Token empfangen und an Backend senden
+    // Token empfangen und an Backend senden (platform aus dem äußeren Scope)
     PushNotifications.addListener('registration', async (token) => {
       try {
-        const platform = Capacitor.getPlatform?.() || 'android';
         await registerPushToken(token.value, platform);
       } catch (err) {
         console.error('[Push] Token-Registrierung fehlgeschlagen:', err);

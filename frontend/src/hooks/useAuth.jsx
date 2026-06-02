@@ -46,6 +46,23 @@ export const AuthProvider = ({ children }) => {
       return access_token && refresh_token ? { access_token, refresh_token } : null
     }
 
+    // Shared: turn an OAuth deep-link/callback URL (at.kamaldoc.app://login-callback#...)
+    // into a Supabase session. Used by BOTH the warm-start appUrlOpen listener AND
+    // the cold-start launch-URL check, so a completed Google login is never dropped
+    // regardless of whether the app was alive or killed during the browser session.
+    // Returns true only when a session was actually established.
+    const applyTokensFromUrl = async (url) => {
+      if (!url || !url.includes('login-callback')) return false
+      const tokens = extractTokensFromHash(url.split('#')[1])
+      if (!tokens) return false
+      const { data, error } = await supabase.auth.setSession(tokens)
+      if (!error && data?.session) {
+        safeHandle(data.session)
+        return true
+      }
+      return false
+    }
+
     // 3) On web: handle OAuth redirect — PKCE (?code=) or implicit (#access_token)
     const initSession = async () => {
       try {
@@ -76,6 +93,23 @@ export const AuthProvider = ({ children }) => {
           }
         }
 
+        // Native COLD-START OAuth callback: the OS may kill the backgrounded app
+        // while the Google login Custom Tab is in the foreground (common on Samsung/
+        // Xiaomi/low-RAM devices). The callback deep link then COLD-STARTS the app and
+        // is delivered as the launch intent — which the appUrlOpen listener below,
+        // registered asynchronously after React mounts, does NOT reliably receive.
+        // Consult the launch URL directly so the login is processed in that case.
+        // On a normal launch getLaunchUrl() has no login-callback, so this is a no-op
+        // and we fall through to the regular storage-based session restore — i.e. it
+        // never causes a dashboard bypass.
+        if (Capacitor.isNativePlatform()) {
+          try {
+            const { App } = await import('@capacitor/app')
+            const launch = await App.getLaunchUrl()
+            if (launch?.url && (await applyTokensFromUrl(launch.url))) return
+          } catch { /* fall through to normal session restore */ }
+        }
+
         // Fallback: normal session check (reads from native Preferences / localStorage)
         const { data: { session } } = await supabase.auth.getSession()
         safeHandle(session)
@@ -98,34 +132,27 @@ export const AuthProvider = ({ children }) => {
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
 
-    // 5) Deep link handling for native OAuth callback
-    let appUrlListener = null
+    // 5) Deep link handling for native OAuth callback (WARM start: app still alive
+    //    while the Google login browser was open). The COLD-start case is handled
+    //    via App.getLaunchUrl() in initSession() above. App.addListener resolves to
+    //    a Promise<PluginListenerHandle>, so we keep the promise and remove via it.
+    let appUrlHandlePromise = null
     if (Capacitor.isNativePlatform()) {
-      import('@capacitor/app').then(({ App }) => {
-        appUrlListener = App.addListener('appUrlOpen', async ({ url }) => {
-          if (url.includes('login-callback')) {
-            // Close in-app browser
-            try {
-              const { Browser } = await import('@capacitor/browser')
-              await Browser.close()
-            } catch { /* ignore */ }
+      appUrlHandlePromise = import('@capacitor/app').then(({ App }) =>
+        App.addListener('appUrlOpen', async ({ url }) => {
+          if (!url || !url.includes('login-callback')) return
+          // Close in-app browser (best effort)
+          try {
+            const { Browser } = await import('@capacitor/browser')
+            await Browser.close()
+          } catch { /* ignore */ }
 
-            // Extract tokens from deep link hash
-            const hashPart = url.split('#')[1]
-            const tokens = extractTokensFromHash(hashPart)
-            if (tokens) {
-              const { data, error } = await supabase.auth.setSession(tokens)
-              if (!error && data?.session) {
-                safeHandle(data.session)
-                return
-              }
-            }
-            // Fallback
-            const { data: { session } } = await supabase.auth.getSession()
-            safeHandle(session)
-          }
+          if (await applyTokensFromUrl(url)) return
+          // Fallback: maybe the session arrived via storage/onAuthStateChange
+          const { data: { session } } = await supabase.auth.getSession()
+          safeHandle(session)
         })
-      })
+      )
     }
 
     return () => {
@@ -133,7 +160,8 @@ export const AuthProvider = ({ children }) => {
       clearWatchdog()
       subscription.unsubscribe()
       document.removeEventListener('visibilitychange', onVisibilityChange)
-      if (appUrlListener) appUrlListener.remove()
+      // appUrlHandlePromise resolves to the PluginListenerHandle — await then remove.
+      if (appUrlHandlePromise) appUrlHandlePromise.then((h) => h?.remove?.()).catch(() => {})
     }
   }, [handleSession])
 

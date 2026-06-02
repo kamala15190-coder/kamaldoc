@@ -9,6 +9,11 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         // registerPlugin MUSS vor super.onCreate() laufen (Capacitor-Vorgabe).
         registerPlugin(DocumentScannerPlugin.class);
+        // FirebaseStatus: erlaubt dem JS-Layer zu prüfen, ob Firebase konfiguriert
+        // ist, BEVOR PushNotifications.register() aufgerufen wird. Ohne diese Prüfung
+        // crasht ein register()-Aufruf ohne google-services.json die App (siehe
+        // FirebaseStatusPlugin).
+        registerPlugin(FirebaseStatusPlugin.class);
         super.onCreate(savedInstanceState);
 
         // Edge-to-Edge (Android 15+): Die WebView zeichnet randlos hinter Status-
