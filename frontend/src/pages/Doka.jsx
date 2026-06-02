@@ -98,13 +98,24 @@ const TOOL_ICON = {
   draft_objection: Scale,
 };
 
+// Single source of truth for the quiet "amber-soft" chip look used by tool/system
+// notifications (e.g. "E-Mails durchsucht – X Treffer") AND by user messages, so
+// both are visually identical. Change here to restyle both at once.
+const NOTIFICATION_CHIP = {
+  padding: '7px 11px',
+  borderRadius: 'var(--radius-md)',
+  background: 'var(--amber-soft)',
+  border: '1px solid var(--accent-soft-border)',
+  fontSize: 12.5,
+  color: 'var(--text-secondary)',
+};
+
 function ToolCard({ name, summary, pending, t }) {
   const Icon = TOOL_ICON[name] || Sparkles;
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px', margin: '4px 0',
-      borderRadius: 'var(--radius-md)', background: 'var(--amber-soft)',
-      border: '1px solid var(--accent-soft-border)', fontSize: 12.5, color: 'var(--text-secondary)',
+      display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0',
+      ...NOTIFICATION_CHIP,
     }}>
       {pending
         ? <Loader2 style={{ width: 14, height: 14, color: 'var(--amber)', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
@@ -606,14 +617,16 @@ function MessageBubble({ message, t }) {
         {!isUser && Array.isArray(message.tool_calls) && message.tool_calls.map((tc, i) => (
           <ToolCard key={i} name={tc.name} summary={tc.summary} pending={false} t={t} />
         ))}
-        <div className={isUser ? 'doka-user-in' : 'doka-msg-in'} style={{
-          padding: '11px 14px', borderRadius: 'var(--radius-lg)', fontSize: 14,
-          background: isUser ? 'var(--accent-gradient)' : 'var(--bg-card)',
-          border: isUser ? 'none' : '1px solid var(--border-glass)',
-          color: isUser ? '#fff' : 'var(--text-primary)',
-          borderBottomRightRadius: isUser ? 4 : 'var(--radius-lg)',
-          borderBottomLeftRadius: isUser ? 'var(--radius-lg)' : 4,
-        }}>
+        <div
+          className={isUser ? 'doka-user-in' : 'doka-msg-in'}
+          style={isUser
+            ? { ...NOTIFICATION_CHIP }
+            : {
+                padding: '11px 14px', borderRadius: 'var(--radius-lg)', fontSize: 14,
+                background: 'var(--bg-card)', border: '1px solid var(--border-glass)',
+                color: 'var(--text-primary)', borderBottomLeftRadius: 4,
+              }}
+        >
           {isUser ? <span style={{ whiteSpace: 'pre-wrap' }}>{message.content}</span> : <MiniMarkdown text={message.content} />}
           {isUser && Array.isArray(message.attachments) && message.attachments.map((a, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 12, opacity: 0.9 }}>
