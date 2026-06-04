@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>NOVA — Three.js Landing</title>
+    <meta
+      name="description"
+      content="An immersive Three.js landing page with floating geometry, mouse parallax, GSAP scroll and a WebGL particle field."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #05060d;
+        --bg-soft: #0b0e1c;
+        --text: #eef1ff;
+        --text-dim: #9aa3c7;
+        --accent: #7b5cff;
+        --accent-2: #22d3ee;
+        --glass-bg: rgba(255, 255, 255, 0.06);
+        --glass-border: rgba(255, 255, 255, 0.12);
+        --radius: 20px;
+        --max: 1180px;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html { scroll-behavior: auto; }
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        overflow-x: hidden;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1, h2, h3, .nav__brand {
+        font-family: 'Space Grotesk', sans-serif;
+        letter-spacing: -0.02em;
+      }
+      a { color: inherit; text-decoration: none; }
+      #webgl {
+        position: fixed; inset: 0; width: 100%; height: 100%;
+        z-index: 0; display: block;
+      }
+      body::after {
+        content: ''; position: fixed; inset: 0; z-index: 1;
+        pointer-events: none;
+        background: radial-gradient(120% 80% at 50% 0%, transparent 40%, rgba(5, 6, 13, 0.65) 100%);
+      }
+      main { position: relative; z-index: 2; }
+      .glass {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px) saturate(160%);
+        -webkit-backdrop-filter: blur(16px) saturate(160%);
+        border-radius: var(--radius);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      }
+      .btn {
+        display: inline-block; padding: 0.8rem 1.5rem; border-radius: 999px;
+        font-weight: 500; font-size: 0.95rem; cursor: pointer;
+        border: 1px solid transparent;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+      }
+      .btn:hover { transform: translateY(-2px); }
+      .btn--primary {
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #07111c; font-weight: 700;
+        box-shadow: 0 10px 30px rgba(123, 92, 255, 0.4);
+      }
+      .btn--ghost {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        color: var(--text);
+      }
+      .nav {
+        position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+        width: min(94%, var(--max)); z-index: 10;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0.75rem 1.25rem; border-radius: 999px;
+      }
+      .nav__brand { font-weight: 700; font-size: 1.15rem; }
+      .nav__links { display: flex; gap: 1.75rem; }
+      .nav__links a { color: var(--text-dim); font-size: 0.95rem; transition: color 0.2s ease; }
+      .nav__links a:hover { color: var(--text); }
+      .section {
+        position: relative; min-height: 100vh;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 7rem 1.5rem; max-width: var(--max); margin: 0 auto;
+      }
+      .section__title { font-size: clamp(1.8rem, 4vw, 3rem); margin-bottom: 1.25rem; }
+      .eyebrow {
+        text-transform: uppercase; letter-spacing: 0.25em; font-size: 0.75rem;
+        color: var(--accent-2); margin-bottom: 1rem;
+      }
+      .grad {
+        background: linear-gradient(120deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+      .hero__inner { text-align: center; max-width: 760px; padding: 3rem 2.5rem; }
+      .hero__title { font-size: clamp(2.4rem, 6vw, 4.5rem); line-height: 1.05; margin-bottom: 1.25rem; }
+      .hero__sub {
+        color: var(--text-dim); font-size: 1.1rem; max-width: 520px; margin: 0 auto 2rem;
+      }
+      .hero__cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+      .scroll-hint {
+        position: absolute; bottom: 2.5rem; display: flex; align-items: center; gap: 0.6rem;
+        color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.1em;
+      }
+      .scroll-hint span {
+        width: 22px; height: 36px; border: 1px solid var(--glass-border);
+        border-radius: 999px; position: relative;
+      }
+      .scroll-hint span::after {
+        content: ''; position: absolute; top: 7px; left: 50%;
+        width: 4px; height: 8px; background: var(--accent-2);
+        border-radius: 4px; transform: translateX(-50%); animation: scrollDot 1.6s infinite;
+      }
+      @keyframes scrollDot {
+        0% { opacity: 0; transform: translate(-50%, 0); }
+        40% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, 12px); }
+      }
+      .cards {
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem; width: 100%; margin-top: 1rem;
+      }
+      .card { padding: 2rem 1.75rem; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+      .card:hover { transform: translateY(-6px); box-shadow: 0 28px 70px rgba(123, 92, 255, 0.25); }
+      .card__icon { font-size: 1.8rem; color: var(--accent-2); margin-bottom: 1rem; }
+      .card h3 { font-size: 1.25rem; margin-bottom: 0.6rem; }
+      .card p { color: var(--text-dim); font-size: 0.95rem; }
+      .showcase__text { max-width: 620px; padding: 3rem 2.5rem; }
+      .showcase__text p { color: var(--text-dim); margin-bottom: 1.5rem; }
+      .ticks { list-style: none; display: grid; gap: 0.75rem; }
+      .ticks li { position: relative; padding-left: 1.75rem; color: var(--text); }
+      .ticks li::before { content: '✓'; position: absolute; left: 0; color: var(--accent-2); font-weight: 700; }
+      .contact__inner { text-align: center; max-width: 560px; padding: 3rem 2.5rem; }
+      .contact__inner p { color: var(--text-dim); margin-bottom: 1.75rem; }
+      .contact__form { display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; }
+      .contact__form input {
+        flex: 1; min-width: 220px; padding: 0.85rem 1.25rem; border-radius: 999px;
+        border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.04);
+        color: var(--text); font-size: 0.95rem; outline: none;
+      }
+      .contact__form input::placeholder { color: var(--text-dim); }
+      .contact__form input:focus { border-color: var(--accent-2); }
+      .footer {
+        position: absolute; bottom: 1.75rem; display: flex; gap: 1.5rem;
+        flex-wrap: wrap; justify-content: center; color: var(--text-dim); font-size: 0.8rem;
+      }
+      [data-fade] { opacity: 0; transform: translateY(40px); }
+      .loader {
+        position: fixed; inset: 0; z-index: 50;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 1rem; background: var(--bg);
+        transition: opacity 0.6s ease, visibility 0.6s ease;
+      }
+      .loader.hidden { opacity: 0; visibility: hidden; }
+      .loader__bar {
+        width: 220px; height: 3px; background: rgba(255, 255, 255, 0.1);
+        border-radius: 999px; overflow: hidden;
+      }
+      .loader__bar span {
+        display: block; height: 100%; width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        transition: width 0.3s ease;
+      }
+      .loader__label {
+        color: var(--text-dim); font-size: 0.8rem; letter-spacing: 0.15em; text-transform: uppercase;
+      }
+      @media (max-width: 720px) {
+        .nav__links { display: none; }
+        .section { padding: 6rem 1.25rem; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .scroll-hint span::after { animation: none; }
+      }
+    </style>
+
+    <!-- Load Three.js + GSAP straight from a CDN so this single file runs anywhere -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.169.0",
+          "gsap": "https://esm.sh/gsap@3.12.5",
+          "gsap/ScrollTrigger": "https://esm.sh/gsap@3.12.5/ScrollTrigger",
+          "gsap/ScrollToPlugin": "https://esm.sh/gsap@3.12.5/ScrollToPlugin"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="loader" id="loader">
+      <div class="loader__bar"><span id="loader-progress"></span></div>
+      <p class="loader__label">Loading experience…</p>
+    </div>
+
+    <canvas id="webgl"></canvas>
+
+    <header class="nav glass">
+      <a href="#hero" class="nav__brand">◆ NOVA</a>
+      <nav class="nav__links">
+        <a href="#features">Features</a>
+        <a href="#showcase">Showcase</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a href="#contact" class="btn btn--ghost">Get Started</a>
+    </header>
+
+    <main>
+      <section class="section hero" id="hero">
+        <div class="hero__inner glass" data-fade>
+          <p class="eyebrow">WebGL · Three.js · GSAP</p>
+          <h1 class="hero__title">
+            Build worlds that<br /><span class="grad">float in the dark.</span>
+          </h1>
+          <p class="hero__sub">
+            A real-time 3D landing experience — drifting geometry, a living
+            particle field, and motion that follows your cursor.
+          </p>
+          <div class="hero__cta">
+            <a href="#features" class="btn btn--primary">Explore</a>
+            <a href="#showcase" class="btn btn--ghost">See showcase</a>
+          </div>
+        </div>
+        <div class="scroll-hint" data-fade><span></span> scroll to dive deeper</div>
+      </section>
+
+      <section class="section features" id="features">
+        <h2 class="section__title" data-fade>Engineered for motion</h2>
+        <div class="cards">
+          <article class="card glass" data-fade>
+            <div class="card__icon">◇</div>
+            <h3>Floating Geometry</h3>
+            <p>Procedurally lit 3D primitives drift through space, each with its own rotation and bob — composed entirely in Three.js.</p>
+          </article>
+          <article class="card glass" data-fade>
+            <div class="card__icon">✦</div>
+            <h3>Particle Field</h3>
+            <p>Thousands of GPU-rendered points form a slowly swirling nebula behind the scene using a custom WebGL particle system.</p>
+          </article>
+          <article class="card glass" data-fade>
+            <div class="card__icon">⟁</div>
+            <h3>Cursor Parallax</h3>
+            <p>The camera leans toward your pointer, giving the whole scene a tangible sense of depth and presence.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section showcase" id="showcase">
+        <div class="showcase__text glass" data-fade>
+          <p class="eyebrow">Smooth scroll</p>
+          <h2 class="section__title">Choreographed with GSAP</h2>
+          <p>Every section reveals on a timeline. The 3D camera glides between framings as you scroll, blending DOM motion and WebGL into one continuous shot.</p>
+          <ul class="ticks">
+            <li>Scroll-linked camera movement</li>
+            <li>Reveal-on-enter animations</li>
+            <li>Inertia-smoothed parallax</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="section contact" id="contact">
+        <div class="contact__inner glass" data-fade>
+          <h2 class="section__title">Ready to launch?</h2>
+          <p>Drop your email and we'll send the starter kit.</p>
+          <form class="contact__form" onsubmit="return false">
+            <input type="email" placeholder="you@example.com" required />
+            <button type="submit" class="btn btn--primary">Notify me</button>
+          </form>
+        </div>
+        <footer class="footer">
+          <span>© 2026 NOVA</span>
+          <span>Built with Three.js · GSAP</span>
+        </footer>
+      </section>
+    </main>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import { gsap } from 'gsap';
+      import { ScrollTrigger } from 'gsap/ScrollTrigger';
+      import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+
+      gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+      /* ----------------------------- Particle field ----------------------------- */
+      function createParticleField({ count = 3500, radius = 20, colorA = '#7b5cff', colorB = '#22d3ee' } = {}) {
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const scales = new Float32Array(count);
+        const cA = new THREE.Color(colorA);
+        const cB = new THREE.Color(colorB);
+
+        for (let i = 0; i < count; i++) {
+          const r = radius * Math.cbrt(Math.random());
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+          const x = r * Math.sin(phi) * Math.cos(theta);
+          const y = r * Math.sin(phi) * Math.sin(theta);
+          const z = r * Math.cos(phi);
+          positions.set([x, y, z], i * 3);
+          const mixed = cA.clone().lerp(cB, r / radius);
+          colors.set([mixed.r, mixed.g, mixed.b], i * 3);
+          scales[i] = Math.random() * 1.5 + 0.5;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+
+        const material = new THREE.ShaderMaterial({
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          vertexColors: true,
+          uniforms: {
+            uTime: { value: 0 },
+            uSize: { value: 9.0 * Math.min(window.devicePixelRatio, 2) },
+          },
+          vertexShader: `
+            uniform float uTime;
+            uniform float uSize;
+            attribute float aScale;
+            varying vec3 vColor;
+            void main() {
+              vColor = color;
+              vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+              float twinkle = 0.6 + 0.4 * sin(uTime * 2.0 + aScale * 12.0);
+              gl_PointSize = uSize * aScale * twinkle * (1.0 / -mvPosition.z);
+              gl_Position = projectionMatrix * mvPosition;
+            }
+          `,
+          fragmentShader: `
+            varying vec3 vColor;
+            void main() {
+              float d = distance(gl_PointCoord, vec2(0.5));
+              float alpha = smoothstep(0.5, 0.0, d);
+              gl_FragColor = vec4(vColor, alpha);
+            }
+          `,
+        });
+
+        const points = new THREE.Points(geometry, material);
+        points.userData.update = (elapsed) => {
+          material.uniforms.uTime.value = elapsed;
+          points.rotation.y = elapsed * 0.03;
+          points.rotation.x = Math.sin(elapsed * 0.05) * 0.1;
+        };
+        return points;
+      }
+
+      /* -------------------------------- Scene ----------------------------------- */
+      class Scene {
+        constructor(canvas) {
+          this.canvas = canvas;
+          this.clock = new THREE.Clock();
+          this.pointer = new THREE.Vector2(0, 0);
+          this.parallax = new THREE.Vector2(0, 0);
+          this.scrollProgress = 0;
+          this._initRenderer();
+          this._initSceneGraph();
+          this._initLights();
+          this._initShapes();
+          this._initParticles();
+          this._bindEvents();
+        }
+        _initRenderer() {
+          this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+          this.renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        _initSceneGraph() {
+          this.scene = new THREE.Scene();
+          this.scene.fog = new THREE.FogExp2('#05060d', 0.025);
+          this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
+          this.camera.position.set(0, 0, 12);
+          this.shapeGroup = new THREE.Group();
+          this.scene.add(this.shapeGroup);
+        }
+        _initLights() {
+          this.scene.add(new THREE.AmbientLight('#3a3f66', 1.2));
+          const key = new THREE.DirectionalLight('#7b5cff', 2.2);
+          key.position.set(5, 6, 8);
+          this.scene.add(key);
+          const rim = new THREE.PointLight('#22d3ee', 60, 60);
+          rim.position.set(-8, -4, 4);
+          this.scene.add(rim);
+        }
+        _initShapes() {
+          const geometries = [
+            new THREE.IcosahedronGeometry(1.2, 0),
+            new THREE.TorusGeometry(0.9, 0.35, 16, 60),
+            new THREE.OctahedronGeometry(1.3, 0),
+            new THREE.DodecahedronGeometry(1.1, 0),
+            new THREE.TorusKnotGeometry(0.7, 0.26, 90, 16),
+            new THREE.ConeGeometry(1, 1.8, 6),
+          ];
+          this.shapes = [];
+          geometries.forEach((geo, i) => {
+            const material = new THREE.MeshStandardMaterial({
+              color: i % 2 ? '#22d3ee' : '#7b5cff',
+              metalness: 0.4, roughness: 0.25, flatShading: true,
+            });
+            const mesh = new THREE.Mesh(geo, material);
+            const angle = (i / geometries.length) * Math.PI * 2;
+            const dist = 6 + Math.random() * 2;
+            mesh.position.set(Math.cos(angle) * dist, (Math.random() - 0.5) * 6, Math.sin(angle) * dist - 3);
+            mesh.scale.setScalar(0.7 + Math.random() * 0.6);
+            mesh.userData = {
+              floatSpeed: 0.4 + Math.random() * 0.6,
+              floatRange: 0.4 + Math.random() * 0.5,
+              rotSpeed: new THREE.Vector3((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4),
+              baseY: mesh.position.y,
+              phase: Math.random() * Math.PI * 2,
+            };
+            this.shapes.push(mesh);
+            this.shapeGroup.add(mesh);
+          });
+        }
+        _initParticles() {
+          this.particles = createParticleField({ count: 3500, radius: 20 });
+          this.scene.add(this.particles);
+        }
+        _bindEvents() {
+          this._onResize = this._onResize.bind(this);
+          this._onPointerMove = this._onPointerMove.bind(this);
+          window.addEventListener('resize', this._onResize);
+          window.addEventListener('pointermove', this._onPointerMove);
+        }
+        _onResize() {
+          const w = window.innerWidth, h = window.innerHeight;
+          this.camera.aspect = w / h;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(w, h);
+          this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        }
+        _onPointerMove(e) {
+          this.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+          this.pointer.y = -((e.clientY / window.innerHeight) * 2 - 1);
+        }
+        setScrollProgress(p) { this.scrollProgress = p; }
+        start() {
+          const tick = () => { this._frame(); this._raf = requestAnimationFrame(tick); };
+          tick();
+        }
+        _frame() {
+          const elapsed = this.clock.getElapsedTime();
+          for (const mesh of this.shapes) {
+            const u = mesh.userData;
+            mesh.position.y = u.baseY + Math.sin(elapsed * u.floatSpeed + u.phase) * u.floatRange;
+            mesh.rotation.x += u.rotSpeed.x * 0.01;
+            mesh.rotation.y += u.rotSpeed.y * 0.01;
+            mesh.rotation.z += u.rotSpeed.z * 0.01;
+          }
+          this.shapeGroup.rotation.y = elapsed * 0.04;
+          this.particles.userData.update(elapsed);
+          this.parallax.x += (this.pointer.x - this.parallax.x) * 0.05;
+          this.parallax.y += (this.pointer.y - this.parallax.y) * 0.05;
+          const targetZ = 12 - this.scrollProgress * 6;
+          this.camera.position.x += (this.parallax.x * 1.6 - this.camera.position.x) * 0.06;
+          this.camera.position.y += (this.parallax.y * 1.2 - this.scrollProgress * 3 - this.camera.position.y) * 0.06;
+          this.camera.position.z += (targetZ - this.camera.position.z) * 0.06;
+          this.camera.lookAt(0, -this.scrollProgress * 1.5, 0);
+          this.renderer.render(this.scene, this.camera);
+        }
+      }
+
+      /* ------------------------------- Scroll ----------------------------------- */
+      function initScroll(onProgress) {
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        gsap.utils.toArray('[data-fade]').forEach((el) => {
+          gsap.to(el, {
+            opacity: 1, y: 0, duration: reduceMotion ? 0 : 0.9, ease: 'power3.out',
+            scrollTrigger: { trigger: el, start: 'top 85%', toggleActions: 'play none none reverse' },
+          });
+        });
+        document.querySelectorAll('a[href^="#"]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const target = document.querySelector(link.getAttribute('href'));
+            if (!target) return;
+            e.preventDefault();
+            gsap.to(window, {
+              duration: reduceMotion ? 0 : 1.1, ease: 'power2.inOut',
+              scrollTo: { y: target, autoKill: true },
+            });
+          });
+        });
+        ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (self) => onProgress(self.progress) });
+      }
+
+      /* -------------------------------- Boot ------------------------------------ */
+      const canvas = document.getElementById('webgl');
+      const loader = document.getElementById('loader');
+      const progressEl = document.getElementById('loader-progress');
+
+      const scene = new Scene(canvas);
+      initScroll((p) => scene.setScrollProgress(p));
+
+      function runLoader() {
+        let p = 0;
+        const id = setInterval(() => {
+          p = Math.min(100, p + Math.random() * 22);
+          progressEl.style.width = `${p}%`;
+          if (p >= 100) {
+            clearInterval(id);
+            requestAnimationFrame(() => { loader.classList.add('hidden'); scene.start(); });
+          }
+        }, 140);
+      }
+      window.addEventListener('load', runLoader);
+    </script>
+  </body>
+</html>

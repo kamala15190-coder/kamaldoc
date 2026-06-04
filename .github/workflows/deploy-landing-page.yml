@@ -1,13 +1,10 @@
 name: Deploy Three.js landing page
 
 # Builds threejs-landing-page/ and publishes it to GitHub Pages.
+# NOTE: Requires GitHub Pages to be enabled once under
+# Settings > Pages > Source: "GitHub Actions". Until then this is
+# manual-trigger only so it doesn't fail on every push.
 on:
-  push:
-    branches:
-      - claude/threejs-landing-page-x3qaF
-    paths:
-      - 'threejs-landing-page/**'
-      - '.github/workflows/deploy-landing-page.yml'
   workflow_dispatch:
 
 permissions:
