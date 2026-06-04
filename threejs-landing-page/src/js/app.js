@@ -4,17 +4,18 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 /* ===========================================================================
-   AHMED KAMAL SOLUTIONS — "Inside the Machine"
-   A first-person flight through a living processor. Curl-noise PCB pathways,
-   50k+ streaming particles, microchips and nodes whipping past, the user's
-   blue data-point riding the camera, full post pipeline (bloom + chromatic
-   aberration + radial motion blur). A holographic AI head breathes at the
-   centre, turns to whatever menu node you point at, then dissolves into the
-   stream as the camera warps to the chosen sub-page.
+   AHMED KAMAL SOLUTIONS — "Across the Board"
+   A cinematic flight low across a living circuit board: photoreal-ish PCB with
+   glowing amber traces and travelling data pulses, real 3D components (chips,
+   capacitors, LEDs) with PBR reflections, depth-of-field + bloom for a
+   high-res "3D video" feel. A holographic AI head hovers above the central
+   CPU, breathes, tracks the cursor, turns to hovered menu nodes, then
+   dissolves as the camera warps to the chosen sub-page.
 =========================================================================== */
 
 const MENU = [
@@ -27,464 +28,273 @@ const MENU = [
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const TUNNEL_LEN = 220;
-const wrapZ = (z) => ((z % TUNNEL_LEN) + TUNNEL_LEN) % TUNNEL_LEN - TUNNEL_LEN / 2;
+
+const FLOOR_Y = -4.2;
+const COMP_RANGE = 380; // z length over which components recycle
 
 const COL = {
   cyan: new THREE.Color('#19e3ff'),
   violet: new THREE.Color('#7c5cff'),
-  magenta: new THREE.Color('#ff3ea5'),
-  ice: new THREE.Color('#bfefff'),
+  amber: new THREE.Color('#ff8a1e'),
+  gold: new THREE.Color('#ffc46b'),
 };
 
 /* ===========================================================================
-   GLSL — Ashima simplex noise + curl, shared by the GPU particle field
+   Photoreal-ish PCB shader (Manhattan traces, pads, vias, flowing data)
 =========================================================================== */
-const GLSL_NOISE = /* glsl */ `
-vec3 mod289(vec3 x){return x - floor(x*(1.0/289.0))*289.0;}
-vec4 mod289(vec4 x){return x - floor(x*(1.0/289.0))*289.0;}
-vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
-vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
-float snoise(vec3 v){
-  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
-  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
-  vec3 i  = floor(v + dot(v, C.yyy));
-  vec3 x0 = v - i + dot(i, C.xxx);
-  vec3 g = step(x0.yzx, x0.xyz);
-  vec3 l = 1.0 - g;
-  vec3 i1 = min(g.xyz, l.zxy);
-  vec3 i2 = max(g.xyz, l.zxy);
-  vec3 x1 = x0 - i1 + C.xxx;
-  vec3 x2 = x0 - i2 + C.yyy;
-  vec3 x3 = x0 - D.yyy;
-  i = mod289(i);
-  vec4 p = permute(permute(permute(
-            i.z + vec4(0.0, i1.z, i2.z, 1.0))
-          + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-          + i.x + vec4(0.0, i1.x, i2.x, 1.0));
-  float n_ = 0.142857142857;
-  vec3 ns = n_ * D.wyz - D.xzx;
-  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
-  vec4 x_ = floor(j * ns.z);
-  vec4 y_ = floor(j - 7.0 * x_);
-  vec4 x = x_ * ns.x + ns.yyyy;
-  vec4 y = y_ * ns.x + ns.yyyy;
-  vec4 h = 1.0 - abs(x) - abs(y);
-  vec4 b0 = vec4(x.xy, y.xy);
-  vec4 b1 = vec4(x.zw, y.zw);
-  vec4 s0 = floor(b0) * 2.0 + 1.0;
-  vec4 s1 = floor(b1) * 2.0 + 1.0;
-  vec4 sh = -step(h, vec4(0.0));
-  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
-  vec3 p0 = vec3(a0.xy, h.x);
-  vec3 p1 = vec3(a0.zw, h.y);
-  vec3 p2 = vec3(a1.xy, h.z);
-  vec3 p3 = vec3(a1.zw, h.w);
-  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
-  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
-  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
-  m = m * m;
-  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
-}
-vec3 snoiseVec3(vec3 x){
-  return vec3(
-    snoise(x),
-    snoise(vec3(x.y - 19.1, x.z + 33.4, x.x + 47.2)),
-    snoise(vec3(x.z + 74.2, x.x - 124.5, x.y + 99.4))
-  );
-}
-vec3 curlNoise(vec3 p){
-  const float e = 0.12;
-  vec3 dx = vec3(e,0.0,0.0), dy = vec3(0.0,e,0.0), dz = vec3(0.0,0.0,e);
-  vec3 px0 = snoiseVec3(p-dx), px1 = snoiseVec3(p+dx);
-  vec3 py0 = snoiseVec3(p-dy), py1 = snoiseVec3(p+dy);
-  vec3 pz0 = snoiseVec3(p-dz), pz1 = snoiseVec3(p+dz);
-  float x = py1.z - py0.z - pz1.y + pz0.y;
-  float y = pz1.x - pz0.x - px1.z + px0.z;
-  float z = px1.y - px0.y - py1.x + py0.x;
-  return normalize(vec3(x,y,z) / (2.0*e));
-}
+const PCB_FRAG = /* glsl */ `
+  precision highp float;
+  varying vec3 vWorld;
+  varying vec3 vViewDir;
+  uniform float uTime, uScroll, uDim;
+  uniform vec3 uBase, uSub, uTrace, uGlow;
+
+  float hash21(vec2 p){ p = fract(p * vec2(123.34, 345.45)); p += dot(p, p + 34.345); return fract(p.x * p.y); }
+
+  // one Manhattan trace layer at a given cell size
+  float traceLayer(vec2 P, float cell, float w){
+    vec2 g = P / cell; vec2 id = floor(g); vec2 f = fract(g);
+    float vM = step(0.5, hash21(vec2(id.x, 7.3)));
+    float hM = step(0.55, hash21(vec2(3.1, id.y)));
+    float vL = vM * smoothstep(w, 0.0, abs(f.x - 0.5));
+    float hL = hM * smoothstep(w, 0.0, abs(f.y - 0.5));
+    return max(vL, hL);
+  }
+
+  void main(){
+    vec2 P = vec2(vWorld.x, vWorld.z + uScroll);
+
+    // copper traces at two scales
+    float coarse = traceLayer(P, 2.2, 0.05);
+    float fine   = traceLayer(P, 0.75, 0.03) * 0.6;
+    float trace  = max(coarse, fine);
+
+    // pads + via rings on the coarse grid
+    vec2 g = P / 2.2; vec2 id = floor(g); vec2 f = fract(g) - 0.5;
+    float padM = step(0.80, hash21(id + 11.0));
+    float pad  = padM * smoothstep(0.26, 0.17, length(f));
+    float ring = padM * smoothstep(0.035, 0.0, abs(length(f) - 0.22));
+    float copper = clamp(trace + pad + ring * 0.8, 0.0, 1.0);
+
+    // substrate: dark solder mask with subtle blotchy variation
+    float n = hash21(floor(P * 2.7));
+    vec3 base = mix(uBase, uSub, n * 0.5);
+
+    vec3 col = mix(base, uTrace, copper);
+    col += uGlow * copper * 0.45;
+
+    // travelling data pulses along the traces
+    float pulse = 0.0;
+    pulse += coarse * smoothstep(0.93, 1.0, sin(P.y * 1.15 - uTime * 4.0) * 0.5 + 0.5);
+    pulse += coarse * smoothstep(0.93, 1.0, sin(P.x * 1.15 + uTime * 3.0) * 0.5 + 0.5);
+    col += uGlow * pulse * 1.8;
+
+    // grazing-angle copper sheen
+    float fres = pow(1.0 - max(dot(normalize(vViewDir), vec3(0.0, 1.0, 0.0)), 0.0), 3.0);
+    col += uTrace * copper * fres * 0.5;
+
+    // depth fade: far end falls to near-black, foreground a touch dimmer
+    float depth = smoothstep(-300.0, -20.0, vWorld.z);
+    float nearFade = 1.0 - smoothstep(14.0, 30.0, vWorld.z);
+    col *= mix(0.06, 1.0, depth) * nearFade * uDim;
+
+    gl_FragColor = vec4(col, 1.0);
+  }
+`;
+const PCB_VERT = /* glsl */ `
+  varying vec3 vWorld;
+  varying vec3 vViewDir;
+  void main(){
+    vec4 wp = modelMatrix * vec4(position, 1.0);
+    vWorld = wp.xyz;
+    vViewDir = cameraPosition - wp.xyz;
+    gl_Position = projectionMatrix * viewMatrix * wp;
+  }
 `;
 
-/* ===========================================================================
-   50k+ curl-noise particle stream flowing through the processor
-=========================================================================== */
-function createParticleStream(count = 50000) {
-  const base = new Float32Array(count * 3);
-  const rand = new Float32Array(count);
-  const tint = new Float32Array(count);
-  for (let i = 0; i < count; i++) {
-    // keep a clear core zone so the head silhouette stays unobstructed
-    const r = 3.4 + Math.pow(Math.random(), 0.6) * 11.0;
-    const a = Math.random() * Math.PI * 2;
-    base[i * 3] = Math.cos(a) * r;
-    base[i * 3 + 1] = Math.sin(a) * r;
-    base[i * 3 + 2] = Math.random() * TUNNEL_LEN;
-    rand[i] = 0.4 + Math.random() * 1.6;
-    tint[i] = Math.random();
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(base, 3));
-  geo.setAttribute('aRand', new THREE.BufferAttribute(rand, 1));
-  geo.setAttribute('aTint', new THREE.BufferAttribute(tint, 1));
-  geo.setDrawRange(0, count);
-  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
-
+function createPCB(y, dim, scrollSign) {
+  const geo = new THREE.PlaneGeometry(160, 560, 1, 1);
+  geo.rotateX(-Math.PI / 2);
   const mat = new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
+    vertexShader: PCB_VERT,
+    fragmentShader: PCB_FRAG,
     uniforms: {
-      uTime: { value: 0 },
-      uSpeed: { value: 9.0 },
-      uSize: { value: 11.0 * Math.min(window.devicePixelRatio, 2) },
-      uLen: { value: TUNNEL_LEN },
-      uCol1: { value: COL.cyan },
-      uCol2: { value: COL.violet },
-      uCol3: { value: COL.magenta },
+      uTime: { value: 0 }, uScroll: { value: 0 }, uDim: { value: dim },
+      uBase: { value: new THREE.Color('#070b0a') },
+      uSub: { value: new THREE.Color('#0e1512') },
+      uTrace: { value: COL.amber },
+      uGlow: { value: COL.gold },
     },
-    vertexShader: GLSL_NOISE + /* glsl */ `
-      uniform float uTime, uSpeed, uSize, uLen;
-      uniform vec3 uCol1, uCol2, uCol3;
-      attribute float aRand, aTint;
-      varying vec3 vCol;
-      varying float vFade;
-      void main(){
-        vec3 b = position;
-        float z = mod(b.z + uTime * uSpeed, uLen) - uLen * 0.5;
-        vec3 p = vec3(b.xy, z);
-        // organic curl drift, stronger further from the core
-        vec3 c = curlNoise(p * 0.045 + vec3(0.0, 0.0, uTime * 0.04));
-        float amp = 0.6 + length(b.xy) * 0.12;
-        p += c * amp;
-        vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        float d = -mv.z;
-        gl_PointSize = uSize * aRand * (1.0 / d);
-        gl_Position = projectionMatrix * mv;
-        vec3 col = mix(uCol1, uCol2, smoothstep(0.0, 0.6, aTint));
-        col = mix(col, uCol3, smoothstep(0.7, 1.0, aTint));
-        vCol = col;
-        // keep particles near the camera so the deep centre stays dark for the head
-        vFade = smoothstep(-62.0, -28.0, z) * (1.0 - smoothstep(3.0, 11.0, z));
-      }`,
-    fragmentShader: /* glsl */ `
-      varying vec3 vCol; varying float vFade;
-      void main(){
-        float d = distance(gl_PointCoord, vec2(0.5));
-        float a = smoothstep(0.5, 0.0, d) * vFade * 0.6;
-        gl_FragColor = vec4(vCol, a);
-      }`,
-
   });
-
-  const pts = new THREE.Points(geo, mat);
-  pts.frustumCulled = false;
-  pts.userData.update = (t) => { mat.uniforms.uTime.value = t; };
-  pts.userData.mat = mat;
-  return pts;
-}
-
-/* ===========================================================================
-   Hyperspace streaks — fiber-optic warp lines (GPU-wrapped)
-=========================================================================== */
-function createStreaks(count = 650) {
-  const pos = new Float32Array(count * 2 * 3);
-  const zoff = new Float32Array(count * 2);
-  const seed = new Float32Array(count * 2);
-  for (let i = 0; i < count; i++) {
-    const r = 3.8 + Math.random() * 10.2;
-    const a = Math.random() * Math.PI * 2;
-    const x = Math.cos(a) * r, y = Math.sin(a) * r;
-    const z = Math.random() * TUNNEL_LEN;
-    const len = 2.5 + Math.random() * 9.0;
-    const s = Math.random();
-    pos.set([x, y, z], i * 6);
-    pos.set([x, y, z], i * 6 + 3);
-    zoff[i * 2] = 0; zoff[i * 2 + 1] = len;
-    seed[i * 2] = s; seed[i * 2 + 1] = s;
-  }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('aZoff', new THREE.BufferAttribute(zoff, 1));
-  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
-  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
-
-  const mat = new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    uniforms: {
-      uTime: { value: 0 },
-      uSpeed: { value: 42.0 },
-      uLen: { value: TUNNEL_LEN },
-      uCol: { value: COL.ice },
-    },
-    vertexShader: /* glsl */ `
-      uniform float uTime, uSpeed, uLen;
-      attribute float aZoff, aSeed;
-      varying float vA;
-      void main(){
-        float z = mod(position.z + uTime * uSpeed, uLen) - uLen * 0.5 + aZoff;
-        vec3 p = vec3(position.xy, z);
-        vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_Position = projectionMatrix * mv;
-        vA = (0.4 + 0.6 * aSeed) * (1.0 - smoothstep(0.0, 9.0, z)) * smoothstep(-55.0, -20.0, z);
-      }`,
-    fragmentShader: /* glsl */ `
-      uniform vec3 uCol; varying float vA;
-      void main(){ gl_FragColor = vec4(uCol, vA * 0.32); }`,
-  });
-
-  const seg = new THREE.LineSegments(geo, mat);
-  seg.frustumCulled = false;
-  seg.userData.update = (t) => { mat.uniforms.uTime.value = t; };
-  seg.userData.mat = mat;
-  return seg;
-}
-
-/* ===========================================================================
-   Branching PCB pathways generated with curl-noise (CPU) — animated energy
-=========================================================================== */
-function createPCBPaths() {
-  const simplex = new SimplexNoise();
-  const flow = (x, y, z) =>
-    new THREE.Vector3(
-      simplex.noise3d(x * 0.05, y * 0.05, z * 0.05),
-      simplex.noise3d(x * 0.05 + 11.3, y * 0.05 - 4.7, z * 0.05 + 2.1),
-      0.55 // bias along the tunnel so traces run mostly lengthwise
-    ).normalize();
-
-  const verts = [];
-  const arc = [];
-  const tints = [];
-
-  const grow = (start, steps, tint) => {
-    let p = start.clone();
-    for (let i = 0; i < steps; i++) {
-      const dir = flow(p.x, p.y, p.z + i * 0.5);
-      const next = p.clone().addScaledVector(dir, 1.4);
-      // keep traces hugging the outer wall shell
-      const rad = Math.hypot(next.x, next.y);
-      if (rad < 6) { next.x *= 6 / rad; next.y *= 6 / rad; }
-      if (rad > 13) { next.x *= 13 / rad; next.y *= 13 / rad; }
-      verts.push(p.x, p.y, p.z, next.x, next.y, next.z);
-      const a0 = i / steps, a1 = (i + 1) / steps;
-      arc.push(a0, a1);
-      tints.push(tint, tint);
-      // occasional branch
-      if (i > 6 && i < steps - 6 && Math.random() < 0.06) {
-        grow(next, (steps - i) * 0.6 | 0, tint);
-      }
-      p = next;
-    }
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(0, y, -180);
+  mesh.frustumCulled = false;
+  mesh.userData.update = (t) => {
+    mat.uniforms.uTime.value = t;
+    mat.uniforms.uScroll.value = t * 22.0 * scrollSign; // flight speed
   };
-
-  for (let i = 0; i < 90; i++) {
-    const a = Math.random() * Math.PI * 2;
-    const r = 7 + Math.random() * 5;
-    grow(
-      new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, Math.random() * TUNNEL_LEN - TUNNEL_LEN / 2),
-      40 + (Math.random() * 30 | 0),
-      Math.random()
-    );
-  }
-
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-  geo.setAttribute('aArc', new THREE.Float32BufferAttribute(arc, 1));
-  geo.setAttribute('aTint', new THREE.Float32BufferAttribute(tints, 1));
-  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
-
-  const mat = new THREE.ShaderMaterial({
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-    uniforms: {
-      uTime: { value: 0 },
-      uSpeed: { value: 9.0 },
-      uLen: { value: TUNNEL_LEN },
-      uCol1: { value: COL.cyan },
-      uCol2: { value: COL.violet },
-    },
-    vertexShader: /* glsl */ `
-      uniform float uTime, uSpeed, uLen;
-      uniform vec3 uCol1, uCol2;
-      attribute float aArc, aTint;
-      varying vec3 vCol; varying float vArc; varying float vFade;
-      void main(){
-        float z = mod(position.z + uTime * uSpeed, uLen) - uLen * 0.5;
-        vec3 p = vec3(position.xy, z);
-        vec4 mv = modelViewMatrix * vec4(p, 1.0);
-        gl_Position = projectionMatrix * mv;
-        vCol = mix(uCol1, uCol2, aTint);
-        vArc = aArc;
-        vFade = smoothstep(-72.0, -30.0, z) * (1.0 - smoothstep(2.0, 9.0, z));
-      }`,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      varying vec3 vCol; varying float vArc; varying float vFade;
-      void main(){
-        // travelling energy pulse along each trace
-        float pulse = sin(vArc * 26.0 - uTime * 7.0);
-        float e = smoothstep(0.6, 1.0, pulse);
-        float base = 0.18;
-        gl_FragColor = vec4(vCol * (base + e * 1.6), (base + e) * vFade);
-      }`,
-  });
-
-  const lines = new THREE.LineSegments(geo, mat);
-  lines.frustumCulled = false;
-  lines.userData.update = (t) => { mat.uniforms.uTime.value = t; };
-  lines.userData.mat = mat;
-  return lines;
+  mesh.userData.mat = mat;
+  return mesh;
 }
 
 /* ===========================================================================
-   Instanced microchips + glowing nodes along the tunnel walls
+   The hero CPU directly beneath the AI head
 =========================================================================== */
-function createInstancedField() {
+function createHeroCPU() {
+  const g = new THREE.Group();
+  g.position.set(0, FLOOR_Y, 0);
+
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(5.2, 0.5, 5.2),
+    new THREE.MeshStandardMaterial({ color: '#0a0c10', metalness: 0.9, roughness: 0.28 })
+  );
+  body.position.y = 0.25;
+  g.add(body);
+
+  // die / top plate (brushed metal)
+  const die = new THREE.Mesh(
+    new THREE.BoxGeometry(3.2, 0.08, 3.2),
+    new THREE.MeshStandardMaterial({ color: '#1a1d24', metalness: 1.0, roughness: 0.18 })
+  );
+  die.position.y = 0.54;
+  g.add(die);
+
+  // glowing socket seam
+  const seamMat = new THREE.MeshBasicMaterial({ color: '#ff9a32' });
+  const seam = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.025, 8, 4), seamMat);
+  seam.rotation.x = Math.PI / 2; seam.rotation.z = Math.PI / 4; seam.position.y = 0.52;
+  g.add(seam);
+  g.userData.seamMat = seamMat;
+
+  // pin grid (emissive specks) via instancing
+  const pins = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.06, 0.02, 0.06),
+    new THREE.MeshBasicMaterial({ color: '#ffb455' }),
+    24 * 24
+  );
+  const d = new THREE.Object3D(); let i = 0;
+  for (let x = 0; x < 24; x++) for (let z = 0; z < 24; z++) {
+    d.position.set((x - 11.5) * 0.13, 0.59, (z - 11.5) * 0.13);
+    d.updateMatrix(); pins.setMatrixAt(i++, d.matrix);
+  }
+  g.add(pins);
+
+  g.userData.update = (t) => {
+    const p = 0.6 + Math.abs(Math.sin(t * 1.5)) * 0.6;
+    seamMat.color.setRGB(p * 1.0, p * 0.55, p * 0.12);
+  };
+  return g;
+}
+
+/* ===========================================================================
+   Scattered components (chips, capacitors, blinking LEDs) — flight recycling
+=========================================================================== */
+function createComponents() {
   const group = new THREE.Group();
-
-  // --- microchips ---
-  const chipCount = 360;
-  const chipGeo = new THREE.BoxGeometry(0.9, 0.9, 0.16);
-  const chipMat = new THREE.MeshStandardMaterial({
-    color: '#0a1228', metalness: 0.7, roughness: 0.35,
-    emissive: '#0bd5ff', emissiveIntensity: 0.5,
-  });
-  const chips = new THREE.InstancedMesh(chipGeo, chipMat, chipCount);
-  chips.frustumCulled = false;
-
-  // --- glowing nodes ---
-  const nodeCount = 520;
-  const nodeGeo = new THREE.OctahedronGeometry(0.22, 0);
-  const nodeMat = new THREE.MeshBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.95 });
-  const nodes = new THREE.InstancedMesh(nodeGeo, nodeMat, nodeCount);
-  nodes.frustumCulled = false;
-
-  const mk = (n, rMin, rMax) =>
-    Array.from({ length: n }, () => {
-      const a = Math.random() * Math.PI * 2;
-      const r = rMin + Math.random() * (rMax - rMin);
-      return {
-        x: Math.cos(a) * r, y: Math.sin(a) * r,
-        z: Math.random() * TUNNEL_LEN, ang: a,
-        spin: (Math.random() - 0.5) * 0.6, sc: 0.6 + Math.random() * 1.1,
-        ph: Math.random() * 6.28,
-      };
-    });
-
-  const chipData = mk(chipCount, 8.5, 12.5);
-  const nodeData = mk(nodeCount, 6.5, 12.8);
-
-  const dummy = new THREE.Object3D();
-  const apply = (mesh, data, t, speed, faceIn) => {
-    for (let i = 0; i < data.length; i++) {
-      const d = data[i];
-      dummy.position.set(d.x, d.y, wrapZ(d.z + t * speed));
-      if (faceIn) {
-        dummy.rotation.set(0, 0, -d.ang + Math.PI / 2);
-        dummy.rotation.x = t * d.spin * 0.3;
-      } else {
-        dummy.rotation.set(t * d.spin, t * d.spin * 0.7, d.ang);
-      }
-      const s = d.sc * (faceIn ? 1 : 1);
-      dummy.scale.setScalar(s);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-    }
-    mesh.instanceMatrix.needsUpdate = true;
+  const wrap = (z, t, speed) => {
+    let zz = (z + t * speed) % COMP_RANGE;
+    if (zz < 0) zz += COMP_RANGE;
+    return zz - COMP_RANGE + 40; // keep mostly ahead (negative z)
   };
 
-  group.add(chips, nodes);
-  group.userData.update = (t) => {
-    apply(chips, chipData, t, 9.0, true);
-    apply(nodes, nodeData, t, 9.0, false);
-    nodeMat.opacity = 0.7 + Math.sin(t * 3.0) * 0.25;
+  const chipMat = new THREE.MeshStandardMaterial({ color: '#0b0e14', metalness: 0.9, roughness: 0.3, emissive: new THREE.Color('#241402'), emissiveIntensity: 1.0 });
+  const capMat = new THREE.MeshStandardMaterial({ color: '#14110c', metalness: 0.7, roughness: 0.4, emissive: new THREE.Color('#1a0f04') });
+
+  const N_CHIP = 240, N_CAP = 130, N_LED = 260;
+  const chips = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 0.3, 1), chipMat, N_CHIP);
+  const caps = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.3, 0.3, 1.1, 18), capMat, N_CAP);
+  const leds = new THREE.InstancedMesh(new THREE.SphereGeometry(0.08, 8, 8),
+    new THREE.MeshBasicMaterial({ color: '#ffd27a' }), N_LED);
+  chips.frustumCulled = caps.frustumCulled = leds.frustumCulled = false;
+
+  const rnd = (n, gen) => Array.from({ length: n }, gen);
+  const lane = () => {
+    // place either side of the central path, leaving a clear corridor
+    const side = Math.random() < 0.5 ? -1 : 1;
+    return side * (5 + Math.random() * 60);
+  };
+  const chipData = rnd(N_CHIP, () => ({ x: lane(), z: Math.random() * COMP_RANGE, w: 0.6 + Math.random() * 3.2, dep: 0.6 + Math.random() * 3.0, h: 0.2 + Math.random() * 0.5, rot: (Math.random() * 4 | 0) * Math.PI / 2 }));
+  const capData = rnd(N_CAP, () => ({ x: lane(), z: Math.random() * COMP_RANGE, r: 0.2 + Math.random() * 0.5, h: 0.8 + Math.random() * 1.8 }));
+  const ledData = rnd(N_LED, () => ({ x: lane(), z: Math.random() * COMP_RANGE, ph: Math.random() * 6.28, sp: 1 + Math.random() * 4 }));
+
+  group.add(chips, caps, leds);
+  const d = new THREE.Object3D();
+
+  group.userData.update = (t, speed) => {
+    for (let i = 0; i < N_CHIP; i++) {
+      const c = chipData[i];
+      d.position.set(c.x, FLOOR_Y + c.h / 2, wrap(c.z, t, speed));
+      d.rotation.set(0, c.rot, 0);
+      d.scale.set(c.w, c.h, c.dep);
+      d.updateMatrix(); chips.setMatrixAt(i, d.matrix);
+    }
+    chips.instanceMatrix.needsUpdate = true;
+    for (let i = 0; i < N_CAP; i++) {
+      const c = capData[i];
+      d.position.set(c.x, FLOOR_Y + c.h / 2, wrap(c.z, t, speed));
+      d.rotation.set(0, 0, 0); d.scale.set(c.r / 0.3, c.h / 1.1, c.r / 0.3);
+      d.updateMatrix(); caps.setMatrixAt(i, d.matrix);
+    }
+    caps.instanceMatrix.needsUpdate = true;
+    for (let i = 0; i < N_LED; i++) {
+      const c = ledData[i];
+      const blink = 0.4 + Math.abs(Math.sin(t * c.sp + c.ph)) * 1.1;
+      d.position.set(c.x, FLOOR_Y + 0.12, wrap(c.z, t, speed));
+      d.rotation.set(0, 0, 0); d.scale.setScalar(blink);
+      d.updateMatrix(); leds.setMatrixAt(i, d.matrix);
+    }
+    leds.instanceMatrix.needsUpdate = true;
   };
   return group;
 }
 
 /* ===========================================================================
-   Soft dark "stage" behind the head so it never drowns in the core glow
+   Warm atmospheric dust motes
 =========================================================================== */
-function createBackdrop() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 256;
-  const ctx = c.getContext('2d');
-  const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 128);
-  g.addColorStop(0, 'rgba(3,4,10,0.96)');
-  g.addColorStop(0.55, 'rgba(3,4,10,0.72)');
-  g.addColorStop(1, 'rgba(3,4,10,0.0)');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 256, 256);
-  const tex = new THREE.CanvasTexture(c);
-  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: true });
-  const s = new THREE.Sprite(mat);
-  s.scale.setScalar(15);
-  s.position.set(0, 0, -3);
-  return s;
-}
-
-/* ===========================================================================
-   The tunnel shell — circuit-board interior, scrolling
-=========================================================================== */
-function createTunnel() {
-  const geo = new THREE.CylinderGeometry(14, 14, TUNNEL_LEN, 96, 1, true);
-  geo.rotateX(Math.PI / 2);
+function createDust(count = 1400) {
+  const pos = new Float32Array(count * 3);
+  const rnd = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    pos[i * 3] = (Math.random() - 0.5) * 120;
+    pos[i * 3 + 1] = FLOOR_Y + Math.random() * 22;
+    pos[i * 3 + 2] = Math.random() * COMP_RANGE;
+    rnd[i] = 0.4 + Math.random() * 1.4;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aRnd', new THREE.BufferAttribute(rnd, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
   const mat = new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    transparent: true,
-    depthWrite: false,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: {
-      uTime: { value: 0 }, uSpeed: { value: 9.0 },
-      uCol1: { value: COL.violet }, uCol2: { value: COL.cyan },
+      uTime: { value: 0 }, uSpeed: { value: 22 }, uRange: { value: COMP_RANGE },
+      uSize: { value: 18 * Math.min(window.devicePixelRatio, 2) }, uCol: { value: COL.gold },
     },
-    vertexShader: /* glsl */ `
-      varying vec2 vUv; varying float vZ;
+    vertexShader: `
+      uniform float uTime,uSpeed,uRange,uSize; attribute float aRnd; varying float vA;
       void main(){
-        vUv = uv;
-        vec4 wp = modelMatrix * vec4(position, 1.0);
-        vZ = wp.z;
-        gl_Position = projectionMatrix * viewMatrix * wp;
+        vec3 p = position;
+        p.z = mod(p.z + uTime*uSpeed, uRange) - uRange + 40.0;
+        vec4 mv = modelViewMatrix * vec4(p,1.0);
+        gl_PointSize = uSize*aRnd*(1.0/-mv.z);
+        gl_Position = projectionMatrix*mv;
+        vA = (1.0 - smoothstep(10.0,38.0,p.z)) * smoothstep(-280.0,-40.0,p.z);
       }`,
-    fragmentShader: /* glsl */ `
-      uniform float uTime, uSpeed; uniform vec3 uCol1, uCol2;
-      varying vec2 vUv; varying float vZ;
-      float lines(float v, float c, float w){
-        float f = abs(fract(v * c) - 0.5);
-        return smoothstep(w, 0.0, f);
-      }
-      void main(){
-        vec2 uv = vUv;
-        float scroll = uTime * uSpeed * 0.02;
-        float rings = lines(uv.y + scroll, 70.0, 0.012);
-        float rails = lines(uv.x, 56.0, 0.02);
-        float grid = max(rings * 0.5, rails * 0.45);
-        // data packets racing down certain rails
-        float lane = step(0.9, fract(sin(floor(uv.x * 56.0) * 91.7) * 4373.0));
-        float pkt = lane * smoothstep(0.95, 1.0, sin((uv.y + scroll) * 50.0 - uTime * 6.0) * 0.5 + 0.5);
-        vec3 col = mix(uCol1, uCol2, uv.x) * grid * 0.34 + vec3(0.6, 0.95, 1.0) * pkt * 0.9;
-        // dim the distant vanishing point so it never blows out the centre
-        float near = smoothstep(-70.0, -12.0, vZ);
-        float far = 1.0 - smoothstep(-42.0, -78.0, vZ);
-        float fade = near * far * (1.0 - smoothstep(2.0, 9.0, vZ));
-        gl_FragColor = vec4(col * fade, fade * 0.85);
-      }`,
+    fragmentShader: `
+      uniform vec3 uCol; varying float vA;
+      void main(){ float d=distance(gl_PointCoord,vec2(0.5)); gl_FragColor=vec4(uCol, smoothstep(0.5,0.0,d)*vA*0.5); }`,
   });
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.frustumCulled = false;
-  mesh.userData.update = (t) => { mat.uniforms.uTime.value = t; };
-  mesh.userData.mat = mat;
-  return mesh;
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.userData.update = (t) => { mat.uniforms.uTime.value = t; };
+  return pts;
 }
 
 /* ===========================================================================
    The AI head — holographic likeness (bald + glasses + goatee), breathing
 =========================================================================== */
 const HEAD_R = 1.55;
-const HEAD_SCALE = 2.0;
+const HEAD_SCALE = 1.7;
 function warpHead(v) {
   let x = v.x, y = v.y, z = v.z;
   x *= 0.86; y *= 1.16; z *= 0.97;
@@ -540,34 +350,22 @@ class AIHead {
     const base = new THREE.IcosahedronGeometry(1, 3);
     const bp = base.getAttribute('position');
     const v = new THREE.Vector3();
-    for (let i = 0; i < bp.count; i++) {
-      v.fromBufferAttribute(bp, i).normalize();
-      const p = warpHead(v);
-      bp.setXYZ(i, p.x, p.y, p.z);
-    }
+    for (let i = 0; i < bp.count; i++) { v.fromBufferAttribute(bp, i).normalize(); const p = warpHead(v); bp.setXYZ(i, p.x, p.y, p.z); }
     bp.needsUpdate = true;
-    const mat = this._track(new THREE.LineBasicMaterial({
-      color: '#4a5cff', transparent: true, opacity: 0.45,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    }));
+    const mat = this._track(new THREE.LineBasicMaterial({ color: '#4a5cff', transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.shell = new THREE.LineSegments(new THREE.WireframeGeometry(base), mat);
     this.inner.add(this.shell);
   }
-
   _buildNodes() {
     const src = new THREE.IcosahedronGeometry(1, 4);
     const sp = src.getAttribute('position');
     const n = sp.count;
-    const positions = new Float32Array(n * 3);
-    const colors = new Float32Array(n * 3);
-    const beard = new Float32Array(n);
+    const positions = new Float32Array(n * 3), colors = new Float32Array(n * 3), beard = new Float32Array(n);
     const v = new THREE.Vector3();
     for (let i = 0; i < n; i++) {
       v.fromBufferAttribute(sp, i).normalize();
-      const p = warpHead(v);
-      positions.set([p.x, p.y, p.z], i * 3);
-      const c = headColor(v);
-      colors.set([c.r, c.g, c.b], i * 3);
+      const p = warpHead(v); positions.set([p.x, p.y, p.z], i * 3);
+      const c = headColor(v); colors.set([c.r, c.g, c.b], i * 3);
       beard[i] = isBeardDir(v) ? 1 : 0;
     }
     this.nodeGeo = new THREE.BufferGeometry();
@@ -576,135 +374,72 @@ class AIHead {
     this.nodeGeo.setAttribute('aBeard', new THREE.BufferAttribute(beard, 1));
     this.nodeMat = new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true,
-      uniforms: {
-        uTime: { value: 0 }, uOpacity: { value: 1 }, uDisperse: { value: 0 },
-        uSize: { value: 12 * Math.min(window.devicePixelRatio, 2) },
-      },
-      vertexShader: /* glsl */ `
-        uniform float uTime, uSize, uDisperse;
-        attribute float aBeard; varying vec3 vColor;
-        void main(){
-          vColor = color;
-          vec3 dir = normalize(position);
-          vec3 pos = position + dir * uDisperse * 2.6;
-          vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-          float tw = 0.7 + 0.3 * sin(uTime * 3.0 + position.y * 6.0);
-          gl_PointSize = uSize * (1.0 + aBeard * 1.1) * tw * (1.0 / -mv.z);
-          gl_Position = projectionMatrix * mv;
-        }`,
-      fragmentShader: /* glsl */ `
-        uniform float uOpacity, uDisperse; varying vec3 vColor;
-        void main(){
-          float d = distance(gl_PointCoord, vec2(0.5));
-          float a = smoothstep(0.5, 0.0, d) * uOpacity * (1.0 - uDisperse * 0.6);
-          gl_FragColor = vec4(vColor, a);
-        }`,
+      uniforms: { uTime: { value: 0 }, uOpacity: { value: 1 }, uDisperse: { value: 0 }, uSize: { value: 12 * Math.min(window.devicePixelRatio, 2) } },
+      vertexShader: `
+        uniform float uTime, uSize, uDisperse; attribute float aBeard; varying vec3 vColor;
+        void main(){ vColor=color; vec3 dir=normalize(position); vec3 pos=position+dir*uDisperse*2.6;
+          vec4 mv=modelViewMatrix*vec4(pos,1.0); float tw=0.7+0.3*sin(uTime*3.0+position.y*6.0);
+          gl_PointSize=uSize*(1.0+aBeard*1.1)*tw*(1.0/-mv.z); gl_Position=projectionMatrix*mv; }`,
+      fragmentShader: `
+        uniform float uOpacity,uDisperse; varying vec3 vColor;
+        void main(){ float d=distance(gl_PointCoord,vec2(0.5)); float a=smoothstep(0.5,0.0,d)*uOpacity*(1.0-uDisperse*0.6); gl_FragColor=vec4(vColor,a); }`,
     });
     this.nodes = new THREE.Points(this.nodeGeo, this.nodeMat);
     this.inner.add(this.nodes);
   }
-
   _buildLinks() {
-    const pos = this.nodeGeo.getAttribute('position');
-    const pts = [];
+    const pos = this.nodeGeo.getAttribute('position'); const pts = [];
     for (let i = 0; i < 70; i++) {
-      const a = (Math.random() * pos.count) | 0;
-      const b = (Math.random() * pos.count) | 0;
-      const pa = new THREE.Vector3().fromBufferAttribute(pos, a);
-      const pb = new THREE.Vector3().fromBufferAttribute(pos, b);
+      const a = (Math.random() * pos.count) | 0, b = (Math.random() * pos.count) | 0;
+      const pa = new THREE.Vector3().fromBufferAttribute(pos, a), pb = new THREE.Vector3().fromBufferAttribute(pos, b);
       if (pa.distanceTo(pb) > 1.5) continue;
       pts.push(pa.x, pa.y, pa.z, pb.x, pb.y, pb.z);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.linkMat = this._track(new THREE.LineBasicMaterial({
-      color: '#19e3ff', transparent: true, opacity: 0.25,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    }));
+    this.linkMat = this._track(new THREE.LineBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.links = new THREE.LineSegments(g, this.linkMat);
     this.inner.add(this.links);
   }
-
   _buildCore() {
-    const mat = this._track(new THREE.MeshStandardMaterial({
-      color: '#19e3ff', emissive: '#19e3ff', emissiveIntensity: 0.7,
-      roughness: 0.2, metalness: 0.1, transparent: true,
-    }));
+    const mat = this._track(new THREE.MeshStandardMaterial({ color: '#19e3ff', emissive: '#19e3ff', emissiveIntensity: 0.7, roughness: 0.2, metalness: 0.1, transparent: true }));
     this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), mat);
-    this.core.position.set(0, 0.05, -0.2);
-    this.inner.add(this.core);
-    this.coreLight = new THREE.PointLight('#19e3ff', 9, 14);
-    this.coreLight.position.set(0, 0.1, 0.4);
-    this.inner.add(this.coreLight);
+    this.core.position.set(0, 0.05, -0.2); this.inner.add(this.core);
+    this.coreLight = new THREE.PointLight('#19e3ff', 9, 14); this.coreLight.position.set(0, 0.1, 0.4); this.inner.add(this.coreLight);
   }
-
   _buildFace() {
-    const glassMat = this._track(new THREE.LineBasicMaterial({
-      color: '#19e3ff', transparent: true, opacity: 0.95,
-      blending: THREE.AdditiveBlending, depthWrite: false,
-    }));
+    const glassMat = this._track(new THREE.LineBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false }));
     const eyeY = 0.2, lensZ = 1.22, lensX = 0.46;
     const lensPts = roundedRectPoints(0.62, 0.4, 0.13);
-    const makeLens = (sign) => {
-      const g = new THREE.BufferGeometry().setFromPoints(lensPts);
-      const loop = new THREE.LineLoop(g, glassMat);
-      loop.position.set(sign * lensX, eyeY, lensZ);
-      loop.rotation.y = sign * -0.32;
-      return loop;
-    };
-    const bridge = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-lensX + 0.22, eyeY + 0.04, lensZ + 0.02),
-      new THREE.Vector3(lensX - 0.22, eyeY + 0.04, lensZ + 0.02),
-    ]);
-    const templeL = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(-lensX - 0.28, eyeY + 0.07, lensZ - 0.05),
-      new THREE.Vector3(-1.05, eyeY + 0.12, -0.2),
-    ]);
-    const templeR = new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(lensX + 0.28, eyeY + 0.07, lensZ - 0.05),
-      new THREE.Vector3(1.05, eyeY + 0.12, -0.2),
-    ]);
+    const makeLens = (sign) => { const g = new THREE.BufferGeometry().setFromPoints(lensPts); const loop = new THREE.LineLoop(g, glassMat); loop.position.set(sign * lensX, eyeY, lensZ); loop.rotation.y = sign * -0.32; return loop; };
+    const bridge = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-lensX + 0.22, eyeY + 0.04, lensZ + 0.02), new THREE.Vector3(lensX - 0.22, eyeY + 0.04, lensZ + 0.02)]);
+    const templeL = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-lensX - 0.28, eyeY + 0.07, lensZ - 0.05), new THREE.Vector3(-1.05, eyeY + 0.12, -0.2)]);
+    const templeR = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(lensX + 0.28, eyeY + 0.07, lensZ - 0.05), new THREE.Vector3(1.05, eyeY + 0.12, -0.2)]);
     const glasses = new THREE.Group();
-    glasses.add(makeLens(-1), makeLens(1),
-      new THREE.Line(bridge, glassMat), new THREE.Line(templeL, glassMat), new THREE.Line(templeR, glassMat));
+    glasses.add(makeLens(-1), makeLens(1), new THREE.Line(bridge, glassMat), new THREE.Line(templeL, glassMat), new THREE.Line(templeR, glassMat));
     const eyeMat = this._track(new THREE.MeshBasicMaterial({ color: '#eaf6ff', transparent: true }));
     const eyeGeo = new THREE.SphereGeometry(0.07, 14, 14);
-    this.eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeL.position.set(-lensX, eyeY, lensZ - 0.16);
-    this.eyeR.position.set(lensX, eyeY, lensZ - 0.16);
+    this.eyeL = new THREE.Mesh(eyeGeo, eyeMat); this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+    this.eyeL.position.set(-lensX, eyeY, lensZ - 0.16); this.eyeR.position.set(lensX, eyeY, lensZ - 0.16);
     this.inner.add(glasses, this.eyeL, this.eyeR);
   }
-
   _buildRings() {
     this.rings = [];
-    const specs = [
-      { r: 2.05, color: '#7c5cff', axis: 'y', speed: -0.3 },
-      { r: 2.4, color: '#19e3ff', axis: 'x', speed: 0.22 },
-    ];
+    const specs = [{ r: 2.05, color: '#7c5cff', axis: 'y', speed: -0.3 }, { r: 2.4, color: '#19e3ff', axis: 'x', speed: 0.22 }];
     for (const s of specs) {
-      const mat = this._track(new THREE.MeshBasicMaterial({
-        color: s.color, transparent: true, opacity: 0.22,
-        blending: THREE.AdditiveBlending, depthWrite: false,
-      }));
+      const mat = this._track(new THREE.MeshBasicMaterial({ color: s.color, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false }));
       const ring = new THREE.Mesh(new THREE.TorusGeometry(s.r, 0.01, 8, 120), mat);
       if (s.axis === 'x') ring.rotation.x = Math.PI / 2;
-      if (s.axis === 'z') ring.rotation.y = Math.PI / 2;
       ring.userData.speed = s.speed; ring.userData.axis = s.axis;
-      this.rings.push(ring);
-      this.group.add(ring);
+      this.rings.push(ring); this.group.add(ring);
     }
   }
-
   setGaze(x, y) { this.gaze.set(clamp(x, -1.4, 1.4), clamp(y, -1.4, 1.4)); }
-
   update(t) {
     this.nodeMat.uniforms.uTime.value = t;
-    const ty = this.gaze.x * this.gazeForce * 2.2;
-    const tx = -this.gaze.y * this.gazeForce * 1.6;
+    const ty = this.gaze.x * this.gazeForce * 2.2, tx = -this.gaze.y * this.gazeForce * 1.6;
     this.inner.rotation.y += (ty - this.inner.rotation.y) * 0.08;
     this.inner.rotation.x += (tx - this.inner.rotation.x) * 0.08;
-    // breathing
     const breathe = 1 + Math.sin(t * 1.4) * 0.018;
     this.inner.scale.setScalar(breathe);
     this.inner.position.y = Math.sin(t * 1.2) * 0.05;
@@ -716,7 +451,6 @@ class AIHead {
     for (const ring of this.rings) ring.rotation[ring.userData.axis] += ring.userData.speed * 0.01;
     this.shell.rotation.y = -t * 0.05;
   }
-
   fadeOut() {
     const tl = gsap.timeline();
     tl.to(this.nodeMat.uniforms.uDisperse, { value: 1, duration: 1.1, ease: 'power2.in' }, 0);
@@ -736,138 +470,82 @@ class AIHead {
 }
 
 /* ===========================================================================
-   Per-subpage 3D hero objects (each page has its own centrepiece)
+   Per-subpage 3D hero objects
 =========================================================================== */
 function buildPageObjects() {
   const objs = {};
-
-  // SOLUTIONS — rotating neural lattice
   {
     const g = new THREE.Group();
     const ico = new THREE.IcosahedronGeometry(2.1, 1);
-    g.add(new THREE.LineSegments(new THREE.WireframeGeometry(ico),
-      new THREE.LineBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending })));
-    const nodes = new THREE.Points(ico, new THREE.PointsMaterial({ color: '#ff3ea5', size: 0.16, transparent: true, blending: THREE.AdditiveBlending }));
-    g.add(nodes);
+    g.add(new THREE.LineSegments(new THREE.WireframeGeometry(ico), new THREE.LineBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending })));
+    g.add(new THREE.Points(ico, new THREE.PointsMaterial({ color: '#ff8a1e', size: 0.16, transparent: true, blending: THREE.AdditiveBlending })));
     g.userData.update = (t) => { g.rotation.y = t * 0.5; g.rotation.x = Math.sin(t * 0.3) * 0.3; };
     objs.solutions = g;
   }
-  // ABOUT — orbital system
   {
     const g = new THREE.Group();
-    const sun = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 2),
-      new THREE.MeshBasicMaterial({ color: '#19e3ff' }));
-    g.add(sun);
+    g.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 2), new THREE.MeshBasicMaterial({ color: '#19e3ff' })));
     const orbits = [];
     for (let i = 0; i < 3; i++) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4 + i * 0.7, 0.015, 8, 120),
-        new THREE.MeshBasicMaterial({ color: i % 2 ? '#7c5cff' : '#19e3ff', transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4 + i * 0.7, 0.015, 8, 120), new THREE.MeshBasicMaterial({ color: i % 2 ? '#ff8a1e' : '#19e3ff', transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
       ring.rotation.x = Math.PI / 2 + i * 0.4; ring.rotation.y = i * 0.5;
-      const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16),
-        new THREE.MeshBasicMaterial({ color: '#ff3ea5' }));
-      g.add(ring); orbits.push({ ring, m, r: 1.4 + i * 0.7, s: 0.6 + i * 0.3, off: i * 2 }); g.add(m);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16), new THREE.MeshBasicMaterial({ color: '#ffc46b' }));
+      g.add(ring, m); orbits.push({ ring, m, r: 1.4 + i * 0.7, s: 0.6 + i * 0.3, off: i * 2 });
     }
-    g.userData.update = (t) => {
-      g.rotation.y = t * 0.15;
-      orbits.forEach((o) => {
-        o.m.position.set(Math.cos(t * o.s + o.off) * o.r, 0, Math.sin(t * o.s + o.off) * o.r);
-        o.m.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), o.ring.rotation.x);
-      });
-    };
+    g.userData.update = (t) => { g.rotation.y = t * 0.15; orbits.forEach((o) => { o.m.position.set(Math.cos(t * o.s + o.off) * o.r, 0, Math.sin(t * o.s + o.off) * o.r); o.m.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), o.ring.rotation.x); }); };
     objs.about = g;
   }
-  // WORK — instanced floating monoliths
   {
     const g = new THREE.Group();
     const count = 60;
-    const geo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
-    const mat = new THREE.MeshStandardMaterial({ color: '#0a1430', metalness: 0.6, roughness: 0.3, emissive: '#1a6cff', emissiveIntensity: 0.6 });
-    const im = new THREE.InstancedMesh(geo, mat, count);
-    const data = Array.from({ length: count }, () => ({
-      x: (Math.random() - 0.5) * 5, y: (Math.random() - 0.5) * 5, z: (Math.random() - 0.5) * 5,
-      s: 0.4 + Math.random() * 1.4, sp: (Math.random() - 0.5) * 1.2, ph: Math.random() * 6,
-    }));
-    const d = new THREE.Object3D();
-    g.add(im);
-    g.userData.update = (t) => {
-      data.forEach((p, i) => {
-        d.position.set(p.x, p.y + Math.sin(t * 0.6 + p.ph) * 0.3, p.z);
-        d.rotation.set(t * p.sp, t * p.sp * 0.7, 0);
-        d.scale.setScalar(p.s);
-        d.updateMatrix(); im.setMatrixAt(i, d.matrix);
-      });
-      im.instanceMatrix.needsUpdate = true;
-      g.rotation.y = t * 0.1;
-    };
+    const im = new THREE.InstancedMesh(new THREE.BoxGeometry(0.4, 0.4, 0.4), new THREE.MeshStandardMaterial({ color: '#0a1430', metalness: 0.6, roughness: 0.3, emissive: '#ff8a1e', emissiveIntensity: 0.5 }), count);
+    const data = Array.from({ length: count }, () => ({ x: (Math.random() - 0.5) * 5, y: (Math.random() - 0.5) * 5, z: (Math.random() - 0.5) * 5, s: 0.4 + Math.random() * 1.4, sp: (Math.random() - 0.5) * 1.2, ph: Math.random() * 6 }));
+    const d = new THREE.Object3D(); g.add(im);
+    g.userData.update = (t) => { data.forEach((p, i) => { d.position.set(p.x, p.y + Math.sin(t * 0.6 + p.ph) * 0.3, p.z); d.rotation.set(t * p.sp, t * p.sp * 0.7, 0); d.scale.setScalar(p.s); d.updateMatrix(); im.setMatrixAt(i, d.matrix); }); im.instanceMatrix.needsUpdate = true; g.rotation.y = t * 0.1; };
     objs.work = g;
   }
-  // CONTACT — pulsing signal sphere with emitting rings
   {
     const g = new THREE.Group();
-    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 2),
-      new THREE.MeshBasicMaterial({ color: '#19e3ff' }));
-    g.add(core);
-    const rings = [];
-    for (let i = 0; i < 4; i++) {
-      const r = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 8, 120),
-        new THREE.MeshBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending }));
-      r.rotation.x = Math.PI / 2; g.add(r); rings.push({ r, off: i / 4 });
-    }
-    g.userData.update = (t) => {
-      core.scale.setScalar(1 + Math.sin(t * 4) * 0.12);
-      rings.forEach((o) => {
-        const k = (t * 0.4 + o.off) % 1;
-        o.r.scale.setScalar(0.4 + k * 3.2);
-        o.r.material.opacity = (1 - k) * 0.6;
-      });
-    };
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 2), new THREE.MeshBasicMaterial({ color: '#19e3ff' }));
+    g.add(core); const rings = [];
+    for (let i = 0; i < 4; i++) { const r = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 8, 120), new THREE.MeshBasicMaterial({ color: '#ff8a1e', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending })); r.rotation.x = Math.PI / 2; g.add(r); rings.push({ r, off: i / 4 }); }
+    g.userData.update = (t) => { core.scale.setScalar(1 + Math.sin(t * 4) * 0.12); rings.forEach((o) => { const k = (t * 0.4 + o.off) % 1; o.r.scale.setScalar(0.4 + k * 3.2); o.r.material.opacity = (1 - k) * 0.6; }); };
     objs.contact = g;
   }
-  // HOME — handled by the AI head itself (no extra object)
   objs.home = null;
-
   return objs;
 }
 
 /* ===========================================================================
-   Post-processing — bloom + chromatic aberration + radial motion blur
+   Post FX — chromatic aberration + vignette + grain (DOF/bloom are passes)
 =========================================================================== */
 const PostFXShader = {
-  uniforms: {
-    tDiffuse: { value: null },
-    uTime: { value: 0 },
-    uAberration: { value: 0.0028 },
-    uBlur: { value: 0.22 },
-  },
-  vertexShader: /* glsl */ `
-    varying vec2 vUv;
-    void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: /* glsl */ `
-    uniform sampler2D tDiffuse; uniform float uTime, uAberration, uBlur;
-    varying vec2 vUv;
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAberration: { value: 0.0026 }, uBlur: { value: 0.0 } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `
+    uniform sampler2D tDiffuse; uniform float uTime, uAberration, uBlur; varying vec2 vUv;
     void main(){
-      vec2 uv = vUv; vec2 dir = uv - 0.5; float dist = length(dir);
-      vec3 col = vec3(0.0);
-      const int N = 6;
-      for (int i = 0; i < N; i++){
-        float k = float(i) / float(N - 1);
-        float scale = 1.0 - uBlur * dist * k;        // zoom-blur toward the centre
-        vec2 suv = 0.5 + dir * scale;
-        float ab = uAberration * (0.5 + dist * 1.5); // chromatic aberration grows outward
-        col.r += texture2D(tDiffuse, suv - dir * ab).r;
-        col.g += texture2D(tDiffuse, suv).g;
-        col.b += texture2D(tDiffuse, suv + dir * ab).b;
+      vec2 uv=vUv; vec2 dir=uv-0.5; float dist=length(dir);
+      vec3 col=vec3(0.0);
+      const int N=5;
+      for(int i=0;i<N;i++){
+        float k=float(i)/float(N-1);
+        float scale=1.0-uBlur*dist*k;
+        vec2 suv=0.5+dir*scale;
+        float ab=uAberration*(0.4+dist*1.4);
+        col.r+=texture2D(tDiffuse, suv-dir*ab).r;
+        col.g+=texture2D(tDiffuse, suv).g;
+        col.b+=texture2D(tDiffuse, suv+dir*ab).b;
       }
-      col /= float(N);
-      float vig = smoothstep(1.15, 0.25, dist);       // luxury vignette
-      col *= mix(1.0, vig, 0.9);
-      float grain = (fract(sin(dot(uv * (uTime + 1.0), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.045;
-      gl_FragColor = vec4(col + grain, 1.0);
+      col/=float(N);
+      col*=mix(1.0, smoothstep(1.15,0.2,dist), 0.92);
+      float grain=(fract(sin(dot(uv*(uTime+1.0),vec2(12.9898,78.233)))*43758.5453)-0.5)*0.04;
+      gl_FragColor=vec4(col+grain,1.0);
     }`,
 };
 
 /* ===========================================================================
-   World — assembles the machine, runs the camera ride + render loop
+   World
 =========================================================================== */
 class World {
   constructor(canvas) {
@@ -876,68 +554,61 @@ class World {
     this.pointer = new THREE.Vector2(0, 0);
     this.gazeTarget = new THREE.Vector2(0, 0);
     this.gazeLocked = false;
-
-    this.fx = { speed: 1, aberration: 0.0028, blur: 0.22, fov: 60 };
+    this.fx = { speed: 1, aberration: 0.0026, blur: 0.0, fov: 55, bokeh: 0.6 };
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(innerWidth, innerHeight);
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.86;
+    this.renderer.toneMappingExposure = 0.9;
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2('#03040a', 0.017);
+    this.scene.background = new THREE.Color('#05060a');
+    this.scene.fog = new THREE.FogExp2('#06070c', 0.02);
 
-    this.camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 400);
-    this.camera.position.set(0, 0, 7);
+    // PBR environment for metallic component reflections
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+    this.camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 600);
+    this.camera.position.set(0, 1.6, 9);
     this.scene.add(this.camera);
 
-    this.scene.add(new THREE.AmbientLight('#223', 1.2));
-    const key = new THREE.DirectionalLight('#7c5cff', 1.6); key.position.set(5, 6, 8);
-    const rim = new THREE.PointLight('#19e3ff', 40, 60); rim.position.set(-8, -3, 4);
-    this.scene.add(key, rim);
+    // warm lighting
+    this.scene.add(new THREE.AmbientLight('#46341f', 1.1));
+    const key = new THREE.DirectionalLight('#ffe2b0', 2.4); key.position.set(6, 12, 5); this.scene.add(key);
+    const fill = new THREE.PointLight('#ff9a3a', 90, 70); fill.position.set(0, 6, -6); this.scene.add(fill);
+    const side = new THREE.PointLight('#ffb455', 50, 50); side.position.set(-14, 5, 2); this.scene.add(side);
+    const cool = new THREE.PointLight('#3fa9ff', 22, 40); cool.position.set(0, 5, 7); this.scene.add(cool);
 
-    // --- the machine ---
-    this.tunnel = createTunnel();
-    this.streaks = createStreaks();
-    this.pcb = createPCBPaths();
-    this.instances = createInstancedField();
-    this.particles = createParticleStream();
-    this.backdrop = createBackdrop();
-    this.scene.add(this.tunnel, this.streaks, this.pcb, this.instances, this.particles, this.backdrop);
-    this.streamItems = [this.tunnel, this.streaks, this.pcb, this.particles];
+    // --- the board world ---
+    this.floor = createPCB(FLOOR_Y, 1.0, 1);
+    this.ceiling = createPCB(FLOOR_Y + 30, 0.13, -1); this.ceiling.rotation.z = Math.PI; // faint upper canopy
+    this.heroCPU = createHeroCPU();
+    this.components = createComponents();
+    this.dust = createDust();
+    this.scene.add(this.floor, this.ceiling, this.heroCPU, this.components, this.dust);
 
-    // --- the head ---
+    // --- the head, hovering above the CPU ---
     this.head = new AIHead();
     this.head.group.scale.setScalar(HEAD_SCALE);
+    this.head.group.position.set(0, 2.0, 0);
     this.scene.add(this.head.group);
 
     // --- page heroes ---
     this.pageObjects = buildPageObjects();
-    for (const id in this.pageObjects) {
-      const o = this.pageObjects[id];
-      if (o) { o.visible = false; o.scale.setScalar(0.001); this.scene.add(o); }
-    }
+    for (const id in this.pageObjects) { const o = this.pageObjects[id]; if (o) { o.visible = false; o.scale.setScalar(0.001); o.position.set(0, 2.0, 0); this.scene.add(o); } }
     this.activePageObj = null;
 
     // --- the user's data point (rides with the camera) ---
-    const dpMat = new THREE.SpriteMaterial({
-      color: '#3fa9ff', transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending,
-    });
-    this.dataPoint = new THREE.Sprite(dpMat);
-    this.dataPoint.scale.setScalar(0.9);
-    this.dataPoint.position.set(0, -1.1, -4);
+    this.dataPoint = new THREE.Sprite(new THREE.SpriteMaterial({ color: '#3fa9ff', transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending }));
+    this.dataPoint.scale.setScalar(0.7); this.dataPoint.position.set(0, -1.4, -4);
     this.camera.add(this.dataPoint);
-    const dpLight = new THREE.PointLight('#3fa9ff', 14, 10);
-    dpLight.position.copy(this.dataPoint.position);
-    this.camera.add(dpLight);
+    const dpLight = new THREE.PointLight('#3fa9ff', 10, 9); dpLight.position.copy(this.dataPoint.position); this.camera.add(dpLight);
 
     this._initPost();
     addEventListener('resize', () => this._resize());
-    addEventListener('pointermove', (e) => {
-      this.pointer.x = (e.clientX / innerWidth) * 2 - 1;
-      this.pointer.y = -((e.clientY / innerHeight) * 2 - 1);
-    });
+    addEventListener('pointermove', (e) => { this.pointer.x = (e.clientX / innerWidth) * 2 - 1; this.pointer.y = -((e.clientY / innerHeight) * 2 - 1); });
   }
 
   _initPost() {
@@ -945,7 +616,9 @@ class World {
     this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.composer.setSize(innerWidth, innerHeight);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.5, 0.2);
+    this.bokeh = new BokehPass(this.scene, this.camera, { focus: 9.0, aperture: 0.0014, maxblur: 0.008, width: innerWidth, height: innerHeight });
+    this.composer.addPass(this.bokeh);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.45, 0.55, 0.18);
     this.composer.addPass(this.bloom);
     this.postfx = new ShaderPass(PostFXShader);
     this.composer.addPass(this.postfx);
@@ -954,69 +627,45 @@ class World {
 
   setGaze(x, y, locked) { this.gazeTarget.set(x, y); this.gazeLocked = locked; }
 
-  // Warp: punch speed / aberration / blur / fov during navigation.
   warp(on) {
-    gsap.to(this.fx, {
-      speed: on ? 3.4 : 1,
-      aberration: on ? 0.012 : 0.0028,
-      blur: on ? 0.7 : 0.22,
-      fov: on ? 86 : 60,
-      duration: on ? 0.9 : 1.2,
-      ease: on ? 'power2.in' : 'power2.out',
-    });
+    gsap.to(this.fx, { speed: on ? 4.0 : 1, aberration: on ? 0.011 : 0.0026, blur: on ? 0.55 : 0.0, fov: on ? 78 : 55, duration: on ? 0.9 : 1.2, ease: on ? 'power2.in' : 'power2.out' });
   }
 
   showPageObject(id) {
-    if (this.activePageObj) {
-      const prev = this.activePageObj;
-      gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) });
-    }
-    const o = this.pageObjects[id];
-    this.activePageObj = o || null;
-    if (o) {
-      o.visible = true;
-      gsap.fromTo(o.scale, { x: 0.001, y: 0.001, z: 0.001 }, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'back.out(1.6)', delay: 0.2 });
-    }
+    if (this.activePageObj) { const prev = this.activePageObj; gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) }); }
+    const o = this.pageObjects[id]; this.activePageObj = o || null;
+    if (o) { o.visible = true; gsap.fromTo(o.scale, { x: 0.001, y: 0.001, z: 0.001 }, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'back.out(1.6)', delay: 0.2 }); }
   }
   hidePageObject() {
-    if (this.activePageObj) {
-      const prev = this.activePageObj;
-      gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) });
-      this.activePageObj = null;
-    }
+    if (this.activePageObj) { const prev = this.activePageObj; gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) }); this.activePageObj = null; }
   }
 
   start() { this.clock.start(); this._tick(); }
 
   _tick() {
     const t = this.clock.getElapsedTime();
-
-    // feed the moving speed into every streaming element
     const spd = this.fx.speed;
-    this.tunnel.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
-    this.streaks.userData.mat.uniforms.uSpeed.value = 42.0 * spd;
-    this.pcb.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
-    this.particles.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
-    for (const it of this.streamItems) it.userData.update(t);
-    this.instances.userData.update(t);
 
-    // head gaze (idle follows pointer)
+    this.floor.userData.mat.uniforms.uScroll.value = t * 22.0 * spd;
+    this.floor.userData.mat.uniforms.uTime.value = t;
+    this.ceiling.userData.mat.uniforms.uScroll.value = t * 22.0 * spd;
+    this.ceiling.userData.mat.uniforms.uTime.value = t;
+    this.components.userData.update(t, 22.0 * spd);
+    this.dust.userData.update(t);
+    this.heroCPU.userData.update(t);
+
     if (!this.gazeLocked) this.gazeTarget.set(this.pointer.x * 0.5, this.pointer.y * 0.5);
     this.head.setGaze(this.gazeTarget.x, this.gazeTarget.y);
     this.head.update(t);
     if (this.activePageObj) this.activePageObj.userData.update(t);
 
-    // rollercoaster camera — gentle banking ride, head stays framed
-    this.camera.position.x += (this.pointer.x * 1.1 + Math.sin(t * 0.3) * 0.5 - this.camera.position.x) * 0.04;
-    this.camera.position.y += (this.pointer.y * 0.8 + Math.cos(t * 0.23) * 0.35 - this.camera.position.y) * 0.04;
-    this.camera.position.z += (7 + Math.sin(t * 0.5) * 0.4 - this.camera.position.z) * 0.04;
-    this.camera.lookAt(0, 0, 0);
-    this.camera.rotateZ(Math.sin(t * 0.4) * 0.06 + this.pointer.x * 0.08);
+    // cinematic banking flight; camera stays framing the head
+    this.camera.position.x += (this.pointer.x * 1.3 + Math.sin(t * 0.25) * 0.6 - this.camera.position.x) * 0.04;
+    this.camera.position.y += (2.1 + this.pointer.y * 0.5 + Math.sin(t * 0.4) * 0.25 - this.camera.position.y) * 0.04;
+    this.camera.lookAt(0, 1.4, -7);
+    this.camera.rotateZ(Math.sin(t * 0.35) * 0.04 + this.pointer.x * 0.05);
 
-    if (Math.abs(this.camera.fov - this.fx.fov) > 0.01) {
-      this.camera.fov += (this.fx.fov - this.camera.fov) * 0.1;
-      this.camera.updateProjectionMatrix();
-    }
+    if (Math.abs(this.camera.fov - this.fx.fov) > 0.01) { this.camera.fov += (this.fx.fov - this.camera.fov) * 0.1; this.camera.updateProjectionMatrix(); }
 
     this.postfx.uniforms.uTime.value = t;
     this.postfx.uniforms.uAberration.value = this.fx.aberration;
@@ -1027,8 +676,7 @@ class World {
   }
 
   _resize() {
-    this.camera.aspect = innerWidth / innerHeight;
-    this.camera.updateProjectionMatrix();
+    this.camera.aspect = innerWidth / innerHeight; this.camera.updateProjectionMatrix();
     this.renderer.setSize(innerWidth, innerHeight);
     this.composer.setSize(innerWidth, innerHeight);
     this.bloom.setSize(innerWidth, innerHeight);
@@ -1036,12 +684,11 @@ class World {
 }
 
 /* ===========================================================================
-   UI / Router — architectural menu, gaze hand-off, chat, warp + 3D fold
+   UI / Router
 =========================================================================== */
 class Hub {
   constructor(world) {
-    this.world = world;
-    this.busy = false;
+    this.world = world; this.busy = false;
     this.stage = document.getElementById('stage');
     this.pages = document.getElementById('pages');
     this.menuEl = document.getElementById('menu');
@@ -1053,10 +700,8 @@ class Hub {
     this._buildMenu();
     this.back.addEventListener('click', () => this.goHub());
   }
-
   _buildMenu() {
-    const n = MENU.length;
-    const R = 33;
+    const n = MENU.length, R = 33;
     MENU.forEach((item, i) => {
       const angle = Math.PI / 2 - (i * 2 * Math.PI) / n;
       const dx = Math.cos(angle), dy = Math.sin(angle);
@@ -1065,25 +710,13 @@ class Hub {
       el.className = 'menu-item';
       el.style.left = `calc(50% + ${dx * R}vmin)`;
       el.style.top = `calc(50% - ${dy * R}vmin)`;
-      el.innerHTML = `<span class="menu-item__idx">0${i + 1}</span>
-                      <span class="menu-item__label">${item.label}</span>
-                      <span class="menu-item__node"></span>`;
-      el.addEventListener('pointerenter', () => {
-        if (this.busy) return;
-        el.classList.add('is-active');
-        this.world.setGaze(dx, dy, true);
-      });
-      el.addEventListener('pointerleave', () => {
-        if (this.busy) return;
-        el.classList.remove('is-active');
-        this.world.setGaze(0, 0, false);
-      });
+      el.innerHTML = `<span class="menu-item__idx">0${i + 1}</span><span class="menu-item__label">${item.label}</span><span class="menu-item__node"></span>`;
+      el.addEventListener('pointerenter', () => { if (this.busy) return; el.classList.add('is-active'); this.world.setGaze(dx, dy, true); });
+      el.addEventListener('pointerleave', () => { if (this.busy) return; el.classList.remove('is-active'); this.world.setGaze(0, 0, false); });
       el.addEventListener('click', () => this.navigate(item, el));
-      item.el = el;
-      this.menuEl.appendChild(el);
+      item.el = el; this.menuEl.appendChild(el);
     });
   }
-
   async navigate(item, el) {
     if (this.busy) return;
     this.busy = true;
@@ -1093,11 +726,9 @@ class Hub {
       this.world.setGaze(item.dir.x, item.dir.y, true);
       gsap.to(this.menuEl, { opacity: 0.2, duration: 0.5 });
       await wait(650);
-
       this.world.head.fadeOut();
       this._showChat();
       await wait(350);
-
       await this._type(`Navigiere zu ${item.label}`);
       await wait(260);
       this._pressEnter();
@@ -1105,9 +736,8 @@ class Hub {
       this.promptEl.innerHTML = ''; this._caret(false);
       await wait(420);
       this._bubble('ai', `Verbindung hergestellt — Warp zu <b>${item.label}</b> …`);
-      this.world.warp(true);            // engage hyperspace
+      this.world.warp(true);
       await wait(750);
-
       await this._foldToPage(item.id);
       this.world.warp(false);
       this.world.showPageObject(item.id);
@@ -1117,73 +747,41 @@ class Hub {
       this.busy = false;
     }
   }
-
   _showChat() {
     this.chatLog.innerHTML = ''; this.promptEl.innerHTML = '';
     this._caret(true); this.enterEl.classList.remove('is-pressed');
-    gsap.killTweensOf(this.chat);
-    this.chat.style.visibility = 'visible';
+    gsap.killTweensOf(this.chat); this.chat.style.visibility = 'visible';
     gsap.fromTo(this.chat, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' });
   }
-  _hideChat() {
-    gsap.to(this.chat, {
-      opacity: 0, scale: 0.95, duration: 0.4,
-      onComplete: () => { this.chat.style.visibility = 'hidden'; this.chatLog.innerHTML = ''; },
-    });
-  }
-  _caret(on) {
-    this.promptEl.querySelector('.chat__caret')?.remove();
-    if (on) { const c = document.createElement('span'); c.className = 'chat__caret'; this.promptEl.appendChild(c); }
-  }
-  async _type(text) {
-    const caret = this.promptEl.querySelector('.chat__caret');
-    for (const ch of text) { this.promptEl.insertBefore(document.createTextNode(ch), caret || null); await wait(38 + Math.random() * 34); }
-  }
+  _hideChat() { gsap.to(this.chat, { opacity: 0, scale: 0.95, duration: 0.4, onComplete: () => { this.chat.style.visibility = 'hidden'; this.chatLog.innerHTML = ''; } }); }
+  _caret(on) { this.promptEl.querySelector('.chat__caret')?.remove(); if (on) { const c = document.createElement('span'); c.className = 'chat__caret'; this.promptEl.appendChild(c); } }
+  async _type(text) { const caret = this.promptEl.querySelector('.chat__caret'); for (const ch of text) { this.promptEl.insertBefore(document.createTextNode(ch), caret || null); await wait(38 + Math.random() * 34); } }
   _pressEnter() { this.enterEl.classList.add('is-pressed'); setTimeout(() => this.enterEl.classList.remove('is-pressed'), 220); }
-  _bubble(kind, html) {
-    const b = document.createElement('div'); b.className = `bubble bubble--${kind}`; b.innerHTML = html;
-    this.chatLog.appendChild(b); gsap.from(b, { opacity: 0, y: 12, duration: 0.35, ease: 'power2.out' });
-  }
-  // Await a tween reliably via onComplete (awaiting the tween itself is flaky).
+  _bubble(kind, html) { const b = document.createElement('div'); b.className = `bubble bubble--${kind}`; b.innerHTML = html; this.chatLog.appendChild(b); gsap.from(b, { opacity: 0, y: 12, duration: 0.35, ease: 'power2.out' }); }
   _tween(target, vars) { return new Promise((res) => gsap.to(target, { ...vars, onComplete: res })); }
 
   async _foldToPage(pageId) {
     this._hideChat();
-    await this._tween(this.stage, {
-      duration: 0.9, rotationX: -88, y: -180, z: -600, opacity: 0,
-      transformOrigin: '50% 0%', ease: 'power3.in',
-    });
+    await this._tween(this.stage, { duration: 0.9, rotationX: -88, y: -180, z: -600, opacity: 0, transformOrigin: '50% 0%', ease: 'power3.in' });
     this.stage.style.visibility = 'hidden';
     document.querySelectorAll('.subpage').forEach((p) => p.classList.remove('is-shown'));
     const page = document.querySelector(`.subpage[data-page="${pageId}"]`);
-    this.pages.style.visibility = 'visible';
-    this.pages.style.pointerEvents = 'auto';
-    page.classList.add('is-shown');
-    this.back.classList.add('is-shown');
+    this.pages.style.visibility = 'visible'; this.pages.style.pointerEvents = 'auto';
+    page.classList.add('is-shown'); this.back.classList.add('is-shown');
     gsap.set(page, { rotationX: 82, y: 170, z: -500, opacity: 0, transformOrigin: '50% 100%' });
     await this._tween(page, { duration: 1.0, rotationX: 0, y: 0, z: 0, opacity: 1, ease: 'power3.out' });
   }
-
   async goHub() {
     if (this.busy) return;
     this.busy = true;
     this.back.classList.remove('is-shown');
     this.world.hidePageObject();
     const page = document.querySelector('.subpage.is-shown');
-    if (page) {
-      await this._tween(page, {
-        duration: 0.8, rotationX: 85, y: 180, z: -500, opacity: 0,
-        transformOrigin: '50% 100%', ease: 'power3.in',
-      });
-      page.classList.remove('is-shown');
-    }
-    this.pages.style.visibility = 'hidden';
-    this.pages.style.pointerEvents = 'none';
-
+    if (page) { await this._tween(page, { duration: 0.8, rotationX: 85, y: 180, z: -500, opacity: 0, transformOrigin: '50% 100%', ease: 'power3.in' }); page.classList.remove('is-shown'); }
+    this.pages.style.visibility = 'hidden'; this.pages.style.pointerEvents = 'none';
     this.world.head.reset();
     this.world.setGaze(0, 0, false);
     MENU.forEach((m) => m.el.classList.remove('is-active'));
-
     this.stage.style.visibility = 'visible';
     gsap.set(this.stage, { rotationX: 70, y: -160, z: -600, opacity: 0, transformOrigin: '50% 0%' });
     gsap.to(this.menuEl, { opacity: 1, duration: 0.8 });
@@ -1197,8 +795,5 @@ class Hub {
 =========================================================================== */
 const world = new World(document.getElementById('webgl'));
 const hub = new Hub(world);
-
 const loader = document.getElementById('loader');
-addEventListener('load', () => {
-  setTimeout(() => { loader.classList.add('hidden'); world.start(); }, 600);
-});
+addEventListener('load', () => { setTimeout(() => { loader.classList.add('hidden'); world.start(); }, 600); });

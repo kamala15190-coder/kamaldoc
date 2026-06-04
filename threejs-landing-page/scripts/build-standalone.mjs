@@ -22,8 +22,9 @@ const ADDONS = [
   'postprocessing/RenderPass.js',
   'postprocessing/UnrealBloomPass.js',
   'postprocessing/ShaderPass.js',
+  'postprocessing/BokehPass.js',
   'postprocessing/OutputPass.js',
-  'math/SimplexNoise.js',
+  'environments/RoomEnvironment.js',
 ];
 const addonEntries = ADDONS.map(
   (p) =>
