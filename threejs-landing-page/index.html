@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NOVA — Three.js Landing</title>
+    <meta
+      name="description"
+      content="An immersive Three.js landing page with floating geometry, mouse parallax, GSAP scroll and a WebGL particle field."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/css/style.css" />
+  </head>
+  <body>
+    <!-- Loader -->
+    <div class="loader" id="loader">
+      <div class="loader__bar"><span id="loader-progress"></span></div>
+      <p class="loader__label">Loading experience…</p>
+    </div>
+
+    <!-- WebGL canvas lives behind everything -->
+    <canvas id="webgl"></canvas>
+
+    <!-- Glassmorphism navigation -->
+    <header class="nav glass">
+      <a href="#hero" class="nav__brand">◆ NOVA</a>
+      <nav class="nav__links">
+        <a href="#features">Features</a>
+        <a href="#showcase">Showcase</a>
+        <a href="#contact">Contact</a>
+      </nav>
+      <a href="#contact" class="btn btn--ghost">Get Started</a>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="section hero" id="hero">
+        <div class="hero__inner glass" data-fade>
+          <p class="eyebrow">WebGL · Three.js · GSAP</p>
+          <h1 class="hero__title">
+            Build worlds that<br /><span class="grad">float in the dark.</span>
+          </h1>
+          <p class="hero__sub">
+            A real-time 3D landing experience — drifting geometry, a living
+            particle field, and motion that follows your cursor.
+          </p>
+          <div class="hero__cta">
+            <a href="#features" class="btn btn--primary">Explore</a>
+            <a href="#showcase" class="btn btn--ghost">See showcase</a>
+          </div>
+        </div>
+        <div class="scroll-hint" data-fade>
+          <span></span> scroll to dive deeper
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="section features" id="features">
+        <h2 class="section__title" data-fade>Engineered for motion</h2>
+        <div class="cards">
+          <article class="card glass" data-fade>
+            <div class="card__icon">◇</div>
+            <h3>Floating Geometry</h3>
+            <p>
+              Procedurally lit 3D primitives drift through space, each with its
+              own rotation and bob — composed entirely in Three.js.
+            </p>
+          </article>
+          <article class="card glass" data-fade>
+            <div class="card__icon">✦</div>
+            <h3>Particle Field</h3>
+            <p>
+              Thousands of GPU-rendered points form a slowly swirling nebula
+              behind the scene using a custom WebGL particle system.
+            </p>
+          </article>
+          <article class="card glass" data-fade>
+            <div class="card__icon">⟁</div>
+            <h3>Cursor Parallax</h3>
+            <p>
+              The camera leans toward your pointer, giving the whole scene a
+              tangible sense of depth and presence.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- SHOWCASE -->
+      <section class="section showcase" id="showcase">
+        <div class="showcase__text glass" data-fade>
+          <p class="eyebrow">Smooth scroll</p>
+          <h2 class="section__title">Choreographed with GSAP</h2>
+          <p>
+            Every section reveals on a timeline. The 3D camera glides between
+            framings as you scroll, blending DOM motion and WebGL into one
+            continuous shot.
+          </p>
+          <ul class="ticks">
+            <li>Scroll-linked camera movement</li>
+            <li>Reveal-on-enter animations</li>
+            <li>Inertia-smoothed parallax</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CONTACT -->
+      <section class="section contact" id="contact">
+        <div class="contact__inner glass" data-fade>
+          <h2 class="section__title">Ready to launch?</h2>
+          <p>Drop your email and we'll send the starter kit.</p>
+          <form class="contact__form" onsubmit="return false">
+            <input type="email" placeholder="you@example.com" required />
+            <button type="submit" class="btn btn--primary">Notify me</button>
+          </form>
+        </div>
+        <footer class="footer">
+          <span>© 2026 NOVA</span>
+          <span>Built with Three.js · GSAP · Vite</span>
+        </footer>
+      </section>
+    </main>
+
+    <script type="module" src="/src/js/main.js"></script>
+  </body>
+</html>

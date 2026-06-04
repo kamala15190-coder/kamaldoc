@@ -1,0 +1,27 @@
+{
+  "name": "threejs-landing-page",
+  "version": "1.0.0",
+  "description": "Interactive Three.js landing page with floating 3D shapes, mouse parallax, GSAP scroll, glassmorphism UI, and a WebGL particle system.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "threejs",
+    "webgl",
+    "gsap",
+    "landing-page",
+    "glassmorphism",
+    "particles"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.4.10"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5",
+    "three": "^0.169.0"
+  }
+}
