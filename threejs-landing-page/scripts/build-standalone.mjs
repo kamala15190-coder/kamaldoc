@@ -22,7 +22,6 @@ const ADDONS = [
   'postprocessing/RenderPass.js',
   'postprocessing/UnrealBloomPass.js',
   'postprocessing/ShaderPass.js',
-  'postprocessing/BokehPass.js',
   'postprocessing/OutputPass.js',
   'environments/RoomEnvironment.js',
 ];

@@ -487,7 +487,6 @@ button { font: inherit; color: inherit; cursor: pointer; }
           "three/addons/postprocessing/RenderPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/RenderPass.js?external=three",
           "three/addons/postprocessing/UnrealBloomPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/UnrealBloomPass.js?external=three",
           "three/addons/postprocessing/ShaderPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/ShaderPass.js?external=three",
-          "three/addons/postprocessing/BokehPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/BokehPass.js?external=three",
           "three/addons/postprocessing/OutputPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/OutputPass.js?external=three",
           "three/addons/environments/RoomEnvironment.js": "https://esm.sh/three@0.169.0/examples/jsm/environments/RoomEnvironment.js?external=three",
           "gsap": "https://esm.sh/gsap@3.12.5"
@@ -625,7 +624,6 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
@@ -759,52 +757,55 @@ function createPCB(y, dim, scrollSign) {
 }
 
 /* ===========================================================================
-   The hero CPU directly beneath the AI head
+   A continuous stream of big CPUs in the centre lane — you fly over them
 =========================================================================== */
-function createHeroCPU() {
-  const g = new THREE.Group();
-  g.position.set(0, FLOOR_Y, 0);
+function createCPUStream() {
+  const group = new THREE.Group();
+  const COUNT = 7;
+  const SPACING = COMP_RANGE / COUNT;
+  const list = [];
 
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(5.2, 0.5, 5.2),
-    new THREE.MeshStandardMaterial({ color: '#0a0c10', metalness: 0.9, roughness: 0.28 })
-  );
-  body.position.y = 0.25;
-  g.add(body);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: '#0a0c10', metalness: 0.95, roughness: 0.26 });
+  const dieMat = new THREE.MeshStandardMaterial({ color: '#241a10', metalness: 1.0, roughness: 0.18, emissive: new THREE.Color('#3a2207'), emissiveIntensity: 1.0 });
 
-  // die / top plate (brushed metal)
-  const die = new THREE.Mesh(
-    new THREE.BoxGeometry(3.2, 0.08, 3.2),
-    new THREE.MeshStandardMaterial({ color: '#1a1d24', metalness: 1.0, roughness: 0.18 })
-  );
-  die.position.y = 0.54;
-  g.add(die);
+  for (let i = 0; i < COUNT; i++) {
+    const cpu = new THREE.Group();
+    const scale = 1.0 + (i % 3) * 0.3;           // varied sizes
 
-  // glowing socket seam
-  const seamMat = new THREE.MeshBasicMaterial({ color: '#ff9a32' });
-  const seam = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.025, 8, 4), seamMat);
-  seam.rotation.x = Math.PI / 2; seam.rotation.z = Math.PI / 4; seam.position.y = 0.52;
-  g.add(seam);
-  g.userData.seamMat = seamMat;
+    const body = new THREE.Mesh(new THREE.BoxGeometry(5.0, 0.5, 5.0), bodyMat);
+    body.position.y = 0.25;
+    const die = new THREE.Mesh(new THREE.BoxGeometry(3.1, 0.1, 3.1), dieMat);
+    die.position.y = 0.55;
 
-  // pin grid (emissive specks) via instancing
-  const pins = new THREE.InstancedMesh(
-    new THREE.BoxGeometry(0.06, 0.02, 0.06),
-    new THREE.MeshBasicMaterial({ color: '#ffb455' }),
-    24 * 24
-  );
-  const d = new THREE.Object3D(); let i = 0;
-  for (let x = 0; x < 24; x++) for (let z = 0; z < 24; z++) {
-    d.position.set((x - 11.5) * 0.13, 0.59, (z - 11.5) * 0.13);
-    d.updateMatrix(); pins.setMatrixAt(i++, d.matrix);
+    const seamMat = new THREE.MeshBasicMaterial({ color: '#ff9a32' });
+    const seam = new THREE.Mesh(new THREE.TorusGeometry(2.35, 0.03, 8, 4), seamMat);
+    seam.rotation.x = Math.PI / 2; seam.rotation.z = Math.PI / 4; seam.position.y = 0.5;
+
+    // corner contacts + pin grid
+    const pins = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(0.07, 0.03, 0.07),
+      new THREE.MeshBasicMaterial({ color: '#ffb455' }), 20 * 20);
+    const d = new THREE.Object3D(); let k = 0;
+    for (let x = 0; x < 20; x++) for (let z = 0; z < 20; z++) {
+      d.position.set((x - 9.5) * 0.15, 0.6, (z - 9.5) * 0.15); d.updateMatrix(); pins.setMatrixAt(k++, d.matrix);
+    }
+    cpu.add(body, die, seam, pins);
+    cpu.scale.setScalar(scale);
+    cpu.userData = { z0: i * SPACING, seamMat, scale };
+    group.add(cpu); list.push(cpu);
   }
-  g.add(pins);
 
-  g.userData.update = (t) => {
-    const p = 0.6 + Math.abs(Math.sin(t * 1.5)) * 0.6;
-    seamMat.color.setRGB(p * 1.0, p * 0.55, p * 0.12);
+  group.userData.update = (t, speed) => {
+    const p = 0.6 + Math.abs(Math.sin(t * 1.6)) * 0.6;
+    for (const cpu of list) {
+      let z = (cpu.userData.z0 + t * speed) % COMP_RANGE;
+      if (z < 0) z += COMP_RANGE;
+      z = z - COMP_RANGE + 40;                    // recycle from far to past the camera
+      cpu.position.set(0, FLOOR_Y, z);
+      cpu.userData.seamMat.color.setRGB(p, p * 0.55, p * 0.12);
+    }
   };
-  return g;
+  return group;
 }
 
 /* ===========================================================================
@@ -1141,26 +1142,20 @@ function buildPageObjects() {
    Post FX — chromatic aberration + vignette + grain (DOF/bloom are passes)
 =========================================================================== */
 const PostFXShader = {
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAberration: { value: 0.0026 }, uBlur: { value: 0.0 } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uAberration: { value: 0.0016 } },
   vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
   fragmentShader: `
-    uniform sampler2D tDiffuse; uniform float uTime, uAberration, uBlur; varying vec2 vUv;
+    uniform sampler2D tDiffuse; uniform float uTime, uAberration; varying vec2 vUv;
     void main(){
       vec2 uv=vUv; vec2 dir=uv-0.5; float dist=length(dir);
-      vec3 col=vec3(0.0);
-      const int N=5;
-      for(int i=0;i<N;i++){
-        float k=float(i)/float(N-1);
-        float scale=1.0-uBlur*dist*k;
-        vec2 suv=0.5+dir*scale;
-        float ab=uAberration*(0.4+dist*1.4);
-        col.r+=texture2D(tDiffuse, suv-dir*ab).r;
-        col.g+=texture2D(tDiffuse, suv).g;
-        col.b+=texture2D(tDiffuse, suv+dir*ab).b;
-      }
-      col/=float(N);
-      col*=mix(1.0, smoothstep(1.15,0.2,dist), 0.92);
-      float grain=(fract(sin(dot(uv*(uTime+1.0),vec2(12.9898,78.233)))*43758.5453)-0.5)*0.04;
+      // crisp single-tap chromatic aberration (no blur)
+      float ab=uAberration*(0.35+dist*1.3);
+      vec3 col;
+      col.r=texture2D(tDiffuse, uv-dir*ab).r;
+      col.g=texture2D(tDiffuse, uv).g;
+      col.b=texture2D(tDiffuse, uv+dir*ab).b;
+      col*=mix(1.0, smoothstep(1.25,0.25,dist), 0.8);   // gentle vignette
+      float grain=(fract(sin(dot(uv*(uTime+1.0),vec2(12.9898,78.233)))*43758.5453)-0.5)*0.025;
       gl_FragColor=vec4(col+grain,1.0);
     }`,
 };
@@ -1175,7 +1170,7 @@ class World {
     this.pointer = new THREE.Vector2(0, 0);
     this.gazeTarget = new THREE.Vector2(0, 0);
     this.gazeLocked = false;
-    this.fx = { speed: 1, aberration: 0.0026, blur: 0.0, fov: 55, bokeh: 0.6 };
+    this.fx = { speed: 1, aberration: 0.0016, fov: 55 };
 
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1185,7 +1180,7 @@ class World {
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color('#05060a');
-    this.scene.fog = new THREE.FogExp2('#06070c', 0.02);
+    this.scene.fog = new THREE.FogExp2('#06070c', 0.014);
 
     // PBR environment for metallic component reflections
     const pmrem = new THREE.PMREMGenerator(this.renderer);
@@ -1205,10 +1200,10 @@ class World {
     // --- the board world ---
     this.floor = createPCB(FLOOR_Y, 1.0, 1);
     this.ceiling = createPCB(FLOOR_Y + 30, 0.13, -1); this.ceiling.rotation.z = Math.PI; // faint upper canopy
-    this.heroCPU = createHeroCPU();
+    this.cpuStream = createCPUStream();
     this.components = createComponents();
     this.dust = createDust();
-    this.scene.add(this.floor, this.ceiling, this.heroCPU, this.components, this.dust);
+    this.scene.add(this.floor, this.ceiling, this.cpuStream, this.components, this.dust);
 
     // --- the head, hovering above the CPU ---
     this.head = new AIHead();
@@ -1237,9 +1232,8 @@ class World {
     this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.composer.setSize(innerWidth, innerHeight);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bokeh = new BokehPass(this.scene, this.camera, { focus: 9.0, aperture: 0.0014, maxblur: 0.008, width: innerWidth, height: innerHeight });
-    this.composer.addPass(this.bokeh);
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.45, 0.55, 0.18);
+    // tight bloom only — keeps the image crisp while neon still glows
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.3, 0.2);
     this.composer.addPass(this.bloom);
     this.postfx = new ShaderPass(PostFXShader);
     this.composer.addPass(this.postfx);
@@ -1249,7 +1243,7 @@ class World {
   setGaze(x, y, locked) { this.gazeTarget.set(x, y); this.gazeLocked = locked; }
 
   warp(on) {
-    gsap.to(this.fx, { speed: on ? 4.0 : 1, aberration: on ? 0.011 : 0.0026, blur: on ? 0.55 : 0.0, fov: on ? 78 : 55, duration: on ? 0.9 : 1.2, ease: on ? 'power2.in' : 'power2.out' });
+    gsap.to(this.fx, { speed: on ? 4.0 : 1, aberration: on ? 0.006 : 0.0016, fov: on ? 74 : 55, duration: on ? 0.9 : 1.2, ease: on ? 'power2.in' : 'power2.out' });
   }
 
   showPageObject(id) {
@@ -1273,7 +1267,7 @@ class World {
     this.ceiling.userData.mat.uniforms.uTime.value = t;
     this.components.userData.update(t, 22.0 * spd);
     this.dust.userData.update(t);
-    this.heroCPU.userData.update(t);
+    this.cpuStream.userData.update(t, 22.0 * spd);
 
     if (!this.gazeLocked) this.gazeTarget.set(this.pointer.x * 0.5, this.pointer.y * 0.5);
     this.head.setGaze(this.gazeTarget.x, this.gazeTarget.y);
@@ -1290,7 +1284,6 @@ class World {
 
     this.postfx.uniforms.uTime.value = t;
     this.postfx.uniforms.uAberration.value = this.fx.aberration;
-    this.postfx.uniforms.uBlur.value = this.fx.blur;
 
     this.composer.render();
     requestAnimationFrame(() => this._tick());
