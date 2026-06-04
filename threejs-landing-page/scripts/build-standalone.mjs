@@ -17,10 +17,25 @@ const css = read('src/css/style.css');
 const js = read('src/js/app.js');
 let html = read('index.html');
 
+const ADDONS = [
+  'postprocessing/EffectComposer.js',
+  'postprocessing/RenderPass.js',
+  'postprocessing/UnrealBloomPass.js',
+  'postprocessing/ShaderPass.js',
+  'postprocessing/OutputPass.js',
+  'math/SimplexNoise.js',
+];
+const addonEntries = ADDONS.map(
+  (p) =>
+    `          "three/addons/${p}": "https://esm.sh/three@0.169.0/examples/jsm/${p}?external=three"`
+).join(',\n');
+
 const importmap = `<script type="importmap">
       {
         "imports": {
           "three": "https://esm.sh/three@0.169.0",
+          "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/",
+${addonEntries},
           "gsap": "https://esm.sh/gsap@3.12.5"
         }
       }

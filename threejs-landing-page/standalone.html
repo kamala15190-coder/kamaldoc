@@ -151,64 +151,101 @@ button { font: inherit; color: inherit; cursor: pointer; }
   pointer-events: none;
 }
 .menu-item {
+  /* Architectural element: every button is EXACTLY the same size */
   position: absolute;
   transform: translate(-50%, -50%);
   pointer-events: auto;
+  box-sizing: border-box;
+  width: 168px;
+  height: 76px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  background: var(--glass);
+  justify-content: center;
+  gap: 4px;
+  padding: 0;
+  background: linear-gradient(160deg, rgba(20, 28, 56, 0.55), rgba(8, 11, 24, 0.55));
   border: 1px solid var(--glass-brd);
-  border-radius: 999px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-radius: 14px;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   color: var(--text-dim);
-  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  transition: color 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s, background 0.3s;
   will-change: transform;
 }
+/* clipped corner — architectural detail */
+.menu-item::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg);
+  border-left: 1px solid var(--glass-brd);
+  border-bottom: 1px solid var(--glass-brd);
+  transform: translate(0, 0) rotate(45deg) translate(8px, -8px);
+}
 .menu-item__idx {
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  opacity: 0.6;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  color: var(--accent-2);
+  opacity: 0.7;
 }
 .menu-item__label {
-  font-size: 0.98rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
   color: var(--text);
+}
+.menu-item__node {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 12px var(--accent-2);
+  opacity: 0.35;
+  transition: opacity 0.3s, transform 0.3s;
 }
 .menu-item:hover,
 .menu-item.is-active {
   color: var(--text);
   border-color: var(--accent-2);
-  box-shadow: 0 0 0 1px var(--accent-2), 0 10px 40px rgba(25, 227, 255, 0.25);
+  transform: translate(-50%, -50%) scale(1.06);
+  background: linear-gradient(160deg, rgba(25, 227, 255, 0.18), rgba(124, 92, 255, 0.12));
+  box-shadow: 0 0 0 1px var(--accent-2), 0 16px 50px rgba(25, 227, 255, 0.3);
 }
-.menu-item::after {
-  /* connector line toward the head */
-  content: '';
-  position: absolute;
-  width: 2px;
-  height: 0;
-  background: linear-gradient(var(--accent-2), transparent);
-  opacity: 0;
-  transition: height 0.35s ease, opacity 0.35s ease;
+.menu-item:hover .menu-item__node,
+.menu-item.is-active .menu-item__node {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.4);
 }
-.menu-item:hover::after { opacity: 0.5; height: 26px; }
 
 /* ------------------------------ AI chat --------------------------------- */
 .chat {
+  /* Absolutely centred dark-glass console */
   position: absolute;
   left: 50%;
-  bottom: 9%;
-  transform: translateX(-50%) translateY(20px);
-  width: min(90vw, 540px);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 560px);
   z-index: 8;
   opacity: 0;
   visibility: hidden;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 22px;
+  border-radius: 22px;
+  background: rgba(6, 9, 20, 0.72);
+  border: 1px solid rgba(25, 227, 255, 0.35);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  box-shadow: 0 0 60px rgba(25, 227, 255, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 .chat__log {
   display: flex;
@@ -445,6 +482,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
       {
         "imports": {
           "three": "https://esm.sh/three@0.169.0",
+          "three/addons/": "https://esm.sh/three@0.169.0/examples/jsm/",
+          "three/addons/postprocessing/EffectComposer.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/EffectComposer.js?external=three",
+          "three/addons/postprocessing/RenderPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/RenderPass.js?external=three",
+          "three/addons/postprocessing/UnrealBloomPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/UnrealBloomPass.js?external=three",
+          "three/addons/postprocessing/ShaderPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/ShaderPass.js?external=three",
+          "three/addons/postprocessing/OutputPass.js": "https://esm.sh/three@0.169.0/examples/jsm/postprocessing/OutputPass.js?external=three",
+          "three/addons/math/SimplexNoise.js": "https://esm.sh/three@0.169.0/examples/jsm/math/SimplexNoise.js?external=three",
           "gsap": "https://esm.sh/gsap@3.12.5"
         }
       }
@@ -576,13 +620,21 @@ button { font: inherit; color: inherit; cursor: pointer; }
     <script type="module">
 import * as THREE from 'three';
 import { gsap } from 'gsap';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
 
 /* ===========================================================================
-   AHMED KAMAL SOLUTIONS — futuristic AI hub
-   A glowing AI head sits at the centre. Menu items orbit around it; the head
-   turns to look at whichever item you hover. Clicking an item fades the head
-   away, an AI chat types "Navigiere zu X", presses Enter, and the whole stage
-   folds away in 3D to reveal the chosen sub-page.
+   AHMED KAMAL SOLUTIONS — "Inside the Machine"
+   A first-person flight through a living processor. Curl-noise PCB pathways,
+   50k+ streaming particles, microchips and nodes whipping past, the user's
+   blue data-point riding the camera, full post pipeline (bloom + chromatic
+   aberration + radial motion blur). A holographic AI head breathes at the
+   centre, turns to whatever menu node you point at, then dissolves into the
+   stream as the camera warps to the chosen sub-page.
 =========================================================================== */
 
 const MENU = [
@@ -595,136 +647,506 @@ const MENU = [
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const TUNNEL_LEN = 220;
+const wrapZ = (z) => ((z % TUNNEL_LEN) + TUNNEL_LEN) % TUNNEL_LEN - TUNNEL_LEN / 2;
+
+const COL = {
+  cyan: new THREE.Color('#19e3ff'),
+  violet: new THREE.Color('#7c5cff'),
+  magenta: new THREE.Color('#ff3ea5'),
+  ice: new THREE.Color('#bfefff'),
+};
 
 /* ===========================================================================
-   Particle nebula behind everything
+   GLSL — Ashima simplex noise + curl, shared by the GPU particle field
 =========================================================================== */
-function createParticleField({ count = 4200, radius = 26 } = {}) {
-  const positions = new Float32Array(count * 3);
-  const colors = new Float32Array(count * 3);
-  const scales = new Float32Array(count);
-  const cA = new THREE.Color('#7c5cff');
-  const cB = new THREE.Color('#19e3ff');
+const GLSL_NOISE = /* glsl */ `
+vec3 mod289(vec3 x){return x - floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x - floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+float snoise(vec3 v){
+  const vec2 C = vec2(1.0/6.0, 1.0/3.0);
+  const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 i  = floor(v + dot(v, C.yyy));
+  vec3 x0 = v - i + dot(i, C.xxx);
+  vec3 g = step(x0.yzx, x0.xyz);
+  vec3 l = 1.0 - g;
+  vec3 i1 = min(g.xyz, l.zxy);
+  vec3 i2 = max(g.xyz, l.zxy);
+  vec3 x1 = x0 - i1 + C.xxx;
+  vec3 x2 = x0 - i2 + C.yyy;
+  vec3 x3 = x0 - D.yyy;
+  i = mod289(i);
+  vec4 p = permute(permute(permute(
+            i.z + vec4(0.0, i1.z, i2.z, 1.0))
+          + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+          + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float n_ = 0.142857142857;
+  vec3 ns = n_ * D.wyz - D.xzx;
+  vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+  vec4 x_ = floor(j * ns.z);
+  vec4 y_ = floor(j - 7.0 * x_);
+  vec4 x = x_ * ns.x + ns.yyyy;
+  vec4 y = y_ * ns.x + ns.yyyy;
+  vec4 h = 1.0 - abs(x) - abs(y);
+  vec4 b0 = vec4(x.xy, y.xy);
+  vec4 b1 = vec4(x.zw, y.zw);
+  vec4 s0 = floor(b0) * 2.0 + 1.0;
+  vec4 s1 = floor(b1) * 2.0 + 1.0;
+  vec4 sh = -step(h, vec4(0.0));
+  vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+  vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+  vec3 p0 = vec3(a0.xy, h.x);
+  vec3 p1 = vec3(a0.zw, h.y);
+  vec3 p2 = vec3(a1.xy, h.z);
+  vec3 p3 = vec3(a1.zw, h.w);
+  vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+  p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+  vec4 m = max(0.6 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+  m = m * m;
+  return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+}
+vec3 snoiseVec3(vec3 x){
+  return vec3(
+    snoise(x),
+    snoise(vec3(x.y - 19.1, x.z + 33.4, x.x + 47.2)),
+    snoise(vec3(x.z + 74.2, x.x - 124.5, x.y + 99.4))
+  );
+}
+vec3 curlNoise(vec3 p){
+  const float e = 0.12;
+  vec3 dx = vec3(e,0.0,0.0), dy = vec3(0.0,e,0.0), dz = vec3(0.0,0.0,e);
+  vec3 px0 = snoiseVec3(p-dx), px1 = snoiseVec3(p+dx);
+  vec3 py0 = snoiseVec3(p-dy), py1 = snoiseVec3(p+dy);
+  vec3 pz0 = snoiseVec3(p-dz), pz1 = snoiseVec3(p+dz);
+  float x = py1.z - py0.z - pz1.y + pz0.y;
+  float y = pz1.x - pz0.x - px1.z + px0.z;
+  float z = px1.y - px0.y - py1.x + py0.x;
+  return normalize(vec3(x,y,z) / (2.0*e));
+}
+`;
 
+/* ===========================================================================
+   50k+ curl-noise particle stream flowing through the processor
+=========================================================================== */
+function createParticleStream(count = 50000) {
+  const base = new Float32Array(count * 3);
+  const rand = new Float32Array(count);
+  const tint = new Float32Array(count);
   for (let i = 0; i < count; i++) {
-    const r = radius * Math.cbrt(Math.random());
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    positions.set(
-      [
-        r * Math.sin(phi) * Math.cos(theta),
-        r * Math.sin(phi) * Math.sin(theta),
-        r * Math.cos(phi),
-      ],
-      i * 3
-    );
-    const mixed = cA.clone().lerp(cB, Math.random());
-    colors.set([mixed.r, mixed.g, mixed.b], i * 3);
-    scales[i] = Math.random() * 1.5 + 0.4;
+    // keep a clear core zone so the head silhouette stays unobstructed
+    const r = 3.4 + Math.pow(Math.random(), 0.6) * 11.0;
+    const a = Math.random() * Math.PI * 2;
+    base[i * 3] = Math.cos(a) * r;
+    base[i * 3 + 1] = Math.sin(a) * r;
+    base[i * 3 + 2] = Math.random() * TUNNEL_LEN;
+    rand[i] = 0.4 + Math.random() * 1.6;
+    tint[i] = Math.random();
   }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(base, 3));
+  geo.setAttribute('aRand', new THREE.BufferAttribute(rand, 1));
+  geo.setAttribute('aTint', new THREE.BufferAttribute(tint, 1));
+  geo.setDrawRange(0, count);
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
 
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-  geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
-
-  const material = new THREE.ShaderMaterial({
+  const mat = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
-    vertexColors: true,
     uniforms: {
       uTime: { value: 0 },
-      uSize: { value: 7.0 * Math.min(window.devicePixelRatio, 2) },
+      uSpeed: { value: 9.0 },
+      uSize: { value: 11.0 * Math.min(window.devicePixelRatio, 2) },
+      uLen: { value: TUNNEL_LEN },
+      uCol1: { value: COL.cyan },
+      uCol2: { value: COL.violet },
+      uCol3: { value: COL.magenta },
     },
-    vertexShader: `
-      uniform float uTime; uniform float uSize;
-      attribute float aScale; varying vec3 vColor;
+    vertexShader: GLSL_NOISE + /* glsl */ `
+      uniform float uTime, uSpeed, uSize, uLen;
+      uniform vec3 uCol1, uCol2, uCol3;
+      attribute float aRand, aTint;
+      varying vec3 vCol;
+      varying float vFade;
       void main(){
-        vColor = color;
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        float tw = 0.6 + 0.4 * sin(uTime * 1.6 + aScale * 12.0);
-        gl_PointSize = uSize * aScale * tw * (1.0 / -mv.z);
+        vec3 b = position;
+        float z = mod(b.z + uTime * uSpeed, uLen) - uLen * 0.5;
+        vec3 p = vec3(b.xy, z);
+        // organic curl drift, stronger further from the core
+        vec3 c = curlNoise(p * 0.045 + vec3(0.0, 0.0, uTime * 0.04));
+        float amp = 0.6 + length(b.xy) * 0.12;
+        p += c * amp;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        float d = -mv.z;
+        gl_PointSize = uSize * aRand * (1.0 / d);
         gl_Position = projectionMatrix * mv;
+        vec3 col = mix(uCol1, uCol2, smoothstep(0.0, 0.6, aTint));
+        col = mix(col, uCol3, smoothstep(0.7, 1.0, aTint));
+        vCol = col;
+        // keep particles near the camera so the deep centre stays dark for the head
+        vFade = smoothstep(-62.0, -28.0, z) * (1.0 - smoothstep(3.0, 11.0, z));
       }`,
-    fragmentShader: `
-      varying vec3 vColor;
+    fragmentShader: /* glsl */ `
+      varying vec3 vCol; varying float vFade;
       void main(){
         float d = distance(gl_PointCoord, vec2(0.5));
-        gl_FragColor = vec4(vColor, smoothstep(0.5, 0.0, d));
+        float a = smoothstep(0.5, 0.0, d) * vFade * 0.6;
+        gl_FragColor = vec4(vCol, a);
       }`,
+
   });
 
-  const points = new THREE.Points(geometry, material);
-  points.userData.update = (t) => {
-    material.uniforms.uTime.value = t;
-    points.rotation.y = t * 0.02;
-    points.rotation.x = Math.sin(t * 0.04) * 0.08;
-  };
-  return points;
+  const pts = new THREE.Points(geo, mat);
+  pts.frustumCulled = false;
+  pts.userData.update = (t) => { mat.uniforms.uTime.value = t; };
+  pts.userData.mat = mat;
+  return pts;
 }
 
 /* ===========================================================================
-   The AI head — a holographic, futuristic rendition of Ahmed's actual head:
-   bald dome, glasses and a goatee, built from a warped point cloud so it stays
-   "just recognisable" while reading as neon hologram tech.
+   Hyperspace streaks — fiber-optic warp lines (GPU-wrapped)
+=========================================================================== */
+function createStreaks(count = 650) {
+  const pos = new Float32Array(count * 2 * 3);
+  const zoff = new Float32Array(count * 2);
+  const seed = new Float32Array(count * 2);
+  for (let i = 0; i < count; i++) {
+    const r = 3.8 + Math.random() * 10.2;
+    const a = Math.random() * Math.PI * 2;
+    const x = Math.cos(a) * r, y = Math.sin(a) * r;
+    const z = Math.random() * TUNNEL_LEN;
+    const len = 2.5 + Math.random() * 9.0;
+    const s = Math.random();
+    pos.set([x, y, z], i * 6);
+    pos.set([x, y, z], i * 6 + 3);
+    zoff[i * 2] = 0; zoff[i * 2 + 1] = len;
+    seed[i * 2] = s; seed[i * 2 + 1] = s;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('aZoff', new THREE.BufferAttribute(zoff, 1));
+  geo.setAttribute('aSeed', new THREE.BufferAttribute(seed, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
+
+  const mat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSpeed: { value: 42.0 },
+      uLen: { value: TUNNEL_LEN },
+      uCol: { value: COL.ice },
+    },
+    vertexShader: /* glsl */ `
+      uniform float uTime, uSpeed, uLen;
+      attribute float aZoff, aSeed;
+      varying float vA;
+      void main(){
+        float z = mod(position.z + uTime * uSpeed, uLen) - uLen * 0.5 + aZoff;
+        vec3 p = vec3(position.xy, z);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        vA = (0.4 + 0.6 * aSeed) * (1.0 - smoothstep(0.0, 9.0, z)) * smoothstep(-55.0, -20.0, z);
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uCol; varying float vA;
+      void main(){ gl_FragColor = vec4(uCol, vA * 0.32); }`,
+  });
+
+  const seg = new THREE.LineSegments(geo, mat);
+  seg.frustumCulled = false;
+  seg.userData.update = (t) => { mat.uniforms.uTime.value = t; };
+  seg.userData.mat = mat;
+  return seg;
+}
+
+/* ===========================================================================
+   Branching PCB pathways generated with curl-noise (CPU) — animated energy
+=========================================================================== */
+function createPCBPaths() {
+  const simplex = new SimplexNoise();
+  const flow = (x, y, z) =>
+    new THREE.Vector3(
+      simplex.noise3d(x * 0.05, y * 0.05, z * 0.05),
+      simplex.noise3d(x * 0.05 + 11.3, y * 0.05 - 4.7, z * 0.05 + 2.1),
+      0.55 // bias along the tunnel so traces run mostly lengthwise
+    ).normalize();
+
+  const verts = [];
+  const arc = [];
+  const tints = [];
+
+  const grow = (start, steps, tint) => {
+    let p = start.clone();
+    for (let i = 0; i < steps; i++) {
+      const dir = flow(p.x, p.y, p.z + i * 0.5);
+      const next = p.clone().addScaledVector(dir, 1.4);
+      // keep traces hugging the outer wall shell
+      const rad = Math.hypot(next.x, next.y);
+      if (rad < 6) { next.x *= 6 / rad; next.y *= 6 / rad; }
+      if (rad > 13) { next.x *= 13 / rad; next.y *= 13 / rad; }
+      verts.push(p.x, p.y, p.z, next.x, next.y, next.z);
+      const a0 = i / steps, a1 = (i + 1) / steps;
+      arc.push(a0, a1);
+      tints.push(tint, tint);
+      // occasional branch
+      if (i > 6 && i < steps - 6 && Math.random() < 0.06) {
+        grow(next, (steps - i) * 0.6 | 0, tint);
+      }
+      p = next;
+    }
+  };
+
+  for (let i = 0; i < 90; i++) {
+    const a = Math.random() * Math.PI * 2;
+    const r = 7 + Math.random() * 5;
+    grow(
+      new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, Math.random() * TUNNEL_LEN - TUNNEL_LEN / 2),
+      40 + (Math.random() * 30 | 0),
+      Math.random()
+    );
+  }
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+  geo.setAttribute('aArc', new THREE.Float32BufferAttribute(arc, 1));
+  geo.setAttribute('aTint', new THREE.Float32BufferAttribute(tints, 1));
+  geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 1e3);
+
+  const mat = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    uniforms: {
+      uTime: { value: 0 },
+      uSpeed: { value: 9.0 },
+      uLen: { value: TUNNEL_LEN },
+      uCol1: { value: COL.cyan },
+      uCol2: { value: COL.violet },
+    },
+    vertexShader: /* glsl */ `
+      uniform float uTime, uSpeed, uLen;
+      uniform vec3 uCol1, uCol2;
+      attribute float aArc, aTint;
+      varying vec3 vCol; varying float vArc; varying float vFade;
+      void main(){
+        float z = mod(position.z + uTime * uSpeed, uLen) - uLen * 0.5;
+        vec3 p = vec3(position.xy, z);
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        vCol = mix(uCol1, uCol2, aTint);
+        vArc = aArc;
+        vFade = smoothstep(-72.0, -30.0, z) * (1.0 - smoothstep(2.0, 9.0, z));
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uTime;
+      varying vec3 vCol; varying float vArc; varying float vFade;
+      void main(){
+        // travelling energy pulse along each trace
+        float pulse = sin(vArc * 26.0 - uTime * 7.0);
+        float e = smoothstep(0.6, 1.0, pulse);
+        float base = 0.18;
+        gl_FragColor = vec4(vCol * (base + e * 1.6), (base + e) * vFade);
+      }`,
+  });
+
+  const lines = new THREE.LineSegments(geo, mat);
+  lines.frustumCulled = false;
+  lines.userData.update = (t) => { mat.uniforms.uTime.value = t; };
+  lines.userData.mat = mat;
+  return lines;
+}
+
+/* ===========================================================================
+   Instanced microchips + glowing nodes along the tunnel walls
+=========================================================================== */
+function createInstancedField() {
+  const group = new THREE.Group();
+
+  // --- microchips ---
+  const chipCount = 360;
+  const chipGeo = new THREE.BoxGeometry(0.9, 0.9, 0.16);
+  const chipMat = new THREE.MeshStandardMaterial({
+    color: '#0a1228', metalness: 0.7, roughness: 0.35,
+    emissive: '#0bd5ff', emissiveIntensity: 0.5,
+  });
+  const chips = new THREE.InstancedMesh(chipGeo, chipMat, chipCount);
+  chips.frustumCulled = false;
+
+  // --- glowing nodes ---
+  const nodeCount = 520;
+  const nodeGeo = new THREE.OctahedronGeometry(0.22, 0);
+  const nodeMat = new THREE.MeshBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.95 });
+  const nodes = new THREE.InstancedMesh(nodeGeo, nodeMat, nodeCount);
+  nodes.frustumCulled = false;
+
+  const mk = (n, rMin, rMax) =>
+    Array.from({ length: n }, () => {
+      const a = Math.random() * Math.PI * 2;
+      const r = rMin + Math.random() * (rMax - rMin);
+      return {
+        x: Math.cos(a) * r, y: Math.sin(a) * r,
+        z: Math.random() * TUNNEL_LEN, ang: a,
+        spin: (Math.random() - 0.5) * 0.6, sc: 0.6 + Math.random() * 1.1,
+        ph: Math.random() * 6.28,
+      };
+    });
+
+  const chipData = mk(chipCount, 8.5, 12.5);
+  const nodeData = mk(nodeCount, 6.5, 12.8);
+
+  const dummy = new THREE.Object3D();
+  const apply = (mesh, data, t, speed, faceIn) => {
+    for (let i = 0; i < data.length; i++) {
+      const d = data[i];
+      dummy.position.set(d.x, d.y, wrapZ(d.z + t * speed));
+      if (faceIn) {
+        dummy.rotation.set(0, 0, -d.ang + Math.PI / 2);
+        dummy.rotation.x = t * d.spin * 0.3;
+      } else {
+        dummy.rotation.set(t * d.spin, t * d.spin * 0.7, d.ang);
+      }
+      const s = d.sc * (faceIn ? 1 : 1);
+      dummy.scale.setScalar(s);
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
+    }
+    mesh.instanceMatrix.needsUpdate = true;
+  };
+
+  group.add(chips, nodes);
+  group.userData.update = (t) => {
+    apply(chips, chipData, t, 9.0, true);
+    apply(nodes, nodeData, t, 9.0, false);
+    nodeMat.opacity = 0.7 + Math.sin(t * 3.0) * 0.25;
+  };
+  return group;
+}
+
+/* ===========================================================================
+   Soft dark "stage" behind the head so it never drowns in the core glow
+=========================================================================== */
+function createBackdrop() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 256;
+  const ctx = c.getContext('2d');
+  const g = ctx.createRadialGradient(128, 128, 8, 128, 128, 128);
+  g.addColorStop(0, 'rgba(3,4,10,0.96)');
+  g.addColorStop(0.55, 'rgba(3,4,10,0.72)');
+  g.addColorStop(1, 'rgba(3,4,10,0.0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  const tex = new THREE.CanvasTexture(c);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, depthTest: true });
+  const s = new THREE.Sprite(mat);
+  s.scale.setScalar(15);
+  s.position.set(0, 0, -3);
+  return s;
+}
+
+/* ===========================================================================
+   The tunnel shell — circuit-board interior, scrolling
+=========================================================================== */
+function createTunnel() {
+  const geo = new THREE.CylinderGeometry(14, 14, TUNNEL_LEN, 96, 1, true);
+  geo.rotateX(Math.PI / 2);
+  const mat = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    transparent: true,
+    depthWrite: false,
+    uniforms: {
+      uTime: { value: 0 }, uSpeed: { value: 9.0 },
+      uCol1: { value: COL.violet }, uCol2: { value: COL.cyan },
+    },
+    vertexShader: /* glsl */ `
+      varying vec2 vUv; varying float vZ;
+      void main(){
+        vUv = uv;
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vZ = wp.z;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uTime, uSpeed; uniform vec3 uCol1, uCol2;
+      varying vec2 vUv; varying float vZ;
+      float lines(float v, float c, float w){
+        float f = abs(fract(v * c) - 0.5);
+        return smoothstep(w, 0.0, f);
+      }
+      void main(){
+        vec2 uv = vUv;
+        float scroll = uTime * uSpeed * 0.02;
+        float rings = lines(uv.y + scroll, 70.0, 0.012);
+        float rails = lines(uv.x, 56.0, 0.02);
+        float grid = max(rings * 0.5, rails * 0.45);
+        // data packets racing down certain rails
+        float lane = step(0.9, fract(sin(floor(uv.x * 56.0) * 91.7) * 4373.0));
+        float pkt = lane * smoothstep(0.95, 1.0, sin((uv.y + scroll) * 50.0 - uTime * 6.0) * 0.5 + 0.5);
+        vec3 col = mix(uCol1, uCol2, uv.x) * grid * 0.34 + vec3(0.6, 0.95, 1.0) * pkt * 0.9;
+        // dim the distant vanishing point so it never blows out the centre
+        float near = smoothstep(-70.0, -12.0, vZ);
+        float far = 1.0 - smoothstep(-42.0, -78.0, vZ);
+        float fade = near * far * (1.0 - smoothstep(2.0, 9.0, vZ));
+        gl_FragColor = vec4(col * fade, fade * 0.85);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  mesh.userData.update = (t) => { mat.uniforms.uTime.value = t; };
+  mesh.userData.mat = mat;
+  return mesh;
+}
+
+/* ===========================================================================
+   The AI head — holographic likeness (bald + glasses + goatee), breathing
 =========================================================================== */
 const HEAD_R = 1.55;
-
-// Warp a point on the unit sphere into a human-head silhouette.
+const HEAD_SCALE = 2.0;
 function warpHead(v) {
   let x = v.x, y = v.y, z = v.z;
-  x *= 0.86; y *= 1.16; z *= 0.97;          // egg-shaped cranium
-  if (z < 0) z *= 0.9;                        // flatter back of head
-  if (y < 0.1) {                              // taper the jaw toward the chin
-    const t = Math.max(0, Math.min(1, (y + 1.0) / 1.1));
+  x *= 0.86; y *= 1.16; z *= 0.97;
+  if (z < 0) z *= 0.9;
+  if (y < 0.1) {
+    const t = clamp((y + 1.0) / 1.1, 0, 1);
     const taper = 0.5 + 0.5 * t;
     x *= taper;
     if (z < 0) z *= 0.6 + 0.4 * t;
   }
   return new THREE.Vector3(x * HEAD_R, y * HEAD_R, z * HEAD_R);
 }
-
-// Is this surface direction part of the goatee / moustache region?
 function isBeardDir(v) {
   const jaw = v.y < -0.06 && v.y > -0.82 && v.z > 0.12 && Math.abs(v.x) < 0.78;
   const moustache = v.y < 0.04 && v.y > -0.14 && v.z > 0.55 && Math.abs(v.x) < 0.42;
   return jaw || moustache;
 }
-
-// Colour per surface point: cyan dome, violet face, pale goatee.
 function headColor(v) {
   if (isBeardDir(v)) return new THREE.Color('#9fb4ff');
-  if (v.y > 0.34) return new THREE.Color('#19e3ff');
-  return new THREE.Color('#7c5cff');
+  if (v.y > 0.34) return COL.cyan.clone();
+  return COL.violet.clone();
 }
-
-// Points around a rounded rectangle (used for the glasses lenses).
 function roundedRectPoints(w, h, r) {
   const pts = [];
   const hw = w / 2 - r, hh = h / 2 - r;
-  const corners = [
-    [hw, hh, 0], [-hw, hh, Math.PI / 2], [-hw, -hh, Math.PI], [hw, -hh, Math.PI * 1.5],
-  ];
-  for (const [cx, cy, start] of corners) {
+  const corners = [[hw, hh, 0], [-hw, hh, Math.PI / 2], [-hw, -hh, Math.PI], [hw, -hh, Math.PI * 1.5]];
+  for (const [cx, cy, start] of corners)
     for (let i = 0; i <= 6; i++) {
       const a = start + (i / 6) * (Math.PI / 2);
       pts.push(new THREE.Vector3(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0));
     }
-  }
   return pts;
 }
 
 class AIHead {
   constructor() {
-    this.group = new THREE.Group();        // whole head (rotates to gaze)
-    this.inner = new THREE.Group();         // idle bob / breathing
+    this.group = new THREE.Group();
+    this.inner = new THREE.Group();
     this.group.add(this.inner);
-
-    this.gaze = new THREE.Vector2(0, 0);    // desired look direction (-1..1)
-    this.gazeForce = 0.32;                  // how far it turns
-    this.standardMats = [];                 // {mat, base} for fade
-
+    this.gaze = new THREE.Vector2(0, 0);
+    this.gazeForce = 0.34;
+    this.standardMats = [];
     this._buildShell();
     this._buildNodes();
     this._buildLinks();
@@ -732,15 +1154,9 @@ class AIHead {
     this._buildFace();
     this._buildRings();
   }
-
-  _track(mat) {
-    mat.transparent = true;
-    this.standardMats.push({ mat, base: mat.opacity ?? 1 });
-    return mat;
-  }
+  _track(mat) { mat.transparent = true; this.standardMats.push({ mat, base: mat.opacity ?? 1 }); return mat; }
 
   _buildShell() {
-    // Low-res warped head as a glowing wireframe scaffold.
     const base = new THREE.IcosahedronGeometry(1, 3);
     const bp = base.getAttribute('position');
     const v = new THREE.Vector3();
@@ -750,18 +1166,15 @@ class AIHead {
       bp.setXYZ(i, p.x, p.y, p.z);
     }
     bp.needsUpdate = true;
-    const mat = this._track(
-      new THREE.LineBasicMaterial({
-        color: '#3a4cff', transparent: true, opacity: 0.28,
-        blending: THREE.AdditiveBlending, depthWrite: false,
-      })
-    );
+    const mat = this._track(new THREE.LineBasicMaterial({
+      color: '#4a5cff', transparent: true, opacity: 0.45,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
     this.shell = new THREE.LineSegments(new THREE.WireframeGeometry(base), mat);
     this.inner.add(this.shell);
   }
 
   _buildNodes() {
-    // Dense head-shaped point cloud ("holographic skin"), dispersible on exit.
     const src = new THREE.IcosahedronGeometry(1, 4);
     const sp = src.getAttribute('position');
     const n = sp.count;
@@ -781,112 +1194,84 @@ class AIHead {
     this.nodeGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     this.nodeGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
     this.nodeGeo.setAttribute('aBeard', new THREE.BufferAttribute(beard, 1));
-
     this.nodeMat = new THREE.ShaderMaterial({
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-      vertexColors: true,
+      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true,
       uniforms: {
-        uTime: { value: 0 },
-        uOpacity: { value: 1 },
-        uDisperse: { value: 0 },
-        uSize: { value: 8 * Math.min(window.devicePixelRatio, 2) },
+        uTime: { value: 0 }, uOpacity: { value: 1 }, uDisperse: { value: 0 },
+        uSize: { value: 12 * Math.min(window.devicePixelRatio, 2) },
       },
-      vertexShader: `
-        uniform float uTime; uniform float uSize; uniform float uDisperse;
+      vertexShader: /* glsl */ `
+        uniform float uTime, uSize, uDisperse;
         attribute float aBeard; varying vec3 vColor;
         void main(){
           vColor = color;
           vec3 dir = normalize(position);
-          vec3 pos = position + dir * uDisperse * 2.4;
+          vec3 pos = position + dir * uDisperse * 2.6;
           vec4 mv = modelViewMatrix * vec4(pos, 1.0);
           float tw = 0.7 + 0.3 * sin(uTime * 3.0 + position.y * 6.0);
           gl_PointSize = uSize * (1.0 + aBeard * 1.1) * tw * (1.0 / -mv.z);
           gl_Position = projectionMatrix * mv;
         }`,
-      fragmentShader: `
-        uniform float uOpacity; uniform float uDisperse;
-        varying vec3 vColor;
+      fragmentShader: /* glsl */ `
+        uniform float uOpacity, uDisperse; varying vec3 vColor;
         void main(){
           float d = distance(gl_PointCoord, vec2(0.5));
           float a = smoothstep(0.5, 0.0, d) * uOpacity * (1.0 - uDisperse * 0.6);
           gl_FragColor = vec4(vColor, a);
         }`,
     });
-
     this.nodes = new THREE.Points(this.nodeGeo, this.nodeMat);
     this.inner.add(this.nodes);
   }
 
   _buildLinks() {
-    // A few synapse lines flickering between random surface points.
     const pos = this.nodeGeo.getAttribute('position');
     const pts = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 70; i++) {
       const a = (Math.random() * pos.count) | 0;
       const b = (Math.random() * pos.count) | 0;
       const pa = new THREE.Vector3().fromBufferAttribute(pos, a);
       const pb = new THREE.Vector3().fromBufferAttribute(pos, b);
-      if (pa.distanceTo(pb) > 1.6) continue;
+      if (pa.distanceTo(pb) > 1.5) continue;
       pts.push(pa.x, pa.y, pa.z, pb.x, pb.y, pb.z);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.linkMat = this._track(
-      new THREE.LineBasicMaterial({
-        color: '#19e3ff',
-        transparent: true,
-        opacity: 0.25,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
+    this.linkMat = this._track(new THREE.LineBasicMaterial({
+      color: '#19e3ff', transparent: true, opacity: 0.25,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
     this.links = new THREE.LineSegments(g, this.linkMat);
     this.inner.add(this.links);
   }
 
   _buildCore() {
-    const mat = this._track(
-      new THREE.MeshStandardMaterial({
-        color: '#19e3ff',
-        emissive: '#19e3ff',
-        emissiveIntensity: 2.4,
-        roughness: 0.2,
-        metalness: 0.1,
-        transparent: true,
-      })
-    );
-    // Small "mind" core, set back inside the skull so it doesn't hide the face.
-    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 1), mat);
-    this.core.position.set(0, 0.05, -0.15);
+    const mat = this._track(new THREE.MeshStandardMaterial({
+      color: '#19e3ff', emissive: '#19e3ff', emissiveIntensity: 0.7,
+      roughness: 0.2, metalness: 0.1, transparent: true,
+    }));
+    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.2, 1), mat);
+    this.core.position.set(0, 0.05, -0.2);
     this.inner.add(this.core);
-
-    this.coreLight = new THREE.PointLight('#19e3ff', 26, 14);
+    this.coreLight = new THREE.PointLight('#19e3ff', 9, 14);
     this.coreLight.position.set(0, 0.1, 0.4);
     this.inner.add(this.coreLight);
   }
 
   _buildFace() {
-    // The recognisable bits: glasses (lenses + bridge + temples) and eyes.
-    const glassMat = this._track(
-      new THREE.LineBasicMaterial({
-        color: '#19e3ff', transparent: true, opacity: 0.95,
-        blending: THREE.AdditiveBlending, depthWrite: false,
-      })
-    );
-
+    const glassMat = this._track(new THREE.LineBasicMaterial({
+      color: '#19e3ff', transparent: true, opacity: 0.95,
+      blending: THREE.AdditiveBlending, depthWrite: false,
+    }));
     const eyeY = 0.2, lensZ = 1.22, lensX = 0.46;
     const lensPts = roundedRectPoints(0.62, 0.4, 0.13);
-
     const makeLens = (sign) => {
       const g = new THREE.BufferGeometry().setFromPoints(lensPts);
       const loop = new THREE.LineLoop(g, glassMat);
       loop.position.set(sign * lensX, eyeY, lensZ);
-      loop.rotation.y = sign * -0.32; // wrap slightly around the face
+      loop.rotation.y = sign * -0.32;
       return loop;
     };
-
     const bridge = new THREE.BufferGeometry().setFromPoints([
       new THREE.Vector3(-lensX + 0.22, eyeY + 0.04, lensZ + 0.02),
       new THREE.Vector3(lensX - 0.22, eyeY + 0.04, lensZ + 0.02),
@@ -899,25 +1284,15 @@ class AIHead {
       new THREE.Vector3(lensX + 0.28, eyeY + 0.07, lensZ - 0.05),
       new THREE.Vector3(1.05, eyeY + 0.12, -0.2),
     ]);
-
     const glasses = new THREE.Group();
-    glasses.add(
-      makeLens(-1), makeLens(1),
-      new THREE.Line(bridge, glassMat),
-      new THREE.Line(templeL, glassMat),
-      new THREE.Line(templeR, glassMat)
-    );
-
-    // Glowing eyes just behind the lenses.
-    const eyeMat = this._track(
-      new THREE.MeshBasicMaterial({ color: '#eaf6ff', transparent: true })
-    );
+    glasses.add(makeLens(-1), makeLens(1),
+      new THREE.Line(bridge, glassMat), new THREE.Line(templeL, glassMat), new THREE.Line(templeR, glassMat));
+    const eyeMat = this._track(new THREE.MeshBasicMaterial({ color: '#eaf6ff', transparent: true }));
     const eyeGeo = new THREE.SphereGeometry(0.07, 14, 14);
     this.eyeL = new THREE.Mesh(eyeGeo, eyeMat);
     this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
     this.eyeL.position.set(-lensX, eyeY, lensZ - 0.16);
     this.eyeR.position.set(lensX, eyeY, lensZ - 0.16);
-
     this.inner.add(glasses, this.eyeL, this.eyeR);
   }
 
@@ -928,155 +1303,307 @@ class AIHead {
       { r: 2.4, color: '#19e3ff', axis: 'x', speed: 0.22 },
     ];
     for (const s of specs) {
-      const mat = this._track(
-        new THREE.MeshBasicMaterial({
-          color: s.color,
-          transparent: true,
-          opacity: 0.22,
-          blending: THREE.AdditiveBlending,
-        })
-      );
+      const mat = this._track(new THREE.MeshBasicMaterial({
+        color: s.color, transparent: true, opacity: 0.22,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      }));
       const ring = new THREE.Mesh(new THREE.TorusGeometry(s.r, 0.01, 8, 120), mat);
       if (s.axis === 'x') ring.rotation.x = Math.PI / 2;
       if (s.axis === 'z') ring.rotation.y = Math.PI / 2;
-      ring.userData.speed = s.speed;
-      ring.userData.axis = s.axis;
+      ring.userData.speed = s.speed; ring.userData.axis = s.axis;
       this.rings.push(ring);
-      this.group.add(ring); // rings hang on the outer group, not the gazing inner
+      this.group.add(ring);
     }
   }
 
-  setGaze(x, y) {
-    this.gaze.set(clamp(x, -1.4, 1.4), clamp(y, -1.4, 1.4));
-  }
+  setGaze(x, y) { this.gaze.set(clamp(x, -1.4, 1.4), clamp(y, -1.4, 1.4)); }
 
   update(t) {
     this.nodeMat.uniforms.uTime.value = t;
-
-    // Smoothly turn the head toward the gaze target.
-    const ty = this.gaze.x * this.gazeForce * 2.2;   // yaw
-    const tx = -this.gaze.y * this.gazeForce * 1.6;  // pitch
+    const ty = this.gaze.x * this.gazeForce * 2.2;
+    const tx = -this.gaze.y * this.gazeForce * 1.6;
     this.inner.rotation.y += (ty - this.inner.rotation.y) * 0.08;
     this.inner.rotation.x += (tx - this.inner.rotation.x) * 0.08;
-
-    // Breathing bob + core pulse.
-    this.inner.position.y = Math.sin(t * 1.2) * 0.06;
+    // breathing
+    const breathe = 1 + Math.sin(t * 1.4) * 0.018;
+    this.inner.scale.setScalar(breathe);
+    this.inner.position.y = Math.sin(t * 1.2) * 0.05;
     const pulse = 1 + Math.sin(t * 3.0) * 0.08;
     this.core.scale.setScalar(pulse);
-    this.core.material.emissiveIntensity = 2.0 + Math.sin(t * 3.0) * 0.8;
-    this.coreLight.intensity = 30 + Math.sin(t * 3.0) * 14;
-
-    // Flicker synapses.
+    this.core.material.emissiveIntensity = 0.5 + Math.sin(t * 3.0) * 0.25;
+    this.coreLight.intensity = 7 + Math.sin(t * 3.0) * 3;
     this.linkMat.opacity = 0.18 + Math.abs(Math.sin(t * 2.0)) * 0.35;
-
-    // Gyroscope rings.
-    for (const ring of this.rings) {
-      ring.rotation[ring.userData.axis] += ring.userData.speed * 0.01;
-    }
+    for (const ring of this.rings) ring.rotation[ring.userData.axis] += ring.userData.speed * 0.01;
     this.shell.rotation.y = -t * 0.05;
   }
 
-  /** Disperse + fade the head (returns a gsap timeline). */
   fadeOut() {
     const tl = gsap.timeline();
     tl.to(this.nodeMat.uniforms.uDisperse, { value: 1, duration: 1.1, ease: 'power2.in' }, 0);
     tl.to(this.nodeMat.uniforms.uOpacity, { value: 0, duration: 1.1, ease: 'power2.in' }, 0);
-    for (const { mat } of this.standardMats) {
-      tl.to(mat, { opacity: 0, duration: 0.8, ease: 'power2.in' }, 0);
-    }
-    tl.to(this.group.scale, { x: 1.35, y: 1.35, z: 1.35, duration: 1.1, ease: 'power2.in' }, 0);
+    for (const { mat } of this.standardMats) tl.to(mat, { opacity: 0, duration: 0.8, ease: 'power2.in' }, 0);
+    tl.to(this.group.scale, { x: HEAD_SCALE * 1.35, y: HEAD_SCALE * 1.35, z: HEAD_SCALE * 1.35, duration: 1.1, ease: 'power2.in' }, 0);
     return tl;
   }
-
-  /** Reassemble the head (used when returning to the hub). */
   reset() {
     const tl = gsap.timeline();
     tl.to(this.nodeMat.uniforms.uDisperse, { value: 0, duration: 0.9, ease: 'power2.out' }, 0);
     tl.to(this.nodeMat.uniforms.uOpacity, { value: 1, duration: 0.9 }, 0);
-    for (const { mat, base } of this.standardMats) {
-      tl.to(mat, { opacity: base, duration: 0.9, ease: 'power2.out' }, 0);
-    }
-    tl.to(this.group.scale, { x: 1, y: 1, z: 1, duration: 0.9, ease: 'power2.out' }, 0);
+    for (const { mat, base } of this.standardMats) tl.to(mat, { opacity: base, duration: 0.9, ease: 'power2.out' }, 0);
+    tl.to(this.group.scale, { x: HEAD_SCALE, y: HEAD_SCALE, z: HEAD_SCALE, duration: 0.9, ease: 'power2.out' }, 0);
     return tl;
   }
 }
 
 /* ===========================================================================
-   World — renderer, camera, lights, the head, particles, parallax, loop
+   Per-subpage 3D hero objects (each page has its own centrepiece)
+=========================================================================== */
+function buildPageObjects() {
+  const objs = {};
+
+  // SOLUTIONS — rotating neural lattice
+  {
+    const g = new THREE.Group();
+    const ico = new THREE.IcosahedronGeometry(2.1, 1);
+    g.add(new THREE.LineSegments(new THREE.WireframeGeometry(ico),
+      new THREE.LineBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending })));
+    const nodes = new THREE.Points(ico, new THREE.PointsMaterial({ color: '#ff3ea5', size: 0.16, transparent: true, blending: THREE.AdditiveBlending }));
+    g.add(nodes);
+    g.userData.update = (t) => { g.rotation.y = t * 0.5; g.rotation.x = Math.sin(t * 0.3) * 0.3; };
+    objs.solutions = g;
+  }
+  // ABOUT — orbital system
+  {
+    const g = new THREE.Group();
+    const sun = new THREE.Mesh(new THREE.IcosahedronGeometry(0.7, 2),
+      new THREE.MeshBasicMaterial({ color: '#19e3ff' }));
+    g.add(sun);
+    const orbits = [];
+    for (let i = 0; i < 3; i++) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4 + i * 0.7, 0.015, 8, 120),
+        new THREE.MeshBasicMaterial({ color: i % 2 ? '#7c5cff' : '#19e3ff', transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending }));
+      ring.rotation.x = Math.PI / 2 + i * 0.4; ring.rotation.y = i * 0.5;
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.16, 16, 16),
+        new THREE.MeshBasicMaterial({ color: '#ff3ea5' }));
+      g.add(ring); orbits.push({ ring, m, r: 1.4 + i * 0.7, s: 0.6 + i * 0.3, off: i * 2 }); g.add(m);
+    }
+    g.userData.update = (t) => {
+      g.rotation.y = t * 0.15;
+      orbits.forEach((o) => {
+        o.m.position.set(Math.cos(t * o.s + o.off) * o.r, 0, Math.sin(t * o.s + o.off) * o.r);
+        o.m.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), o.ring.rotation.x);
+      });
+    };
+    objs.about = g;
+  }
+  // WORK — instanced floating monoliths
+  {
+    const g = new THREE.Group();
+    const count = 60;
+    const geo = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+    const mat = new THREE.MeshStandardMaterial({ color: '#0a1430', metalness: 0.6, roughness: 0.3, emissive: '#1a6cff', emissiveIntensity: 0.6 });
+    const im = new THREE.InstancedMesh(geo, mat, count);
+    const data = Array.from({ length: count }, () => ({
+      x: (Math.random() - 0.5) * 5, y: (Math.random() - 0.5) * 5, z: (Math.random() - 0.5) * 5,
+      s: 0.4 + Math.random() * 1.4, sp: (Math.random() - 0.5) * 1.2, ph: Math.random() * 6,
+    }));
+    const d = new THREE.Object3D();
+    g.add(im);
+    g.userData.update = (t) => {
+      data.forEach((p, i) => {
+        d.position.set(p.x, p.y + Math.sin(t * 0.6 + p.ph) * 0.3, p.z);
+        d.rotation.set(t * p.sp, t * p.sp * 0.7, 0);
+        d.scale.setScalar(p.s);
+        d.updateMatrix(); im.setMatrixAt(i, d.matrix);
+      });
+      im.instanceMatrix.needsUpdate = true;
+      g.rotation.y = t * 0.1;
+    };
+    objs.work = g;
+  }
+  // CONTACT — pulsing signal sphere with emitting rings
+  {
+    const g = new THREE.Group();
+    const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 2),
+      new THREE.MeshBasicMaterial({ color: '#19e3ff' }));
+    g.add(core);
+    const rings = [];
+    for (let i = 0; i < 4; i++) {
+      const r = new THREE.Mesh(new THREE.TorusGeometry(1, 0.02, 8, 120),
+        new THREE.MeshBasicMaterial({ color: '#19e3ff', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending }));
+      r.rotation.x = Math.PI / 2; g.add(r); rings.push({ r, off: i / 4 });
+    }
+    g.userData.update = (t) => {
+      core.scale.setScalar(1 + Math.sin(t * 4) * 0.12);
+      rings.forEach((o) => {
+        const k = (t * 0.4 + o.off) % 1;
+        o.r.scale.setScalar(0.4 + k * 3.2);
+        o.r.material.opacity = (1 - k) * 0.6;
+      });
+    };
+    objs.contact = g;
+  }
+  // HOME — handled by the AI head itself (no extra object)
+  objs.home = null;
+
+  return objs;
+}
+
+/* ===========================================================================
+   Post-processing — bloom + chromatic aberration + radial motion blur
+=========================================================================== */
+const PostFXShader = {
+  uniforms: {
+    tDiffuse: { value: null },
+    uTime: { value: 0 },
+    uAberration: { value: 0.0028 },
+    uBlur: { value: 0.22 },
+  },
+  vertexShader: /* glsl */ `
+    varying vec2 vUv;
+    void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: /* glsl */ `
+    uniform sampler2D tDiffuse; uniform float uTime, uAberration, uBlur;
+    varying vec2 vUv;
+    void main(){
+      vec2 uv = vUv; vec2 dir = uv - 0.5; float dist = length(dir);
+      vec3 col = vec3(0.0);
+      const int N = 6;
+      for (int i = 0; i < N; i++){
+        float k = float(i) / float(N - 1);
+        float scale = 1.0 - uBlur * dist * k;        // zoom-blur toward the centre
+        vec2 suv = 0.5 + dir * scale;
+        float ab = uAberration * (0.5 + dist * 1.5); // chromatic aberration grows outward
+        col.r += texture2D(tDiffuse, suv - dir * ab).r;
+        col.g += texture2D(tDiffuse, suv).g;
+        col.b += texture2D(tDiffuse, suv + dir * ab).b;
+      }
+      col /= float(N);
+      float vig = smoothstep(1.15, 0.25, dist);       // luxury vignette
+      col *= mix(1.0, vig, 0.9);
+      float grain = (fract(sin(dot(uv * (uTime + 1.0), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * 0.045;
+      gl_FragColor = vec4(col + grain, 1.0);
+    }`,
+};
+
+/* ===========================================================================
+   World — assembles the machine, runs the camera ride + render loop
 =========================================================================== */
 class World {
   constructor(canvas) {
     this.canvas = canvas;
     this.clock = new THREE.Clock();
     this.pointer = new THREE.Vector2(0, 0);
+    this.gazeTarget = new THREE.Vector2(0, 0);
+    this.gazeLocked = false;
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    this.fx = { speed: 1, aberration: 0.0028, blur: 0.22, fov: 60 };
+
+    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(innerWidth, innerHeight);
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 0.86;
 
     this.scene = new THREE.Scene();
-    this.scene.fog = new THREE.FogExp2('#04050c', 0.02);
+    this.scene.fog = new THREE.FogExp2('#03040a', 0.017);
 
-    this.camera = new THREE.PerspectiveCamera(52, innerWidth / innerHeight, 0.1, 100);
-    this.camera.position.set(0, 0, 8.5);
+    this.camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 400);
+    this.camera.position.set(0, 0, 7);
+    this.scene.add(this.camera);
 
-    this.scene.add(new THREE.AmbientLight('#2a3060', 1.4));
-    const key = new THREE.DirectionalLight('#7c5cff', 2.0);
-    key.position.set(5, 6, 8);
-    const rim = new THREE.PointLight('#19e3ff', 50, 50);
-    rim.position.set(-8, -3, 4);
+    this.scene.add(new THREE.AmbientLight('#223', 1.2));
+    const key = new THREE.DirectionalLight('#7c5cff', 1.6); key.position.set(5, 6, 8);
+    const rim = new THREE.PointLight('#19e3ff', 40, 60); rim.position.set(-8, -3, 4);
     this.scene.add(key, rim);
 
+    // --- the machine ---
+    this.tunnel = createTunnel();
+    this.streaks = createStreaks();
+    this.pcb = createPCBPaths();
+    this.instances = createInstancedField();
+    this.particles = createParticleStream();
+    this.backdrop = createBackdrop();
+    this.scene.add(this.tunnel, this.streaks, this.pcb, this.instances, this.particles, this.backdrop);
+    this.streamItems = [this.tunnel, this.streaks, this.pcb, this.particles];
+
+    // --- the head ---
     this.head = new AIHead();
+    this.head.group.scale.setScalar(HEAD_SCALE);
     this.scene.add(this.head.group);
 
-    this.particles = createParticleField();
-    this.scene.add(this.particles);
+    // --- page heroes ---
+    this.pageObjects = buildPageObjects();
+    for (const id in this.pageObjects) {
+      const o = this.pageObjects[id];
+      if (o) { o.visible = false; o.scale.setScalar(0.001); this.scene.add(o); }
+    }
+    this.activePageObj = null;
 
-    this._buildBackdropShapes();
+    // --- the user's data point (rides with the camera) ---
+    const dpMat = new THREE.SpriteMaterial({
+      color: '#3fa9ff', transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending,
+    });
+    this.dataPoint = new THREE.Sprite(dpMat);
+    this.dataPoint.scale.setScalar(0.9);
+    this.dataPoint.position.set(0, -1.1, -4);
+    this.camera.add(this.dataPoint);
+    const dpLight = new THREE.PointLight('#3fa9ff', 14, 10);
+    dpLight.position.copy(this.dataPoint.position);
+    this.camera.add(dpLight);
 
+    this._initPost();
     addEventListener('resize', () => this._resize());
     addEventListener('pointermove', (e) => {
       this.pointer.x = (e.clientX / innerWidth) * 2 - 1;
       this.pointer.y = -((e.clientY / innerHeight) * 2 - 1);
     });
-
-    // Gaze state: where the head should look. Idle => follows pointer.
-    this.gazeTarget = new THREE.Vector2(0, 0);
-    this.gazeLocked = false;
   }
 
-  _buildBackdropShapes() {
-    this.shapes = new THREE.Group();
-    const geos = [
-      new THREE.OctahedronGeometry(0.6),
-      new THREE.TetrahedronGeometry(0.7),
-      new THREE.TorusGeometry(0.5, 0.18, 12, 32),
-      new THREE.IcosahedronGeometry(0.6, 0),
-    ];
-    for (let i = 0; i < 9; i++) {
-      const mat = new THREE.MeshStandardMaterial({
-        color: i % 2 ? '#19e3ff' : '#7c5cff',
-        metalness: 0.5, roughness: 0.3, flatShading: true,
-        transparent: true, opacity: 0.55,
-      });
-      const m = new THREE.Mesh(geos[i % geos.length], mat);
-      const a = Math.random() * Math.PI * 2;
-      const d = 7 + Math.random() * 6;
-      m.position.set(Math.cos(a) * d, (Math.random() - 0.5) * 10, Math.sin(a) * d - 6);
-      m.scale.setScalar(0.6 + Math.random());
-      m.userData = {
-        rs: new THREE.Vector3(Math.random() * 0.4, Math.random() * 0.4, Math.random() * 0.4),
-        by: m.position.y, fs: 0.3 + Math.random() * 0.5, ph: Math.random() * 6,
-      };
-      this.shapes.add(m);
+  _initPost() {
+    this.composer = new EffectComposer(this.renderer);
+    this.composer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.composer.setSize(innerWidth, innerHeight);
+    this.composer.addPass(new RenderPass(this.scene, this.camera));
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.5, 0.2);
+    this.composer.addPass(this.bloom);
+    this.postfx = new ShaderPass(PostFXShader);
+    this.composer.addPass(this.postfx);
+    this.composer.addPass(new OutputPass());
+  }
+
+  setGaze(x, y, locked) { this.gazeTarget.set(x, y); this.gazeLocked = locked; }
+
+  // Warp: punch speed / aberration / blur / fov during navigation.
+  warp(on) {
+    gsap.to(this.fx, {
+      speed: on ? 3.4 : 1,
+      aberration: on ? 0.012 : 0.0028,
+      blur: on ? 0.7 : 0.22,
+      fov: on ? 86 : 60,
+      duration: on ? 0.9 : 1.2,
+      ease: on ? 'power2.in' : 'power2.out',
+    });
+  }
+
+  showPageObject(id) {
+    if (this.activePageObj) {
+      const prev = this.activePageObj;
+      gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) });
     }
-    this.scene.add(this.shapes);
+    const o = this.pageObjects[id];
+    this.activePageObj = o || null;
+    if (o) {
+      o.visible = true;
+      gsap.fromTo(o.scale, { x: 0.001, y: 0.001, z: 0.001 }, { x: 1, y: 1, z: 1, duration: 0.8, ease: 'back.out(1.6)', delay: 0.2 });
+    }
   }
-
-  setGaze(x, y, locked) {
-    this.gazeTarget.set(x, y);
-    this.gazeLocked = locked;
+  hidePageObject() {
+    if (this.activePageObj) {
+      const prev = this.activePageObj;
+      gsap.to(prev.scale, { x: 0.001, y: 0.001, z: 0.001, duration: 0.5, ease: 'power2.in', onComplete: () => (prev.visible = false) });
+      this.activePageObj = null;
+    }
   }
 
   start() { this.clock.start(); this._tick(); }
@@ -1084,26 +1611,38 @@ class World {
   _tick() {
     const t = this.clock.getElapsedTime();
 
-    // Idle gaze follows the pointer unless locked onto a menu item.
+    // feed the moving speed into every streaming element
+    const spd = this.fx.speed;
+    this.tunnel.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
+    this.streaks.userData.mat.uniforms.uSpeed.value = 42.0 * spd;
+    this.pcb.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
+    this.particles.userData.mat.uniforms.uSpeed.value = 9.0 * spd;
+    for (const it of this.streamItems) it.userData.update(t);
+    this.instances.userData.update(t);
+
+    // head gaze (idle follows pointer)
     if (!this.gazeLocked) this.gazeTarget.set(this.pointer.x * 0.5, this.pointer.y * 0.5);
     this.head.setGaze(this.gazeTarget.x, this.gazeTarget.y);
     this.head.update(t);
+    if (this.activePageObj) this.activePageObj.userData.update(t);
 
-    this.particles.userData.update(t);
+    // rollercoaster camera — gentle banking ride, head stays framed
+    this.camera.position.x += (this.pointer.x * 1.1 + Math.sin(t * 0.3) * 0.5 - this.camera.position.x) * 0.04;
+    this.camera.position.y += (this.pointer.y * 0.8 + Math.cos(t * 0.23) * 0.35 - this.camera.position.y) * 0.04;
+    this.camera.position.z += (7 + Math.sin(t * 0.5) * 0.4 - this.camera.position.z) * 0.04;
+    this.camera.lookAt(0, 0, 0);
+    this.camera.rotateZ(Math.sin(t * 0.4) * 0.06 + this.pointer.x * 0.08);
 
-    for (const m of this.shapes.children) {
-      const u = m.userData;
-      m.position.y = u.by + Math.sin(t * u.fs + u.ph) * 0.5;
-      m.rotation.x += u.rs.x * 0.01;
-      m.rotation.y += u.rs.y * 0.01;
+    if (Math.abs(this.camera.fov - this.fx.fov) > 0.01) {
+      this.camera.fov += (this.fx.fov - this.camera.fov) * 0.1;
+      this.camera.updateProjectionMatrix();
     }
 
-    // Subtle camera parallax.
-    this.camera.position.x += (this.pointer.x * 0.6 - this.camera.position.x) * 0.04;
-    this.camera.position.y += (this.pointer.y * 0.4 - this.camera.position.y) * 0.04;
-    this.camera.lookAt(0, 0, 0);
+    this.postfx.uniforms.uTime.value = t;
+    this.postfx.uniforms.uAberration.value = this.fx.aberration;
+    this.postfx.uniforms.uBlur.value = this.fx.blur;
 
-    this.renderer.render(this.scene, this.camera);
+    this.composer.render();
     requestAnimationFrame(() => this._tick());
   }
 
@@ -1111,18 +1650,18 @@ class World {
     this.camera.aspect = innerWidth / innerHeight;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(innerWidth, innerHeight);
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    this.composer.setSize(innerWidth, innerHeight);
+    this.bloom.setSize(innerWidth, innerHeight);
   }
 }
 
 /* ===========================================================================
-   UI / Router — orbiting menu, gaze hand-off, chat sequence, 3D page fold
+   UI / Router — architectural menu, gaze hand-off, chat, warp + 3D fold
 =========================================================================== */
 class Hub {
   constructor(world) {
     this.world = world;
     this.busy = false;
-
     this.stage = document.getElementById('stage');
     this.pages = document.getElementById('pages');
     this.menuEl = document.getElementById('menu');
@@ -1131,27 +1670,24 @@ class Hub {
     this.promptEl = document.getElementById('chat-prompt');
     this.enterEl = document.getElementById('chat-enter');
     this.back = document.getElementById('back');
-
     this._buildMenu();
     this.back.addEventListener('click', () => this.goHub());
   }
 
   _buildMenu() {
     const n = MENU.length;
-    const R = 34; // vmin radius
+    const R = 33;
     MENU.forEach((item, i) => {
-      const angle = Math.PI / 2 - (i * 2 * Math.PI) / n; // start at top, go clockwise
-      const dx = Math.cos(angle);
-      const dy = Math.sin(angle);
+      const angle = Math.PI / 2 - (i * 2 * Math.PI) / n;
+      const dx = Math.cos(angle), dy = Math.sin(angle);
       item.dir = { x: dx, y: dy };
-
       const el = document.createElement('button');
       el.className = 'menu-item';
       el.style.left = `calc(50% + ${dx * R}vmin)`;
       el.style.top = `calc(50% - ${dy * R}vmin)`;
       el.innerHTML = `<span class="menu-item__idx">0${i + 1}</span>
-                      <span class="menu-item__label">${item.label}</span>`;
-
+                      <span class="menu-item__label">${item.label}</span>
+                      <span class="menu-item__node"></span>`;
       el.addEventListener('pointerenter', () => {
         if (this.busy) return;
         el.classList.add('is-active');
@@ -1163,7 +1699,6 @@ class Hub {
         this.world.setGaze(0, 0, false);
       });
       el.addEventListener('click', () => this.navigate(item, el));
-
       item.el = el;
       this.menuEl.appendChild(el);
     });
@@ -1172,115 +1707,92 @@ class Hub {
   async navigate(item, el) {
     if (this.busy) return;
     this.busy = true;
+    try {
+      MENU.forEach((m) => m.el.classList.remove('is-active'));
+      el.classList.add('is-active');
+      this.world.setGaze(item.dir.x, item.dir.y, true);
+      gsap.to(this.menuEl, { opacity: 0.2, duration: 0.5 });
+      await wait(650);
 
-    // 1. Lock the head's gaze onto the chosen item and let it turn.
-    MENU.forEach((m) => m.el.classList.remove('is-active'));
-    el.classList.add('is-active');
-    this.world.setGaze(item.dir.x, item.dir.y, true);
-    gsap.to(this.menuEl, { opacity: 0.25, duration: 0.5 });
-    await wait(650);
+      this.world.head.fadeOut();
+      this._showChat();
+      await wait(350);
 
-    // 2. Fade the head away + reveal the chat.
-    this.world.head.fadeOut();
-    this._showChat();
-    await wait(350);
+      await this._type(`Navigiere zu ${item.label}`);
+      await wait(260);
+      this._pressEnter();
+      this._bubble('user', `Navigiere zu ${item.label}`);
+      this.promptEl.innerHTML = ''; this._caret(false);
+      await wait(420);
+      this._bubble('ai', `Verbindung hergestellt — Warp zu <b>${item.label}</b> …`);
+      this.world.warp(true);            // engage hyperspace
+      await wait(750);
 
-    // 3. Type the navigation prompt, then "press" Enter.
-    await this._type(`Navigiere zu ${item.label}`);
-    await wait(280);
-    this._pressEnter();
-    this._bubble('user', `Navigiere zu ${item.label}`);
-    this.promptEl.innerHTML = '';
-    this._caret(false);
-    await wait(450);
-    this._bubble('ai', `Verstanden — öffne <b>${item.label}</b> …`);
-    await wait(750);
-
-    // 4. Fold the whole stage away in 3D and unfold the sub-page.
-    await this._foldToPage(item.id);
-    this.busy = false;
+      await this._foldToPage(item.id);
+      this.world.warp(false);
+      this.world.showPageObject(item.id);
+    } catch (err) {
+      console.error('navigate failed:', err);
+    } finally {
+      this.busy = false;
+    }
   }
 
-  /* ----------------------------- chat bits ------------------------------ */
   _showChat() {
-    this.chatLog.innerHTML = '';
-    this.promptEl.innerHTML = '';
-    this._caret(true);
-    this.enterEl.classList.remove('is-pressed');
+    this.chatLog.innerHTML = ''; this.promptEl.innerHTML = '';
+    this._caret(true); this.enterEl.classList.remove('is-pressed');
     gsap.killTweensOf(this.chat);
     this.chat.style.visibility = 'visible';
-    gsap.fromTo(
-      this.chat,
-      { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }
-    );
+    gsap.fromTo(this.chat, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.5, ease: 'power3.out' });
   }
   _hideChat() {
     gsap.to(this.chat, {
-      opacity: 0, y: 20, duration: 0.4,
+      opacity: 0, scale: 0.95, duration: 0.4,
       onComplete: () => { this.chat.style.visibility = 'hidden'; this.chatLog.innerHTML = ''; },
     });
   }
   _caret(on) {
     this.promptEl.querySelector('.chat__caret')?.remove();
-    if (on) {
-      const c = document.createElement('span');
-      c.className = 'chat__caret';
-      this.promptEl.appendChild(c);
-    }
+    if (on) { const c = document.createElement('span'); c.className = 'chat__caret'; this.promptEl.appendChild(c); }
   }
   async _type(text) {
     const caret = this.promptEl.querySelector('.chat__caret');
-    for (const ch of text) {
-      this.promptEl.insertBefore(document.createTextNode(ch), caret || null);
-      await wait(40 + Math.random() * 35);
-    }
+    for (const ch of text) { this.promptEl.insertBefore(document.createTextNode(ch), caret || null); await wait(38 + Math.random() * 34); }
   }
-  _pressEnter() {
-    this.enterEl.classList.add('is-pressed');
-    setTimeout(() => this.enterEl.classList.remove('is-pressed'), 220);
-  }
+  _pressEnter() { this.enterEl.classList.add('is-pressed'); setTimeout(() => this.enterEl.classList.remove('is-pressed'), 220); }
   _bubble(kind, html) {
-    const b = document.createElement('div');
-    b.className = `bubble bubble--${kind}`;
-    b.innerHTML = html;
-    this.chatLog.appendChild(b);
-    gsap.from(b, { opacity: 0, y: 12, duration: 0.35, ease: 'power2.out' });
+    const b = document.createElement('div'); b.className = `bubble bubble--${kind}`; b.innerHTML = html;
+    this.chatLog.appendChild(b); gsap.from(b, { opacity: 0, y: 12, duration: 0.35, ease: 'power2.out' });
   }
+  // Await a tween reliably via onComplete (awaiting the tween itself is flaky).
+  _tween(target, vars) { return new Promise((res) => gsap.to(target, { ...vars, onComplete: res })); }
 
-  /* --------------------------- 3D page fold ----------------------------- */
   async _foldToPage(pageId) {
     this._hideChat();
-
-    await gsap.to(this.stage, {
-      duration: 0.9, rotationX: -88, y: -180, z: -500, opacity: 0,
+    await this._tween(this.stage, {
+      duration: 0.9, rotationX: -88, y: -180, z: -600, opacity: 0,
       transformOrigin: '50% 0%', ease: 'power3.in',
     });
     this.stage.style.visibility = 'hidden';
-
-    // Activate the target sub-page and unfold it toward the viewer.
     document.querySelectorAll('.subpage').forEach((p) => p.classList.remove('is-shown'));
     const page = document.querySelector(`.subpage[data-page="${pageId}"]`);
     this.pages.style.visibility = 'visible';
     this.pages.style.pointerEvents = 'auto';
     page.classList.add('is-shown');
     this.back.classList.add('is-shown');
-
-    gsap.set(page, { rotationX: 80, y: 160, z: -400, opacity: 0, transformOrigin: '50% 100%' });
-    await gsap.to(page, {
-      duration: 1.0, rotationX: 0, y: 0, z: 0, opacity: 1, ease: 'power3.out',
-    });
+    gsap.set(page, { rotationX: 82, y: 170, z: -500, opacity: 0, transformOrigin: '50% 100%' });
+    await this._tween(page, { duration: 1.0, rotationX: 0, y: 0, z: 0, opacity: 1, ease: 'power3.out' });
   }
 
   async goHub() {
     if (this.busy) return;
     this.busy = true;
     this.back.classList.remove('is-shown');
-
+    this.world.hidePageObject();
     const page = document.querySelector('.subpage.is-shown');
     if (page) {
-      await gsap.to(page, {
-        duration: 0.8, rotationX: 85, y: 180, z: -400, opacity: 0,
+      await this._tween(page, {
+        duration: 0.8, rotationX: 85, y: 180, z: -500, opacity: 0,
         transformOrigin: '50% 100%', ease: 'power3.in',
       });
       page.classList.remove('is-shown');
@@ -1288,17 +1800,14 @@ class Hub {
     this.pages.style.visibility = 'hidden';
     this.pages.style.pointerEvents = 'none';
 
-    // Rebuild the head while the stage folds back in.
     this.world.head.reset();
     this.world.setGaze(0, 0, false);
     MENU.forEach((m) => m.el.classList.remove('is-active'));
 
     this.stage.style.visibility = 'visible';
-    gsap.set(this.stage, { rotationX: 70, y: -160, z: -500, opacity: 0, transformOrigin: '50% 0%' });
+    gsap.set(this.stage, { rotationX: 70, y: -160, z: -600, opacity: 0, transformOrigin: '50% 0%' });
     gsap.to(this.menuEl, { opacity: 1, duration: 0.8 });
-    await gsap.to(this.stage, {
-      duration: 1.0, rotationX: 0, y: 0, z: 0, opacity: 1, ease: 'power3.out',
-    });
+    await this._tween(this.stage, { duration: 1.0, rotationX: 0, y: 0, z: 0, opacity: 1, ease: 'power3.out' });
     this.busy = false;
   }
 }
@@ -1311,10 +1820,7 @@ const hub = new Hub(world);
 
 const loader = document.getElementById('loader');
 addEventListener('load', () => {
-  setTimeout(() => {
-    loader.classList.add('hidden');
-    world.start();
-  }, 700);
+  setTimeout(() => { loader.classList.add('hidden'); world.start(); }, 600);
 });
 
     </script>
