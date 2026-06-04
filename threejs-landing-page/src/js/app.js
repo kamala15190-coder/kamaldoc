@@ -89,8 +89,56 @@ function createParticleField({ count = 4200, radius = 26 } = {}) {
 }
 
 /* ===========================================================================
-   The AI head — a glowing neural orb with a clear gaze direction (eyes/visor)
+   The AI head — a holographic, futuristic rendition of Ahmed's actual head:
+   bald dome, glasses and a goatee, built from a warped point cloud so it stays
+   "just recognisable" while reading as neon hologram tech.
 =========================================================================== */
+const HEAD_R = 1.55;
+
+// Warp a point on the unit sphere into a human-head silhouette.
+function warpHead(v) {
+  let x = v.x, y = v.y, z = v.z;
+  x *= 0.86; y *= 1.16; z *= 0.97;          // egg-shaped cranium
+  if (z < 0) z *= 0.9;                        // flatter back of head
+  if (y < 0.1) {                              // taper the jaw toward the chin
+    const t = Math.max(0, Math.min(1, (y + 1.0) / 1.1));
+    const taper = 0.5 + 0.5 * t;
+    x *= taper;
+    if (z < 0) z *= 0.6 + 0.4 * t;
+  }
+  return new THREE.Vector3(x * HEAD_R, y * HEAD_R, z * HEAD_R);
+}
+
+// Is this surface direction part of the goatee / moustache region?
+function isBeardDir(v) {
+  const jaw = v.y < -0.06 && v.y > -0.82 && v.z > 0.12 && Math.abs(v.x) < 0.78;
+  const moustache = v.y < 0.04 && v.y > -0.14 && v.z > 0.55 && Math.abs(v.x) < 0.42;
+  return jaw || moustache;
+}
+
+// Colour per surface point: cyan dome, violet face, pale goatee.
+function headColor(v) {
+  if (isBeardDir(v)) return new THREE.Color('#9fb4ff');
+  if (v.y > 0.34) return new THREE.Color('#19e3ff');
+  return new THREE.Color('#7c5cff');
+}
+
+// Points around a rounded rectangle (used for the glasses lenses).
+function roundedRectPoints(w, h, r) {
+  const pts = [];
+  const hw = w / 2 - r, hh = h / 2 - r;
+  const corners = [
+    [hw, hh, 0], [-hw, hh, Math.PI / 2], [-hw, -hh, Math.PI], [hw, -hh, Math.PI * 1.5],
+  ];
+  for (const [cx, cy, start] of corners) {
+    for (let i = 0; i <= 6; i++) {
+      const a = start + (i / 6) * (Math.PI / 2);
+      pts.push(new THREE.Vector3(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 0));
+    }
+  }
+  return pts;
+}
+
 class AIHead {
   constructor() {
     this.group = new THREE.Group();        // whole head (rotates to gaze)
@@ -116,55 +164,78 @@ class AIHead {
   }
 
   _buildShell() {
-    const geo = new THREE.IcosahedronGeometry(1.55, 2);
-    const wire = new THREE.WireframeGeometry(geo);
+    // Low-res warped head as a glowing wireframe scaffold.
+    const base = new THREE.IcosahedronGeometry(1, 3);
+    const bp = base.getAttribute('position');
+    const v = new THREE.Vector3();
+    for (let i = 0; i < bp.count; i++) {
+      v.fromBufferAttribute(bp, i).normalize();
+      const p = warpHead(v);
+      bp.setXYZ(i, p.x, p.y, p.z);
+    }
+    bp.needsUpdate = true;
     const mat = this._track(
-      new THREE.LineBasicMaterial({ color: '#3a4cff', transparent: true, opacity: 0.5 })
+      new THREE.LineBasicMaterial({
+        color: '#3a4cff', transparent: true, opacity: 0.28,
+        blending: THREE.AdditiveBlending, depthWrite: false,
+      })
     );
-    this.shell = new THREE.LineSegments(wire, mat);
+    this.shell = new THREE.LineSegments(new THREE.WireframeGeometry(base), mat);
     this.inner.add(this.shell);
   }
 
   _buildNodes() {
-    // Surface "neurons" sampled from a denser icosphere, dispersible on exit.
-    const src = new THREE.IcosahedronGeometry(1.55, 4);
+    // Dense head-shaped point cloud ("holographic skin"), dispersible on exit.
+    const src = new THREE.IcosahedronGeometry(1, 4);
+    const sp = src.getAttribute('position');
+    const n = sp.count;
+    const positions = new Float32Array(n * 3);
+    const colors = new Float32Array(n * 3);
+    const beard = new Float32Array(n);
+    const v = new THREE.Vector3();
+    for (let i = 0; i < n; i++) {
+      v.fromBufferAttribute(sp, i).normalize();
+      const p = warpHead(v);
+      positions.set([p.x, p.y, p.z], i * 3);
+      const c = headColor(v);
+      colors.set([c.r, c.g, c.b], i * 3);
+      beard[i] = isBeardDir(v) ? 1 : 0;
+    }
     this.nodeGeo = new THREE.BufferGeometry();
-    this.nodeGeo.setAttribute('position', src.getAttribute('position').clone());
+    this.nodeGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    this.nodeGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    this.nodeGeo.setAttribute('aBeard', new THREE.BufferAttribute(beard, 1));
 
     this.nodeMat = new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
+      vertexColors: true,
       uniforms: {
         uTime: { value: 0 },
         uOpacity: { value: 1 },
         uDisperse: { value: 0 },
-        uSize: { value: 11 * Math.min(window.devicePixelRatio, 2) },
-        uColorA: { value: new THREE.Color('#19e3ff') },
-        uColorB: { value: new THREE.Color('#ff4ecd') },
+        uSize: { value: 8 * Math.min(window.devicePixelRatio, 2) },
       },
       vertexShader: `
         uniform float uTime; uniform float uSize; uniform float uDisperse;
-        varying float vMix;
+        attribute float aBeard; varying vec3 vColor;
         void main(){
-          vec3 p = normalize(position);
-          float n = sin(p.x*4.0 + uTime) * cos(p.y*4.0 - uTime*0.7);
-          vMix = 0.5 + 0.5 * n;
-          // explode outward along the normal when dispersing
-          vec3 pos = position * (1.0 + uDisperse * 2.6) + p * uDisperse * 1.5;
+          vColor = color;
+          vec3 dir = normalize(position);
+          vec3 pos = position + dir * uDisperse * 2.4;
           vec4 mv = modelViewMatrix * vec4(pos, 1.0);
-          float tw = 0.7 + 0.3 * sin(uTime*3.0 + position.x*8.0);
-          gl_PointSize = uSize * tw * (1.0 / -mv.z);
+          float tw = 0.7 + 0.3 * sin(uTime * 3.0 + position.y * 6.0);
+          gl_PointSize = uSize * (1.0 + aBeard * 1.1) * tw * (1.0 / -mv.z);
           gl_Position = projectionMatrix * mv;
         }`,
       fragmentShader: `
         uniform float uOpacity; uniform float uDisperse;
-        uniform vec3 uColorA; uniform vec3 uColorB;
-        varying float vMix;
+        varying vec3 vColor;
         void main(){
           float d = distance(gl_PointCoord, vec2(0.5));
           float a = smoothstep(0.5, 0.0, d) * uOpacity * (1.0 - uDisperse * 0.6);
-          gl_FragColor = vec4(mix(uColorA, uColorB, vMix), a);
+          gl_FragColor = vec4(vColor, a);
         }`,
     });
 
@@ -210,56 +281,86 @@ class AIHead {
         transparent: true,
       })
     );
-    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 2), mat);
+    // Small "mind" core, set back inside the skull so it doesn't hide the face.
+    this.core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 1), mat);
+    this.core.position.set(0, 0.05, -0.15);
     this.inner.add(this.core);
 
-    this.coreLight = new THREE.PointLight('#19e3ff', 40, 14);
+    this.coreLight = new THREE.PointLight('#19e3ff', 26, 14);
+    this.coreLight.position.set(0, 0.1, 0.4);
     this.inner.add(this.coreLight);
   }
 
   _buildFace() {
-    // Two glowing eyes + a visor bar at the front (+Z) so the gaze is legible.
-    const eyeMat = this._track(
-      new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true })
-    );
-    const eyeGeo = new THREE.SphereGeometry(0.12, 16, 16);
-    this.eyeL = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
-    this.eyeL.position.set(-0.42, 0.18, 1.45);
-    this.eyeR.position.set(0.42, 0.18, 1.45);
-
-    const visorMat = this._track(
-      new THREE.MeshBasicMaterial({
-        color: '#19e3ff',
-        transparent: true,
-        opacity: 0.85,
-        blending: THREE.AdditiveBlending,
+    // The recognisable bits: glasses (lenses + bridge + temples) and eyes.
+    const glassMat = this._track(
+      new THREE.LineBasicMaterial({
+        color: '#19e3ff', transparent: true, opacity: 0.95,
+        blending: THREE.AdditiveBlending, depthWrite: false,
       })
     );
-    this.visor = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.03, 8, 40, Math.PI), visorMat);
-    this.visor.position.set(0, 0.12, 1.32);
-    this.visor.rotation.z = Math.PI;
 
-    this.inner.add(this.eyeL, this.eyeR, this.visor);
+    const eyeY = 0.2, lensZ = 1.22, lensX = 0.46;
+    const lensPts = roundedRectPoints(0.62, 0.4, 0.13);
+
+    const makeLens = (sign) => {
+      const g = new THREE.BufferGeometry().setFromPoints(lensPts);
+      const loop = new THREE.LineLoop(g, glassMat);
+      loop.position.set(sign * lensX, eyeY, lensZ);
+      loop.rotation.y = sign * -0.32; // wrap slightly around the face
+      return loop;
+    };
+
+    const bridge = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-lensX + 0.22, eyeY + 0.04, lensZ + 0.02),
+      new THREE.Vector3(lensX - 0.22, eyeY + 0.04, lensZ + 0.02),
+    ]);
+    const templeL = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(-lensX - 0.28, eyeY + 0.07, lensZ - 0.05),
+      new THREE.Vector3(-1.05, eyeY + 0.12, -0.2),
+    ]);
+    const templeR = new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(lensX + 0.28, eyeY + 0.07, lensZ - 0.05),
+      new THREE.Vector3(1.05, eyeY + 0.12, -0.2),
+    ]);
+
+    const glasses = new THREE.Group();
+    glasses.add(
+      makeLens(-1), makeLens(1),
+      new THREE.Line(bridge, glassMat),
+      new THREE.Line(templeL, glassMat),
+      new THREE.Line(templeR, glassMat)
+    );
+
+    // Glowing eyes just behind the lenses.
+    const eyeMat = this._track(
+      new THREE.MeshBasicMaterial({ color: '#eaf6ff', transparent: true })
+    );
+    const eyeGeo = new THREE.SphereGeometry(0.07, 14, 14);
+    this.eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    this.eyeR = new THREE.Mesh(eyeGeo, eyeMat);
+    this.eyeL.position.set(-lensX, eyeY, lensZ - 0.16);
+    this.eyeR.position.set(lensX, eyeY, lensZ - 0.16);
+
+    this.inner.add(glasses, this.eyeL, this.eyeR);
   }
 
   _buildRings() {
     this.rings = [];
     const specs = [
-      { r: 2.1, color: '#7c5cff', axis: 'x', speed: 0.5 },
-      { r: 2.45, color: '#19e3ff', axis: 'y', speed: -0.35 },
-      { r: 2.75, color: '#ff4ecd', axis: 'z', speed: 0.22 },
+      { r: 2.05, color: '#7c5cff', axis: 'y', speed: -0.3 },
+      { r: 2.4, color: '#19e3ff', axis: 'x', speed: 0.22 },
     ];
     for (const s of specs) {
       const mat = this._track(
         new THREE.MeshBasicMaterial({
           color: s.color,
           transparent: true,
-          opacity: 0.4,
+          opacity: 0.22,
           blending: THREE.AdditiveBlending,
         })
       );
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(s.r, 0.012, 8, 120), mat);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(s.r, 0.01, 8, 120), mat);
       if (s.axis === 'x') ring.rotation.x = Math.PI / 2;
       if (s.axis === 'z') ring.rotation.y = Math.PI / 2;
       ring.userData.speed = s.speed;
