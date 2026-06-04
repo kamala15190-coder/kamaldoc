@@ -1,52 +1,57 @@
-# NOVA — Three.js Landing Page
+# Ahmed Kamal Solutions — AI Hub
 
-An immersive, dark-themed landing page built with **Three.js**, **GSAP** and **Vite**.
+A futuristic, **3D-driven** company site built with **Three.js** + **GSAP**. A glowing
+AI head sits at the centre and *navigates the site for you*.
 
 ![Three.js](https://img.shields.io/badge/Three.js-r169-black) ![GSAP](https://img.shields.io/badge/GSAP-3.12-88CE02) ![Vite](https://img.shields.io/badge/Vite-5-646CFF)
 
-## ✨ Features
+## ✨ The experience
 
-- **Dark background with floating 3D geometry** — icosahedrons, torus knots, cones and more drift and spin independently in a `MeshStandardMaterial` lit scene.
-- **Mouse parallax** — the camera leans toward your cursor with inertia smoothing for a tangible sense of depth.
-- **Smooth scroll with GSAP** — `ScrollTrigger` reveals each section on enter, `ScrollToPlugin` powers smooth anchor navigation, and scroll progress drives the 3D camera.
-- **Glassmorphism UI overlay** — frosted-glass nav, cards and panels using `backdrop-filter`.
-- **WebGL particle system** — ~3,500 GPU-rendered points in a custom `ShaderMaterial` form a slowly swirling, twinkling nebula.
+- **Central AI head** — a procedural neural orb (wireframe skull, glowing synapse
+  nodes, pulsing core, gyroscope rings, eyes + visor) that represents the AI.
+- **Orbiting menu** — the menu items float in a ring around the head.
+- **Gaze tracking** — hover a menu item and the head physically *turns to look at it*.
+  Idle, it follows your cursor.
+- **AI-chat navigation** — click an item and the head dissolves into particles while
+  an AI chat types **„Navigiere zu X"**, presses **Enter**, …
+- **3D page fold** — …then the whole stage folds away in 3D and the chosen sub-page
+  unfolds toward you. A back button reverses the whole sequence and rebuilds the head.
+- **Lots of motion** — particle nebula, floating geometry, camera parallax, breathing
+  core, flickering synapses.
 
 ## 🚀 Getting started
 
 ```bash
 npm install
-npm run dev      # start the dev server at http://localhost:5173
-npm run build    # production build into dist/
-npm run preview  # preview the production build
+npm run dev               # dev server at http://localhost:5173
+npm run build             # production build (dist/) + regenerates standalone.html
+npm run build:standalone  # just regenerate the single-file build
 ```
 
-## 🗂️ Project structure
+## 📱 Single-file build (no hosting needed)
+
+`standalone.html` is an auto-generated, fully self-contained version (CSS inlined,
+JS inlined, Three.js + GSAP loaded from a CDN via an import map). It renders directly
+from a raw file URL — e.g. open it through `raw.githack.com`:
+
+```
+https://raw.githack.com/kamala15190-coder/kamaldoc/claude/threejs-landing-page-x3qaF/threejs-landing-page/standalone.html
+```
+
+> ⚠️ Don't edit `standalone.html` by hand — it's generated from `src/`. Run
+> `npm run build:standalone` after changing the sources.
+
+## 🗂️ Structure
 
 ```
 threejs-landing-page/
-├── index.html              # markup + glassmorphism overlay
-├── vite.config.js
+├── index.html                 # markup, menu host, sub-pages
+├── standalone.html            # AUTO-GENERATED single-file build
+├── scripts/build-standalone.mjs
 ├── src/
-│   ├── css/style.css       # dark theme + glass styling
-│   └── js/
-│       ├── main.js         # entry point, loader, wiring
-│       ├── scene.js        # renderer, camera, lights, floating shapes, parallax
-│       ├── particles.js    # custom-shader WebGL particle field
-│       └── scroll.js       # GSAP ScrollTrigger reveals + smooth scroll
+│   ├── css/style.css          # neon-glass dark theme
+│   └── js/app.js              # AI head, gaze, chat-nav, 3D page folding
 ```
-
-## 🛠️ Tech
-
-| Concern        | Tool                                   |
-| -------------- | -------------------------------------- |
-| 3D / WebGL     | [three](https://threejs.org)           |
-| Animation      | [gsap](https://gsap.com) + ScrollTrigger |
-| Build / dev    | [vite](https://vitejs.dev)             |
-
-## ♿ Accessibility
-
-Honours `prefers-reduced-motion`: scroll animations and the scroll-hint pulse are disabled when the user requests reduced motion.
 
 ## License
 

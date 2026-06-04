@@ -1,130 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NOVA — Three.js Landing</title>
-    <meta
-      name="description"
-      content="An immersive Three.js landing page with floating geometry, mouse parallax, GSAP scroll and a WebGL particle field."
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Ahmed Kamal Solutions — AI</title>
+    <meta name="description" content="Ahmed Kamal Solutions — futuristische KI-Lösungen. Ein interaktiver 3D-KI-Kopf navigiert dich durch die Seite." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Orbitron:wght@500;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/css/style.css" />
   </head>
   <body>
     <!-- Loader -->
     <div class="loader" id="loader">
-      <div class="loader__bar"><span id="loader-progress"></span></div>
-      <p class="loader__label">Loading experience…</p>
+      <div class="loader__ring"></div>
+      <p class="loader__label">Initialisiere KI…</p>
     </div>
 
-    <!-- WebGL canvas lives behind everything -->
+    <!-- Persistent 3D backdrop -->
     <canvas id="webgl"></canvas>
 
-    <!-- Glassmorphism navigation -->
-    <header class="nav glass">
-      <a href="#hero" class="nav__brand">◆ NOVA</a>
-      <nav class="nav__links">
-        <a href="#features">Features</a>
-        <a href="#showcase">Showcase</a>
-        <a href="#contact">Contact</a>
-      </nav>
-      <a href="#contact" class="btn btn--ghost">Get Started</a>
-    </header>
+    <div id="app">
+      <!-- ============================ HUB ============================ -->
+      <div id="stage">
+        <div class="brand">
+          <span class="brand__dot"></span>
+          <span>Ahmed&nbsp;Kamal&nbsp;Solutions</span>
+          <small>AI</small>
+        </div>
 
-    <main>
-      <!-- HERO -->
-      <section class="section hero" id="hero">
-        <div class="hero__inner glass" data-fade>
-          <p class="eyebrow">WebGL · Three.js · GSAP</p>
-          <h1 class="hero__title">
-            Build worlds that<br /><span class="grad">float in the dark.</span>
-          </h1>
-          <p class="hero__sub">
-            A real-time 3D landing experience — drifting geometry, a living
-            particle field, and motion that follows your cursor.
-          </p>
-          <div class="hero__cta">
-            <a href="#features" class="btn btn--primary">Explore</a>
-            <a href="#showcase" class="btn btn--ghost">See showcase</a>
+        <!-- Orbiting menu items are injected by app.js -->
+        <nav class="menu" id="menu" aria-label="Hauptmenü"></nav>
+
+        <p class="hub__hint">Bewege über einen <b>Menüpunkt</b> — die KI schaut hin · Klick zum Navigieren</p>
+
+        <!-- AI chat that performs the navigation -->
+        <div class="chat" id="chat" aria-hidden="true">
+          <div class="chat__log" id="chat-log"></div>
+          <div class="chat__input">
+            <span class="mono" style="color: var(--accent-2)">&gt;</span>
+            <span class="chat__prompt" id="chat-prompt"></span>
+            <span class="chat__enter" id="chat-enter">↵ Enter</span>
           </div>
         </div>
-        <div class="scroll-hint" data-fade>
-          <span></span> scroll to dive deeper
-        </div>
-      </section>
+      </div>
 
-      <!-- FEATURES -->
-      <section class="section features" id="features">
-        <h2 class="section__title" data-fade>Engineered for motion</h2>
-        <div class="cards">
-          <article class="card glass" data-fade>
-            <div class="card__icon">◇</div>
-            <h3>Floating Geometry</h3>
-            <p>
-              Procedurally lit 3D primitives drift through space, each with its
-              own rotation and bob — composed entirely in Three.js.
+      <!-- =========================== PAGES =========================== -->
+      <button class="back" id="back">← Zurück zur KI</button>
+
+      <div id="pages">
+        <!-- HOME -->
+        <section class="subpage" data-page="home">
+          <div class="panel">
+            <span class="chip">Willkommen</span>
+            <h1>Wir bauen <span class="grad">intelligente Systeme</span>,<br />die mitdenken.</h1>
+            <p class="lead">
+              Ahmed Kamal Solutions entwickelt maßgeschneiderte KI-Produkte —
+              von autonomen Agenten über Sprachmodelle bis zu Echtzeit-Analytik.
+              Diese Seite selbst wird von einer KI navigiert.
             </p>
-          </article>
-          <article class="card glass" data-fade>
-            <div class="card__icon">✦</div>
-            <h3>Particle Field</h3>
-            <p>
-              Thousands of GPU-rendered points form a slowly swirling nebula
-              behind the scene using a custom WebGL particle system.
+            <div class="stats">
+              <div class="stat"><b>50+</b><span>AI-PROJEKTE</span></div>
+              <div class="stat"><b>12</b><span>BRANCHEN</span></div>
+              <div class="stat"><b>99.9%</b><span>UPTIME</span></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SOLUTIONS -->
+        <section class="subpage" data-page="solutions">
+          <div class="panel">
+            <span class="chip">Solutions</span>
+            <h1>Was wir <span class="grad">möglich machen</span></h1>
+            <p class="lead">End-to-end KI-Lösungen, gebaut für Produktion — nicht für Demos.</p>
+            <div class="grid">
+              <div class="tile"><div class="ico">◇</div><h3>AI Agents</h3><p>Autonome Agenten, die Aufgaben planen und ausführen.</p></div>
+              <div class="tile"><div class="ico">✦</div><h3>LLM Integration</h3><p>Eigene Modelle, RAG-Pipelines & sichere Deployments.</p></div>
+              <div class="tile"><div class="ico">⟁</div><h3>Computer Vision</h3><p>Echtzeit-Bild- und Videoanalyse am Edge.</p></div>
+              <div class="tile"><div class="ico">◈</div><h3>Predictive Analytics</h3><p>Prognosen aus deinen Daten — live & erklärbar.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section class="subpage" data-page="about">
+          <div class="panel">
+            <span class="chip">About</span>
+            <h1>Über <span class="grad">Ahmed Kamal</span></h1>
+            <p class="lead">
+              Wir sind ein Team aus KI-Ingenieuren, Designern und Strateg:innen
+              mit einer Mission: Künstliche Intelligenz nützlich, zugänglich und
+              vertrauenswürdig zu machen. Wir verbinden Forschung mit Engineering,
+              das wirklich ausliefert.
             </p>
-          </article>
-          <article class="card glass" data-fade>
-            <div class="card__icon">⟁</div>
-            <h3>Cursor Parallax</h3>
-            <p>
-              The camera leans toward your pointer, giving the whole scene a
-              tangible sense of depth and presence.
-            </p>
-          </article>
-        </div>
-      </section>
+            <div class="stats">
+              <div class="stat"><b>2019</b><span>GEGRÜNDET</span></div>
+              <div class="stat"><b>30+</b><span>EXPERT:INNEN</span></div>
+              <div class="stat"><b>4</b><span>KONTINENTE</span></div>
+            </div>
+          </div>
+        </section>
 
-      <!-- SHOWCASE -->
-      <section class="section showcase" id="showcase">
-        <div class="showcase__text glass" data-fade>
-          <p class="eyebrow">Smooth scroll</p>
-          <h2 class="section__title">Choreographed with GSAP</h2>
-          <p>
-            Every section reveals on a timeline. The 3D camera glides between
-            framings as you scroll, blending DOM motion and WebGL into one
-            continuous shot.
-          </p>
-          <ul class="ticks">
-            <li>Scroll-linked camera movement</li>
-            <li>Reveal-on-enter animations</li>
-            <li>Inertia-smoothed parallax</li>
-          </ul>
-        </div>
-      </section>
+        <!-- WORK -->
+        <section class="subpage" data-page="work">
+          <div class="panel">
+            <span class="chip">Work</span>
+            <h1>Ausgewählte <span class="grad">Projekte</span></h1>
+            <p class="lead">Ein Auszug aus unserer Arbeit über Branchen hinweg.</p>
+            <div class="grid">
+              <div class="tile"><div class="ico">🏥</div><h3>MedScan AI</h3><p>Diagnose-Assistenz mit 98 % Trefferquote.</p></div>
+              <div class="tile"><div class="ico">🏦</div><h3>FinGuard</h3><p>Echtzeit-Betrugserkennung für Banken.</p></div>
+              <div class="tile"><div class="ico">🛰️</div><h3>OrbitVision</h3><p>Satellitenbild-Analyse für Landwirtschaft.</p></div>
+              <div class="tile"><div class="ico">🤖</div><h3>Atlas Agent</h3><p>Autonomer Support-Agent, –60 % Tickets.</p></div>
+            </div>
+          </div>
+        </section>
 
-      <!-- CONTACT -->
-      <section class="section contact" id="contact">
-        <div class="contact__inner glass" data-fade>
-          <h2 class="section__title">Ready to launch?</h2>
-          <p>Drop your email and we'll send the starter kit.</p>
-          <form class="contact__form" onsubmit="return false">
-            <input type="email" placeholder="you@example.com" required />
-            <button type="submit" class="btn btn--primary">Notify me</button>
-          </form>
-        </div>
-        <footer class="footer">
-          <span>© 2026 NOVA</span>
-          <span>Built with Three.js · GSAP · Vite</span>
-        </footer>
-      </section>
-    </main>
+        <!-- CONTACT -->
+        <section class="subpage" data-page="contact">
+          <div class="panel">
+            <span class="chip">Contact</span>
+            <h1>Lass uns <span class="grad">sprechen</span></h1>
+            <p class="lead">Erzähl uns von deinem Projekt — wir melden uns innerhalb von 24 Stunden.</p>
+            <form class="field" onsubmit="return false">
+              <input type="text" placeholder="Dein Name" />
+              <input type="email" placeholder="du@firma.com" />
+              <textarea rows="3" placeholder="Worum geht's?"></textarea>
+              <button class="btn" type="submit">Nachricht senden →</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
 
-    <script type="module" src="/src/js/main.js"></script>
+    <script type="module" src="/src/js/app.js"></script>
   </body>
 </html>
