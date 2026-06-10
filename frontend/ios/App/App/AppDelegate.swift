@@ -1,5 +1,6 @@
 import UIKit
 import Capacitor
+import FirebaseCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -7,14 +8,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+            FirebaseApp.configure()
         // Push Notifications: UNUserNotificationCenter-Delegate setzen
         // Capacitor's ApplicationDelegateProxy übernimmt die eigentliche Verarbeitung;
         // wir registrieren nur den Delegate damit Foreground-Notifications angezeigt werden.
         UNUserNotificationCenter.current().delegate = self
 
-        // DocumentScanner Plugin registrieren (VNDocumentCameraViewController)
-        let bridge = (window?.rootViewController as? CAPBridgeViewController)?.bridge
-        bridge?.registerPluginInstance(DocumentScannerPlugin())
+    
 
         return true
     }
@@ -80,7 +80,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
         // Capacitor informieren dass der User auf eine Notification getippt hat
-        NotificationCenter.default.post(name: .capacitorNotificationReceived, object: response)
+        
         completionHandler()
     }
 }
