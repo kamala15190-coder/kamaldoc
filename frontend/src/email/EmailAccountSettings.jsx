@@ -15,11 +15,13 @@ import { useTranslation } from 'react-i18next';
 import { useEmailAccounts } from './useEmailAccounts';
 import { providerMeta, APP_PASSWORD_HINT } from './connectorMeta';
 import { useFeatureFlags } from '../hooks/useFeatureFlags';
+import { useConfirm } from '../hooks/useConfirm';
 import { formatLocalDate } from '../utils/dateUtils';
 
 export default function EmailAccountSettings() {
   const { t } = useTranslation();
   const { isEnabled } = useFeatureFlags();
+  const confirm = useConfirm();
   const {
     accounts, connectors, encryptionReady, loading, busy,
     startOAuth, connectImap, remove, sync,
@@ -76,6 +78,14 @@ export default function EmailAccountSettings() {
   };
 
   const handleRemove = async (id) => {
+    const ok = await confirm({
+      title: t('email.disconnectConfirmTitle', 'Postfach trennen?'),
+      message: t('email.disconnectConfirmMsg', 'Die Verbindung zu diesem Postfach wird entfernt. Du kannst es jederzeit wieder verbinden.'),
+      confirmLabel: t('email.disconnect', 'Trennen'),
+      cancelLabel: t('common.cancel', 'Abbrechen'),
+      variant: 'danger',
+    });
+    if (!ok) return;
     setRemoving(id);
     try { await remove(id); } catch { /* ignore */ }
     setRemoving(null);
@@ -185,21 +195,23 @@ export default function EmailAccountSettings() {
                         onClick={() => sync(acc.id)}
                         disabled={isBusy}
                         title={t('email.sync', 'Sync')}
+                        aria-label={t('email.sync', 'Sync')}
                         style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
-                          borderRadius: 6, background: 'var(--accent-soft)', border: 'none',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40,
+                          borderRadius: 8, background: 'var(--accent-soft)', border: 'none',
                           color: 'var(--accent-solid)', cursor: 'pointer', opacity: isBusy ? 0.5 : 1,
                         }}
                       >
-                        <RefreshCw style={{ width: 12, height: 12, animation: isBusy ? 'spin 0.8s linear infinite' : 'none' }} />
+                        <RefreshCw style={{ width: 14, height: 14, animation: isBusy ? 'spin 0.8s linear infinite' : 'none' }} />
                       </button>
                       <button
                         onClick={() => handleRemove(acc.id)}
                         disabled={removing === acc.id}
                         title={t('email.disconnect')}
+                        aria-label={t('email.disconnect')}
                         style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28,
-                          borderRadius: 6, background: 'var(--danger-soft)', border: 'none',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40,
+                          borderRadius: 8, background: 'var(--danger-soft)', border: 'none',
                           color: 'var(--danger)', cursor: 'pointer', opacity: removing === acc.id ? 0.5 : 1,
                         }}
                       >
@@ -241,9 +253,10 @@ export default function EmailAccountSettings() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                 <button
                   onClick={() => setPicking(false)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 26, height: 26, borderRadius: 6, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', cursor: 'pointer' }}
+                  aria-label={t('common.back', 'Zurück')}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 40, height: 40, borderRadius: 8, background: 'var(--bg-glass)', border: '1px solid var(--border-glass)', cursor: 'pointer', flexShrink: 0 }}
                 >
-                  <ChevronLeft style={{ width: 14, height: 14, color: 'var(--text-primary)' }} />
+                  <ChevronLeft style={{ width: 16, height: 16, color: 'var(--text-primary)' }} />
                 </button>
                 <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {t('email.chooseProvider', 'Choose a provider')}

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments, updateDocument } from '../api';
-import { formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDate, formatCurrency } from '../utils/dateUtils';
 
 
 const KATEGORIE_BADGE = {
@@ -16,16 +16,6 @@ const KATEGORIE_BADGE = {
   vertrag: 'badge-vertrag',
   behoerde: 'badge-behoerde',
   sonstiges: 'badge-sonstiges',
-};
-
-const KATEGORIE_COLORS = {
-  brief: 'bg-blue-100 text-blue-700',
-  rechnung: 'bg-amber-100 text-amber-700',
-  lohnzettel: 'bg-green-100 text-green-700',
-  kontoauszug: 'bg-purple-100 text-purple-700',
-  vertrag: 'bg-rose-100 text-rose-700',
-  behoerde: 'bg-teal-100 text-teal-700',
-  sonstiges: 'bg-slate-100 text-slate-700',
 };
 
 export default function Archiv() {
@@ -139,7 +129,7 @@ export default function Archiv() {
               )}
               {doc.betrag != null && doc.betrag > 0 && (
                 <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                  {formatCurrency(doc.betrag)}
                 </span>
               )}
               {doc.erledigt_am && (

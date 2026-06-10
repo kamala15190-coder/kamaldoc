@@ -69,7 +69,10 @@
     "requestNewLink": "Be om ny lenke",
     "setNewPassword": "Lagre passord",
     "saving": "Lagrer...",
-    "impressum": "Kolofon"
+    "impressum": "Kolofon",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Åpne oppgaver",
@@ -695,5 +698,15 @@
     "fromGallery": "Velg fra galleriet",
     "uploadFile": "Last opp fil",
     "cancel": "Avbryt"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

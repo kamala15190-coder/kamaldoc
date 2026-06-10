@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   MessageCircle, Send, Plus, Paperclip, Scale, Trash2, Loader2,
   Sparkles, X, ChevronLeft, FileText, Search, Mail, ShieldAlert, ChevronRight,
-  AlertTriangle, RotateCw, Info, Check, Minus,
+  AlertTriangle, RotateCw, Info, Check, Minus, Square,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,6 +13,7 @@ import {
 import { tapHaptic } from '../utils/haptics';
 import { useAttachmentPicker } from '../components/AttachmentPicker';
 import { useSubscription } from '../hooks/useSubscription';
+import { useConfirm } from '../hooks/useConfirm';
 
 // --- Minimal, safe markdown → React renderer ---------------------------------
 // Doka answers in markdown (headings, lists, bold, inline code, links). We keep
@@ -30,7 +31,8 @@ function renderInline(text, keyPrefix) {
       <code key={`${keyPrefix}-c${i}`} style={{ background: 'var(--chip-bg)', padding: '1px 5px', borderRadius: 5, fontSize: '0.92em' }}>{match[4]}</code>
     );
     else if (match[5]) nodes.push(
-      <a key={`${keyPrefix}-a${i}`} href={match[8]} target="_blank" rel="noreferrer" style={{ color: 'var(--amber)' }}>{match[7]}</a>
+      // group 6 = link text, group 7 = URL (the pattern has 7 groups, not 8)
+      <a key={`${keyPrefix}-a${i}`} href={match[7]} target="_blank" rel="noreferrer" style={{ color: 'var(--amber)' }}>{match[6]}</a>
     );
     rest = rest.slice(match.index + match[0].length);
     i += 1;
@@ -128,6 +130,7 @@ function ToolCard({ name, summary, pending, t }) {
 export default function Doka() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const confirm = useConfirm();
   const { refresh: refreshSubscription } = useSubscription();
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -144,6 +147,8 @@ export default function Doka() {
   const [showLawyerInfo, setShowLawyerInfo] = useState(false); // info modal for the lawyer mode
 
   const scrollRef = useRef(null);
+  const bottomRef = useRef(null);   // sentinel at the end of the chat for auto-scroll
+  const textareaRef = useRef(null); // for auto-grow + height reset
   const abortRef = useRef(null);
   const lastSentRef = useRef(null); // { text, file } — for the error-retry action
   const { openPicker, picker } = useAttachmentPicker({ onFile: setFile });
@@ -152,9 +157,16 @@ export default function Doka() {
     getDokaConversations().then(setConversations).catch(() => {});
   }, []);
 
+  // Keep the newest message in view. The chat area scrolls the PAGE (no overflow
+  // container), so scroll the sentinel into view rather than setting scrollTop.
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    bottomRef.current?.scrollIntoView({ block: 'end' });
   }, [messages, streamContent, streamTools]);
+
+  // Reset the textarea height once the input is cleared (e.g. after sending).
+  useEffect(() => {
+    if (textareaRef.current && !input) textareaRef.current.style.height = 'auto';
+  }, [input]);
 
   const openConversation = useCallback(async (id) => {
     setShowList(false);
@@ -264,6 +276,14 @@ export default function Doka() {
 
   const handleDelete = async (id, e) => {
     e.stopPropagation();
+    const ok = await confirm({
+      title: t('doka.deleteConfirmTitle', { defaultValue: 'Unterhaltung löschen?' }),
+      message: t('doka.deleteConfirmMsg', { defaultValue: 'Diese Unterhaltung wird dauerhaft gelöscht. Das kann nicht rückgängig gemacht werden.' }),
+      confirmLabel: t('common.delete', { defaultValue: 'Löschen' }),
+      cancelLabel: t('common.cancel', { defaultValue: 'Abbrechen' }),
+      variant: 'danger',
+    });
+    if (!ok) return;
     try {
       await deleteDokaConversation(id);
       setConversations((prev) => prev.filter((c) => c.id !== id));
@@ -496,25 +516,37 @@ export default function Doka() {
             <Paperclip style={{ width: 18, height: 18 }} />
           </button>
           <textarea
+            ref={textareaRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onInput={(e) => { e.target.style.height = 'auto'; e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`; }}
             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
             placeholder={t('doka.placeholder', { defaultValue: 'Frag Doka etwas …' })}
             rows={1}
             className="input-dark"
             style={{ flex: 1, resize: 'none', maxHeight: 120, padding: '11px 14px', borderRadius: 16, fontSize: 15, lineHeight: 1.4 }}
           />
-          <button onClick={() => handleSend()} disabled={streaming || (!input.trim() && !file)} className="no-touch-min"
-            aria-label={t('doka.send', { defaultValue: 'Senden' })}
-            style={{
-              flexShrink: 0, borderRadius: 12, padding: 11, cursor: streaming ? 'default' : 'pointer', border: 'none',
-              background: (streaming || (!input.trim() && !file)) ? 'var(--progress-track)' : 'var(--accent-gradient)',
-              color: '#fff', opacity: (streaming || (!input.trim() && !file)) ? 0.6 : 1,
-            }}>
-            {streaming
-              ? <Loader2 style={{ width: 18, height: 18, animation: 'spin 0.8s linear infinite' }} />
-              : <Send style={{ width: 18, height: 18 }} />}
-          </button>
+          {streaming ? (
+            // While streaming, the action button stops generation (AbortController).
+            <button onClick={() => abortRef.current?.abort()} className="no-touch-min"
+              aria-label={t('doka.stop', { defaultValue: 'Stopp' })}
+              style={{
+                flexShrink: 0, borderRadius: 12, padding: 11, cursor: 'pointer', border: 'none',
+                background: 'var(--danger-soft)', color: 'var(--danger)',
+              }}>
+              <Square style={{ width: 18, height: 18 }} fill="currentColor" />
+            </button>
+          ) : (
+            <button onClick={() => handleSend()} disabled={!input.trim() && !file} className="no-touch-min"
+              aria-label={t('doka.send', { defaultValue: 'Senden' })}
+              style={{
+                flexShrink: 0, borderRadius: 12, padding: 11, cursor: 'pointer', border: 'none',
+                background: (!input.trim() && !file) ? 'var(--progress-track)' : 'var(--accent-gradient)',
+                color: '#fff', opacity: (!input.trim() && !file) ? 0.6 : 1,
+              }}>
+              <Send style={{ width: 18, height: 18 }} />
+            </button>
+          )}
         </div>
       </div>
 

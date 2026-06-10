@@ -18,29 +18,20 @@ export const isNativePlatform = () => Capacitor.isNativePlatform();
 /* ------------------------------------------------------------------ *
  * Akzeptierte Dokumenttypen (Web-accept + native MIME-Filter)
  * ------------------------------------------------------------------ */
+// Only the formats the backend actually accepts (jpg/png/pdf). Office files were
+// offered before but every endpoint rejects them with 400 — so the document
+// browser must not list them, otherwise the pick silently fails server-side.
 export const DOC_MIME_TYPES = [
   'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  'text/plain',
-  'text/csv',
+  'image/jpeg',
+  'image/png',
 ];
 
-// Web-`accept` für die Dokument-Option: bewusst OHNE `image/*`, damit der
-// Android-WebView-Filechooser den DOKUMENTEN-Browser öffnet (nicht Kamera/Galerie).
+// Web-`accept` für die Dokument-Option. Bewusst kein `image/*`-Wildcard (das würde
+// auf Android Kamera/Galerie öffnen) — stattdessen die konkreten, vom Backend
+// unterstützten Endungen, damit der Datei-Browser erscheint.
 export const DOC_WEB_ACCEPT =
-  '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,' +
-  'application/pdf,application/msword,' +
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document,' +
-  'application/vnd.ms-excel,' +
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,' +
-  'application/vnd.ms-powerpoint,' +
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation,' +
-  'text/plain,text/csv';
+  '.pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png';
 
 // Web-`accept` für Bild-/Galerie-Auswahl inkl. PDF (Scan-Flow erlaubt PDF in der Galerie-Auswahl).
 export const IMAGE_WEB_ACCEPT = 'image/*';

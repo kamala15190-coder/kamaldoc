@@ -69,7 +69,10 @@
     "requestNewLink": "Запросить новую ссылку",
     "setNewPassword": "Сохранить пароль",
     "saving": "Сохранение...",
-    "impressum": "Выходные данные"
+    "impressum": "Выходные данные",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Открытые задачи",
@@ -695,5 +698,15 @@
     "fromGallery": "Выбрать из галереи",
     "uploadFile": "Загрузить файл",
     "cancel": "Отмена"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

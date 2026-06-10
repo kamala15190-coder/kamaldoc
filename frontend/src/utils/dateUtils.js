@@ -7,6 +7,8 @@
  * damit der Browser sie korrekt als UTC parst und in die lokale Zeitzone umrechnet.
  */
 
+import i18n from '../i18n';
+
 /**
  * Stellt sicher dass ein Timestamp als UTC interpretiert wird.
  * - Wenn bereits Timezone-Info vorhanden → unverändert
@@ -60,4 +62,19 @@ export function formatLocalDate(timestamp, locale = 'de-AT') {
 export function parseUTC(timestamp) {
   if (!timestamp) return null;
   return new Date(ensureUTC(timestamp));
+}
+
+/**
+ * Formatiert einen Betrag als Währung in der aktuellen App-Sprache.
+ * Währung bleibt EUR; nur das Zahlen-/Trennzeichen-Format folgt der Locale.
+ * Liest die aktive Sprache global aus i18next, damit Aufrufer nichts durchreichen müssen.
+ */
+export function formatCurrency(value, currency = 'EUR') {
+  const n = Number(value || 0);
+  const locale = i18n?.language || 'de';
+  try {
+    return n.toLocaleString(locale, { style: 'currency', currency });
+  } catch {
+    return n.toLocaleString('de-DE', { style: 'currency', currency });
+  }
 }

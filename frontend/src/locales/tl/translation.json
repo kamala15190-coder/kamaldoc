@@ -69,7 +69,10 @@
     "requestNewLink": "Humiling ng bagong link",
     "setNewPassword": "I-save ang password",
     "saving": "Nagse-save...",
-    "impressum": "Legal Notice"
+    "impressum": "Legal Notice",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Bukas na gawain",
@@ -695,5 +698,15 @@
     "fromGallery": "Pumili mula sa galerya",
     "uploadFile": "Mag-upload ng file",
     "cancel": "Kanselahin"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

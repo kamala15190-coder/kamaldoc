@@ -69,7 +69,10 @@
     "requestNewLink": "Begär ny länk",
     "setNewPassword": "Spara lösenord",
     "saving": "Sparar...",
-    "impressum": "Ansvarig utgivare"
+    "impressum": "Ansvarig utgivare",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Öppna uppgifter",
@@ -695,5 +698,15 @@
     "fromGallery": "Välj från galleriet",
     "uploadFile": "Ladda upp fil",
     "cancel": "Avbryt"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import fitz  # PyMuPDF
 import stripe
-from fastapi import Depends, FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, StreamingResponse
 from PIL import Image
@@ -142,12 +142,26 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         "/api/push-token": 10,
     }
 
+    # NB: In-memory buckets are per-process. The deployment runs single-worker
+    # (uvicorn without --workers); with multiple workers the effective limit would
+    # be limit × worker count. Move to Redis/slowapi before scaling horizontally.
     def __init__(self, app, max_requests: int = 200, window_seconds: int = 60):
         super().__init__(app)
         self.max_requests = max_requests
         self.window_seconds = window_seconds
         self.requests: dict[str, list] = defaultdict(list)
         self.path_requests: dict[str, list] = defaultdict(list)
+        self._gc_counter = 0
+
+    def _maybe_gc(self):
+        """Drop empty buckets periodically so the dicts don't grow unbounded with
+        every distinct IP/path key ever seen."""
+        self._gc_counter += 1
+        if self._gc_counter < 1000:
+            return
+        self._gc_counter = 0
+        self.requests = defaultdict(list, {k: v for k, v in self.requests.items() if v})
+        self.path_requests = defaultdict(list, {k: v for k, v in self.path_requests.items() if v})
 
     def _cors_headers(self, request: Request) -> dict:
         origin = request.headers.get("origin", "")
@@ -193,6 +207,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 headers=self._cors_headers(request),
             )
         self.requests[client_ip].append(now)
+        self._maybe_gc()
         return await call_next(request)
 
 
@@ -440,123 +455,6 @@ async def google_callback(code: str = None, state: str = "", error: str = None):
     return RedirectResponse(url=redirect_url)
 
 
-# --- Gmail OAuth Token-Exchange (server-side, client_secret bleibt geheim) ---
-
-
-class GmailTokenExchangeRequest(BaseModel):
-    code: str
-    code_verifier: str
-    redirect_uri: str
-
-
-class GmailTokenRefreshRequest(BaseModel):
-    refresh_token: str
-
-
-@app.post("/api/auth/gmail/token-exchange")
-async def gmail_token_exchange(
-    body: GmailTokenExchangeRequest,
-    user_id: str = Depends(get_current_user),
-):
-    """Exchange a Gmail OAuth authorization code for access+refresh tokens.
-    Runs server-side so that GMAIL_CLIENT_SECRET is never exposed to the client.
-    PKCE (code_verifier) is forwarded for additional security."""
-    import httpx as _httpx
-
-    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
-        raise HTTPException(status_code=503, detail="Gmail OAuth not configured on server")
-
-    async with _httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": body.code,
-                "client_id": GMAIL_CLIENT_ID,
-                "client_secret": GMAIL_CLIENT_SECRET,
-                "redirect_uri": body.redirect_uri,
-                "grant_type": "authorization_code",
-                "code_verifier": body.code_verifier,
-            },
-        )
-
-    if not resp.is_success:
-        detail = ""
-        try:
-            err = resp.json()
-            detail = err.get("error_description") or err.get("error") or ""
-        except Exception:
-            pass
-        logger.error(f"Gmail token exchange failed ({resp.status_code}): {detail}")
-        raise HTTPException(status_code=400, detail=f"Token exchange failed: {detail}" if detail else "Token exchange failed")
-
-    token_data = resp.json()
-    access_token = token_data.get("access_token", "")
-
-    # Fetch the user's Gmail address from the Gmail profile endpoint.
-    # We only request gmail.readonly scope (no openid/email), so there is no
-    # id_token. The /gmail/v1/users/me/profile endpoint is available with
-    # gmail.readonly and returns the emailAddress directly.
-    email = ""
-    if access_token:
-        try:
-            async with _httpx.AsyncClient(timeout=10) as gclient:
-                profile_resp = await gclient.get(
-                    "https://www.googleapis.com/gmail/v1/users/me/profile",
-                    headers={"Authorization": f"Bearer {access_token}"},
-                )
-            if profile_resp.is_success:
-                email = profile_resp.json().get("emailAddress", "")
-        except Exception as e:
-            logger.warning(f"Could not fetch Gmail profile: {e}")
-
-    return {
-        "access_token": access_token,
-        "refresh_token": token_data.get("refresh_token"),
-        "expires_in": token_data.get("expires_in", 3600),
-        "email": email,
-    }
-
-
-@app.post("/api/auth/gmail/token-refresh")
-async def gmail_token_refresh(
-    body: GmailTokenRefreshRequest,
-    user_id: str = Depends(get_current_user),
-):
-    """Refresh a Gmail access token server-side so client_secret stays secure."""
-    import httpx as _httpx
-
-    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET:
-        raise HTTPException(status_code=503, detail="Gmail OAuth not configured on server")
-
-    async with _httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "client_id": GMAIL_CLIENT_ID,
-                "client_secret": GMAIL_CLIENT_SECRET,
-                "grant_type": "refresh_token",
-                "refresh_token": body.refresh_token,
-            },
-        )
-
-    if not resp.is_success:
-        detail = ""
-        try:
-            err = resp.json()
-            detail = err.get("error_description") or err.get("error") or ""
-        except Exception:
-            pass
-        logger.warning(f"Gmail token refresh failed ({resp.status_code}): {detail}")
-        raise HTTPException(status_code=401, detail="Token refresh failed")
-
-    token_data = resp.json()
-    return {
-        "access_token": token_data.get("access_token"),
-        "refresh_token": token_data.get("refresh_token") or body.refresh_token,
-        "expires_in": token_data.get("expires_in", 3600),
-    }
-
-
 @app.get("/auth/gmail/callback")
 async def gmail_oauth_callback_relay(
     code: str = None,
@@ -568,25 +466,19 @@ async def gmail_oauth_callback_relay(
 
     Both platforms use this single HTTPS endpoint as redirect_uri so Google
     never rejects it (custom-scheme URIs are not accepted by Web Application
-    clients). The backend exchanges the code with client_secret, then routes
-    back to the right destination based on the state prefix:
-
-      native:<uuid>  →  at.kamaldoc.app://email-callback/gmail?gmail_result=…
-      <uuid>         →  https://kdoc.at/email-callback/gmail#gmail_result=…
-
-    Web result lives in the hash fragment (not sent to servers).
-    Native result lives in query params (hash may be stripped on some Android).
+    clients). The backend exchanges the code with client_secret, persists the
+    tokens encrypted server-side, and bounces back a success marker only —
+    tokens never travel back to the client. A callback without a valid
+    server-issued connector state is rejected (no token leak, CSRF-safe).
     """
-    import base64
     import json
     import httpx as _httpx
     from urllib.parse import quote as _quote
 
-    # New server-side connector flow: the state is an opaque token we stored in
-    # oauth_states with a JSON payload carrying the authenticated user_id. If we
-    # find such a payload, tokens are persisted encrypted server-side and never
-    # travel back to the client. Otherwise we fall back to the legacy relay (still
-    # used by the deployed native app until it updates).
+    # Server-side connector flow: the state is an opaque token we stored in
+    # oauth_states with a JSON payload carrying the authenticated user_id. Only a
+    # matching payload is accepted; tokens are persisted encrypted server-side and
+    # never travel back to the client.
     connector_ctx = None
     if state:
         payload_str = await _pop_oauth_state_payload(state)
@@ -691,26 +583,11 @@ async def gmail_oauth_callback_relay(
             status_code=302,
         )
 
-    # --- Legacy relay path (deployed native app): tokens travel back to client ---
-    result_b64 = base64.urlsafe_b64encode(
-        json.dumps({
-            "state": state,
-            "email": email,
-            "access_token": access_token,
-            "refresh_token": token_data.get("refresh_token"),
-            "expires_in": token_data.get("expires_in", 3600),
-        }).encode()
-    ).decode()
-
-    if is_native:
-        return RedirectResponse(
-            url=f"at.kamaldoc.app://email-callback/gmail?gmail_result={result_b64}",
-            status_code=302,
-        )
-    return RedirectResponse(
-        url=f"{FRONTEND_URL}/email-callback/gmail#gmail_result={result_b64}",
-        status_code=302,
-    )
+    # No valid connector state → the request did not originate from our server-side
+    # flow (forged or expired). NEVER bounce tokens back to the client (that would
+    # leak the refresh token via the URL and skip CSRF validation). Reject cleanly.
+    logger.warning("Gmail OAuth relay: callback without valid connector state — rejected")
+    return _redirect_error("invalid_state")
 
 
 @app.get("/auth/outlook/callback")
@@ -957,19 +834,27 @@ async def run_analysis(doc_id: int, image_path: str):
             num_pages = await asyncio.to_thread(pdf_page_count, original_path)
             logger.info(f"[Analyse] PDF mit {num_pages} Seiten erkannt: {original_path}")
             if num_pages > 1:
-                # Multi-page PDF: OCR each page separately, combine text
+                # Multi-page PDF: OCR each page separately, combine text. Cap the
+                # page count so a huge PDF can't fan out into hundreds of OCR calls
+                # (cost/latency/rate-limit). Mirrors ocr_file_multipage's cap.
+                MAX_ANALYSIS_PAGES = 30
+                pages_to_ocr = min(num_pages, MAX_ANALYSIS_PAGES)
                 all_ocr_texts = []
-                for i in range(num_pages):
+                for i in range(pages_to_ocr):
                     page_img_path = str(ORIGINALS_DIR / f"{Path(original_path).stem}_page{i}.jpg")
                     await asyncio.to_thread(pdf_page_to_image, original_path, i, page_img_path)
                     page_text = await ocr_image(page_img_path)
                     all_ocr_texts.append(f"--- Seite {i + 1} ---\n{page_text}")
-                    logger.info(f"[Analyse] Seite {i + 1}/{num_pages} OCR: {len(page_text)} Zeichen")
+                    logger.info(f"[Analyse] Seite {i + 1}/{pages_to_ocr} OCR: {len(page_text)} Zeichen")
                     # Clean up temp page image
                     try:
                         await asyncio.to_thread(os.remove, page_img_path)
                     except OSError:
                         pass
+                if num_pages > pages_to_ocr:
+                    all_ocr_texts.append(
+                        f"--- [Hinweis: Dokument auf die ersten {pages_to_ocr} von {num_pages} Seiten gekürzt] ---"
+                    )
                 combined_ocr = "\n\n".join(all_ocr_texts)
                 logger.info(f"[Analyse] Gesamt-OCR für {num_pages} Seiten: {len(combined_ocr)} Zeichen")
                 result = await analyze_document_from_text(combined_ocr)
@@ -1320,9 +1205,16 @@ async def list_documents(
     params = [user_id]
 
     if search:
-        query += " AND (absender LIKE ? OR empfaenger LIKE ? OR zusammenfassung LIKE ? OR volltext LIKE ? OR dateiname LIKE ?)"
-        count_query += " AND (absender LIKE ? OR empfaenger LIKE ? OR zusammenfassung LIKE ? OR volltext LIKE ? OR dateiname LIKE ?)"
-        s = f"%{search}%"
+        like_clause = (
+            " AND (absender LIKE ? ESCAPE '\\' OR empfaenger LIKE ? ESCAPE '\\' "
+            "OR zusammenfassung LIKE ? ESCAPE '\\' OR volltext LIKE ? ESCAPE '\\' "
+            "OR dateiname LIKE ? ESCAPE '\\')"
+        )
+        query += like_clause
+        count_query += like_clause
+        # Escape LIKE wildcards so the term is matched literally (e.g. "100%").
+        esc = search.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        s = f"%{esc}%"
         params.extend([s, s, s, s, s])
 
     if kategorie:
@@ -1376,6 +1268,51 @@ async def list_documents(
         await db.close()
 
 
+# NB: must be declared BEFORE /api/documents/{doc_id} so "stats" isn't matched as an id.
+@app.get("/api/documents/stats")
+async def documents_stats(user_id: str = Depends(get_current_user)):
+    """Aggregate counts across ALL of a user's documents (not just the loaded page),
+    so the Dashboard tiles show correct totals beyond the first 20 documents."""
+    from datetime import timedelta
+
+    db = await get_db()
+    try:
+        cur = await db.execute(
+            "SELECT kategorie, COUNT(*) AS cnt FROM documents WHERE user_id = ? GROUP BY kategorie",
+            (user_id,),
+        )
+        by_category = {(row["kategorie"] or "sonstiges"): row["cnt"] for row in await cur.fetchall()}
+
+        cur = await db.execute(
+            "SELECT COUNT(*) AS total, "
+            "SUM(CASE WHEN handlung_erforderlich = 1 AND handlung_erledigt = 0 THEN 1 ELSE 0 END) AS open_count, "
+            "SUM(CASE WHEN handlung_erledigt = 1 THEN 1 ELSE 0 END) AS done_count "
+            "FROM documents WHERE user_id = ?",
+            (user_id,),
+        )
+        row = await cur.fetchone()
+
+        # "this week" = uploaded since Monday 00:00 (hochgeladen_am is a reliable
+        # 'YYYY-MM-DD HH:MM:SS' localtime string, unlike the LLM-extracted `datum`).
+        now = datetime.now()
+        start_of_week = (now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0)
+        cur = await db.execute(
+            "SELECT COUNT(*) AS cnt FROM documents WHERE user_id = ? AND hochgeladen_am >= ?",
+            (user_id, start_of_week.strftime("%Y-%m-%d %H:%M:%S")),
+        )
+        week_row = await cur.fetchone()
+
+        return {
+            "total": (row["total"] if row else 0) or 0,
+            "open": (row["open_count"] if row else 0) or 0,
+            "done": (row["done_count"] if row else 0) or 0,
+            "this_week": (week_row["cnt"] if week_row else 0) or 0,
+            "by_category": by_category,
+        }
+    finally:
+        await db.close()
+
+
 @app.get("/api/documents/{doc_id}")
 async def get_document(doc_id: int, user_id: str = Depends(get_current_user)):
     db = await get_db()
@@ -1389,8 +1326,61 @@ async def get_document(doc_id: int, user_id: str = Depends(get_current_user)):
         await db.close()
 
 
+# --- Short-lived single-use download tickets (native file open) ---
+# The WebView can't trigger a blob download, so native opens the file URL in the
+# system browser. Putting the JWT in that URL would leak it into history/logs, so
+# instead the client first POSTs for a single-use ticket (60s TTL) and opens the
+# URL with ?ticket=. In-memory store — fine for the single-worker deployment.
+_file_tickets: dict[str, tuple] = {}
+
+
+def _issue_file_ticket(user_id: str, doc_id: int) -> str:
+    import secrets
+
+    now = time.time()
+    for k in [k for k, v in _file_tickets.items() if v[2] < now]:
+        _file_tickets.pop(k, None)
+    token = secrets.token_urlsafe(24)
+    _file_tickets[token] = (user_id, doc_id, now + 60)
+    return token
+
+
+def _redeem_file_ticket(ticket: str, doc_id: int) -> str | None:
+    entry = _file_tickets.pop(ticket, None)  # single-use
+    if not entry:
+        return None
+    uid, tdoc, exp = entry
+    if exp < time.time() or tdoc != doc_id:
+        return None
+    return uid
+
+
+@app.post("/api/documents/{doc_id}/file-ticket")
+async def create_document_file_ticket(doc_id: int, user_id: str = Depends(get_current_user)):
+    """Issue a single-use, 60s download ticket for the native system-browser open."""
+    db = await get_db()
+    try:
+        cursor = await db.execute("SELECT id FROM documents WHERE id = ? AND user_id = ?", (doc_id, user_id))
+        if not await cursor.fetchone():
+            raise HTTPException(404, "Dokument nicht gefunden")
+    finally:
+        await db.close()
+    return {"ticket": _issue_file_ticket(user_id, doc_id)}
+
+
 @app.get("/api/documents/{doc_id}/file")
-async def get_document_file(doc_id: int, user_id: str = Depends(get_current_user)):
+async def get_document_file(
+    doc_id: int,
+    ticket: str | None = Query(None),
+    authorization: str | None = Header(None),
+):
+    # Auth via single-use ticket (native browser open) OR the normal bearer header.
+    if ticket:
+        user_id = _redeem_file_ticket(ticket, doc_id)
+        if not user_id:
+            raise HTTPException(401, "Ungültiges oder abgelaufenes Ticket")
+    else:
+        user_id = await get_current_user(authorization)
     db = await get_db()
     try:
         cursor = await db.execute(
@@ -2284,6 +2274,8 @@ async def translate_document(
 @app.delete("/api/account")
 async def delete_account(user_id: str = Depends(get_current_user)):
     """Delete user account and all associated data."""
+    import json
+
     db = await get_db()
     try:
         # Delete user files from disk (originals + thumbnails)
@@ -2302,6 +2294,46 @@ async def delete_account(user_id: str = Depends(get_current_user)):
             if thumb.exists():
                 os.remove(thumb)
 
+        # Delete Doka chat-attachment files before the conversation rows cascade
+        # them away. attachments is a JSON dict {"stored": "<uuid>.<ext>", ...}.
+        try:
+            doka_cursor = await db.execute(
+                """SELECT m.attachments FROM doka_messages m
+                   JOIN doka_conversations c ON m.conversation_id = c.id
+                   WHERE c.user_id = ? AND m.attachments IS NOT NULL""",
+                (user_id,),
+            )
+            for row in await doka_cursor.fetchall():
+                try:
+                    meta = json.loads(row["attachments"])
+                    stored = (meta or {}).get("stored")
+                    if stored:
+                        fpath = DOKA_ATTACHMENTS_DIR / Path(stored).name
+                        if fpath.exists():
+                            os.remove(fpath)
+                except (json.JSONDecodeError, TypeError, OSError):
+                    pass
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(f"Doka-Anhang-Cleanup bei Account-Löschung fehlgeschlagen: {exc}")
+
+        # Delete support-ticket attachment files (ticket_messages.file_path = safe_name)
+        try:
+            tf_cursor = await db.execute(
+                """SELECT tm.file_path FROM ticket_messages tm
+                   JOIN support_tickets st ON tm.ticket_id = st.id
+                   WHERE st.user_id = ? AND tm.file_path IS NOT NULL""",
+                (user_id,),
+            )
+            for row in await tf_cursor.fetchall():
+                try:
+                    fpath = TICKET_FILES_DIR / Path(row["file_path"]).name
+                    if fpath.exists():
+                        os.remove(fpath)
+                except OSError:
+                    pass
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(f"Ticket-Datei-Cleanup bei Account-Löschung fehlgeschlagen: {exc}")
+
         # Delete document-linked rows
         await db.execute(
             "DELETE FROM antworten WHERE document_id IN (SELECT id FROM documents WHERE user_id = ?)", (user_id,)
@@ -2315,6 +2347,9 @@ async def delete_account(user_id: str = Depends(get_current_user)):
             (user_id,),
         )
         await db.execute("DELETE FROM todos WHERE user_id = ?", (user_id,))
+        # Doka conversations + support tickets: child rows (messages) cascade via FK.
+        await db.execute("DELETE FROM doka_conversations WHERE user_id = ?", (user_id,))
+        await db.execute("DELETE FROM support_tickets WHERE user_id = ?", (user_id,))
         # Delete user-owned rows
         for table in [
             "documents",
@@ -2323,6 +2358,8 @@ async def delete_account(user_id: str = Depends(get_current_user)):
             "user_einstellungen",
             "usage_counters",
             "subscriptions",
+            "connector_accounts",
+            "phishing_checks",
         ]:
             await db.execute(f"DELETE FROM {table} WHERE user_id = ?", (user_id,))
         await db.commit()
@@ -3475,6 +3512,7 @@ async def accept_ticket(ticket_id: int, user_id: str = Depends(get_current_user)
 @app.get("/api/tickets/files/{filename}")
 async def get_ticket_file(filename: str, user_id: str = Depends(get_current_user)):
     """Serve a ticket attachment file. Accessible by ticket owner or any admin."""
+    filename = Path(filename).name  # defense-in-depth: strip any path components
     fpath = TICKET_FILES_DIR / filename
     if not fpath.exists():
         raise HTTPException(404, "Datei nicht gefunden.")
@@ -3760,9 +3798,26 @@ async def get_doka_conversation(conv_id: int, user_id: str = Depends(get_current
 
 @app.delete("/api/doka/conversations/{conv_id}")
 async def delete_doka_conversation(conv_id: int, user_id: str = Depends(get_current_user)):
+    import json
+
     db = await get_db()
     try:
         await _doka_get_conversation(db, conv_id, user_id)
+        # Remove attachment files before the message rows cascade away.
+        att_cursor = await db.execute(
+            "SELECT attachments FROM doka_messages WHERE conversation_id = ? AND attachments IS NOT NULL",
+            (conv_id,),
+        )
+        for row in await att_cursor.fetchall():
+            try:
+                meta = json.loads(row["attachments"])
+                stored = (meta or {}).get("stored")
+                if stored:
+                    fpath = DOKA_ATTACHMENTS_DIR / Path(stored).name
+                    if fpath.exists():
+                        os.remove(fpath)
+            except (json.JSONDecodeError, TypeError, OSError):
+                pass
         await db.execute("DELETE FROM doka_conversations WHERE id = ? AND user_id = ?", (conv_id, user_id))
         await db.commit()
         return {"status": "ok"}
@@ -3781,6 +3836,12 @@ async def _doka_extract_attachment_text(upload: UploadFile) -> tuple[dict | None
         raise HTTPException(400, "Dateityp nicht unterstützt (jpg, png, pdf)")
 
     content = await upload.read()
+    if len(content) > 25 * 1024 * 1024:
+        raise HTTPException(413, "Datei zu groß. Maximal 25 MB erlaubt.")
+    # Same defence-in-depth as /api/upload: verify magic bytes + real decode, so a
+    # renamed/corrupt file is rejected before it lands on disk and goes into OCR.
+    if not await asyncio.to_thread(_looks_like_allowed_upload, content, ext):
+        raise HTTPException(400, "Ungültige oder beschädigte Datei")
     safe_name = f"{uuid.uuid4().hex}{ext}"
     saved_path = DOKA_ATTACHMENTS_DIR / safe_name
     with open(saved_path, "wb") as f:
@@ -3841,6 +3902,13 @@ async def doka_send_message(
     finally:
         await db.close()
 
+    # Cap history so long conversations don't grow unbounded (linear token cost +
+    # context-window pressure). Keep the most recent turns (tail), which includes
+    # the just-sent user message at history[-1].
+    MAX_HISTORY_MESSAGES = 20
+    if len(history) > MAX_HISTORY_MESSAGES:
+        history = history[-MAX_HISTORY_MESSAGES:]
+
     # Augment the just-sent user message with the attachment's OCR text for context.
     if attachment_text and history and history[-1]["role"] == "user":
         history[-1]["content"] = (
@@ -3851,42 +3919,64 @@ async def doka_send_message(
         import json as _json
 
         final_content, final_tools, t_in, t_out = "", [], 0, 0
+        streamed = ""           # accumulated deltas — so a client abort still keeps the partial answer
+        persisted = {"done": False}
+
+        async def _persist():
+            if persisted["done"]:
+                return
+            persisted["done"] = True
+            content_to_save = final_content or streamed
+            if not content_to_save and not final_tools:
+                return  # nothing produced (e.g. immediate error) — don't write an empty turn
+            db2 = await get_db()
+            try:
+                await db2.execute(
+                    "INSERT INTO doka_messages (conversation_id, role, content, tool_calls, tokens_in, tokens_out) "
+                    "VALUES (?, ?, ?, ?, ?, ?)",
+                    (
+                        conv_id, "assistant", content_to_save,
+                        _json.dumps(final_tools, ensure_ascii=False) if final_tools else None,
+                        t_in, t_out,
+                    ),
+                )
+                await db2.execute(
+                    "UPDATE doka_conversations SET updated_at = datetime('now','localtime') WHERE id = ?", (conv_id,)
+                )
+                await db2.commit()
+            finally:
+                await db2.close()
+            try:
+                await increment_usage(user_id, "doka_messages_month")
+                # Token-Kontingent: tatsächlich verbrauchte Tokens (Ein- + Ausgabe) abrechnen.
+                await increment_usage(user_id, "doka_tokens_month", (t_in or 0) + (t_out or 0))
+            except Exception:  # noqa: BLE001
+                pass
+
         try:
             async for ev in stream_doka_response(user_id, history, lawyer_mode, language):
-                if ev.get("type") == "done":
+                etype = ev.get("type")
+                if etype == "delta":
+                    streamed += ev.get("content", "")
+                elif etype == "done":
                     final_content = ev.get("content", "")
                     final_tools = ev.get("tool_calls", [])
                     t_in, t_out = ev.get("tokens_in", 0), ev.get("tokens_out", 0)
                 yield f"data: {_json.dumps(ev, ensure_ascii=False)}\n\n"
-        except Exception as exc:  # noqa: BLE001
-            logger.exception("Doka stream failed")
-            yield f"data: {_json.dumps({'type': 'error', 'message': str(exc)})}\n\n"
-            return
-
-        # Persist the assistant turn + count usage once the stream is complete.
-        db2 = await get_db()
-        try:
-            await db2.execute(
-                "INSERT INTO doka_messages (conversation_id, role, content, tool_calls, tokens_in, tokens_out) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
-                (
-                    conv_id, "assistant", final_content,
-                    _json.dumps(final_tools, ensure_ascii=False) if final_tools else None,
-                    t_in, t_out,
-                ),
-            )
-            await db2.execute(
-                "UPDATE doka_conversations SET updated_at = datetime('now','localtime') WHERE id = ?", (conv_id,)
-            )
-            await db2.commit()
-        finally:
-            await db2.close()
-        try:
-            await increment_usage(user_id, "doka_messages_month")
-            # Token-Kontingent: tatsächlich verbrauchte Tokens (Ein- + Ausgabe) abrechnen.
-            await increment_usage(user_id, "doka_tokens_month", (t_in or 0) + (t_out or 0))
         except Exception:  # noqa: BLE001
-            pass
+            logger.exception("Doka stream failed")
+            # Never leak internal error text to the client; send a generic code.
+            yield f"data: {_json.dumps({'type': 'error', 'code': 'stream_failed'})}\n\n"
+        finally:
+            # Persist whatever was produced — even on a client disconnect — so the
+            # user's question never sits answerless. Shielded so a cancellation
+            # mid-write still lets the DB insert complete in the background.
+            try:
+                await asyncio.shield(_persist())
+            except asyncio.CancelledError:
+                raise
+            except Exception:  # noqa: BLE001
+                logger.exception("Doka persist failed")
 
     return StreamingResponse(
         event_stream(),
@@ -3985,14 +4075,6 @@ class ImapConnectRequest(BaseModel):
     port: int | None = 993
 
 
-class OAuthStoreRequest(BaseModel):
-    connector_type: str = "gmail"
-    display_name: str | None = None
-    email: str
-    access_token: str
-    refresh_token: str | None = None
-
-
 class ConnectorPatch(BaseModel):
     display_name: str | None = None
     status: str | None = None
@@ -4040,21 +4122,6 @@ async def connectors_imap_connect(payload: ImapConnectRequest, user_id: str = De
         )
     except ValueError as exc:
         raise HTTPException(400, str(exc))
-    return {"id": account_id, "status": "active"}
-
-
-@app.post("/api/connectors/{connector_type}/oauth/store")
-async def connectors_oauth_store(
-    connector_type: str, payload: OAuthStoreRequest, user_id: str = Depends(get_current_user)
-):
-    """Bridge: persist OAuth tokens obtained via the client PKCE flow, encrypted server-side."""
-    from connectors_service import add_oauth_account
-    from crypto import encryption_available
-    if not encryption_available():
-        raise HTTPException(503, "Verschlüsselung nicht konfiguriert (CONNECTOR_MASTER_KEK fehlt).")
-    await check_connector_limit(user_id)
-    tokens = {"access_token": payload.access_token, "refresh_token": payload.refresh_token}
-    account_id = await add_oauth_account(user_id, connector_type, payload.display_name, payload.email, tokens)
     return {"id": account_id, "status": "active"}
 
 

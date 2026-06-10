@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  KamalDoc talks exclusively HTTPS to api.kdoc.at, so deny all cleartext traffic
+  globally. (Replaces a stale config that only blocked the unrelated
+  api.schulbox.at domain while leaving cleartext permitted everywhere else.)
+-->
 <network-security-config>
-  <domain-config cleartextTrafficPermitted="false">
-    <domain includeSubdomains="true">api.schulbox.at</domain>
-  </domain-config>
+  <base-config cleartextTrafficPermitted="false" />
 </network-security-config>

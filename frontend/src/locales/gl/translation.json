@@ -69,7 +69,10 @@
     "requestNewLink": "Solicitar nova ligazón",
     "setNewPassword": "Gardar contrasinal",
     "saving": "Gardando...",
-    "impressum": "Información legal"
+    "impressum": "Información legal",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Tarefas pendentes",
@@ -695,5 +698,15 @@
     "fromGallery": "Escoller da galería",
     "uploadFile": "Subir ficheiro",
     "cancel": "Cancelar"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

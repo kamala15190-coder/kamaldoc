@@ -69,7 +69,10 @@
     "requestNewLink": "ขอลิงก์ใหม่",
     "setNewPassword": "บันทึกรหัสผ่าน",
     "saving": "กำลังบันทึก...",
-    "impressum": "ข้อมูลผู้จัดทำ"
+    "impressum": "ข้อมูลผู้จัดทำ",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "งานที่เปิดอยู่",
@@ -695,5 +698,15 @@
     "fromGallery": "เลือกจากแกลเลอรี",
     "uploadFile": "อัปโหลดไฟล์",
     "cancel": "ยกเลิก"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

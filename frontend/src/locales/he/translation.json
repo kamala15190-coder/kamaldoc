@@ -69,7 +69,10 @@
     "requestNewLink": "בקש קישור חדש",
     "setNewPassword": "שמור סיסמה",
     "saving": "שומר...",
-    "impressum": "פרטי המוציא לאור"
+    "impressum": "פרטי המוציא לאור",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "משימות פתוחות",
@@ -695,5 +698,15 @@
     "fromGallery": "בחירה מהגלריה",
     "uploadFile": "העלאת קובץ",
     "cancel": "ביטול"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

@@ -22,15 +22,15 @@ if (Capacitor.isNativePlatform()) {
     import('@capacitor/app').then(({ App: CapApp }) => {
       CapApp.addListener('appUrlOpen', (event) => {
         const url = event.url || '';
+        // The app uses BrowserRouter (path-based), so a hash like '#/profil?...'
+        // is meaningless to the router and lands the user on '/'. Navigate via the
+        // real path+query (a href change reloads the SPA at that route).
         if (url.includes('checkout-success')) {
-          // Close in-app browser and navigate to profile
           import('@capacitor/browser').then(({ Browser }) => Browser.close().catch(() => {}));
-          window.location.hash = '#/profil?checkout=success';
-          window.location.reload();
+          window.location.href = '/profil?checkout=success';
         } else if (url.includes('checkout-cancel')) {
           import('@capacitor/browser').then(({ Browser }) => Browser.close().catch(() => {}));
-          window.location.hash = '#/pricing?checkout=cancel';
-          window.location.reload();
+          window.location.href = '/pricing?checkout=cancel';
         }
       });
     }).catch(() => {})

@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="/KDoc-Applogo.png" />
     <link rel="apple-touch-icon" href="/KDoc-Applogo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0a0f1a" />
+    <meta name="theme-color" content="#0E0F12" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="KamalDoc" />
@@ -18,7 +18,9 @@
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // PWA service worker is for the web build only — not the native Capacitor
+      // WebView (where it serves no purpose and can interfere with asset loading).
+      if ('serviceWorker' in navigator && !window.Capacitor) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });

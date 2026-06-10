@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Push Notifications + Sign in with Apple entitlements.
+
+	  This file is provided ready-to-use, but it only takes effect once it is
+	  referenced by the Xcode target (Build Settings → "Code Signing Entitlements"
+	  = App/App.entitlements) AND the matching capabilities are enabled in Xcode
+	  (Signing & Capabilities → "Push Notifications" + "Sign in with Apple"), which
+	  also provisions them on the Apple Developer App ID. Enabling the capability in
+	  Xcode is the supported path — it wires CODE_SIGN_ENTITLEMENTS for you.
+
+	  aps-environment is "development" here; Xcode/Archive uses the production APNs
+	  environment automatically for App Store/TestFlight builds.
+	-->
+	<key>aps-environment</key>
+	<string>development</string>
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>

@@ -162,8 +162,14 @@ async def _tool_search_documents(user_id: str, args: dict) -> dict:
         sql = "SELECT id, absender, datum, kategorie, zusammenfassung, faelligkeitsdatum FROM documents WHERE user_id = ?"
         params = [user_id]
         if query:
-            sql += " AND (absender LIKE ? OR empfaenger LIKE ? OR zusammenfassung LIKE ? OR volltext LIKE ? OR dateiname LIKE ?)"
-            s = f"%{query}%"
+            sql += (
+                " AND (absender LIKE ? ESCAPE '\\' OR empfaenger LIKE ? ESCAPE '\\' "
+                "OR zusammenfassung LIKE ? ESCAPE '\\' OR volltext LIKE ? ESCAPE '\\' "
+                "OR dateiname LIKE ? ESCAPE '\\')"
+            )
+            # Escape LIKE wildcards so e.g. "100%" is searched literally, not as a wildcard.
+            esc = query.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+            s = f"%{esc}%"
             params += [s, s, s, s, s]
         sql += " ORDER BY hochgeladen_am DESC LIMIT ?"
         params.append(limit)

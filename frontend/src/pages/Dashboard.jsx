@@ -6,12 +6,12 @@ import {
   Minus, Settings, Archive, DollarSign, Undo2, Zap, Crown, Plus, ShieldAlert
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getDocuments, updateDocument, getExpenseSummary, getOpenTodos, updateTodo as apiUpdateTodo } from '../api';
+import { getDocuments, getDocumentStats, updateDocument, getExpenseSummary, getOpenTodos, updateTodo as apiUpdateTodo } from '../api';
 import AuthImage from '../components/AuthImage';
 import Skeleton from '../components/Skeleton';
 import { useSubscription } from '../hooks/useSubscription';
 import { useAuth } from '../hooks/useAuth';
-import { formatLocalDate, parseUTC } from '../utils/dateUtils';
+import { formatLocalDate, parseUTC, formatCurrency } from '../utils/dateUtils';
 import { purchasesAllowed } from '../utils/platform';
 import { DndContext, closestCenter, MouseSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
@@ -32,26 +32,6 @@ const KATEGORIE_ICON = {
   vertrag: { bg: 'var(--rose-soft)', color: 'var(--rose)' },
   sonstiges: { bg: 'var(--chip-bg)', color: 'var(--text-muted)' },
 };
-
-const SUBLINES_DE = [
-  "Sch\u00f6n, dass du da bist \ud83d\udc4b",
-  "Willkommen zur\u00fcck \u2728",
-  "Alles im Blick. Los geht\u2019s \ud83d\ude80",
-  "Deine Dokumente warten \ud83d\udcc4",
-  "Heute wird produktiv \ud83d\udcaa",
-  "Gut organisiert ist halb gewonnen \ud83d\udccb",
-  "Dein digitales B\u00fcro wartet \ud83d\uddc2\ufe0f",
-];
-
-const SUBLINES_EN = [
-  "Nice to see you \ud83d\udc4b",
-  "Welcome back \u2728",
-  "Everything at a glance \ud83d\ude80",
-  "Your documents await \ud83d\udcc4",
-  "Let\u2019s be productive \ud83d\udcaa",
-  "Well organized is half the battle \ud83d\udccb",
-  "Your digital office awaits \ud83d\uddc2\ufe0f",
-];
 
 const STORAGE_KEY_PREFIX = 'kamaldoc_dashboard_layout';
 const ALL_SECTORS = [
@@ -108,6 +88,7 @@ export default function Dashboard() {
   const [confirmHide, setConfirmHide] = useState(null);
   const [archivedDocs, setArchivedDocs] = useState([]);
   const [expenseSummary, setExpenseSummary] = useState(null);
+  const [stats, setStats] = useState(null);
   const { isPaid, isFree } = useSubscription();
 
   const [touchDragging, setTouchDragging] = useState(null);
@@ -187,14 +168,20 @@ export default function Dashboard() {
   const fetchManualTodos = async () => { try { const data = await getOpenTodos(); setManualTodos(data || []); } catch { /* ignore */ } };
   const fetchArchived = async () => { try { const data = await getDocuments({ archiv: true }); setArchivedDocs((data.documents || data).slice(0, 5)); } catch { /* ignore */ } };
   const fetchExpenses = async () => { if (isFree) return; try { const data = await getExpenseSummary({ year: new Date().getFullYear() }); setExpenseSummary(data); } catch { /* ignore */ } };
+  const fetchStats = async () => { try { const data = await getDocumentStats(); setStats(data); } catch { /* ignore */ } };
 
   const hasMore = !search && documents.length < totalDocs;
   // Initial load + category change: re-fetch all. fetchDocs dep intentionally omitted (recreated each render).
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchDocs(); fetchTodos(); fetchManualTodos(); fetchArchived(); fetchExpenses(); }, [kategorie]);
-  // Debounced search: only reacts to `search`. fetchDocs dep intentionally omitted.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { const timer = setTimeout(fetchDocs, 400); return () => clearTimeout(timer); }, [search]);
+  useEffect(() => { fetchDocs(); fetchTodos(); fetchManualTodos(); fetchArchived(); fetchExpenses(); fetchStats(); }, [kategorie]);
+  // Debounced search: only reacts to `search`. Skip the very first run — the
+  // mount effect above already loaded the initial list (avoids a double fetch).
+  const didMountSearch = useRef(false);
+  useEffect(() => {
+    if (!didMountSearch.current) { didMountSearch.current = true; return; }
+    const timer = setTimeout(fetchDocs, 400);
+    return () => clearTimeout(timer);
+  }, [search]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleTodoDone = async (docId) => {
     setDismissingIds(prev => new Set(prev).add(docId));
@@ -204,6 +191,7 @@ export default function Dashboard() {
         setOffeneTodos(prev => prev.filter(d => d.id !== docId));
         setDismissingIds(prev => { const s = new Set(prev); s.delete(docId); return s; });
         fetchDocs();
+        fetchStats();
       }, 500);
     } catch (err) { console.error(err); setDismissingIds(prev => { const s = new Set(prev); s.delete(docId); return s; }); }
   };
@@ -245,15 +233,18 @@ export default function Dashboard() {
   const subline = t(`dashboard.${sublineKeys[new Date().getDate() % sublineKeys.length]}`);
   const dateStr = new Date().toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' });
 
-  // Computed
-  const total = totalDocs;
+  // Computed — prefer server-side aggregates (whole corpus) over the loaded page,
+  // falling back to page-derived counts until the stats request resolves.
+  const total = stats?.total ?? totalDocs;
   const offen = offeneTodos.length;
-  const rechnungen = documents.filter(d => d.kategorie === 'rechnung').length;
-  const briefe = documents.filter(d => d.kategorie === 'brief').length;
-  const erledigtCount = documents.filter(d => d.handlung_erledigt).length;
-  const now = new Date(); const dow = now.getDay() || 7;
-  const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dow + 1); startOfWeek.setHours(0,0,0,0);
-  const thisWeekCount = documents.filter(d => d.datum && parseUTC(d.datum) >= startOfWeek).length;
+  const rechnungen = stats?.by_category?.rechnung ?? documents.filter(d => d.kategorie === 'rechnung').length;
+  const briefe = stats?.by_category?.brief ?? documents.filter(d => d.kategorie === 'brief').length;
+  const erledigtCount = stats?.done ?? documents.filter(d => d.handlung_erledigt).length;
+  const thisWeekCount = stats?.this_week ?? (() => {
+    const now = new Date(); const dow = now.getDay() || 7;
+    const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - dow + 1); startOfWeek.setHours(0, 0, 0, 0);
+    return documents.filter(d => d.datum && parseUTC(d.datum) >= startOfWeek).length;
+  })();
 
   const availableSectors = ALL_SECTORS.filter(s => !visibleSections.some(v => v.id === s.id)).map(s => ({ ...s, locked: s.requiresPlan && !isPaid }));
 
@@ -320,7 +311,7 @@ export default function Dashboard() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: tc.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{todo.absender || '\u2014'}</span>
-                  {todo.betrag != null && todo.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.textMuted, flexShrink: 0 }}>{Number(todo.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
+                  {todo.betrag != null && todo.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.textMuted, flexShrink: 0 }}>{formatCurrency(todo.betrag)}</span>}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 1 }}>
                   <span style={{ fontSize: 11, color: tc.textMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{todo.handlung_beschreibung || '\u2014'}</span>
@@ -508,7 +499,7 @@ export default function Dashboard() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <span style={{ fontSize: 11, color: tc.textMuted }}>{new Date().getFullYear()}</span>
-                  <p style={{ fontSize: 20, fontWeight: 700, color: tc.text, margin: '2px 0 0' }}>{Number(expenseSummary.total || 0).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</p>
+                  <p style={{ fontSize: 20, fontWeight: 700, color: tc.text, margin: '2px 0 0' }}>{formatCurrency(expenseSummary.total || 0)}</p>
                 </div>
                 <Link to="/ausgaben" style={{ fontSize: 12, fontWeight: 600, color: 'var(--amber)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>{t('expenses.title')} <ChevronRight style={{ width: 14, height: 14 }} /></Link>
               </div>
@@ -717,7 +708,7 @@ function DocumentRow({ doc, tc, isLast, delay }) {
   const { t } = useTranslation();
   const catIcon = KATEGORIE_ICON[doc.kategorie] || KATEGORIE_ICON.sonstiges;
   const done = doc.handlung_erledigt;
-  const deadlinePill = getDeadlinePill(doc.deadline, done);
+  const deadlinePill = getDeadlinePill(doc.deadline, done, t);
   return (
     <Link to={`/documents/${doc.id}`} style={{
       display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', textDecoration: 'none',
@@ -750,7 +741,7 @@ function DocumentRow({ doc, tc, isLast, delay }) {
           {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
           {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{formatLocalDate(doc.datum)}</span>}
           {deadlinePill && <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 4, background: deadlinePill.bg, color: deadlinePill.color }}>{deadlinePill.label}</span>}
-          {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
+          {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{formatCurrency(doc.betrag)}</span>}
         </div>
       </div>
       <ChevronRight style={{ width: 14, height: 14, color: tc.textHint, flexShrink: 0 }} />
@@ -758,17 +749,17 @@ function DocumentRow({ doc, tc, isLast, delay }) {
   );
 }
 
-function getDeadlinePill(deadline, done) {
+function getDeadlinePill(deadline, done, t) {
   if (!deadline || done) return null;
   const d = new Date(deadline);
   if (isNaN(d.getTime())) return null;
   const now = new Date();
   const diffDays = Math.ceil((d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
   if (diffDays < 0) {
-    return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: `vor ${Math.abs(diffDays)} T.` };
+    return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: t('deadline.overdue', { count: Math.abs(diffDays) }) };
   }
-  if (diffDays === 0) return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: 'heute' };
-  if (diffDays <= 3) return { bg: 'var(--amber-soft)', color: 'var(--amber)', label: `${diffDays} T.` };
-  if (diffDays <= 14) return { bg: 'var(--success-soft)', color: 'var(--success)', label: `${diffDays} T.` };
+  if (diffDays === 0) return { bg: 'var(--danger-soft)', color: 'var(--danger)', label: t('deadline.today') };
+  if (diffDays <= 3) return { bg: 'var(--amber-soft)', color: 'var(--amber)', label: t('deadline.inDays', { count: diffDays }) };
+  if (diffDays <= 14) return { bg: 'var(--success-soft)', color: 'var(--success)', label: t('deadline.inDays', { count: diffDays }) };
   return null;
 }

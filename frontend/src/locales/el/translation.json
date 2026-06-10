@@ -69,7 +69,10 @@
     "requestNewLink": "Ζητήστε νέο σύνδεσμο",
     "setNewPassword": "Αποθήκευση κωδικού",
     "saving": "Αποθήκευση...",
-    "impressum": "Στοιχεία έκδοσης"
+    "impressum": "Στοιχεία έκδοσης",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Ανοιχτές εργασίες",
@@ -695,5 +698,15 @@
     "fromGallery": "Επιλογή από τη συλλογή",
     "uploadFile": "Μεταφόρτωση αρχείου",
     "cancel": "Ακύρωση"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

@@ -69,7 +69,10 @@
     "requestNewLink": "Kërko lidhje të re",
     "setNewPassword": "Ruaj fjalëkalimin",
     "saving": "Duke ruajtur...",
-    "impressum": "Të dhënat ligjore"
+    "impressum": "Të dhënat ligjore",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Detyra të hapura",
@@ -695,5 +698,15 @@
     "fromGallery": "Zgjidh nga galeria",
     "uploadFile": "Ngarko skedar",
     "cancel": "Anulo"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

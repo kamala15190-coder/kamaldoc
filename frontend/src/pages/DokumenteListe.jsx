@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, FileText, ChevronRight, Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDocuments } from '../api';
-import { formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDate, formatCurrency } from '../utils/dateUtils';
 
 // Harmonised, on-brand category palette (matches Dashboard).
 const KATEGORIE_ICON = {
@@ -145,7 +145,7 @@ export default function DokumenteListe() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
                         {doc.kategorie && <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 6px', borderRadius: 4, background: catIcon.bg, color: catIcon.color }}>{t(`categories.${doc.kategorie}`, doc.kategorie)}</span>}
                         {doc.datum && <span style={{ fontSize: 11, color: tc.textMuted }}>{formatLocalDate(doc.datum)}</span>}
-                        {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}</span>}
+                        {doc.betrag != null && doc.betrag > 0 && <span style={{ fontSize: 11, fontWeight: 600, color: tc.text, marginLeft: 'auto' }}>{formatCurrency(doc.betrag)}</span>}
                       </div>
                     </div>
                     <ChevronRight style={{ width: 14, height: 14, color: tc.textHint, flexShrink: 0 }} />

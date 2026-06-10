@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getExpenseCategories, getExpenseItems, getExpenseSummary } from '../api';
-import { formatLocalDate } from '../utils/dateUtils';
+import { formatLocalDate, formatCurrency } from '../utils/dateUtils';
 import { useSubscription } from '../hooks/useSubscription';
 import { usePlanLimit } from '../hooks/usePlanLimit';
 import UpgradePrompt from '../components/UpgradePrompt';
@@ -23,7 +23,7 @@ const FALLBACK_COLOR = '#94a3b8';
 const MONTHS_DE = ['', 'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
 const MONTHS_FULL = ['', 'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
 
-const fmt = (v) => Number(v).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' });
+const fmt = (v) => formatCurrency(v);
 
 export default function ExpensesPage() {
   const { t } = useTranslation();

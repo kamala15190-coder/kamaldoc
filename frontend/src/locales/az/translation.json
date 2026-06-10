@@ -69,7 +69,10 @@
     "requestNewLink": "Yeni keçid istə",
     "setNewPassword": "Şifrəni saxla",
     "saving": "Saxlanılır...",
-    "impressum": "Naşir məlumatı"
+    "impressum": "Naşir məlumatı",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Açıq tapşırıqlar",
@@ -695,5 +698,15 @@
     "fromGallery": "Qalereyadan seç",
     "uploadFile": "Fayl yüklə",
     "cancel": "Ləğv et"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

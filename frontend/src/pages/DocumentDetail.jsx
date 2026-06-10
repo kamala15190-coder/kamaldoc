@@ -13,7 +13,7 @@ import {
 } from '../api';
 import { Capacitor } from '@capacitor/core';
 import AuthImage from '../components/AuthImage';
-import { formatLocalDateTime, formatLocalDate, parseUTC } from '../utils/dateUtils';
+import { formatLocalDateTime, formatLocalDate, parseUTC, formatCurrency } from '../utils/dateUtils';
 import CollapsibleSection from '../components/CollapsibleSection';
 import { REPLY_LANGUAGES, LANGUAGES } from '../languages';
 import { useSubscription } from '../hooks/useSubscription';
@@ -534,7 +534,7 @@ export default function DocumentDetail() {
                 <Field label={t('document.date')} value={doc.datum ? formatLocalDate(doc.datum) : null} />
                 <Field label={t('document.sender')} value={doc.absender} />
                 <Field label={t('document.recipient')} value={doc.empfaenger} />
-                <Field label={t('document.amount')} value={doc.betrag != null ? Number(doc.betrag).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' }) : null} />
+                <Field label={t('document.amount')} value={doc.betrag != null ? formatCurrency(doc.betrag) : null} />
                 <Field label={t('document.due')} value={doc.faelligkeitsdatum ? formatLocalDate(doc.faelligkeitsdatum) : null} />
                 <Field label={t('document.filename')} value={doc.dateiname && doc.dateiname.length > 20 ? doc.dateiname.slice(0, 17) + '...' + doc.dateiname.slice(doc.dateiname.lastIndexOf('.')) : doc.dateiname} />
                 <Field label={t('document.uploaded')} value={doc.hochgeladen_am ? formatLocalDateTime(doc.hochgeladen_am) : null} />

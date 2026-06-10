@@ -69,7 +69,10 @@
     "verifyingLink": "Link wird überprüft...",
     "requestNewLink": "Neuen Link anfordern",
     "setNewPassword": "Passwort speichern",
-    "saving": "Wird gespeichert..."
+    "saving": "Wird gespeichert...",
+    "appleLogin": "Mit Apple anmelden",
+    "appleLoginFailed": "Apple-Anmeldung fehlgeschlagen",
+    "appleUnavailable": "Apple-Anmeldung ist auf diesem Gerät nicht verfügbar."
   },
   "dashboard": {
     "openTasks": "Offene Aufgaben",
@@ -695,5 +698,15 @@
     "fromGallery": "Aus Galerie wählen",
     "uploadFile": "Datei hochladen",
     "cancel": "Abbrechen"
+  },
+  "deadline": {
+    "today": "heute",
+    "overdue": "vor {{count}} T.",
+    "inDays": "{{count}} T."
+  },
+  "errorBoundary": {
+    "title": "Etwas ist schiefgelaufen.",
+    "message": "Die App konnte diese Ansicht nicht rendern. Bitte lade die Seite neu. Wenn der Fehler bleibt, kontaktiere den Support.",
+    "reload": "Neu laden"
   }
 }

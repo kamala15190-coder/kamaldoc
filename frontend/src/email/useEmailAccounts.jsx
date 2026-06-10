@@ -9,6 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../hooks/useToast';
@@ -29,6 +30,7 @@ const processedCallbacks = new Set();
 export function useEmailAccounts() {
   const { t } = useTranslation();
   const toast = useToast();
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
   const [connectors, setConnectors] = useState({});      // type -> meta from server
   const [encryptionReady, setEncryptionReady] = useState(true);
@@ -53,7 +55,9 @@ export function useEmailAccounts() {
   // Handle the OAuth success/error bounce (web URL hash or native deep link).
   useEffect(() => {
     const cleanUrl = () => {
-      try { window.history.replaceState(null, '', '/profil'); } catch { /* ignore */ }
+      // Return to the profile via the router (not a raw history.replaceState, which
+      // leaves React Router rendering the stale /email-callback route).
+      try { navigate('/profil', { replace: true }); } catch { /* ignore */ }
     };
 
     const handleCallback = async (url) => {
@@ -90,10 +94,13 @@ export function useEmailAccounts() {
       handleCallback(window.location.href).finally(cleanUrl);
     }
 
-    let listener = null;
+    // App.addListener resolves to a Promise<PluginListenerHandle> — keep the
+    // promise and remove via it (calling .remove() on the promise itself throws
+    // and leaks the listener across re-mounts).
+    let listenerPromise = null;
     if (Capacitor.isNativePlatform()) {
-      import('@capacitor/app').then(({ App }) => {
-        listener = App.addListener('appUrlOpen', async ({ url }) => {
+      listenerPromise = import('@capacitor/app').then(({ App }) =>
+        App.addListener('appUrlOpen', async ({ url }) => {
           if (url.includes('email-callback')) {
             try {
               const { Browser } = await import('@capacitor/browser');
@@ -101,11 +108,19 @@ export function useEmailAccounts() {
             } catch { /* ignore */ }
             await handleCallback(url);
           }
-        });
-      });
+        })
+      );
+
+      // Cold-start: the OS may kill the app while the OAuth browser is open, so the
+      // callback arrives as the launch URL — which the warm listener above misses.
+      // (dedup via processedCallbacks prevents a double-handle if both fire.)
+      import('@capacitor/app')
+        .then(({ App }) => App.getLaunchUrl())
+        .then((res) => { if (res?.url && res.url.includes('email-callback')) handleCallback(res.url); })
+        .catch(() => {});
     }
-    return () => { if (listener) listener.remove(); };
-  }, [refresh, toast, t]);
+    return () => { if (listenerPromise) listenerPromise.then((h) => h?.remove?.()).catch(() => {}); };
+  }, [refresh, toast, t, navigate]);
 
   // Start a server-side OAuth flow (Gmail). Redirects the browser / opens the
   // in-app browser to the provider; the backend relay finishes and stores it.
@@ -117,7 +132,10 @@ export function useEmailAccounts() {
       if (!auth_url) throw new Error('no_auth_url');
       if (Capacitor.isNativePlatform()) {
         const { Browser } = await import('@capacitor/browser');
-        await Browser.open({ url: auth_url, presentationStyle: 'popover' });
+        // toolbarColor tints the system in-app browser chrome (Chrome Custom Tab /
+        // SFSafariViewController) to the Onyx app colour so it doesn't read as a
+        // jarring light system bar. fullscreen avoids a clipped sheet on iPhone.
+        await Browser.open({ url: auth_url, toolbarColor: '#0E0F12', presentationStyle: 'fullscreen' });
         setBusy(null);
       } else {
         window.location.href = auth_url; // full redirect; page unloads

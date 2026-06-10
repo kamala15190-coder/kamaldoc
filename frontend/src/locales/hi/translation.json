@@ -69,7 +69,10 @@
     "requestNewLink": "नया लिंक अनुरोध करें",
     "setNewPassword": "पासवर्ड सहेजें",
     "saving": "सहेजा जा रहा है...",
-    "impressum": "प्रकाशक जानकारी"
+    "impressum": "प्रकाशक जानकारी",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "लंबित कार्य",
@@ -695,5 +698,15 @@
     "fromGallery": "गैलरी से चुनें",
     "uploadFile": "फ़ाइल अपलोड करें",
     "cancel": "रद्द करें"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

@@ -69,7 +69,10 @@
     "verifyingLink": "Verifying link...",
     "requestNewLink": "Request new link",
     "setNewPassword": "Save password",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Open Tasks",
@@ -695,5 +698,15 @@
     "fromGallery": "Choose from gallery",
     "uploadFile": "Upload file",
     "cancel": "Cancel"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

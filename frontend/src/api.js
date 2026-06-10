@@ -92,6 +92,13 @@ export async function getDocuments(params = {}) {
   return data;
 }
 
+// Aggregate counts across ALL documents (not just the loaded page) — for the
+// Dashboard tiles. Returns { total, open, done, this_week, by_category }.
+export async function getDocumentStats() {
+  const { data } = await api.get('/documents/stats');
+  return data;
+}
+
 export async function getExpenses(params = {}) {
   const { data } = await api.get('/expenses', { params });
   return data;
@@ -439,13 +446,14 @@ export function getFileUrl(id) {
 }
 
 export async function downloadFile(id, filename) {
-  // Native: öffne Datei im System-Browser (Blob-Download funktioniert nicht in WebView)
+  // Native: öffne Datei im System-Browser (Blob-Download funktioniert nicht in WebView).
+  // Statt das JWT in die URL zu hängen (leakt in Verlauf/Logs), holen wir ein
+  // einmaliges, 60s gültiges Download-Ticket und öffnen damit.
   if (window.Capacitor?.isNativePlatform?.()) {
     try {
       const { Browser } = await import('@capacitor/browser');
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || '';
-      await Browser.open({ url: `${API_BASE_URL}/api/documents/${id}/file?token=${token}` });
+      const { data } = await api.post(`/documents/${id}/file-ticket`);
+      await Browser.open({ url: `${API_BASE_URL}/api/documents/${id}/file?ticket=${encodeURIComponent(data.ticket)}` });
       return;
     } catch { /* fallback to web method */ }
   }

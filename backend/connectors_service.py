@@ -87,7 +87,18 @@ async def add_imap_account(user_id, connector_type, display_name, email, passwor
     host = host or meta.get("host")
     if not host:
         raise ValueError("IMAP-Host fehlt")
-    creds = {"email": email, "password": password, "host": host, "port": int(port or 993)}
+    port = int(port or 993)
+    # Verify the credentials BEFORE storing, so a typo'd app-password fails fast
+    # with a clear message instead of being saved as a silently-broken account.
+    try:
+        await asyncio.wait_for(
+            asyncio.to_thread(_imap_login_test, host, port, email, password), timeout=20
+        )
+    except asyncio.TimeoutError:
+        raise ValueError("Zeitüberschreitung bei der Verbindung zum Mailserver. Host/Port prüfen.")
+    except Exception:  # noqa: BLE001 — imaplib raises IMAP4.error and socket errors
+        raise ValueError("Login fehlgeschlagen — E-Mail-Adresse und App-Passwort prüfen.")
+    creds = {"email": email, "password": password, "host": host, "port": port}
     return await _insert_account(user_id, connector_type, display_name or email, email, creds, ["search"])
 
 
@@ -141,19 +152,49 @@ async def _mark_account(account_id, *, status=None, error=None, synced=False):
 
 # --- Inbox search ------------------------------------------------------------
 
+def _imap_login_test(host, port, email, password) -> None:
+    """Raise if the IMAP credentials don't authenticate. Used to fail fast when a
+    mailbox is connected, instead of storing a broken account as 'active'."""
+    import imaplib
+
+    M = imaplib.IMAP4_SSL(host, int(port), timeout=15)
+    try:
+        M.login(email, password)
+    finally:
+        try:
+            M.logout()
+        except Exception:  # noqa: BLE001
+            pass
+
+
 def _imap_search_sync(host, port, email, password, query, maxn) -> list[dict]:
     import email as emaillib
     import imaplib
     from email.header import decode_header, make_header
 
     out = []
-    M = imaplib.IMAP4_SSL(host, int(port))
+    # timeout: a hung mail server must never freeze the worker thread / Doka stream.
+    M = imaplib.IMAP4_SSL(host, int(port), timeout=20)
     try:
         M.login(email, password)
         M.select("INBOX", readonly=True)
-        crit = ("TEXT", f'"{query}"') if query else ("ALL",)
-        typ, data = M.search(None, *crit)
-        if typ != "OK":
+        if query:
+            # Quotes would corrupt the IMAP command; strip them. Try a UTF-8 search
+            # first (umlauts/CJK), then fall back to a plain TEXT / ALL search.
+            q = query.replace('"', " ").strip()
+            typ, data = "NO", [b""]
+            try:
+                typ, data = M.search("UTF-8", "TEXT", q.encode("utf-8"))
+            except Exception:  # noqa: BLE001
+                typ = "NO"
+            if typ != "OK":
+                try:
+                    typ, data = M.search(None, "TEXT", q.encode("utf-8"))
+                except Exception:  # noqa: BLE001
+                    typ, data = M.search(None, "ALL")
+        else:
+            typ, data = M.search(None, "ALL")
+        if typ != "OK" or not data or not data[0]:
             return out
         ids = data[0].split()[-maxn:]
         for num in reversed(ids):
@@ -324,9 +365,14 @@ async def _search_one(row, query, maxn) -> list[dict]:
             if refreshed:
                 await _insert_account(row["user_id"], ctype, label, row["remote_account_id"], refreshed, ["search"])
         elif meta.get("auth") == "imap" or ctype == "imap":
-            results = await asyncio.to_thread(
-                _imap_search_sync, creds["host"], creds.get("port", 993),
-                creds["email"], creds["password"], query, maxn,
+            # Bounded so a hung mail server can't freeze the Doka stream. The socket
+            # timeout in _imap_search_sync (20s) is the inner guard; this is the outer.
+            results = await asyncio.wait_for(
+                asyncio.to_thread(
+                    _imap_search_sync, creds["host"], creds.get("port", 993),
+                    creds["email"], creds["password"], query, maxn,
+                ),
+                timeout=30,
             )
         else:
             return []  # unknown connector type

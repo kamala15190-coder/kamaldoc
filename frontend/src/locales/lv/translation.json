@@ -69,7 +69,10 @@
     "requestNewLink": "Pieprasīt jaunu saiti",
     "setNewPassword": "Saglabāt paroli",
     "saving": "Saglabā...",
-    "impressum": "Izdevēja informācija"
+    "impressum": "Izdevēja informācija",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Atvērtie uzdevumi",
@@ -695,5 +698,15 @@
     "fromGallery": "Izvēlēties no galerijas",
     "uploadFile": "Augšupielādēt failu",
     "cancel": "Atcelt"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

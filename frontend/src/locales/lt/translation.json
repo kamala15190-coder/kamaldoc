@@ -69,7 +69,10 @@
     "requestNewLink": "Prašyti naujos nuorodos",
     "setNewPassword": "Išsaugoti slaptažodį",
     "saving": "Saugoma...",
-    "impressum": "Leidėjo informacija"
+    "impressum": "Leidėjo informacija",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Atviros užduotys",
@@ -695,5 +698,15 @@
     "fromGallery": "Pasirinkti iš galerijos",
     "uploadFile": "Įkelti failą",
     "cancel": "Atšaukti"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

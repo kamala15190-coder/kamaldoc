@@ -69,7 +69,10 @@
     "requestNewLink": "Solicită un link nou",
     "setNewPassword": "Salvează parola",
     "saving": "Se salvează...",
-    "impressum": "Date despre editor"
+    "impressum": "Date despre editor",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Sarcini deschise",
@@ -695,5 +698,15 @@
     "fromGallery": "Alege din galerie",
     "uploadFile": "Încarcă fișier",
     "cancel": "Anulează"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

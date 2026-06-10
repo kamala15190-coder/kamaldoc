@@ -69,7 +69,10 @@
     "requestNewLink": "Poproś o nowy link",
     "setNewPassword": "Zapisz hasło",
     "saving": "Zapisywanie...",
-    "impressum": "Nota prawna"
+    "impressum": "Nota prawna",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Otwarte zadania",
@@ -695,5 +698,15 @@
     "fromGallery": "Wybierz z galerii",
     "uploadFile": "Prześlij plik",
     "cancel": "Anuluj"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

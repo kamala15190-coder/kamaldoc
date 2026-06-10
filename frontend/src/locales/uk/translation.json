@@ -69,7 +69,10 @@
     "requestNewLink": "Запросити нове посилання",
     "setNewPassword": "Зберегти пароль",
     "saving": "Збереження...",
-    "impressum": "Вихідні дані"
+    "impressum": "Вихідні дані",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "Відкриті завдання",
@@ -695,5 +698,15 @@
     "fromGallery": "Вибрати з галереї",
     "uploadFile": "Завантажити файл",
     "cancel": "Скасувати"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }

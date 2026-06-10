@@ -69,7 +69,10 @@
     "requestNewLink": "请求新链接",
     "setNewPassword": "保存密码",
     "saving": "保存中...",
-    "impressum": "法律声明"
+    "impressum": "法律声明",
+    "appleLogin": "Sign in with Apple",
+    "appleLoginFailed": "Apple sign-in failed",
+    "appleUnavailable": "Apple sign-in isn't available on this device."
   },
   "dashboard": {
     "openTasks": "待办任务",
@@ -695,5 +698,15 @@
     "fromGallery": "从相册选择",
     "uploadFile": "上传文件",
     "cancel": "取消"
+  },
+  "deadline": {
+    "today": "today",
+    "overdue": "{{count}}d overdue",
+    "inDays": "in {{count}}d"
+  },
+  "errorBoundary": {
+    "title": "Something went wrong.",
+    "message": "The app couldn't render this view. Please reload. If the problem persists, contact support.",
+    "reload": "Reload"
   }
 }
