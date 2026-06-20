@@ -202,6 +202,31 @@
       pointer-events: none;
     }
 
+    .loader-error {
+      position: absolute;
+      bottom: 22%;
+      left: 0;
+      right: 0;
+      padding: 0 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      letter-spacing: 0.03em;
+      color: var(--silver);
+      max-width: 30rem;
+      margin: 0 auto;
+      white-space: pre-line;
+      display: none;
+    }
+
+    .loader.failed .ring {
+      display: none;
+    }
+
+    .loader.failed .loader-error {
+      display: block;
+    }
+
     .loader .ring {
       width: 42px;
       height: 42px;
@@ -242,7 +267,53 @@
   </div>
 
   <!-- ============ LOADER ============ -->
-  <div class="loader" id="loader"><div class="ring"></div></div>
+  <div class="loader" id="loader">
+    <div class="ring"></div>
+    <p class="loader-error" id="loader-error"></p>
+  </div>
+
+  <!-- ============ IMPORT MAP ============ -->
+  <!-- Resolves the bare "three" specifier used internally by the jsm addons -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <!-- ============ ERROR / WATCHDOG ============ -->
+  <script>
+    (function () {
+      function fail(msg) {
+        var loader = document.getElementById("loader");
+        var box = document.getElementById("loader-error");
+        if (!loader || loader.classList.contains("hidden")) return;
+        if (box) {
+          box.textContent =
+            "Die 3D-Szene konnte nicht geladen werden. " +
+            "Bitte mit Internetverbindung in einem aktuellen Browser öffnen." +
+            (msg ? "\n\n(" + msg + ")" : "");
+        }
+        loader.classList.add("failed");
+      }
+      window.addEventListener("error", function (e) {
+        // Resource/module load errors and runtime errors
+        fail(e && e.message ? e.message : "Ladefehler");
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        fail(e && e.reason ? String(e.reason) : "Ladefehler");
+      });
+      // Watchdog: if the scene never signals "ready", reveal a hint
+      window.addEventListener("load", function () {
+        setTimeout(function () {
+          var loader = document.getElementById("loader");
+          if (loader && !loader.classList.contains("hidden")) fail("");
+        }, 12000);
+      });
+    })();
+  </script>
 
   <!-- ============ GLSL — TORUS KNOT ============ -->
   <script type="x-shader/x-vertex" id="knot-vert">
@@ -359,10 +430,10 @@
 
   <!-- ============ APP ============ -->
   <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.160.0/build/three.module.js";
-    import { EffectComposer } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/EffectComposer.js";
-    import { RenderPass } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/RenderPass.js";
-    import { UnrealBloomPass } from "https://unpkg.com/three@0.160.0/examples/jsm/postprocessing/UnrealBloomPass.js";
+    import * as THREE from "three";
+    import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+    import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+    import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
     // ---- Palette ----
     const COL = {
