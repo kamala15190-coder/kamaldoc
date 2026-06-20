@@ -232,12 +232,11 @@
   <!-- ============ TEXT OVERLAY ============ -->
   <div class="overlay">
     <div class="content">
-      <h1 class="headline">Enter the Flux</h1>
+      <h1 class="headline">A living interface.</h1>
       <p class="subtitle">
-        A living field of energy — sculpted in light, driven by code.
-        Step into an experience where motion, color and form become one.
+        Where design meets dimension. Built with code, driven by vision.
       </p>
-      <a class="cta" href="#" id="cta">Begin the Journey</a>
+      <a class="cta" href="#" id="cta">Explore the void →</a>
     </div>
     <div class="footnote">Crafted with Three.js &amp; GLSL</div>
   </div>
@@ -525,7 +524,7 @@
     const INTRO_DUR = 2000;
     const easeOutExpo = (t) => (t >= 1 ? 1 : 1 - Math.pow(2, -10 * t));
 
-    // ---- Resize ----
+    // ---- Resize (debounced) ----
     function onResize() {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -536,7 +535,11 @@
       bloom.setSize(w, h);
       particleMat.uniforms.uPixelRatio.value = renderer.getPixelRatio();
     }
-    window.addEventListener("resize", onResize);
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(onResize, 150);
+    });
 
     // ---- Render loop ----
     const clock = new THREE.Clock();
@@ -590,6 +593,18 @@
     // Prevent the placeholder CTA from jumping the page
     document.getElementById("cta").addEventListener("click", (e) => {
       e.preventDefault();
+    });
+
+    // ---- Cleanup: dispose GPU resources on unload (no memory leaks) ----
+    window.addEventListener("beforeunload", () => {
+      knotGeo.dispose();
+      knotMat.dispose();
+      glowMat.dispose();
+      particleGeo.dispose();
+      particleMat.dispose();
+      composer.dispose();
+      bloom.dispose();
+      renderer.dispose();
     });
   </script>
 </body>
