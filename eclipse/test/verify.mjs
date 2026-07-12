@@ -13,7 +13,9 @@ const shotsIdx = process.argv.indexOf('--shots');
 const SHOTS = shotsIdx > -1 ? process.argv[shotsIdx + 1] : null;
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 
-const server = spawn(process.execPath, [path.join(ROOT, 'scripts/serve.mjs'), String(PORT)], { stdio: 'ignore' });
+const rootIdx = process.argv.indexOf('--root');
+const SERVE_ROOT = rootIdx > -1 ? process.argv[rootIdx + 1] : ROOT;
+const server = spawn(process.execPath, [path.join(ROOT, 'scripts/serve.mjs'), String(PORT), SERVE_ROOT], { stdio: 'ignore' });
 await new Promise(r => setTimeout(r, 800));
 
 const browser = await chromium.launch({
@@ -69,7 +71,8 @@ const px0 = await page.evaluate(() => document.getElementById('orbitCanvas').toD
 await go(layout.hero + (layout.heroH - 900) * 0.5);
 const idxMid = await page.evaluate(() => window.__eclipse.orbit.index);
 const pxMid = await page.evaluate(() => document.getElementById('orbitCanvas').toDataURL('image/png').length);
-check('orbit scrubs with scroll (frame index advances)', idxMid > idx0 + 40, `idx ${idx0} -> ${idxMid}`);
+const orbitCount = await page.evaluate(() => window.__eclipse.orbit.count);
+check('orbit scrubs with scroll (frame index advances)', idxMid > idx0 + orbitCount * 0.25, `idx ${idx0} -> ${idxMid} of ${orbitCount}`);
 check('orbit canvas pixels actually change', px0 !== pxMid, `png bytes ${px0} vs ${pxMid}`);
 await S('02-hero-mid');
 
@@ -113,7 +116,8 @@ const cap2 = await page.$eval('#cap2', el => +getComputedStyle(el).opacity);
 await go(layout.macro + (layout.macroH - 900) * 0.85);
 const cap3 = await page.$eval('#cap3', el => +getComputedStyle(el).opacity);
 const cap1gone = await page.$eval('#cap1', el => +getComputedStyle(el).opacity);
-check('macro sequence scrubs with scroll', mIdx2 > mIdx1 + 20, `idx ${mIdx1} -> ${mIdx2}`);
+const macroCount = await page.evaluate(() => window.__eclipse.macro.count);
+check('macro sequence scrubs with scroll', mIdx2 > mIdx1 + macroCount * 0.15, `idx ${mIdx1} -> ${mIdx2} of ${macroCount}`);
 check('macro caption 1 at its waypoint', cap1 > 0.5, `opacity=${cap1}`);
 check('macro caption 2 at its waypoint', cap2 > 0.5, `opacity=${cap2}`);
 check('macro caption 3 at its waypoint', cap3 > 0.5, `opacity=${cap3}`);
@@ -132,7 +136,8 @@ const spec3 = await page.$eval('#spec3', el => +getComputedStyle(el).opacity);
 await go(layout.engineering + (layout.engineeringH - 900) * 1.0);
 const eIdx2 = await page.evaluate(() => window.__eclipse.exploded.index);
 const assembly = await page.$eval('#assemblyLine', el => +getComputedStyle(el).opacity);
-check('exploded sequence scrubs (assembly progresses)', eIdx2 > eIdx1 + 60, `idx ${eIdx1} -> ${eIdx2}`);
+const explCount = await page.evaluate(() => window.__eclipse.exploded.count);
+check('exploded sequence scrubs (assembly progresses)', eIdx2 > eIdx1 + explCount * 0.5, `idx ${eIdx1} -> ${eIdx2} of ${explCount}`);
 check('spec 42mm titanium at its waypoint', spec1 > 0.5, `opacity=${spec1}`);
 check('spec 72h reserve at its waypoint', spec2 > 0.5, `opacity=${spec2}`);
 check('spec 217 components at its waypoint', spec3 > 0.5, `opacity=${spec3}`);
