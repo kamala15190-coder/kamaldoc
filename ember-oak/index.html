@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EMBER &amp; OAK — Wood-fire steakhouse, Vöcklamarkt</title>
+<meta name="description" content="EMBER & OAK. A wood-fire steakhouse in Vöcklamarkt, Austria. Six dishes. One fire.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230b0908'/%3E%3Ccircle cx='16' cy='19' r='7' fill='%23ff6b35'/%3E%3Ccircle cx='21' cy='9' r='2' fill='%23ff6b35' opacity='.7'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-head" id="siteHead">
+  <a class="brand" href="#top" aria-label="Ember and Oak — home">E<span class="brand__amp">&amp;</span>O</a>
+  <nav class="site-nav" aria-label="Main">
+    <a href="#story">The Room</a>
+    <a href="#menu">Menu</a>
+    <a href="#private">Private Dining</a>
+    <a class="nav-cta" href="#visit">Reserve</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <!-- HERO — scroll-scrubbed fire -->
+  <section class="hero" id="hero" aria-label="Ember and Oak">
+    <div class="hero__sticky">
+      <video id="heroVideo" class="hero__video" muted playsinline preload="auto"
+             poster="assets/poster/hero.jpg" disablepictureinpicture>
+        <source src="assets/video/hero.webm" type="video/webm">
+        <source src="assets/video/hero.mp4" type="video/mp4">
+      </video>
+      <div class="hero__scrim" aria-hidden="true"></div>
+      <div class="hero__title">
+        <p class="hero__kicker">Vöcklamarkt · Austria</p>
+        <h1 class="wordmark" id="wordmark">EMBER&nbsp;<span class="wordmark__amp">&amp;</span>&nbsp;OAK</h1>
+        <p class="tagline">Wood fire. Nothing else.</p>
+      </div>
+      <div class="scroll-hint" aria-hidden="true"><span></span>Scroll</div>
+    </div>
+  </section>
+
+  <!-- THE ROOM / STORY -->
+  <section class="media-section story" id="story">
+    <div class="media-section__bg" data-parallax>
+      <video muted playsinline loop autoplay preload="metadata" poster="assets/poster/room.jpg">
+        <source src="assets/video/room.webm" type="video/webm">
+        <source src="assets/video/room.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="media-section__scrim" aria-hidden="true"></div>
+    <div class="media-section__inner">
+      <p class="kicker reveal">The Room</p>
+      <h2 class="display reveal">Six dishes.<br>One fire.</h2>
+      <p class="lede reveal">Oak from the hills above the Vöckla. No gas, no shortcuts —
+      only coals, smoke and patience. The room is leather and candlelight;
+      the kitchen is a hearth. You will smell dinner before you see it.</p>
+    </div>
+  </section>
+
+  <!-- MENU -->
+  <section class="menu" id="menu">
+    <div class="menu__inner">
+      <p class="kicker reveal">The Menu</p>
+      <h2 class="display reveal">From the coals,<br>from the ground.</h2>
+
+      <div class="menu__columns">
+        <div class="menu__col reveal">
+          <h3 class="menu__colname">Fire</h3>
+          <ul class="dishes">
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Dry-aged ribeye, 400&nbsp;g</span><span class="dish__dots"></span><span class="dish__price">58</span></div>
+              <p class="dish__note">hay smoke · marrow butter</p>
+            </li>
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Porterhouse for two</span><span class="dish__dots"></span><span class="dish__price">124</span></div>
+              <p class="dish__note">oak coals · bone salt</p>
+            </li>
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Saddle of lamb</span><span class="dish__dots"></span><span class="dish__price">46</span></div>
+              <p class="dish__note">juniper embers · black garlic</p>
+            </li>
+          </ul>
+        </div>
+
+        <div class="menu__col reveal">
+          <h3 class="menu__colname">Field</h3>
+          <ul class="dishes">
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Whole-roasted celeriac</span><span class="dish__dots"></span><span class="dish__price">24</span></div>
+              <p class="dish__note">ember cream · hazelnut</p>
+            </li>
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Leeks from the ash</span><span class="dish__dots"></span><span class="dish__price">19</span></div>
+              <p class="dish__note">smoked curd · rye</p>
+            </li>
+            <li class="dish">
+              <div class="dish__row"><span class="dish__name">Cabbage heart</span><span class="dish__dots"></span><span class="dish__price">21</span></div>
+              <p class="dish__note">brown butter · elderflower vinegar</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="menu__foot reveal">Prices in euro. The menu moves with the season and the wood pile.</p>
+    </div>
+  </section>
+
+  <!-- PRIVATE DINING -->
+  <section class="media-section private" id="private">
+    <div class="media-section__bg" data-parallax>
+      <video muted playsinline loop autoplay preload="metadata" poster="assets/poster/craft.jpg">
+        <source src="assets/video/craft.webm" type="video/webm">
+        <source src="assets/video/craft.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="media-section__scrim" aria-hidden="true"></div>
+    <div class="media-section__inner media-section__inner--right">
+      <p class="kicker reveal">Private Dining</p>
+      <h2 class="display reveal">One table.<br>Twelve chairs.</h2>
+      <p class="lede reveal">Behind the kitchen, a room lit by coals and candle.
+      The chef cooks at arm's length; the menu is spoken, not printed.
+      Yours for the evening.</p>
+      <a class="text-link reveal" href="#visit">Reserve the room</a>
+    </div>
+  </section>
+
+  <!-- VISIT: HOURS + MAP + RESERVE -->
+  <section class="visit" id="visit">
+    <div class="visit__inner">
+      <p class="kicker reveal">Find us</p>
+      <h2 class="display reveal">Vöcklamarkt.</h2>
+
+      <div class="visit__grid">
+
+        <div class="visit__block reveal">
+          <h3 class="visit__label">Hours</h3>
+          <dl class="hours">
+            <div><dt>Wed — Sat</dt><dd>18:00 — 24:00</dd></div>
+            <div><dt>Sunday</dt><dd>12:00 — 15:00</dd></div>
+            <div><dt>Mon — Tue</dt><dd>the fire rests</dd></div>
+          </dl>
+          <h3 class="visit__label">Address</h3>
+          <address class="addr">
+            Hauptstraße 14<br>4870 Vöcklamarkt<br>Austria
+          </address>
+          <p class="addr-links">
+            <a class="text-link" href="tel:+437682210014">+43 7682 210 014</a><br>
+            <a class="text-link" href="mailto:table@emberandoak.at">table@emberandoak.at</a>
+          </p>
+        </div>
+
+        <div class="visit__block visit__block--map reveal">
+          <div class="map" role="img" aria-label="Stylised map of Vöcklamarkt with Ember and Oak marked on Hauptstraße">
+            <svg viewBox="0 0 520 420" xmlns="http://www.w3.org/2000/svg">
+              <rect width="520" height="420" fill="#0e0b09"/>
+              <!-- the Vöckla river -->
+              <path d="M-10,330 C90,290 150,340 240,315 C340,287 380,320 530,270"
+                    fill="none" stroke="#22303a" stroke-width="16" stroke-linecap="round" opacity="0.9"/>
+              <!-- streets -->
+              <g stroke="#2a221b" stroke-width="7" stroke-linecap="round">
+                <path d="M-10,180 C120,168 260,188 530,150"/>
+                <path d="M150,-10 C160,120 140,260 170,430"/>
+                <path d="M330,-10 C320,110 350,240 330,430"/>
+                <path d="M-10,260 C160,250 330,270 530,235"/>
+              </g>
+              <g stroke="#1e1813" stroke-width="4" stroke-linecap="round">
+                <path d="M60,-10 C70,140 50,280 80,430"/>
+                <path d="M430,-10 C420,150 450,300 430,430"/>
+                <path d="M-10,90 C180,100 350,80 530,95"/>
+              </g>
+              <!-- church square -->
+              <rect x="236" y="160" width="34" height="34" rx="3" fill="#1c1610"/>
+              <circle cx="253" cy="177" r="3.5" fill="#5c4a36"/>
+              <!-- marker: ember -->
+              <circle class="map__pulse" cx="253" cy="248" r="12" fill="none" stroke="#ff6b35" stroke-width="2" opacity="0.6"/>
+              <circle cx="253" cy="248" r="6" fill="#ff6b35"/>
+              <text x="253" y="286" text-anchor="middle" fill="#f0e7d8" font-size="15"
+                    font-family="Georgia, serif" letter-spacing="3">EMBER &amp; OAK</text>
+              <text x="253" y="130" text-anchor="middle" fill="#5c4a36" font-size="12"
+                    font-family="Georgia, serif" letter-spacing="4">VÖCKLAMARKT</text>
+              <text x="472" y="262" fill="#3d5568" font-size="11" font-family="Georgia, serif" font-style="italic">Vöckla</text>
+            </svg>
+          </div>
+          <a class="text-link map__open" href="https://www.google.com/maps/search/?api=1&amp;query=Hauptstra%C3%9Fe+14%2C+4870+V%C3%B6cklamarkt%2C+Austria"
+             target="_blank" rel="noopener">Open in Maps</a>
+        </div>
+
+        <div class="visit__block visit__block--reserve reveal">
+          <h3 class="visit__label">Reserve a table</h3>
+          <form class="reserve-form" id="reserveForm" novalidate>
+            <label class="field">
+              <span class="field__label">Date</span>
+              <input class="field__input" type="date" id="resDate" name="date" required>
+            </label>
+            <label class="field">
+              <span class="field__label">Party size</span>
+              <select class="field__input" id="resParty" name="party" required>
+                <option value="" selected disabled>Choose</option>
+                <option value="1">1 guest</option>
+                <option value="2">2 guests</option>
+                <option value="3">3 guests</option>
+                <option value="4">4 guests</option>
+                <option value="5">5 guests</option>
+                <option value="6">6 guests</option>
+                <option value="7">7 guests</option>
+                <option value="8">8 guests</option>
+              </select>
+            </label>
+            <p class="form-error" id="formError" role="alert" hidden></p>
+            <button class="btn" type="submit">Reserve a Table</button>
+            <p class="form-note">Parties above eight: write to us.</p>
+          </form>
+          <div class="reserve-confirm" id="reserveConfirm" hidden>
+            <p class="reserve-confirm__head">The fire is lit.</p>
+            <p class="reserve-confirm__body" id="confirmText"></p>
+            <p class="form-note">We confirm every table by evening, by hand.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-foot">
+  <p class="site-foot__mark">EMBER <span>&amp;</span> OAK</p>
+  <p class="site-foot__line">Hauptstraße 14 · 4870 Vöcklamarkt · Austria</p>
+  <p class="site-foot__fine">Wood fire. Nothing else.</p>
+</footer>
+
+<div class="grain" aria-hidden="true"></div>
+
+<script src="js/main.js"></script>
+</body>
+</html>
