@@ -13,11 +13,13 @@
     "model": "cinematic_studio_3_0",
     "shared_params": { "aspect_ratio": "16:9", "resolution": "720p", "genre": "noir", "generate_audio": false, "start_image": "hero job media" },
     "orbit": {
+      "job_id": "13e82727-a461-49c8-8871-4b5768e28680",
       "duration": 10,
       "frames": { "count": 160, "dir": "assets/frames/orbit" },
       "prompt": "Slow, perfectly smooth 360-degree studio turntable rotation of this exact watch floating upright in a black void. Constant rotation speed, locked camera, seamless loop back to the starting pose, dramatic rim light tracing the titanium case, the gold tourbillon glinting through the sapphire as it turns, faint gold dust drifting. No cuts, no zoom, epic noir product film."
     },
     "macro": {
+      "job_id": "2175244e-78ae-41e6-b086-b5e5ea43c493",
       "duration": 10,
       "frames": { "count": 120, "dir": "assets/frames/macro" },
       "prompt": "Extreme macro close-up glide across this watch dial: engraved gold indices sweeping past, the gold tourbillon cage spinning, light rippling across the brushed black metal as the camera slides slowly from 12 o'clock down to the tourbillon aperture at 6. Buttery slow camera motion, shallow depth of field, no cuts, epic noir product film."
