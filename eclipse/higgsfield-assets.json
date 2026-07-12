@@ -1,0 +1,44 @@
+{
+  "note": "Runbook for regenerating the Eclipse site assets via the Higgsfield MCP connector. The hero image is already generated; the four clips are pending credits (~175 for the 720p set) and an egress-policy allowlist for higgsfield.ai + *.cloudfront.net so the container can download results.",
+  "hero": {
+    "status": "generated 2026-07-12, 2 credits",
+    "model": "cinematic_studio_2_5",
+    "job_id": "9444bde3-4948-4713-9d21-061510099cf8",
+    "seed": 71736,
+    "size": "2752x1536 (16:9, 2k)",
+    "rawUrl": "https://d8j0ntlcm91z4.cloudfront.net/user_3GNoq5rJvzVT9CPD0Uk1VvRZFCS/hf_20260712_092931_9444bde3-4948-4713-9d21-061510099cf8.png",
+    "prompt": "Epic noir luxury watch commercial still: the AURUM & NOIR ECLIPSE, a Swiss tourbillon chronograph floating upright in a pure black void. Brushed black grade-5 titanium round case with a thin gold chamfer line, black sunburst dial, applied gold baton indices, gold dauphine hands, small gold text 'AURUM & NOIR' and 'ECLIPSE' printed on the upper dial, two recessed dark chronograph subdials at 3 and 9 o'clock, an exposed gold tourbillon cage with balance wheel in a round aperture at 6 o'clock, domed sapphire glass with a faint reflection, black leather strap with gold keeper curving away into darkness. Dramatic cool rim light tracing the case edge, a single warm key light, faint gold dust particles drifting in the void, deep blacks, high contrast, photorealistic macro product photography, centered composition, 4K cinema still, no watermark, no extra text."
+  },
+  "clips": {
+    "model": "cinematic_studio_3_0",
+    "shared_params": { "aspect_ratio": "16:9", "resolution": "720p", "genre": "noir", "generate_audio": false, "start_image": "hero job media" },
+    "orbit": {
+      "duration": 10,
+      "frames": { "count": 160, "dir": "assets/frames/orbit" },
+      "prompt": "Slow, perfectly smooth 360-degree studio turntable rotation of this exact watch floating upright in a black void. Constant rotation speed, locked camera, seamless loop back to the starting pose, dramatic rim light tracing the titanium case, the gold tourbillon glinting through the sapphire as it turns, faint gold dust drifting. No cuts, no zoom, epic noir product film."
+    },
+    "macro": {
+      "duration": 10,
+      "frames": { "count": 120, "dir": "assets/frames/macro" },
+      "prompt": "Extreme macro close-up glide across this watch dial: engraved gold indices sweeping past, the gold tourbillon cage spinning, light rippling across the brushed black metal as the camera slides slowly from 12 o'clock down to the tourbillon aperture at 6. Buttery slow camera motion, shallow depth of field, no cuts, epic noir product film."
+    },
+    "exploded": {
+      "duration": 10,
+      "frames": { "count": 120, "dir": "assets/frames/exploded" },
+      "prompt": "The watch assembling itself in mid-air from exploded floating components: gold gears, mainspring barrel, black bezel, sapphire glass, crown, dial and strap drift inward and converge precisely into the finished watch, ending centered and assembled. Elegant slow motion, black void, gold parts catching rim light, no cuts, epic noir product film."
+    },
+    "atmosphere": {
+      "duration": 5,
+      "still": "assets/stills/atmosphere.webp (pick the best frame)",
+      "prompt": "This watch resting flat on a black marble slab, thin smoke drifting slowly through a single overhead spotlight cone, gold dust motes in the beam, everything else falling to pure black. Almost still, meditative, epic noir product film."
+    }
+  },
+  "post": [
+    "curl each result mp4 into assets/generated/",
+    "node scripts/extract-frames.mjs assets/generated/<clip>.mp4 assets/frames/<seq> <count> 1600",
+    "node render/render.mjs  # only if reverting to Three.js assets",
+    "node scripts/build-artifact.mjs",
+    "node test/verify.mjs --root dist/wrapped  (re-wrap dist first, see README)",
+    "republish dist/eclipse-artifact.html to the existing artifact URL"
+  ]
+}
