@@ -25,11 +25,13 @@
       "prompt": "Extreme macro close-up glide across this watch dial: engraved gold indices sweeping past, the gold tourbillon cage spinning, light rippling across the brushed black metal as the camera slides slowly from 12 o'clock down to the tourbillon aperture at 6. Buttery slow camera motion, shallow depth of field, no cuts, epic noir product film."
     },
     "exploded": {
+      "job_id": "ec88ed69-724a-4ab4-923e-8a7893201bfc",
       "duration": 10,
       "frames": { "count": 120, "dir": "assets/frames/exploded" },
       "prompt": "The watch assembling itself in mid-air from exploded floating components: gold gears, mainspring barrel, black bezel, sapphire glass, crown, dial and strap drift inward and converge precisely into the finished watch, ending centered and assembled. Elegant slow motion, black void, gold parts catching rim light, no cuts, epic noir product film."
     },
     "atmosphere": {
+      "job_id": "a5a25fcd-037f-41a3-81c3-852a96541269",
       "duration": 5,
       "still": "assets/stills/atmosphere.webp (pick the best frame)",
       "prompt": "This watch resting flat on a black marble slab, thin smoke drifting slowly through a single overhead spotlight cone, gold dust motes in the beam, everything else falling to pure black. Almost still, meditative, epic noir product film."
