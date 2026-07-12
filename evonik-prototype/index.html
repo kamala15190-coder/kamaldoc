@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SEPURAN® Green — Biogas wird Bioerdgas | Evonik Konzeptstudie</title>
+<meta name="description" content="Cinematische Konzeptstudie: das SEPURAN® Green Membranmodul für die Biogasaufbereitung.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23440099'/%3E%3Ccircle cx='50' cy='50' r='22' fill='none' stroke='%23fff' stroke-width='8'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- preloader -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-mark">SEPURAN<sup>®</sup></div>
+  <div class="loader-bar"><span id="loaderBar"></span></div>
+  <div class="loader-pct mono" id="loaderPct">0</div>
+</div>
+
+<!-- fixed chrome -->
+<div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+<header class="topbar" id="topbar">
+  <div class="topbar-brand">EVONIK</div>
+  <div class="topbar-right mono">SEPURAN® GREEN&nbsp;&nbsp;·&nbsp;&nbsp;KONZEPTSTUDIE</div>
+</header>
+
+<main id="main">
+
+  <!-- 1 · HERO ORBIT + MIST -->
+  <section class="hero" id="hero">
+    <div class="stage">
+      <canvas id="orbitCanvas" aria-label="SEPURAN Green Modul rotiert im Studio"></canvas>
+      <canvas id="mistCanvas" aria-hidden="true"></canvas>
+      <div class="hero-center">
+        <p class="hero-eyebrow mono" id="heroEyebrow">MEMBRANTECHNOLOGIE VON EVONIK</p>
+        <h1 class="wordmark" id="wordmark">SEPURAN<sup>®</sup>&nbsp;Green</h1>
+        <p class="hero-sub" id="heroSub">Biogas wird Bioerdgas.</p>
+      </div>
+      <div class="hero-line" id="heroLine1"><p>Ein Modul.<br>Tausende Hohlfasern.</p></div>
+      <div class="hero-line" id="heroLine2"><p>Effizienz,<br>die man sehen kann.</p></div>
+      <div class="scroll-cue mono" id="scrollCue"><span></span>SCROLLEN</div>
+    </div>
+  </section>
+
+  <!-- 2 · EXPLAINER -->
+  <section class="explainer" id="explainer">
+    <div class="stage explainer-stage">
+      <div class="explainer-copy">
+        <p class="label mono" data-ex>01 — GRUNDLAGEN</p>
+        <h2 data-ex>Was ist ein <em>Biogasmodul?</em></h2>
+        <p class="ex-line" data-ex>Rohbiogas ist nur gut zur Hälfte Methan.<br>Der Rest: vor allem CO₂.</p>
+        <p class="ex-line" data-ex>Im Inneren des Moduls trennen tausende Hohlfasermembranen
+          die Gase — CO₂ permeiert durch die Faserwand, Methan bleibt.</p>
+        <p class="ex-line" data-ex>Dreistufig verschaltet macht SEPURAN® aus Biogas
+          Biomethan in Erdgasqualität — <strong>über 97&nbsp;% rein</strong>, bereit für die Einspeisung.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · ASSEMBLY -->
+  <section class="assembly" id="assembly">
+    <div class="stage">
+      <canvas id="assemblyCanvas" aria-label="Das Modul montiert sich aus seinen Einzelteilen"></canvas>
+      <p class="label mono corner">02 — AUFBAU</p>
+      <div class="callout" id="co1"><span class="rule"></span><h3>Hohlfaserbündel</h3><p>Das Herz des Moduls — tausende selektive Polymerfasern.</p></div>
+      <div class="callout right" id="co2"><span class="rule"></span><h3>Kartuschenrohr</h3><p>Zwei Halbschalen schließen sich zu einem druckfesten Rohr.</p></div>
+      <div class="callout" id="co3"><span class="rule"></span><h3>O-Ringe &amp; Gasverteilungsplatten</h3><p>Dichtung und definierte Anströmung an beiden Enden.</p></div>
+      <div class="callout right" id="co4"><span class="rule"></span><h3>Retentatkappen</h3><p>Gasein- und -auslass, ausgelegt auf 20&nbsp;bar.</p></div>
+      <div class="callout" id="co5"><span class="rule"></span><h3>Klammern &amp; Verschraubung</h3><p>Die Klammern fliegen auf, die Schrauben drehen sich ein.</p></div>
+      <div class="assembly-end" id="assemblyEnd"><p>Präzision. Bis zum letzten Gewinde.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 · NACHHALTIGKEIT -->
+  <section class="impact" id="impact">
+    <canvas id="auroraCanvas" aria-hidden="true"></canvas>
+    <video id="impactVideo" muted loop playsinline preload="auto" aria-label="Wälder, Familien, Gebirgswasser — sauberes Klima"></video>
+    <div class="impact-overlay"></div>
+    <div class="impact-copy">
+      <p class="label mono" data-im>03 — VERANTWORTUNG</p>
+      <h2 data-im>Saubere Energie.<br>Sauberes Klima.</h2>
+      <p class="impact-line" data-im>Vom Amazonas bis zum Gebirgsbach: Biomethan hält CO₂ im Kreislauf —
+        für Wälder, die stehen bleiben, und Generationen, die aufatmen.</p>
+      <div class="impact-stats" data-im>
+        <div class="stat"><div class="stat-num">&gt;97&nbsp;<span>%</span></div><div class="stat-name mono">METHANREINHEIT</div></div>
+        <div class="stat"><div class="stat-num">3<span>-stufig</span></div><div class="stat-name mono">VERSCHALTUNG</div></div>
+        <div class="stat"><div class="stat-num">20&nbsp;<span>bar</span></div><div class="stat-name mono">BETRIEBSDRUCK</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · FOOTER -->
+  <footer class="footer" id="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="footer-logo">EVONIK</div>
+        <p class="footer-claim">SEPURAN<sup>®</sup> Green — Membrantechnologie für die Biogasaufbereitung.</p>
+      </div>
+      <nav class="footer-cols">
+        <div><h4 class="mono">PRODUKT</h4><a href="#hero">Das Modul</a><a href="#explainer">Funktionsprinzip</a><a href="#assembly">Aufbau</a></div>
+        <div><h4 class="mono">ANWENDUNG</h4><a href="#impact">Biogasanlagen</a><a href="#impact">Einspeisung</a><a href="#impact">Nachhaltigkeit</a></div>
+        <div><h4 class="mono">KONTAKT</h4><a href="#">Vertrieb</a><a href="#">Standorte</a><a href="#">Presse</a></div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 — Inoffizielle Konzeptstudie. Kein Angebot der Evonik Industries AG.</span>
+      <span>SEPURAN® ist eine eingetragene Marke der Evonik Industries AG.</span>
+    </div>
+  </footer>
+
+</main>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "note": "Runbook: Higgsfield-Generierung für den SEPURAN-Prototyp — gleiche Pipeline wie beim Eclipse-Projekt (Hero-Bild mit Cinema Studio Image 2.5, daraus alle Clips mit Cinema Studio Video 3.0 animieren, 720p, 16:9, ohne Audio). Budget: ~2 (Bild) + 3x50 (Clips) = ~152 Credits. Starter-Plan: max 2 parallele Jobs. Nach Download: Frames mit scripts/extract-frames.mjs des Eclipse-Projekts extrahieren (orbit 160, assembly 160), impact.mp4 nach assets/impact.mp4 legen (Video spielt, wird nicht gescrubbt).",
+  "hero_image": {
+    "model": "cinematic_studio_2_5",
+    "params": { "aspect_ratio": "16:9", "resolution": "2k" },
+    "prompt": "Epic cinematic product still: the Evonik SEPURAN Green biogas membrane module - a sleek industrial green cylindrical cartridge with matte black domed end caps, polished stainless port fittings and two brushed steel clamp rings - standing upright in a dark violet studio void, floating just above a faintly reflective floor. White text 'SEPURAN Green' printed along the cylinder. Dramatic cool rim light tracing the cylinder edges, a single soft key light, thin white mist rolling low around its base, faint dust motes in the beam, deep purple-black background, high contrast, photorealistic industrial product photography, Apple-commercial aesthetic, centered composition, 4K cinema still, no watermark, no extra text."
+  },
+  "clips": {
+    "model": "cinematic_studio_3_0",
+    "shared_params": { "aspect_ratio": "16:9", "resolution": "720p", "generate_audio": false, "start_image": "hero_image job id" },
+    "orbit": {
+      "duration": 10,
+      "frames": { "count": 160, "dir": "assets/frames/orbit" },
+      "prompt": "Slow, perfectly smooth 360-degree studio turntable rotation of this exact industrial module standing upright in a dark violet void. Constant rotation speed, locked camera, seamless loop back to the starting pose, every side flowing cleanly into the next, dramatic rim light tracing the green cylinder and steel clamps, thin white mist rising only at the base and curling slowly, faint dust drifting. No cuts, no zoom, epic cinematic product film."
+    },
+    "assembly": {
+      "duration": 10,
+      "frames": { "count": 160, "dir": "assets/frames/assembly" },
+      "prompt": "The industrial membrane module assembling itself in mid-air from floating components: first a loose bundle of thousands of thin white hollow fibers, then two green cartridge tube halves close around the bundle and merge seamlessly into one single tube, then black O-rings, perforated gas distribution plates and matte black domed retentate caps slide in from left and right onto the tube ends, then two brushed steel clamps fly on and hex screws spin themselves in. Ends as the completed module, centered and still. Elegant slow motion, dark violet void, steel and green surfaces catching dramatic rim light, no cuts, epic cinematic product film."
+    },
+    "impact": {
+      "duration": 10,
+      "target": "assets/impact.mp4 (played, not scrubbed)",
+      "note": "kein start_image — reines Text-zu-Video",
+      "prompt": "Cinematic nature montage in one continuous flowing camera move: lush green Amazon rainforest canopy in golden morning light, gliding over a crystal-clear mountain stream between mossy rocks, a happy young family breathing fresh air in a sunlit forest clearing, sun rays breaking through leaves. Rich greens, pristine water, clean air, hopeful atmosphere, gentle slow motion, epic high-end sustainability commercial, photorealistic, no text, no watermark."
+    }
+  }
+}
