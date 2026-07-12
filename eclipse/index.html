@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURUM &amp; NOIR — The Eclipse</title>
+<meta name="description" content="The Eclipse. The first tourbillon chronograph from Aurum & Noir. Edition of 88.">
+<meta property="og:title" content="AURUM & NOIR — The Eclipse">
+<meta property="og:description" content="A tourbillon chronograph, crafted in darkness. Edition of 88.">
+<meta property="og:image" content="assets/stills/poster.webp">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23070707' stroke='%23c9a227' stroke-width='6'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- preloader -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-mark serif">A&nbsp;&amp;&nbsp;N</div>
+  <div class="loader-bar"><span id="loaderBar"></span></div>
+  <div class="loader-pct mono" id="loaderPct">0</div>
+</div>
+
+<!-- fixed chrome -->
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+<header class="topbar" id="topbar">
+  <div class="topbar-brand mono">AURUM &amp; NOIR</div>
+  <div class="topbar-right mono">GENÈVE&nbsp;&nbsp;·&nbsp;&nbsp;EDITION OF 88</div>
+</header>
+
+<main id="main">
+
+  <!-- 1 · HERO ORBIT -->
+  <section class="hero" id="hero">
+    <div class="stage">
+      <canvas id="orbitCanvas" aria-label="The Eclipse rotating in darkness"></canvas>
+      <div class="hero-center">
+        <h1 class="wordmark serif" id="wordmark">AURUM&nbsp;&amp;&nbsp;NOIR</h1>
+        <p class="hero-sub mono" id="heroSub">THE ECLIPSE&nbsp;&nbsp;—&nbsp;&nbsp;TOURBILLON CHRONOGRAPH</p>
+      </div>
+      <div class="hero-line" id="heroLine1">
+        <p class="serif">The first tourbillon chronograph<br>from the house.</p>
+      </div>
+      <div class="hero-line" id="heroLine2">
+        <p class="serif italic">Wound by hand.<br>Seen by few.</p>
+      </div>
+      <div class="scroll-cue mono" id="scrollCue"><span></span>SCROLL</div>
+    </div>
+  </section>
+
+  <!-- 2 · STORY -->
+  <section class="story" id="story">
+    <div class="stage story-stage">
+      <div class="glow" id="storyGlow"></div>
+      <div class="story-copy">
+        <p class="label mono" data-story>01 — PROVENANCE</p>
+        <h2 class="serif" data-story>Crafted in Darkness</h2>
+        <p class="story-line serif" data-story>Some things are made for light.</p>
+        <p class="story-line serif italic" data-story>This one was made for its absence.</p>
+        <p class="story-line serif" data-story>Eighteen months. Two hands. No shortcuts.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · MACRO DETAILS -->
+  <section class="macro" id="macro">
+    <div class="stage">
+      <canvas id="macroCanvas" aria-label="Macro glide across the Eclipse dial"></canvas>
+      <p class="label mono corner" >02 — DETAILS</p>
+      <div class="caption" id="cap1"><span class="rule"></span><p class="serif">Indices, engraved by a single burin stroke.</p></div>
+      <div class="caption right" id="cap2"><span class="rule"></span><p class="serif">Light ripples across brushed titanium.</p></div>
+      <div class="caption low" id="cap3"><span class="rule"></span><p class="serif">The tourbillon turns once a minute. Forever.</p></div>
+    </div>
+  </section>
+
+  <!-- 4 · ENGINEERING / EXPLODED -->
+  <section class="engineering" id="engineering">
+    <div class="stage">
+      <canvas id="explodedCanvas" aria-label="The Eclipse assembling itself from its components"></canvas>
+      <p class="label mono corner">03 — ENGINEERING</p>
+      <div class="spec" id="spec1"><div class="spec-num serif">42<span>mm</span></div><div class="spec-name mono">GRADE-5 TITANIUM</div></div>
+      <div class="spec" id="spec2"><div class="spec-num serif">72<span>h</span></div><div class="spec-name mono">POWER RESERVE</div></div>
+      <div class="spec" id="spec3"><div class="spec-num serif">217</div><div class="spec-name mono">HAND-FINISHED COMPONENTS</div></div>
+      <div class="assembly-line" id="assemblyLine"><p class="serif italic">It assembles itself around silence.</p></div>
+    </div>
+  </section>
+
+  <!-- 5 · LIMITED EDITION -->
+  <section class="edition" id="edition">
+    <div class="edition-bg" id="editionBg"></div>
+    <canvas id="smokeCanvas" aria-hidden="true"></canvas>
+    <div class="edition-copy">
+      <p class="label mono" data-ed>04 — THE EDITION</p>
+      <h2 class="serif" data-ed>Edition of 88</h2>
+      <p class="edition-price mono" data-ed>$48,000</p>
+      <p class="edition-note serif italic" data-ed>Numbered. Never repeated.</p>
+    </div>
+  </section>
+
+  <!-- 6 · WAITLIST -->
+  <section class="waitlist" id="waitlist">
+    <div class="waitlist-copy">
+      <p class="label mono" data-wl>05 — ALLOCATION</p>
+      <h2 class="serif" data-wl>Request a private allocation</h2>
+      <p class="waitlist-note serif italic" data-wl>The waitlist is private. The wait is part of it.</p>
+      <form id="waitlistForm" data-wl autocomplete="off">
+        <input type="email" id="wlEmail" placeholder="your@address.com" required aria-label="Email address">
+        <button type="submit" class="mono">JOIN THE WAITLIST</button>
+      </form>
+      <p class="waitlist-done serif" id="waitlistDone">Received. You will hear from Genève.</p>
+    </div>
+    <footer class="mono">
+      <span>AURUM &amp; NOIR — a fictional Swiss maison</span>
+      <span>ECLIPSE · ÉDITION DE 88 · MMXXVI</span>
+    </footer>
+  </section>
+
+</main>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

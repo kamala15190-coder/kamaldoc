@@ -1,0 +1,636 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Eclipse render scene</title>
+<style>html,body{margin:0;background:#050505;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/node_modules/three/build/three.module.js",
+    "three/addons/": "/node_modules/three/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---------- deterministic RNG ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rng = mulberry32(880717);
+
+const GOLD = 0xc9a227, GOLD_BRIGHT = 0xd9b64a;
+
+/* ---------- renderer ---------- */
+const renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true, powerPreference:'high-performance'});
+renderer.setPixelRatio(1);
+renderer.setSize(1600, 900);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.12;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050505);
+
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.22;
+
+const camera = new THREE.PerspectiveCamera(32, 1600/900, 0.05, 100);
+
+/* ---------- lights ---------- */
+const keyLight = new THREE.DirectionalLight(0xfff1dc, 2.4);
+keyLight.position.set(3, 4, 2.5);
+const rimCool = new THREE.DirectionalLight(0xdfe8ff, 3.2);
+rimCool.position.set(-4.5, 1.2, -3);
+const rimGold = new THREE.DirectionalLight(GOLD, 2.0);
+rimGold.position.set(4.5, -0.8, -3);
+const fill = new THREE.DirectionalLight(0xffffff, 0.25);
+fill.position.set(-2, -2, 3);
+scene.add(keyLight, rimCool, rimGold, fill);
+
+const spot = new THREE.SpotLight(0xfff3e0, 0, 30, 0.32, 0.5, 1.2); // atmosphere only
+spot.position.set(0, 9, 0.6);
+spot.target.position.set(0, 0, 0);
+spot.shadow.mapSize.set(1024, 1024);
+spot.shadow.bias = -0.0004;
+scene.add(spot, spot.target);
+
+/* ---------- procedural textures ---------- */
+function canvasTex(size, draw){
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const ctx = c.getContext('2d'); draw(ctx, size);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8; return t;
+}
+
+/* dial: sunburst near-black with gold print, subdials, tourbillon aperture */
+const DIAL_R = 0.86;
+const dialTex = canvasTex(2048, (ctx, S) => {
+  const C = S/2, px = u => u/DIAL_R*C; // watch-units -> px from center
+  let g = ctx.createRadialGradient(C, C, 0, C, C, C);
+  g.addColorStop(0, '#1b1b1f'); g.addColorStop(0.75, '#101013'); g.addColorStop(1, '#08080a');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+  // sunburst rays
+  ctx.save(); ctx.translate(C, C);
+  for(let i = 0; i < 1600; i++){
+    const a = i/1600*Math.PI*2, w = rng();
+    ctx.strokeStyle = `rgba(255,255,255,${(w*0.05).toFixed(3)})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(Math.cos(a)*40, Math.sin(a)*40);
+    ctx.lineTo(Math.cos(a)*C, Math.sin(a)*C); ctx.stroke();
+  }
+  ctx.restore();
+  // minute track
+  ctx.save(); ctx.translate(C, C);
+  for(let m = 0; m < 60; m++){
+    const a = m/60*Math.PI*2, big = m%5 === 0;
+    ctx.strokeStyle = big ? 'rgba(201,176,106,0.9)' : 'rgba(201,176,106,0.45)';
+    ctx.lineWidth = big ? 4 : 2;
+    const r0 = C*0.955, r1 = big ? C*0.915 : C*0.93;
+    ctx.beginPath(); ctx.moveTo(Math.cos(a)*r0, Math.sin(a)*r0);
+    ctx.lineTo(Math.cos(a)*r1, Math.sin(a)*r1); ctx.stroke();
+  }
+  ctx.restore();
+  // brand print (12 o'clock is -z which maps to canvas -y = up)
+  ctx.fillStyle = '#c9b06a'; ctx.textAlign = 'center';
+  ctx.font = `600 ${S*0.042}px Georgia, serif`;
+  ctx.save(); ctx.translate(C, C - px(0.40));
+  ctx.fillText('A U R U M   &   N O I R', 0, 0); ctx.restore();
+  ctx.font = `400 ${S*0.024}px Georgia, serif`;
+  ctx.fillStyle = 'rgba(201,176,106,0.75)';
+  ctx.fillText('E C L I P S E', C, C - px(0.30));
+  ctx.font = `400 ${S*0.017}px Georgia, serif`;
+  ctx.fillStyle = 'rgba(201,176,106,0.55)';
+  ctx.fillText('TOURBILLON  ·  SUISSE', C, C + px(0.235));
+  // subdials at 3 (+x) and 9 (-x)
+  for(const sx of [-0.42, 0.42]){
+    const cx = C + px(sx), cy = C, r = px(0.19);
+    const sg = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    sg.addColorStop(0, '#0a0a0c'); sg.addColorStop(1, '#141417');
+    ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+    // concentric guilloché rings
+    for(let rr = r*0.15; rr < r*0.92; rr += r*0.07){
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 7); ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(201,176,106,0.8)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+    for(let k = 0; k < 12; k++){ // ticks
+      const a = k/12*Math.PI*2;
+      ctx.strokeStyle = 'rgba(201,176,106,0.6)'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx+Math.cos(a)*r*0.82, cy+Math.sin(a)*r*0.82);
+      ctx.lineTo(cx+Math.cos(a)*r*0.93, cy+Math.sin(a)*r*0.93); ctx.stroke();
+    }
+  }
+  // tourbillon aperture at 6 (+z -> canvas +y = down)
+  const ty = C + px(0.45), tr = px(0.225);
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.arc(C, ty, tr, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(201,162,39,0.95)'; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(C, ty, tr, 0, 7); ctx.stroke();
+});
+
+/* fine brushed-metal roughness variation for the case */
+const brushTex = canvasTex(1024, (ctx, S) => {
+  ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, S, S);
+  for(let i = 0; i < 4000; i++){
+    const y = rng()*S, v = 100 + rng()*80;
+    ctx.strokeStyle = `rgba(${v},${v},${v},0.35)`; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(S, y + (rng()-0.5)*3); ctx.stroke();
+  }
+});
+brushTex.wrapS = brushTex.wrapT = THREE.RepeatWrapping; brushTex.repeat.set(4, 1);
+
+/* black marble with faint gold veins (atmosphere floor) */
+const marbleTex = canvasTex(2048, (ctx, S) => {
+  ctx.fillStyle = '#0a0a0b'; ctx.fillRect(0, 0, S, S);
+  for(let i = 0; i < 26; i++){
+    let x = rng()*S, y = rng()*S;
+    const gold = rng() < 0.35;
+    ctx.strokeStyle = gold ? 'rgba(170,140,70,0.35)' : 'rgba(200,200,205,0.18)';
+    ctx.lineWidth = 1.5 + rng()*3;
+    ctx.beginPath(); ctx.moveTo(x, y);
+    let dx = (rng()-0.5)*120, dy = (rng()-0.5)*120;
+    for(let s = 0; s < 40; s++){
+      dx += (rng()-0.5)*70; dy += (rng()-0.5)*70;
+      x += dx*0.5; y += dy*0.5;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  for(let i = 0; i < 6000; i++){
+    ctx.fillStyle = `rgba(255,255,255,${rng()*0.02})`;
+    ctx.fillRect(rng()*S, rng()*S, 2, 2);
+  }
+});
+marbleTex.wrapS = marbleTex.wrapT = THREE.RepeatWrapping; marbleTex.repeat.set(2, 2);
+
+/* ---------- materials ---------- */
+const mTitanium = new THREE.MeshStandardMaterial({color:0x38383f, metalness:1, roughness:0.42, roughnessMap:brushTex, envMapIntensity:1.35});
+const mBezel    = new THREE.MeshStandardMaterial({color:0x131316, metalness:1, roughness:0.16, envMapIntensity:1.4});
+const mGold     = new THREE.MeshStandardMaterial({color:GOLD, metalness:1, roughness:0.24, envMapIntensity:1.7});
+const mGoldHi   = new THREE.MeshStandardMaterial({color:GOLD_BRIGHT, metalness:1, roughness:0.10, envMapIntensity:2.0});
+const mDial     = new THREE.MeshStandardMaterial({map:dialTex, metalness:0.35, roughness:0.55, envMapIntensity:0.5});
+const mGlass    = new THREE.MeshPhysicalMaterial({color:0xffffff, metalness:0, roughness:0.03, transparent:true, opacity:0.10, clearcoat:1, clearcoatRoughness:0.04, envMapIntensity:2.2, side:THREE.DoubleSide, depthWrite:false});
+const mSteelBlue= new THREE.MeshStandardMaterial({color:0x5577bb, metalness:1, roughness:0.3, envMapIntensity:1.5});
+const mLeather  = new THREE.MeshStandardMaterial({color:0x0a0a0b, metalness:0.05, roughness:0.9, envMapIntensity:0.3});
+const mRuby     = new THREE.MeshStandardMaterial({color:0x7a0f1f, metalness:0.4, roughness:0.2, emissive:0x3a0510, envMapIntensity:1.6});
+const mPlate    = new THREE.MeshStandardMaterial({color:0x232327, metalness:1, roughness:0.5, envMapIntensity:0.8});
+
+/* ---------- watch build ----------
+   Face-up frame: dial normal +y, 12 o'clock -z, crown/3 o'clock +x. */
+const rig   = new THREE.Group();   // sequence-level orientation
+const watch = new THREE.Group();
+rig.add(watch); scene.add(rig);
+
+const parts = {}; // exploded-view component groups
+function part(name){ const g = new THREE.Group(); parts[name] = g; watch.add(g); return g; }
+
+const DIAL_Y = 0.105;
+
+/* case band + lugs + caseback + crown */
+const gCase = part('caseBand');
+{
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.30, 128, 1, true), mTitanium);
+  gCase.add(band);
+  const edgeTop = new THREE.Mesh(new THREE.TorusGeometry(0.995, 0.028, 24, 128), mBezel);
+  edgeTop.rotation.x = Math.PI/2; edgeTop.position.y = 0.15; gCase.add(edgeTop);
+  const edgeBot = edgeTop.clone(); edgeBot.position.y = -0.15; gCase.add(edgeBot);
+  // gold chamfer accent line
+  const chamfer = new THREE.Mesh(new THREE.TorusGeometry(1.005, 0.008, 12, 128), mGold);
+  chamfer.rotation.x = Math.PI/2; chamfer.position.y = 0.09; gCase.add(chamfer);
+  // lugs
+  const lugGeo = new THREE.CapsuleGeometry(0.06, 0.22, 6, 12);
+  for(const sz of [-1, 1]) for(const sx of [-1, 1]){
+    const lug = new THREE.Mesh(lugGeo, mTitanium);
+    lug.position.set(0.40*sx, -0.045, 1.02*sz);
+    lug.rotation.x = (Math.PI/2 + 0.38)*sz;
+    gCase.add(lug);
+  }
+}
+const gCrown = part('crown');
+{
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.105, 0.105, 0.11, 24), mTitanium);
+  crown.rotation.z = Math.PI/2; crown.position.set(1.04, 0, 0); gCrown.add(crown);
+  const crownCap = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.115, 24), mGold);
+  crownCap.rotation.z = Math.PI/2; crownCap.position.set(1.05, 0, 0); gCrown.add(crownCap);
+  for(let i = 0; i < 18; i++){ // knurling
+    const a = i/18*Math.PI*2;
+    const ridge = new THREE.Mesh(new THREE.BoxGeometry(0.115, 0.012, 0.02), mBezel);
+    ridge.position.set(1.04, Math.cos(a)*0.105, Math.sin(a)*0.105);
+    ridge.rotation.x = -a; gCrown.add(ridge);
+  }
+  for(const sz of [-1, 1]){ // chrono pushers
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.14, 16), mBezel);
+    p.rotation.z = Math.PI/2;
+    p.position.set(Math.cos(0.55*sz)*1.02, 0, Math.sin(0.55*sz)*1.02);
+    p.rotation.y = -0.55*sz;
+    gCrown.add(p);
+    const pc = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.15, 16), mGold);
+    pc.rotation.copy(p.rotation); pc.position.copy(p.position); gCrown.add(pc);
+  }
+}
+const gBack = part('caseback');
+{
+  const back = new THREE.Mesh(new THREE.CylinderGeometry(0.96, 0.90, 0.07, 96), mTitanium);
+  back.position.y = -0.185; gBack.add(back);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.80, 0.012, 8, 96), mGold);
+  ring.rotation.x = Math.PI/2; ring.position.y = -0.222; gBack.add(ring);
+  const sapBack = new THREE.Mesh(new THREE.CircleGeometry(0.72, 64), mBezel);
+  sapBack.rotation.x = Math.PI/2; sapBack.position.y = -0.225; gBack.add(sapBack);
+}
+
+/* bezel */
+const gBezel = part('bezel');
+{
+  const pts = [];
+  pts.push(new THREE.Vector2(0.86, 0.15));
+  pts.push(new THREE.Vector2(1.00, 0.15));
+  pts.push(new THREE.Vector2(1.00, 0.20));
+  pts.push(new THREE.Vector2(0.97, 0.235));
+  pts.push(new THREE.Vector2(0.88, 0.235));
+  pts.push(new THREE.Vector2(0.86, 0.20));
+  const bezel = new THREE.Mesh(new THREE.LatheGeometry(pts, 128), mBezel);
+  gBezel.add(bezel);
+  const goldLine = new THREE.Mesh(new THREE.TorusGeometry(0.875, 0.007, 8, 128), mGoldHi);
+  goldLine.rotation.x = Math.PI/2; goldLine.position.y = 0.228; gBezel.add(goldLine);
+}
+
+/* dial + indices + hands */
+const gDial = part('dialAssembly');
+{
+  const dial = new THREE.Mesh(new THREE.CylinderGeometry(DIAL_R, DIAL_R, 0.02, 96), [mPlate, mDial, mPlate]);
+  dial.position.y = DIAL_Y;
+  dial.rotation.y = Math.PI/2; // align canvas print with 3D 12-o'clock
+  gDial.add(dial);
+  // applied gold batons (skip 6 = aperture)
+  const batGeo = new THREE.BoxGeometry(0.035, 0.022, 0.15);
+  for(let h = 0; h < 12; h++){
+    if(h === 6) continue;
+    const a = h/12*Math.PI*2;
+    const dir = new THREE.Vector3(Math.sin(a), 0, -Math.cos(a));
+    const n = h === 0 ? 2 : 1;
+    for(let k = 0; k < n; k++){
+      const bat = new THREE.Mesh(batGeo, mGoldHi);
+      const side = n === 2 ? (k === 0 ? -0.032 : 0.032) : 0;
+      const perp = new THREE.Vector3(-dir.z, 0, dir.x);
+      bat.position.copy(dir.clone().multiplyScalar(0.745)).addScaledVector(perp, side);
+      bat.position.y = DIAL_Y + 0.02;
+      bat.lookAt(bat.position.clone().add(dir));
+      gDial.add(bat);
+    }
+  }
+  // dauphine hands (faceted 4-sided cones)
+  function hand(len, wid, angleDeg, y){
+    const g = new THREE.ConeGeometry(wid, len, 4);
+    const m = new THREE.Mesh(g, mGoldHi);
+    const grp = new THREE.Group();
+    m.position.y = len/2; m.scale.z = 0.4;
+    grp.add(m);
+    const a = angleDeg/180*Math.PI;
+    grp.rotation.set(-Math.PI/2, 0, 0);           // cone axis -> -z (12 o'clock)
+    const holder = new THREE.Group();
+    holder.add(grp); holder.rotation.y = -a;      // clockwise from 12
+    holder.position.y = y;
+    gDial.add(holder);
+    return holder;
+  }
+  hand(0.44, 0.052, 305, DIAL_Y + 0.035);  // hour ~10
+  hand(0.66, 0.042, 54,  DIAL_Y + 0.050);  // minute ~9min
+  // chrono central seconds: slim gold needle
+  {
+    const grp = new THREE.Group();
+    const needle = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.008, 0.74), mGold);
+    needle.position.z = -0.26; grp.add(needle);
+    const counter = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.010, 8, 24), mGold);
+    counter.rotation.x = Math.PI/2; counter.position.z = 0.14; grp.add(counter);
+    grp.position.y = DIAL_Y + 0.062; grp.rotation.y = -2.4;
+    gDial.add(grp);
+  }
+  // hub
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.075, 24), mGoldHi);
+  hub.position.y = DIAL_Y + 0.035; gDial.add(hub);
+  // subdial needles
+  for(const [sx, rot] of [[-0.42, 0.8], [0.42, -2.2]]){
+    const grp = new THREE.Group();
+    const needle = new THREE.Mesh(new THREE.BoxGeometry(0.010, 0.006, 0.14), mGoldHi);
+    needle.position.z = -0.05; grp.add(needle);
+    grp.position.set(sx, DIAL_Y + 0.016, 0); grp.rotation.y = rot;
+    gDial.add(grp);
+  }
+}
+
+/* tourbillon at 6 o'clock */
+const gTourb = part('tourbillon');
+const cage = new THREE.Group();
+const balance = new THREE.Group();
+{
+  gTourb.position.set(0, DIAL_Y - 0.005, 0.45);
+  const fixedRing = new THREE.Mesh(new THREE.TorusGeometry(0.215, 0.012, 12, 64), mGold);
+  fixedRing.rotation.x = Math.PI/2; gTourb.add(fixedRing);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.02, 48), mPlate);
+  base.position.y = -0.075; gTourb.add(base);
+  // rotating cage
+  const cageRing = new THREE.Mesh(new THREE.TorusGeometry(0.175, 0.009, 10, 48), mGoldHi);
+  cageRing.rotation.x = Math.PI/2; cageRing.position.y = 0.012; cage.add(cageRing);
+  for(let i = 0; i < 3; i++){
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.012, 0.175), mGoldHi);
+    arm.position.y = 0.012;
+    const a = i/3*Math.PI*2;
+    arm.position.x = Math.sin(a)*0.0875; arm.position.z = -Math.cos(a)*0.0875;
+    arm.rotation.y = -a;
+    cage.add(arm);
+  }
+  const jewel = new THREE.Mesh(new THREE.SphereGeometry(0.016, 12, 12), mRuby);
+  jewel.position.y = 0.02; cage.add(jewel);
+  // balance wheel + hairspring
+  const bRing = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.011, 10, 48), mGold);
+  bRing.rotation.x = Math.PI/2; balance.add(bRing);
+  for(const r of [0, Math.PI/2]){
+    const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.008, 0.20), mGold);
+    spoke.rotation.y = r; balance.add(spoke);
+  }
+  balance.position.y = -0.006;
+  cage.add(balance);
+  // hairspring: archimedean spiral tube (blued steel)
+  const spiralPts = [];
+  for(let i = 0; i <= 220; i++){
+    const a = i/220*Math.PI*2*3.5, r = 0.015 + i/220*0.080;
+    spiralPts.push(new THREE.Vector3(Math.cos(a)*r, 0, Math.sin(a)*r));
+  }
+  const spiral = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(spiralPts), 220, 0.003, 6), mSteelBlue);
+  spiral.position.y = -0.026; cage.add(spiral);
+  // escape wheel
+  const esc = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.008, 15), mGoldHi);
+  esc.position.set(0.09, -0.03, 0.06); cage.add(esc);
+  gTourb.add(cage);
+}
+
+/* movement (revealed in exploded view) */
+const gMove = part('movement');
+const gearItems = []; // {mesh, dx,dy,dz, spin}
+{
+  const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.82, 0.82, 0.05, 96), mPlate);
+  plate.position.y = -0.06; gMove.add(plate);
+  // côtes de genève stripes on plate via simple gold rings
+  const decor = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.004, 6, 96), mGold);
+  decor.rotation.x = Math.PI/2; decor.position.y = -0.034; gMove.add(decor);
+  function gearShape(teeth, rOut, rTooth){
+    const s = new THREE.Shape();
+    const N = teeth*4;
+    for(let i = 0; i <= N; i++){
+      const a = i/N*Math.PI*2;
+      const bump = (Math.floor(i/2) % 2 === 0) ? rTooth : 0;
+      const r = rOut + bump;
+      const x = Math.cos(a)*r, y = Math.sin(a)*r;
+      i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
+    }
+    const hole = new THREE.Path(); hole.absarc(0, 0, rOut*0.18, 0, Math.PI*2, true);
+    s.holes.push(hole);
+    return s;
+  }
+  const gearDefs = [
+    {r:0.24, teeth:24, pos:[ 0.28, -0.02, -0.18], dx: 0.55, dy: 0.55, dz:-0.35},
+    {r:0.17, teeth:18, pos:[-0.24, -0.01,  0.10], dx:-0.65, dy: 0.35, dz: 0.30},
+    {r:0.12, teeth:14, pos:[ 0.05, -0.03,  0.22], dx: 0.15, dy: 0.85, dz: 0.55},
+    {r:0.20, teeth:20, pos:[-0.35, -0.03, -0.30], dx:-0.45, dy: 0.65, dz:-0.55},
+    {r:0.09, teeth:10, pos:[ 0.42, -0.01,  0.28], dx: 0.75, dy: 0.30, dz: 0.45},
+  ];
+  for(const d of gearDefs){
+    const geo = new THREE.ExtrudeGeometry(gearShape(d.teeth, d.r, d.r*0.14), {depth:0.022, bevelEnabled:false});
+    const gear = new THREE.Mesh(geo, mGoldHi);
+    gear.rotation.x = Math.PI/2;
+    gear.position.set(...d.pos);
+    gMove.add(gear);
+    gearItems.push({mesh:gear, home:new THREE.Vector3(...d.pos), d:new THREE.Vector3(d.dx, d.dy, d.dz), spin:rng()*6});
+  }
+  // mainspring barrel
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.06, 48), mGold);
+  barrel.position.set(-0.05, -0.015, -0.42); gMove.add(barrel);
+  gearItems.push({mesh:barrel, home:barrel.position.clone(), d:new THREE.Vector3(-0.1, 1.0, -0.75), spin:2.2});
+  // ruby jewels + screws
+  for(let i = 0; i < 7; i++){
+    const a = i/7*Math.PI*2 + 0.4;
+    const j = new THREE.Mesh(new THREE.SphereGeometry(0.018, 10, 10), mRuby);
+    j.position.set(Math.cos(a)*0.62, -0.03, Math.sin(a)*0.62);
+    gMove.add(j);
+  }
+}
+
+/* sapphire dome: spherical cap, rim r=0.90 sitting on the bezel */
+const gGlass = part('glass');
+{
+  const R = 5.0, thetaL = Math.asin(0.90/R);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(R, 96, 24, 0, Math.PI*2, 0, thetaL), mGlass);
+  dome.position.y = 0.215 - R*Math.cos(thetaL);
+  dome.renderOrder = 10;
+  dome.castShadow = false;
+  gGlass.add(dome);
+}
+
+/* strap: dense chain of overlapping links following an arc, both sides */
+function buildStrap(sign){ // sign -1 => 12 side (-z)
+  const g = new THREE.Group();
+  const R = 1.85, cy = -1.68;
+  for(let i = 0; i < 12; i++){
+    const a0 = 0.60 + i*0.105;           // angle from vertical
+    const w = 0.42 - i*0.006;
+    const link = new THREE.Mesh(new THREE.BoxGeometry(w, 0.06, 0.24), mLeather);
+    const z = Math.sin(a0)*R*sign, y = cy + Math.cos(a0)*R;
+    link.position.set(0, y, z);
+    link.rotation.x = a0*sign;
+    g.add(link);
+    if(i === 1){
+      const keeper = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.075, 0.09), mGold);
+      keeper.position.copy(link.position); keeper.rotation.copy(link.rotation);
+      g.add(keeper);
+    }
+  }
+  return g;
+}
+const gStrapN = part('strapTop');  gStrapN.add(buildStrap(-1));
+const gStrapS = part('strapBottom'); gStrapS.add(buildStrap(1));
+
+/* ---------- gold dust particles ---------- */
+const P_COUNT = 320;
+const pBase = new Float32Array(P_COUNT*3);
+const pPhase = new Float32Array(P_COUNT);
+for(let i = 0; i < P_COUNT; i++){
+  pBase[i*3]   = (rng()-0.5)*7.0;
+  pBase[i*3+1] = (rng()-0.5)*4.5;
+  pBase[i*3+2] = (rng()-0.5)*5.0;
+  pPhase[i] = rng()*Math.PI*2;
+}
+const pGeo = new THREE.BufferGeometry();
+pGeo.setAttribute('position', new THREE.BufferAttribute(pBase.slice(), 3));
+const pMat = new THREE.PointsMaterial({color:0xd4af37, size:0.016, transparent:true, opacity:0.55, blending:THREE.AdditiveBlending, depthWrite:false, sizeAttenuation:true});
+const dust = new THREE.Points(pGeo, pMat);
+scene.add(dust);
+function updateDust(t){
+  const pos = pGeo.attributes.position.array;
+  for(let i = 0; i < P_COUNT; i++){
+    const ph = pPhase[i];
+    pos[i*3]   = pBase[i*3]   + Math.sin(ph + t*Math.PI*2)*0.18;
+    pos[i*3+1] = ((pBase[i*3+1] + t*1.4 + 2.25) % 4.5) - 2.25;
+    pos[i*3+2] = pBase[i*3+2] + Math.cos(ph*1.7 + t*Math.PI*2)*0.14;
+  }
+  pGeo.attributes.position.needsUpdate = true;
+}
+
+/* ---------- atmosphere props ---------- */
+const marble = new THREE.Mesh(new THREE.PlaneGeometry(80, 80),
+  new THREE.MeshStandardMaterial({map:marbleTex, metalness:0.5, roughness:0.3, envMapIntensity:0.25}));
+marble.rotation.x = -Math.PI/2; marble.position.y = -0.26; marble.visible = false;
+marble.receiveShadow = true;
+scene.add(marble);
+watch.traverse(o => { if (o.isMesh && o.material !== mGlass) o.castShadow = true; });
+
+/* ---------- helpers ---------- */
+const ease = t => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
+const lerp = (a, b, t) => a + (b - a)*t;
+const V3 = (x, y, z) => new THREE.Vector3(x, y, z);
+
+/* exploded offsets: [x, y, z, rotX, rotZ] at full explosion */
+const EXPLODE = {
+  glass:        [0,  1.55, 0, -0.30, 0.12],
+  bezel:        [0,  1.12, 0,  0.18, -0.10],
+  dialAssembly: [0,  0.72, 0, -0.12, 0.08],
+  tourbillon:   [0.38, 0.42, 0.42, 0.35, 0],
+  movement:     [0,  0.26, 0,  0.08, -0.15],
+  caseBand:     [0,  0, 0, 0, 0],
+  crown:        [0.85, 0, 0, 0, 0.5],
+  caseback:     [0, -0.85, 0, 0.22, 0],
+  strapTop:     [0, -0.35, -1.35, 0.45, 0],
+  strapBottom:  [0, -0.35,  1.35, -0.45, 0],
+};
+function setExplode(k){ // k: 0 assembled, 1 exploded
+  for(const [name, [x, y, z, rx, rz]] of Object.entries(EXPLODE)){
+    const g = parts[name];
+    g.rotation.set(rx*k, 0, rz*k);
+    if(name === 'tourbillon'){ // keep its 6-o'clock anchor
+      g.position.set(x*k, DIAL_Y - 0.005 + y*k, 0.45 + z*k);
+    } else {
+      g.position.set(x*k, y*k, z*k);
+    }
+  }
+  for(const gi of gearItems){
+    gi.mesh.position.copy(gi.home).addScaledVector(gi.d, k);
+    gi.mesh.rotation.z = gi.spin*k;
+  }
+}
+
+function resetSceneState(){
+  rig.rotation.set(0, 0, 0); rig.rotation.order = 'XYZ'; rig.position.set(0, 0, 0);
+  watch.rotation.set(0, 0, 0); watch.position.set(0, 0, 0);
+  setExplode(0);
+  parts.strapTop.visible = parts.strapBottom.visible = true;
+  marble.visible = false; dust.visible = true;
+  scene.fog = null;
+  spot.intensity = 0; spot.castShadow = false;
+  keyLight.intensity = 2.4; rimCool.intensity = 3.2; rimGold.intensity = 2.4; fill.intensity = 0.25;
+  keyLight.position.set(3, 4, 2.5);
+  scene.environmentIntensity = 0.22;
+  pMat.opacity = 0.6;
+  camera.fov = 32;
+}
+
+/* ---------- sequences ---------- */
+const sequences = {
+  /* 360° turntable, watch upright facing camera at t=0 */
+  orbit(t){
+    resetSceneState();
+    // upright, facing camera at t=0, then a full turn around the world Y axis
+    rig.rotation.order = 'YXZ';
+    rig.rotation.set(Math.PI/2, t*Math.PI*2, 0);
+    cage.rotation.y = t*Math.PI*3;
+    balance.rotation.y = Math.sin(t*Math.PI*24)*1.1;
+    updateDust(t);
+    camera.fov = 30;
+    camera.position.set(0, lerp(0.25, -0.15, t), 5.6);
+    camera.lookAt(0, 0, 0);
+  },
+  /* macro glide from 12 indices down across the dial to the tourbillon */
+  macro(t){
+    resetSceneState();
+    dust.visible = false;
+    const k = ease(t);
+    // camera path (watch face-up): glide along the flank, never through the hands
+    const p0 = V3(0.80, 0.85, -1.10), p1 = V3(1.10, 0.52, 0.10), p2 = V3(0.38, 0.44, 0.90);
+    const q0 = V3(0.15, 0.12, -0.60), q1 = V3(0.44, 0.10, 0.0),  q2 = V3(0.0, 0.05, 0.45);
+    const bez = (a, b, c, u) => a.clone().multiplyScalar((1-u)*(1-u)).addScaledVector(b, 2*u*(1-u)).addScaledVector(c, u*u);
+    camera.fov = 30;
+    camera.position.copy(bez(p0, p1, p2, k));
+    camera.lookAt(bez(q0, q1, q2, k));
+    // light sweep -> ripple across brushed metal
+    const la = lerp(-0.8, 2.4, k);
+    keyLight.position.set(Math.cos(la)*4, 3.2, Math.sin(la)*4);
+    keyLight.intensity = 3.0;
+    cage.rotation.y = t*Math.PI*2.2;
+    balance.rotation.y = Math.sin(t*Math.PI*30)*1.15;
+  },
+  /* components converge into the assembled watch */
+  exploded(t){
+    resetSceneState();
+    const k = ease(t);
+    setExplode(1 - k);
+    watch.rotation.y = lerp(0.55, 0.15, k);
+    updateDust(t*0.6);
+    pMat.opacity = 0.3;
+    cage.rotation.y = t*Math.PI*2;
+    balance.rotation.y = Math.sin(t*Math.PI*20)*1.0;
+    camera.fov = 34;
+    camera.position.set(lerp(3.6, 2.9, k), lerp(2.7, 2.1, k), lerp(4.0, 3.4, k));
+    camera.lookAt(0, lerp(0.35, 0.05, k), 0);
+  },
+  /* watch on black marble under a single spotlight */
+  atmosphere(t){
+    resetSceneState();
+    marble.visible = true;
+    scene.fog = new THREE.FogExp2(0x050505, 0.085);
+    dust.visible = true; pMat.opacity = 0.4;
+    updateDust(t*0.5);
+    watch.rotation.y = 0.95; // brand print toward camera
+    // sink the straps out of sight beneath the slab
+    parts.strapTop.position.y = -0.35; parts.strapBottom.position.y = -0.35;
+    scene.environmentIntensity = 0.10;
+    keyLight.intensity = 0; rimCool.intensity = 0.8; rimGold.intensity = 0.9; fill.intensity = 0.05;
+    spot.intensity = 150; spot.angle = 0.26; spot.castShadow = true;
+    cage.rotation.y = t*Math.PI*2;
+    balance.rotation.y = Math.sin(t*Math.PI*20)*1.0;
+    camera.fov = 26;
+    camera.position.set(2.3, 1.15, 3.1);
+    camera.lookAt(0, -0.02, 0);
+  },
+};
+
+/* ---------- public API ---------- */
+window.SCENE = {
+  setSize(w, h){
+    renderer.setSize(w, h);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  },
+  renderFrame(seq, t){
+    sequences[seq](Math.min(1, Math.max(0, t)));
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+  },
+  snapshot(type = 'image/webp', q = 0.82){
+    return renderer.domElement.toDataURL(type, q);
+  },
+  webglInfo(){
+    const gl = renderer.getContext();
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    return dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : 'unknown';
+  },
+};
+window.SCENE_READY = true;
+</script>
+</body>
+</html>
