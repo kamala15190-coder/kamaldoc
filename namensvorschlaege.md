@@ -1,28 +1,41 @@
-# Namensvorschläge (Ersatz für „Kitmind“)
+# Namensvorschläge für die vermieteten KI-Mitarbeiter
 
-**Stand:** 01.11.2026 · Schnellcheck, keine Rechtsberatung. Geprüft wurden Domains per DNS und Verisign-RDAP sowie Marken per TMview (Fuzzy-Suche, ausgewertet die ersten 100 Treffer, EU/AT/DE/WO, aktive Marken in Kl. 9/35/42). Dazu kamen npm, PyPI, App Store, GitHub und eine Websuche.
+**Stand:** 01.11.2026 · Schnellcheck, keine Rechtsberatung. Vertrieb läuft über kamalkit.at, eine eigene Domain ist daher nicht nötig.
+**Methode:** TMview, Suche „enthält“ (C) und Fuzzy (F), je die ersten 100 Treffer. Ausgewertet wurden aktive Marken in EU, AT, DE, CH, GB und WO, Klassen 9/35/42. Dazu kamen npm, PyPI, App Store, GitHub und eine Websuche.
 
-## Shortlist
+## Ergebnis (Reihenfolge = Empfehlung)
 
-| Name | Domains .com .at .de .eu .ai .io | Marken (TMview, EU-relevant, Kl. 9/35/42) | Sonstiges | Einschätzung |
+| Name | Bedeutung | Marken in 9/35/42 | Sonstiges | Risiko |
 |---|---|---|---|---|
-| **Papervik** | alle frei (.com laut RDAP nicht registriert) | **0** Treffer. Fuzzy ergab weltweit nur 2 Treffer: PAPERVIP und PAPERLIK, beide in China | npm, PyPI, GitHub, App Store frei. Websuche ohne Treffer. YouTube und LinkedIn frei, X unklar (HTTP 200) | **Favorit**, sehr sauber |
-| **Dokerra** | alle frei | 0 in den ersten 100 von 1.588 Fuzzy-Treffern, also **nicht vollständig geprüft** | npm, PyPI, GitHub frei. X, YouTube und LinkedIn frei (404) | gut, Restprüfung nötig |
-| **Dokanta** | alle frei | dekanta (WO, Kl. 33/35), D-KANTA (EUIPO, Kl. 9/11/16/21) | GitHub-Repo „imalmamun/dokanta“. X und YouTube vermutlich belegt | mittleres Risiko |
+| **Zuhandl** | „zur Hand“, wie „jemandem zur Hand gehen“, mit österreichischer Verkleinerungsendung | **0** Treffer (C). F: 2 Treffer weltweit, einer davon „ZUHANDEL ONE PRIVILEGED APPROACH“ (PT, Kl. 35/36), weit weg | npm, PyPI, GitHub frei. Websuche ohne Treffer | **niedrig** |
+| **Knechtio** | Anspielung auf „Knecht“ (Diener, Hilfskraft) | **0** Treffer (C und F) | npm, PyPI frei, Websuche ohne Treffer. Nachteil: „Knecht“ klingt nach Knechtschaft und wirkt bei „Mitarbeiter vermieten“ heikel | niedrig (Markenrecht), mittel (Wirkung) |
+| **Wichtl** | Wichtel, hilfreicher Hausgeist | C: 1 Treffer (Trachten Wichtlstube, EM, Kl. 25/35, anderer Markt). F: viele „Wichtel“-Marken, z. B. WICHTEL AKADEMIE (DE, Kl. 35/41/43), Wichtel Willi (MDR, Kl. 9 …) | npm, PyPI frei, GitHub: 15 kleine Repos „wichtl*“. „Wichtel“ ist ein gängiges Wort, daher weniger unterscheidungskräftig | niedrig bis mittel |
+| **Hackler** | österreichisch für Arbeiter | C: 0 Treffer in 9/35/42. F: WACKLER (DE, Kl. 35, Dienstleister) und PACKLER (FR, Kl. 9/35/42) | Echter Nachname, 25 GitHub-Repos „hackler“. Klingt nach „Hacker“ | mittel |
 
-Bei allen „Dok…“-Namen gilt: DOKKA ist eine bestehende Software für Buchhaltungsautomatisierung im gleichen Markt [belegt per Websuche]. Der Anfang „Dok“ ist zudem beschreibend. Beides schwächt die Unterscheidungskraft [Vermutung].
+## Verworfen (Konflikt im Register)
 
-## Verworfen (Grund)
+| Name | Grund |
+|---|---|
+| Heinzel, Heinzelo | „Heinzel“ ist angemeldet (DE, Lolama GmbH, Kl. 9/35/42) und eingetragen (DE, Hahn & Zumbroich, Kl. 9/40/42). Dazu kommen Heinzels (EM) und Heinzelmann |
+| Kobolo | Eingetragen als EM, DE und GB (Kobolo GmbH, Kl. 20/21/35). Außerdem viele KOBOLD-Marken in Kl. 9 |
+| Golemo | GOLEMIO (CZ, Kl. 9/35/36/38/39/42) und GOLEMON (EM, Kl. 9) |
+| Azubio | Viele Azubi-Marken in Kl. 35/38/41/42 (AZUBIYO, AZUBIT von Bechtle) |
+| Helferl | Dicht besetzt: HELFERLINE (EM, Kl. 35/37/42), HELFERLEIN (AT, Kl. 35/37/39), Helfero (DE, Kl. 35/42) und weitere |
+| Mietling | Mieting (DE/WO/GB, Maske Fleet, Kl. 35 und 42) liegt eine Stelle daneben. Außerdem klingt „Mietling“ abwertend |
+| Werkling | werklig (EM, Kl. 35/42), WerkLink (DE, Kl. 9/35/42) |
+| Hacklo | hackly (DE, Hackly GmbH, Kl. 9/35/42) |
+| Gesello | RESELLO (EM/WO/GB, Kl. 38/42/45) liegt nah |
 
-- **Beleqo**: Alle Domains sind frei, aber die Unionsmarke **belego** (EUIPO 019353325, eingetragen 2026, Kl. 9/35/42) liegt sehr nah, ebenso BELIQO (FR, Kl. 9/42).
-- **Belegor**: belego (siehe oben).
-- **Fakvio**: Faktio (CZ, angemeldet, Kl. 9/35/42).
-- **Belaqo**: viele Belaco-, Belamo- und Beliqo-Marken in Kl. 9/42.
-- **Dokvara**: DOKVARY (FR, eingetragen, Kl. 42).
-- Weitere Namen, bei denen .com vergeben ist: Belyx, Extrava, Paperlyn, Kavido, Zettavo, Scanvo, Dokiro, Dokvio und andere.
+Frühere Runde: Kitmind (kitamind.ai und GitMind), Papervik (gefiel nicht).
+
+## Nicht geprüft
+
+- Direktabfrage bei EUIPO, ÖPA, DPMA, WIPO (siehe `kitmind-pruefung.md`, Abschnitt 3).
+- Je Name nur die ersten 100 Fuzzy-Treffer.
+- Nicht eingetragene Rechte, z. B. Firmennamen und Werktitel.
+- Instagram, TikTok, X und LinkedIn für die Top-Kandidaten.
+- Aussprache und Wirkung in der Zielgruppe (KMU in AT/DE).
 
 ## Nächster Schritt
 
-1. Entscheiden, ob „Papervik“ gefällt (Aussprache, Wirkung bei KMU in AT und DE).
-2. Für den gewählten Namen die volle Prüfung wie bei Kitmind durchführen (EUIPO, ÖPA, DPMA, WIPO direkt, Instagram, TikTok, X) und danach die Markenanwältin oder den Markenanwalt einbeziehen.
-3. Erst danach Domains sichern (.com, .at, .eu, .de) und die Unionsmarke in Kl. 9, 35 und 42 anmelden.
+Namen auswählen, dann volle Prüfung wie bei Kitmind (Register direkt, Social Media, Firmenbuch) und Markenanwalt, danach Anmeldung als Unionsmarke in Kl. 9, 35 und 42.
