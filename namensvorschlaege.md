@@ -69,3 +69,20 @@ Namen auswählen, dann volle Prüfung wie bei Kitmind (Register direkt, Social M
 | Kitrix, Kitezo, Kitelo, Kitwork, Kitaly | Citrix, Kiteo, Kiteloop, KiWORK (AT), KITAFLY: Konflikte | – | hoch |
 
 **Randbefund:** „KI-Mitarbeiter“ und „AI-Mitarbeiter“ sind in Deutschland für Kl. 42 angemeldet (Scoreprise.AI GmbH, Stand TMview). Als Markenname und eventuell auch als Produktbezeichnung sollte man das vorher anwaltlich klären lassen.
+
+---
+
+## Runde 5: Raster-Screening mit Abstandsberechnung (02.11.2026)
+
+**Methode:** 60 Namen im Stil „Kit + kurze englische Endung“. Jeder Name wurde per TMview-Fuzzy-Suche geprüft, der Buchstabenabstand (Levenshtein) zu allen aktiven Marken in EU, GB, CH und WO in Kl. 9/35/42 berechnet und alles mit Abstand 2 oder weniger als Konflikt gewertet. Scharf, weil Namen mit Kit-Anfang fast immer an Marken wie BITxxx, FITxxx oder LITxxx hängen bleiben (Abstand 1).
+
+**Sauber (keine nahe Marke in Kl. 9/35/42):** Kitstaff, Kittask, Kitplex, Kitduty, Kitlabor.
+
+**Alle anderen** hatten mindestens eine Marke mit Abstand 1 oder 2, darunter: Kitrex (VITREX), Kitron (KITRON, identisch), Kitpro (KITPRO, identisch), Kitry (KITRY, identisch), Kitsy (Kitsy, identisch), Kitpal (KITPAL, identisch), Kitgo (kitgo, identisch), Kitzy (KITZY, identisch), Kitvolt (BitVolt), Kitjob (FITJOB), Kitdesk (ITDESK, FITDESK), Kitvex (LITVEX), Kitworx (BITWORX, ITWORX), Kitworks (KITEWORKS), Kitteam (KICTEAM), Kitwise (BITWISE), Kitbrain (Bitbrain, ITBRAIN).
+
+| Name | Marken | Sonstiges | Risiko |
+|---|---|---|---|
+| **Kitstaff** | C: 0. F: 16 Treffer weltweit, keiner in Kl. 9/35/42 | npm, PyPI, GitHub frei. Websuche ohne Treffer. kitstaff.com, .at, .de, .ai frei. YouTube und LinkedIn frei, TikTok vergeben, X wahrscheinlich vergeben | niedrig. „Staff“ ist beschreibend, die Marke ist dadurch schwächer |
+| **Kittask** | C: 0. F: 11 Treffer, nur KITMASK (ES, andere Klasse) | 3 kleine GitHub-Repos „KitTask“. kittask.com belegt. TikTok vergeben | niedrig |
+| **Kitplex** | C: 0. F: 36 Treffer, nur KITOPLEX (FR, andere Klasse) | kitplex.com belegt. TikTok frei/unklar | niedrig |
+| **Kitduty** | C: 0. F: 2 Treffer | alles frei außer TikTok | niedrig |
