@@ -52,3 +52,20 @@ Namen auswählen, dann volle Prüfung wie bei Kitmind (Register direkt, Social M
 | Kitgeselle, Kitwerker, Kitwichtl, Kithandl | je 0 Treffer in allen Registern | nicht weiter geprüft | niedrig, aber sperrig |
 | Kitwerk | KIwerk.one (DE, Kl. 9/35/38/41/42, mibeca GmbH) | – | mittel |
 | Kitelf, Kittel, Kitmate, Kitivo, Kitoro | Konflikte (KITEL, Kittel-Marken, PitMate, Kinivo, Kitaro) oder stark besetzt | – | mittel bis hoch |
+
+---
+
+## Runde 4: Wortspiele und Kunstwörter mit „Kit“ (02.11.2026)
+
+| Name | Marken (TMview, EU/AT/DE, Kl. 9/35/42) | Sonstiges | Risiko |
+|---|---|---|---|
+| **Kitollege** (Kit + Kollege) | C: 0 Treffer. F: 4 Treffer weltweit, keiner in Kl. 9/35/42 | npm, PyPI, GitHub frei. Websuche ohne Treffer. TikTok @kitollege, X, LinkedIn und YouTube frei. Instagram nicht prüfbar | **niedrig** |
+| **Kitrova** (Kunstwort) | C: 0 Treffer. F: nur italienische Beschreibungstexte mit „ritrova“, keine ähnliche Marke | npm, PyPI, GitHub frei. Websuche ohne Treffer. TikTok @kitrova vergeben, X unklar, LinkedIn und YouTube frei | niedrig |
+| **Kitkumpel** (Kit + Kumpel) | 0 Treffer in C und F | alles frei (außer Instagram, nicht prüfbar) | niedrig |
+| Kitgehilfe | 0 Treffer | sperrig | niedrig |
+| Kitarbeiter | C: 0. F: viele „Mitarbeiter“-Marken, darunter **KI-Mitarbeiter** und **AI-Mitarbeiter** (DE, angemeldet, Scoreprise.AI GmbH, Kl. 42) | schwer auszusprechen | mittel |
+| Kitmeister | HITMEISTER (EM/GB, Kl. 18/25/35/38/42) | – | hoch |
+| Kitvera, Kitalis, Kitamo, Kitano, Kitora | Kinvera (EM, Kl. 9/38/41/42), Vitalis, kitaro (FR, Kl. 10/38/41/42). Kitano und Kitora sind in Asien sehr verbreitet | – | mittel |
+| Kitrix, Kitezo, Kitelo, Kitwork, Kitaly | Citrix, Kiteo, Kiteloop, KiWORK (AT), KITAFLY: Konflikte | – | hoch |
+
+**Randbefund:** „KI-Mitarbeiter“ und „AI-Mitarbeiter“ sind in Deutschland für Kl. 42 angemeldet (Scoreprise.AI GmbH, Stand TMview). Als Markenname und eventuell auch als Produktbezeichnung sollte man das vorher anwaltlich klären lassen.
