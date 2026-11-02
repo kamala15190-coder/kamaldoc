@@ -39,3 +39,16 @@ Frühere Runde: Kitmind (kitamind.ai und GitMind), Papervik (gefiel nicht).
 ## Nächster Schritt
 
 Namen auswählen, dann volle Prüfung wie bei Kitmind (Register direkt, Social Media, Firmenbuch) und Markenanwalt, danach Anmeldung als Unionsmarke in Kl. 9, 35 und 42.
+
+---
+
+## Runde 3: Namen mit „Kit“-Bezug (02.11.2026)
+
+| Name | Marken (TMview, EU/AT/DE, Kl. 9/35/42) | Sonstiges | Risiko |
+|---|---|---|---|
+| **Kitling** | C: 5 Treffer weltweit, keiner aktiv in der EU. F: nur KIPLING (andere Schreibweise, Kl. 9/21/25) | nicht weiter geprüft | niedrig |
+| **Kitello** | C: 1 Treffer weltweit, keiner aktiv in der EU. F: **MITELLO** (EM, Aidon Oy, Kl. 9/42), **Kintello** (DE, Kintello GmbH, Kl. 37/38/42), Litello (EM/GB, Kl. 9/16/41) | npm, PyPI frei. GitHub: 1 leeres Repo. Websuche ohne Treffer. kitello.com seit 02.2025 registriert, ohne erreichbare Website. Handles: X und LinkedIn frei, Instagram, TikTok und YouTube bereits angelegt (Inhalt nicht geprüft) | mittel |
+| **Kitcrew** | C: 0 Treffer. F: nur PITCREW AI (WO, Kl. 7/9/12/37/42) | **kitcrew.ai ist live: „KitCrew by KitFire – Your AI Crew“, sechs KI-Agenten für Network Marketing**, also dasselbe Konzept wie bei euch. X @Kitcrew und TikTok vergeben | **hoch** (nicht eingetragene Rechte, gleiche Produktidee) |
+| Kitgeselle, Kitwerker, Kitwichtl, Kithandl | je 0 Treffer in allen Registern | nicht weiter geprüft | niedrig, aber sperrig |
+| Kitwerk | KIwerk.one (DE, Kl. 9/35/38/41/42, mibeca GmbH) | – | mittel |
+| Kitelf, Kittel, Kitmate, Kitivo, Kitoro | Konflikte (KITEL, Kittel-Marken, PitMate, Kinivo, Kitaro) oder stark besetzt | – | mittel bis hoch |
